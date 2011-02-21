@@ -166,9 +166,10 @@ void JMPEngine_BIT::drawInterface() {
 void JMPEngine_BIT::waitUntilSoundEnds() {
 	Common::Event event;
 	while (_sound->isPlaying() && !shouldQuit()) {
-		while (_eventMan->pollEvent(event)) {
-			// Do nothing :P
-		}	
+		while (_eventMan->pollEvent(event))
+			;
+
+		_system->delayMillis(10);
 	}
 }
 
@@ -179,6 +180,7 @@ void JMPEngine_BIT::checkDisc(int disc) {
 			break;
 
 		_gfx->drawEXEBitmap(0x3047 + disc, 155, 182);
+
 		// TODO: Probably should draw some sort of OK button
 		_system->updateScreen();
 		error("You need to have disc %d in", disc);
@@ -200,7 +202,6 @@ static const Common::Rect demoMainMenuButtons[] = {
 	Common::Rect(551, 439, 640, 480)
 };
 
-// The Demo has limited support for the 24bpp images
 Common::Error JMPEngine_BITDemo::run() {
 	init();
 	
@@ -262,7 +263,7 @@ Common::Error JMPEngine_BITDemo::run() {
 							quitFromMainMenu();
 							return Common::kNoError;
 						default:
-							warning("Unhandled BIT Demo Main Menu Button");
+							warning("Unhandled BIT Demo main menu button");
 					}
 					break;
 				default:
@@ -323,6 +324,8 @@ void JMPEngine_BITDemo::waitUntilMouseClick() {
 					break;
 			}
 		}
+
+		_system->delayMillis(10);
 	}
 }
 

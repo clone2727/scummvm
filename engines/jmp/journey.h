@@ -26,16 +26,17 @@
 #include "jmp/jmp.h"
 
 namespace JMP {
-	struct JMPGameDescription;
-	
-	class JMPEngine_Journey : public JMPEngine {
-	public:
-		JMPEngine_Journey(OSystem *syst, const JMPGameDescription *gamedesc) : JMPEngine(syst, gamedesc) {}
-		~JMPEngine_Journey() {}
-		
-		Common::Error run();
-	};
-	
-}
+
+struct JMPGameDescription;
+
+class JMPEngine_Journey : public JMPEngine {
+public:
+	JMPEngine_Journey(OSystem *syst, const JMPGameDescription *gamedesc) : JMPEngine(syst, gamedesc) {}
+	~JMPEngine_Journey() {}
+
+	Common::Error run();
+};
+
+} // End of namespace JMP
 
 #endif

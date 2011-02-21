@@ -75,7 +75,7 @@ static const Common::Rect mainMenuButtons[] = {
 static const Common::Rect mainMenuTextBox = Common::Rect(407, 386, 608, 415);
 	
 static const Common::String jmanEnglishMenuDescriptions[] = {
-	"Show me how to use the Journeyman\'s interface.",
+	"Show me how to use the Journeyman's interface.",
 	"Start the game from the very beginning.",
 	"Start the game at the introductory animation.",
 	"Start from after the background and introductory animations.",
@@ -85,6 +85,9 @@ static const Common::String jmanEnglishMenuDescriptions[] = {
 };
 	
 int JMPEngine_JMAN::runMainMenu() {
+	// This is all very hacky
+	// The music sounds nice, of course
+
 	_gfx->drawBitmap(Common::String("mainmnu1.bmp"), 0, 0);
 	_sound->playSound(Common::String("shared/caltheme.wav"));
 	Common::Event event;
@@ -225,6 +228,10 @@ enum {
 };
 
 void JMPEngine_JMAN::runCredits() {
+	// This also is very hacky
+	// And the swipes don't happen correctly
+	// etc, etc, etc
+
 	int buttonSelected = kNoButtonSelected;
 	byte textState = 0;
 	Common::Event event;
@@ -304,7 +311,7 @@ void JMPEngine_JMAN::initVars() {
 Common::Error JMPEngine_JMAN::run() {
 	// Initialization:
 	init();
-	// initVars();
+	//initVars();
 	
 	// Opening Videos:
 	playVideoCentered("slogo.avi");
@@ -327,7 +334,7 @@ Common::Error JMPEngine_JMAN::run() {
 		runDreamSequence();
 		
 	// Game Main Loop:
-	// TODO: Begin playing
+	// TODO: Actually do something
 	return Common::kNoError;
 }
 	

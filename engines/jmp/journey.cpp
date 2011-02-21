@@ -85,8 +85,12 @@ Common::Error JMPEngine_Journey::run() {
 					for (int i = 0; i < MaxVideoButtons; i++)
 						if (videoButtons[i].contains(event.mouse))
 								buttonSelected = i;
-					if (buttonSelected != NoVideoButtonSelected)
+		
+					if (buttonSelected != NoVideoButtonSelected) {
 						_gfx->drawBitmap(Common::String("highligt.bmp"), videoButtons[buttonSelected], videoButtons[buttonSelected].left, videoButtons[buttonSelected].top);
+						// TODO: Play requested video
+						// TODO: Some sort of play position bar interactivity too
+					}
 					break;
 				case Common::EVENT_LBUTTONUP:
 					if (buttonSelected != NoVideoButtonSelected) {

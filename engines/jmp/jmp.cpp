@@ -30,10 +30,6 @@
 
 #include "video/avi_decoder.h"
 
-// Ouch, need to fix the tables to not use Common::String's
-// Including this will cause a segfault upon quitting
-//#include "jmp/text.h"
-
 namespace JMP {
 
 JMPEngine::JMPEngine(OSystem *syst, const JMPGameDescription *gamedesc) : Engine(syst), _gameDescription(gamedesc) {
@@ -138,7 +134,8 @@ void JMPEngine::loadMandatoryEXE(Common::String filename) {
 		return;
 	}
 
-	// No dice on the uncompressed version, let's try compressed
+	// No dice on the uncompressed version, let's try compressed as a
+	// last resort.
 	Common::String compFileName = filename;
 	compFileName.deleteLastChar();
 	compFileName += '_';

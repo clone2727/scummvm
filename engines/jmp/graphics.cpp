@@ -42,8 +42,8 @@ GraphicsManager::GraphicsManager(JMPEngine* vm) : _vm(vm) {
 	useStandardCursor();
 	CursorMan.showMouse(true);
 		
-	// FIXME: I just checked the original... turns out it doesn't use Arial. Oh well :P
-	// We'll need some more fonts too... MS Sans Serif in BiT, I believe.
+	// FIXME: Use the correct font. MS Sans Serif in bit, I believe.
+	// Don't remember what jman uses
 	_font = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
 }
 	

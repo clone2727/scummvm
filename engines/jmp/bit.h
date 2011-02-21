@@ -64,6 +64,7 @@ enum {
 	kBITRightCursor
 };
 
+// Ripped from the Mac Director version
 struct BIT_Variables {
 	bool gWalkThru;            //Walkthrough or Adventure mode
 	int gPosition;                /*Room/Looking position?*/

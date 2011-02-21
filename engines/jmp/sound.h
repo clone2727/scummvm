@@ -35,14 +35,14 @@ namespace JMP {
 
 #define SOUND_HANDLES 10
 
-enum sndHandleType {
+enum SndHandleType {
 	kFreeHandle,
 	kUsedHandle
 };
 
 struct SndHandle {
 	Audio::SoundHandle handle;
-	sndHandleType type;
+	SndHandleType type;
 };
 
 class JMPEngine;
@@ -51,7 +51,7 @@ class Sound {
 	friend class JMPEngine;
 
 public:
-	Sound(JMPEngine* vm);
+	Sound(JMPEngine *vm);
 	void playSound(Common::String filename, bool loop = false);
 	void playSound(Common::SeekableReadStream *stream, bool loop = false);
 	void stopSound();
@@ -60,7 +60,7 @@ public:
 	bool isPlaying();
 	
 private:
-	JMPEngine* _vm;
+	JMPEngine *_vm;
 
 	SndHandle _handles[SOUND_HANDLES];
 	SndHandle *getHandle();

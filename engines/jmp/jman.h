@@ -29,6 +29,7 @@
 
 namespace JMP {
 
+// Ripped from the Mac Director version
 struct JMAN_Variables {		
 	Common::String gComingFrom;
 	bool gCalledFlFourElev;
@@ -112,8 +113,7 @@ public:
 private:
 	JMAN_Variables _vars;
 
-	//AVIPlayer *_animVideo;
-	//AVIPlayer *_navVideo;
+	//Video::AviDecoder *_animVideo, *_navVideo;
 		
 	// Main Menu/Intro
 	int runMainMenu();
