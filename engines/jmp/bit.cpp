@@ -326,28 +326,4 @@ void JMPEngine_BITDemo::waitUntilMouseClick() {
 	}
 }
 
-Common::Error JMPEngine_BITTrailer::run() {
-	init();
-
-	loadMandatoryEXE(getEXEFileName());
-
-	// For Buried in Time trailers:
-	// Bitmap 101 is the 8bpp version
-	// Bitmap 102 is the 24bpp version
-#if 0
-	Common::SeekableReadStream *bitmap = getEXEResource(kNEBitmap, 0x65);
-	assert(bitmap);
-	byte *data = (byte *)malloc(bitmap->size());
-	bitmap->read(data, bitmap->size());
-	Common::hexdump(data, bitmap->size());
-	free(data);
-	delete bitmap;
-#endif
-
-	_gfx->drawEXEBitmap(useHighColor() ? 102 : 101);
-	playVideo(getAVIFileName(), 103, 135);
-		
-	return Common::kNoError;
-}
-
 } // End of namespace JMP
