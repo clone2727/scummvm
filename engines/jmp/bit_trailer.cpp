@@ -38,7 +38,7 @@ Common::Error JMPEngine_BITTrailer::run() {
 
 	if (getEXEFileName() == "JDCDEMO.EXE") {
 		// TODO: handle animation
-		baseID = 0x73;
+		baseID = 114;
 		videoX = 76;
 		videoY = 164;
 	} else {
