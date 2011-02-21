@@ -65,6 +65,11 @@ DEFINES += -DENABLE_HUGO=$(ENABLE_HUGO)
 MODULES += engines/hugo
 endif
 
+ifdef ENABLE_JMP
+DEFINES += -DENABLE_JMP=$(ENABLE_JMP)
+MODULES += engines/jmp
+endif
+
 ifdef ENABLE_KYRA
 DEFINES += -DENABLE_KYRA=$(ENABLE_KYRA)
 MODULES += engines/kyra
