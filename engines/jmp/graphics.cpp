@@ -29,6 +29,7 @@
 #include "common/stream.h"
 #include "engines/util.h"
 #include "graphics/cursorman.h"
+#include "graphics/fontman.h"
 #include "graphics/imagedec.h"
 #include "video/codecs/cinepak.h"
 
@@ -43,8 +44,7 @@ GraphicsManager::GraphicsManager(JMPEngine* vm) : _vm(vm) {
 		
 	// FIXME: I just checked the original... turns out it doesn't use Arial. Oh well :P
 	// We'll need some more fonts too... MS Sans Serif in BiT, I believe.
-	//_font = new Graphics::NewFont(arial_desc);
-	_font = 0;
+	_font = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
 }
 	
 GraphicsManager::~GraphicsManager() {

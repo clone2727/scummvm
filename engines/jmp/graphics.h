@@ -76,7 +76,7 @@ private:
 	Graphics::Surface decodeBitmapNoHeader(Common::SeekableReadStream *stream, uint32 imageOffset = 0);
 		
 	JMPEngine *_vm;
-	Graphics::Font *_font;
+	const Graphics::Font *_font;
 	Graphics::PixelFormat _pixelFormat;
 };
 
