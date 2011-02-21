@@ -75,8 +75,8 @@ static const byte s_standardCursor[] = {
 };
 	
 static const byte s_standardCursorPalette[] = {
-	0x00, 0x00, 0x00,	0x00,	// Black
-	0xFF, 0xFF, 0xFF,	0x00	// White
+	0x00, 0x00, 0x00,	// Black
+	0xFF, 0xFF, 0xFF	// White
 };
 	
 void GraphicsManager::useStandardCursor() {
