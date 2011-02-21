@@ -41,9 +41,16 @@ Common::Error JMPEngine_BITTrailer::run() {
 		baseID = 0x73;
 		videoX = 76;
 		videoY = 164;
-	} else if (useHighColor()) {
+	} else {
+		// Adjust overview coordinates
+		if (getEXEFileName() == "BITOVRVW.EXE") {
+			videoX = 160;
+			videoY = 112;
+		}
+
 		// Adjust to get the 24bpp image
-		baseID++;
+		if (useHighColor())
+			baseID++;
 	}
 
 	_gfx->drawEXEBitmap(baseID);
