@@ -32,18 +32,22 @@ Common::Error JMPEngine_BITTrailer::run() {
 	// For Buried in Time trailers:
 	// Bitmap 101 is the 8bpp version
 	// Bitmap 102 is the 24bpp version
-#if 0
-	Common::SeekableReadStream *bitmap = getEXEResource(kNEBitmap, 0x65);
-	assert(bitmap);
-	byte *data = (byte *)malloc(bitmap->size());
-	bitmap->read(data, bitmap->size());
-	Common::hexdump(data, bitmap->size());
-	free(data);
-	delete bitmap;
-#endif
 
-	_gfx->drawEXEBitmap(useHighColor() ? 102 : 101);
-	playVideo(getAVIFileName(), 103, 135);
+	int baseID = 101;
+	int videoX = 103, videoY = 135;
+
+	if (getEXEFileName() == "JDCDEMO.EXE") {
+		// TODO: handle animation
+		baseID = 0x73;
+		videoX = 76;
+		videoY = 164;
+	} else if (useHighColor()) {
+		// Adjust to get the 24bpp image
+		baseID++;
+	}
+
+	_gfx->drawEXEBitmap(baseID);
+	playVideo(getAVIFileName(), videoX, videoY);
 		
 	return Common::kNoError;
 }
