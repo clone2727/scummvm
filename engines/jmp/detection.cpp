@@ -74,7 +74,7 @@ bool JMPEngine::hasFeature(EngineFeature f) const {
 		(f == kSupportsRTL);
 }
 
-} // End of Namespace Mohawk
+} // End of Namespace JMP
 
 static const PlainGameDescriptor jmpGames[] = {
 	{"jmp", "Journeyman Project game"},

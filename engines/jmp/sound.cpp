@@ -91,4 +91,4 @@ void Sound::resumeSound() {
 	_vm->_mixer->pauseAll(false);
 }
 
-} // End of namespace Mohawk
+} // End of namespace JMP
