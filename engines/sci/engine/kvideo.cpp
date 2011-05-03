@@ -29,7 +29,14 @@
 #include "sci/graphics/cursor.h"
 #include "sci/graphics/palette.h"
 #include "sci/graphics/screen.h"
-#include "graphics/cursorman.h"
+#include "common/events.h"
+#include "common/keyboard.h"
+#include "common/str.h"
+#include "common/system.h"
+#include "common/textconsole.h"
+#include "graphics/pixelformat.h"
+#include "graphics/surface.h"
+#include "video/video_decoder.h"
 #include "video/avi_decoder.h"
 #include "video/qt_decoder.h"
 #include "sci/video/seq_decoder.h"
@@ -48,8 +55,8 @@ void playVideo(Video::VideoDecoder *videoDecoder, VideoState videoState) {
 	uint16 width = videoDecoder->getWidth();
 	uint16 height = videoDecoder->getHeight();
 	uint16 pitch = videoDecoder->getWidth() * bytesPerPixel;
-	uint16 screenWidth = g_system->getWidth();
-	uint16 screenHeight = g_system->getHeight();
+	uint16 screenWidth = g_sci->_gfxScreen->getDisplayWidth();
+	uint16 screenHeight = g_sci->_gfxScreen->getDisplayHeight();
 
 	videoState.fileName.toLowercase();
 	bool isVMD = videoState.fileName.hasSuffix(".vmd");

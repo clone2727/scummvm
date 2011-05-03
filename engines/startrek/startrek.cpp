@@ -27,9 +27,12 @@
 #include "base/version.h"
 #include "common/archive.h"
 #include "common/config-manager.h"
+#include "common/error.h"
 #include "common/events.h"
 #include "common/file.h"
 #include "common/macresman.h"
+#include "common/textconsole.h"
+#include "graphics/surface.h"
 #include "engines/util.h"
 #include "video/qt_decoder.h"
 

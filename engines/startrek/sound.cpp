@@ -27,6 +27,7 @@
 
 #include "common/file.h"
 #include "common/macresman.h"
+#include "common/textconsole.h"
 
 #include "audio/mods/protracker.h"
 #include "audio/decoders/raw.h"
