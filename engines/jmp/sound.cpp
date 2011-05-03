@@ -23,6 +23,7 @@
 #include "jmp/sound.h"
 
 #include "common/file.h"
+#include "common/textconsole.h"
 #include "common/types.h"
 #include "audio/decoders/wave.h"
 

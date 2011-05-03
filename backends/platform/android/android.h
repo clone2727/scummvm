@@ -31,6 +31,7 @@
 #include "common/fs.h"
 #include "common/archive.h"
 #include "audio/mixer_intern.h"
+#include "graphics/palette.h"
 #include "graphics/surface.h"
 #include "backends/base-backend.h"
 #include "backends/plugins/posix/posix-provider.h"
@@ -48,6 +49,7 @@
 // toggles start
 //#define ANDROID_DEBUG_ENTER
 //#define ANDROID_DEBUG_GL
+//#define ANDROID_DEBUG_GL_CALLS
 // toggles end
 
 extern const char *android_log_tag;
@@ -67,9 +69,23 @@ extern const char *android_log_tag;
 #ifdef ANDROID_DEBUG_GL
 extern void checkGlError(const char *expr, const char *file, int line);
 
+#ifdef ANDROID_DEBUG_GL_CALLS
+#define GLCALLLOG(x, before) \
+	do { \
+		if (before) \
+			LOGD("calling '%s' (%s:%d)", x, __FILE__, __LINE__); \
+		else \
+			LOGD("returned from '%s' (%s:%d)", x, __FILE__, __LINE__); \
+	} while (false)
+#else
+#define GLCALLLOG(x, before) do {  } while (false)
+#endif
+
 #define GLCALL(x) \
 	do { \
+		GLCALLLOG(#x, true); \
 		(x); \
+		GLCALLLOG(#x, false); \
 		checkGlError(#x, __FILE__, __LINE__); \
 	} while (false)
 
@@ -99,11 +115,12 @@ private:
 	int _screen_changeid;
 	int _egl_surface_width;
 	int _egl_surface_height;
+	bool _htc_fail;
 
 	bool _force_redraw;
 
 	// Game layer
-	GLESTexture *_game_texture;
+	GLESBaseTexture *_game_texture;
 	int _shake_offset;
 	Common::Rect _focus_rect;
 
@@ -112,16 +129,18 @@ private:
 	bool _show_overlay;
 
 	// Mouse layer
-	GLESTexture *_mouse_texture;
-	GLESPaletteTexture *_mouse_texture_palette;
+	GLESBaseTexture *_mouse_texture;
+	GLESBaseTexture *_mouse_texture_palette;
 	GLES5551Texture *_mouse_texture_rgb;
 	Common::Point _mouse_hotspot;
+	uint32 _mouse_keycolor;
 	int _mouse_targetscale;
 	bool _show_mouse;
 	bool _use_mouse_palette;
 
-	Common::Queue<Common::Event> _event_queue;
-	MutexRef _event_queue_lock;
+	int _graphicsMode;
+	bool _fullscreen;
+	bool _ar_correction;
 
 	pthread_t _main_thread;
 
@@ -142,6 +161,8 @@ private:
 	FilesystemFactory *_fsFactory;
 	timeval _startTime;
 
+	Common::String getSystemProperty(const char *name) const;
+
 	void initSurface();
 	void deinitSurface();
 	void initViewport();
@@ -150,8 +171,8 @@ private:
 
 #ifdef USE_RGB_COLOR
 	Common::String getPixelFormatName(const Graphics::PixelFormat &format) const;
-	void initTexture(GLESTexture **texture, uint width, uint height,
-						const Graphics::PixelFormat *format, bool alphaPalette);
+	void initTexture(GLESBaseTexture **texture, uint width, uint height,
+						const Graphics::PixelFormat *format);
 #endif
 
 	void setupKeymapper();
@@ -171,7 +192,6 @@ public:
 
 	virtual const GraphicsMode *getSupportedGraphicsModes() const;
 	virtual int getDefaultGraphicsMode() const;
-	bool setGraphicsMode(const char *name);
 	virtual bool setGraphicsMode(int mode);
 	virtual int getGraphicsMode() const;
 
@@ -182,6 +202,16 @@ public:
 
 	virtual void initSize(uint width, uint height,
 							const Graphics::PixelFormat *format);
+
+	enum FixupType {
+		kClear = 0,		// glClear
+		kClearSwap,		// glClear + swapBuffers
+		kClearUpdate	// glClear + updateScreen
+	};
+
+	void clearScreen(FixupType type, byte count = 1);
+
+	void updateScreenRect();
 	virtual int getScreenChangeID() const;
 
 	virtual int16 getHeight();
@@ -190,6 +220,26 @@ public:
 	virtual PaletteManager *getPaletteManager() {
 		return this;
 	}
+
+public:
+	void pushEvent(int type, int arg1, int arg2, int arg3, int arg4, int arg5);
+
+private:
+	Common::Queue<Common::Event> _event_queue;
+	MutexRef _event_queue_lock;
+
+	Common::Point _touch_pt_down, _touch_pt_scroll, _touch_pt_dt;
+	int _eventScaleX;
+	int _eventScaleY;
+	bool _touchpad_mode;
+	int _touchpad_scale;
+	int _trackball_scale;
+	int _dpad_scale;
+	int _fingersDown;
+
+	void clipMouse(Common::Point &p);
+	void scaleMouse(Common::Point &p, int x, int y, bool deductDrawRect = true);
+	void updateEventScale();
 
 protected:
 	// PaletteManager API
@@ -215,23 +265,7 @@ public:
 									int x, int y, int w, int h);
 	virtual int16 getOverlayHeight();
 	virtual int16 getOverlayWidth();
-
-	// RGBA 4444
-	virtual Graphics::PixelFormat getOverlayFormat() const {
-		Graphics::PixelFormat format;
-
-		format.bytesPerPixel = 2;
-		format.rLoss = 8 - 4;
-		format.gLoss = 8 - 4;
-		format.bLoss = 8 - 4;
-		format.aLoss = 8 - 4;
-		format.rShift = 3 * 4;
-		format.gShift = 2 * 4;
-		format.bShift = 1 * 4;
-		format.aShift = 0 * 4;
-
-		return format;
-	}
+	virtual Graphics::PixelFormat getOverlayFormat() const;
 
 	virtual bool showMouse(bool visible);
 
@@ -244,7 +278,6 @@ public:
 	virtual void disableCursorPalette(bool disable);
 
 	virtual bool pollEvent(Common::Event &event);
-	void pushEvent(const Common::Event& event);
 	virtual uint32 getMillis();
 	virtual void delayMillis(uint msecs);
 
@@ -267,6 +300,7 @@ public:
 	virtual void logMessage(LogMessageType::Type type, const char *message);
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s,
 											int priority = 0);
+	virtual Common::String getSystemLanguage() const;
 };
 
 #endif

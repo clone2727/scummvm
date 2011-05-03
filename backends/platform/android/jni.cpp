@@ -25,8 +25,28 @@
 
 #if defined(__ANDROID__)
 
+// Allow use of stuff in <time.h>
+#define FORBIDDEN_SYMBOL_EXCEPTION_time_h
+
+// Disable printf override in common/forbidden.h to avoid
+// clashes with log.h from the Android SDK.
+// That header file uses
+//   __attribute__ ((format(printf, 3, 4)))
+// which gets messed up by our override mechanism; this could
+// be avoided by either changing the Android SDK to use the equally
+// legal and valid
+//   __attribute__ ((format(printf, 3, 4)))
+// or by refining our printf override to use a varadic macro
+// (which then wouldn't be portable, though).
+// Anyway, for now we just disable the printf override globally
+// for the Android port
+#define FORBIDDEN_SYMBOL_EXCEPTION_printf
+
 #include "base/main.h"
+#include "base/version.h"
 #include "common/config-manager.h"
+#include "common/error.h"
+#include "common/textconsole.h"
 #include "engines/engine.h"
 
 #include "backends/platform/android/android.h"
@@ -56,15 +76,7 @@ int JNI::egl_surface_width = 0;
 int JNI::egl_surface_height = 0;
 bool JNI::_ready_for_events = 0;
 
-jfieldID JNI::_FID_Event_type = 0;
-jfieldID JNI::_FID_Event_synthetic = 0;
-jfieldID JNI::_FID_Event_kbd_keycode = 0;
-jfieldID JNI::_FID_Event_kbd_ascii = 0;
-jfieldID JNI::_FID_Event_kbd_flags = 0;
-jfieldID JNI::_FID_Event_mouse_x = 0;
-jfieldID JNI::_FID_Event_mouse_y = 0;
-jfieldID JNI::_FID_Event_mouse_relative = 0;
-
+jmethodID JNI::_MID_getDPI = 0;
 jmethodID JNI::_MID_displayMessageOnOSD = 0;
 jmethodID JNI::_MID_setWindowCaption = 0;
 jmethodID JNI::_MID_showVirtualKeyboard = 0;
@@ -93,7 +105,7 @@ const JNINativeMethod JNI::_natives[] = {
 		(void *)JNI::setSurface },
 	{ "main", "([Ljava/lang/String;)I",
 		(void *)JNI::main },
-	{ "pushEvent", "(Lorg/inodes/gus/scummvm/Event;)V",
+	{ "pushEvent", "(IIIIII)V",
 		(void *)JNI::pushEvent },
 	{ "enableZoning", "(Z)V",
 		(void *)JNI::enableZoning },
@@ -120,42 +132,6 @@ jint JNI::onLoad(JavaVM *vm) {
 		return JNI_ERR;
 
 	if (env->RegisterNatives(cls, _natives, ARRAYSIZE(_natives)) < 0)
-		return JNI_ERR;
-
-	jclass event = env->FindClass("org/inodes/gus/scummvm/Event");
-	if (event == 0)
-		return JNI_ERR;
-
-	_FID_Event_type = env->GetFieldID(event, "type", "I");
-	if (_FID_Event_type == 0)
-		return JNI_ERR;
-
-	_FID_Event_synthetic = env->GetFieldID(event, "synthetic", "Z");
-	if (_FID_Event_synthetic == 0)
-		return JNI_ERR;
-
-	_FID_Event_kbd_keycode = env->GetFieldID(event, "kbd_keycode", "I");
-	if (_FID_Event_kbd_keycode == 0)
-		return JNI_ERR;
-
-	_FID_Event_kbd_ascii = env->GetFieldID(event, "kbd_ascii", "I");
-	if (_FID_Event_kbd_ascii == 0)
-		return JNI_ERR;
-
-	_FID_Event_kbd_flags = env->GetFieldID(event, "kbd_flags", "I");
-	if (_FID_Event_kbd_flags == 0)
-		return JNI_ERR;
-
-	_FID_Event_mouse_x = env->GetFieldID(event, "mouse_x", "I");
-	if (_FID_Event_mouse_x == 0)
-		return JNI_ERR;
-
-	_FID_Event_mouse_y = env->GetFieldID(event, "mouse_y", "I");
-	if (_FID_Event_mouse_y == 0)
-		return JNI_ERR;
-
-	_FID_Event_mouse_relative = env->GetFieldID(event, "mouse_relative", "Z");
-	if (_FID_Event_mouse_relative == 0)
 		return JNI_ERR;
 
 	return JNI_VERSION_1_2;
@@ -213,6 +189,35 @@ void JNI::throwRuntimeException(JNIEnv *env, const char *msg) {
 }
 
 // calls to the dark side
+
+void JNI::getDPI(float *values) {
+	values[0] = 0.0;
+	values[1] = 0.0;
+
+	JNIEnv *env = JNI::getEnv();
+
+	jfloatArray array = env->NewFloatArray(2);
+
+	env->CallVoidMethod(_jobj, _MID_getDPI, array);
+
+	if (env->ExceptionCheck()) {
+		LOGE("Failed to get DPIs");
+
+		env->ExceptionDescribe();
+		env->ExceptionClear();
+	} else {
+		jfloat *res = env->GetFloatArrayElements(array, 0);
+
+		if (res) {
+			values[0] = res[0];
+			values[1] = res[1];
+
+			env->ReleaseFloatArrayElements(array, res, 0);
+		}
+	}
+
+	env->DeleteLocalRef(array);
+}
 
 void JNI::displayMessageOnOSD(const char *msg) {
 	JNIEnv *env = JNI::getEnv();
@@ -418,6 +423,8 @@ void JNI::setAudioStop() {
 void JNI::create(JNIEnv *env, jobject self, jobject asset_manager,
 				jobject egl, jobject egl_display,
 				jobject at, jint audio_sample_rate, jint audio_buffer_size) {
+	LOGI(gScummVMFullVersion);
+
 	assert(!_system);
 
 	pause = false;
@@ -445,6 +452,7 @@ void JNI::create(JNIEnv *env, jobject self, jobject asset_manager,
 	} while (0)
 
 	FIND_METHOD(, setWindowCaption, "(Ljava/lang/String;)V");
+	FIND_METHOD(, getDPI, "([F)V");
 	FIND_METHOD(, displayMessageOnOSD, "(Ljava/lang/String;)V");
 	FIND_METHOD(, showVirtualKeyboard, "(Z)V");
 	FIND_METHOD(, getSysArchives, "()[Ljava/lang/String;");
@@ -569,54 +577,17 @@ cleanup:
 	return res;
 }
 
-void JNI::pushEvent(JNIEnv *env, jobject self, jobject java_event) {
+void JNI::pushEvent(JNIEnv *env, jobject self, int type, int arg1, int arg2,
+					int arg3, int arg4, int arg5) {
 	// drop events until we're ready and after we quit
-	if (!_ready_for_events)
+	if (!_ready_for_events) {
+		LOGW("dropping event");
 		return;
+	}
 
 	assert(_system);
 
-	Common::Event event;
-	event.type = (Common::EventType)env->GetIntField(java_event,
-														_FID_Event_type);
-
-	event.synthetic =
-		env->GetBooleanField(java_event, _FID_Event_synthetic);
-
-	switch (event.type) {
-	case Common::EVENT_KEYDOWN:
-	case Common::EVENT_KEYUP:
-		event.kbd.keycode = (Common::KeyCode)env->GetIntField(
-			java_event, _FID_Event_kbd_keycode);
-		event.kbd.ascii = static_cast<int>(env->GetIntField(
-			java_event, _FID_Event_kbd_ascii));
-		event.kbd.flags = static_cast<int>(env->GetIntField(
-			java_event, _FID_Event_kbd_flags));
-		break;
-	case Common::EVENT_MOUSEMOVE:
-	case Common::EVENT_LBUTTONDOWN:
-	case Common::EVENT_LBUTTONUP:
-	case Common::EVENT_RBUTTONDOWN:
-	case Common::EVENT_RBUTTONUP:
-	case Common::EVENT_WHEELUP:
-	case Common::EVENT_WHEELDOWN:
-	case Common::EVENT_MBUTTONDOWN:
-	case Common::EVENT_MBUTTONUP:
-		event.mouse.x =
-			env->GetIntField(java_event, _FID_Event_mouse_x);
-		event.mouse.y =
-			env->GetIntField(java_event, _FID_Event_mouse_y);
-		// This is a terrible hack.	 We stash "relativeness"
-		// in the kbd.flags field until pollEvent() can work
-		// it out.
-		event.kbd.flags = env->GetBooleanField(
-			java_event, _FID_Event_mouse_relative) ? 1 : 0;
-		break;
-	default:
-		break;
-	}
-
-	_system->pushEvent(event);
+	_system->pushEvent(type, arg1, arg2, arg3, arg4, arg5);
 }
 
 void JNI::enableZoning(JNIEnv *env, jobject self, jboolean enable) {

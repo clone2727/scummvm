@@ -498,9 +498,45 @@ const uint16 kq5PatchCdHarpyVolume[] = {
 	PATCH_END
 };
 
+// This is a heap patch, and it modifies the properties of an object, instead
+// of patching script code.
+//
+// The witchCage object in script 200 is broken and claims to have 12
+// variables instead of the 8 it should have because it is a Cage.
+// Additionally its top,left,bottom,right properties are set to 0 rather
+// than the right values. We fix the object by setting the right values.
+// If they are all zero, this causes an impossible position check in
+// witch::cantBeHere and an infinite loop when entering room 22 (bug #3034714).
+//
+// This bug is accidentally not triggered in SSCI because the invalid number
+// of variables effectively hides witchCage::doit, causing this position check
+// to be bypassed entirely.
+// See also the warning+comment in Object::initBaseObject
+const byte kq5SignatureWitchCageInit[] = {
+	16,
+	0x00, 0x00,	// top
+	0x00, 0x00,	// left
+	0x00, 0x00,	// bottom
+	0x00, 0x00,	// right
+	0x00, 0x00,	// extra property #1
+	0x7a, 0x00,	// extra property #2
+	0xc8, 0x00,	// extra property #3
+	0xa3, 0x00,	// extra property #4
+	0
+};
+
+const uint16 kq5PatchWitchCageInit[] = {
+	0x00, 0x00,	// top
+	0x7a, 0x00,	// left
+	0xc8, 0x00,	// bottom
+	0xa3, 0x00,	// right
+	PATCH_END
+};
+
 //    script, description,                                      magic DWORD,                                 adjust
 const SciScriptSignature kq5Signatures[] = {
 	{      0, "CD: harpy volume change",                     1, PATCH_MAGICDWORD(0x80, 0x91, 0x01, 0x18),     0, kq5SignatureCdHarpyVolume, kq5PatchCdHarpyVolume },
+	{    200, "CD: witch cage init",                         1, PATCH_MAGICDWORD(0x7a, 0x00, 0xc8, 0x00),   -10, kq5SignatureWitchCageInit, kq5PatchWitchCageInit },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
@@ -531,6 +567,52 @@ const uint16 kq6PatchDuplicateBabyCry[] = {
 //    script, description,                                      magic DWORD,                                 adjust
 const SciScriptSignature kq6Signatures[] = {
 	{    481, "duplicate baby cry",                          1, PATCH_MAGICDWORD(0x83, 0x00, 0x31, 0x1e),     0, kq6SignatureDuplicateBabyCry, kq6PatchDuplicateBabyCry },
+	SCI_SIGNATUREENTRY_TERMINATOR
+};
+
+// ===========================================================================
+// Script 210 in the German version of Longbow handles the case where Robin
+// hands out the scroll to Marion and then types his name using the hand code.
+// The German version script contains a typo (probably a copy/paste error),
+// and the function that is used to show each letter is called twice. The
+// second time that the function is called, the second parameter passed to
+// the function is undefined, thus kStrCat() that is called inside the function
+// reads a random pointer and crashes. We patch all of the 5 function calls
+// (one for each letter typed from "R", "O", "B", "I", "N") so that they are
+// the same as the English version. Fixes bug #3048054.
+const byte longbowSignatureShowHandCode[] = {
+	3,
+	0x78,                   // push1
+	0x78,                   // push1
+	0x72,                   // lofsa
+	+2, 2,                  // skip 2 bytes, offset of lofsa (the letter typed)
+	0x36,                   // push
+	0x40,                   // call
+	+2, 3,                  // skip 2 bytes, offset of call
+	0x02,                   // perform the call above with 2 parameters
+	0x36,                   // push
+	0x40,                   // call
+	+2, 8,                  // skip 2 bytes, offset of call
+	0x02,                   // perform the call above with 2 parameters
+	0x38, 0x1c, 0x01,       // pushi 011c (setMotion)
+	0x39, 0x04,             // pushi 04 (x)
+	0x51, 0x1e,             // class MoveTo
+	0
+};
+
+const uint16 longbowPatchShowHandCode[] = {
+	0x39, 0x01,             // pushi 1 (combine the two push1's in one, like in the English version)
+	PATCH_ADDTOOFFSET | +3, // leave the lofsa call untouched
+	// The following will remove the duplicate call
+	0x32, 0x02, 0x00,       // jmp 02 - skip 2 bytes (the remainder of the first call)
+	0x48,                   // ret (dummy, should never be reached)
+	0x48,                   // ret (dummy, should never be reached)
+	PATCH_END
+};
+
+//    script, description,                                      magic DWORD,                                  adjust
+const SciScriptSignature longbowSignatures[] = {
+	{    210, "hand code crash",                             5, PATCH_MAGICDWORD(0x02, 0x38, 0x1c, 0x01),   -14, longbowSignatureShowHandCode, longbowPatchShowHandCode },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
@@ -792,9 +874,50 @@ const uint16 qfg3PatchDialogCrash[] = {
 	PATCH_END
 };
 
+// Part of script 47 that handles the barter icon checks for the wrong local.
+// The local is supposed to contain the value returned by a previous kDisplay
+// call, but since the wrong one is checked, it contains junk instead. We
+// remove that check here (this doesn't affect the game at all). This occurs
+// when attempting to purchase something from a vendor and the barter button is
+// available (e.g. when buying the robe or meat from the associated vendors).
+// Fixes bug #3292251.
+const byte qfg3BarterCrash[] = {
+	22,
+	0x83, 0x10,        // lal 10   ---> BUG! Wrong local
+	0x30, 0x11, 0x00,  // bnt 0011 ---> the accumulator will now contain garbage, so this check fails
+	0x35, 0x00,        // ldi 00
+	0xa5, 0x00,        // sat 00
+	0x39, 0x03,        // pushi 03
+	0x5b, 0x04, 0x00,  // lea 04 00
+	0x36,              // push
+	0x39, 0x6c,        // pushi 6c
+	0x8b, 0x10,        // lsl 10   ---> local 10 contains garbage, so the call below will fail
+	0x43, 0x1b, 0x06   // callk Display[1b] 06
+};
+
+// Same as above, but for local 0x11
+const byte qfg3BarterCrash2[] = {
+	18,
+	0x83, 0x11,        // lal 11   ---> BUG! Wrong local
+	0x30, 0x0d, 0x00,  // bnt 000d ---> the accumulator will now contain garbage, so this check fails
+	0x39, 0x03,        // pushi 03
+	0x5b, 0x04, 0x00,  // lea 04 00
+	0x36,              // push
+	0x39, 0x6c,        // pushi 6c
+	0x8b, 0x11,        // lsl 11   ---> local 11 contains garbage, so the call below will fail
+	0x43, 0x1b, 0x06   // callk Display[1b] 06
+};
+
+const uint16 qfg3PatchBarterCrash[] = {
+	0x35, 0x00,       // ldi 00    ---> the accumulator will always be zero, so the problematic code won't run
+	PATCH_END
+};
+
 //    script, description,                                      magic DWORD,                                  adjust
 const SciScriptSignature qfg3Signatures[] = {
 	{     23, "dialog crash",                                   1, PATCH_MAGICDWORD(0xe7, 0x03, 0x22, 0x33),  -1,           qfg3DialogCrash,          qfg3PatchDialogCrash },
+	{     47, "barter crash",                                   1, PATCH_MAGICDWORD(0x83, 0x10, 0x30, 0x11),   0,           qfg3BarterCrash,          qfg3PatchBarterCrash },
+	{     47, "barter crash 2",                                 1, PATCH_MAGICDWORD(0x83, 0x11, 0x30, 0x0d),   0,          qfg3BarterCrash2,          qfg3PatchBarterCrash },
 	{    944, "import dialog continuous calls",                 1, PATCH_MAGICDWORD(0x2a, 0x31, 0x0b, 0x7a),  -1, qfg3SignatureImportDialog,         qfg3PatchImportDialog },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
@@ -912,6 +1035,53 @@ const SciScriptSignature sq4Signatures[] = {
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
 
+const byte sq1vgaSignatureEgoShowsCard[] = {
+	25,
+	0x38, 0x46, 0x02, // push 0x246 (set up send frame to set timesShownID)
+	0x78,             // push1
+	0x38, 0x46, 0x02, // push 0x246 (set up send frame to get timesShownID)
+	0x76,             // push0
+	0x51, 0x7c,       // class DeltaurRegion
+	0x4a, 0x04,       // send 0x04 (get timesShownID)
+	0x36,             // push
+	0x35, 0x01,       // ldi 1
+	0x02,             // add
+	0x36,             // push
+	0x51, 0x7c,       // class DeltaurRegion
+	0x4a, 0x06,       // send 0x06 (set timesShownID)
+	0x36,             // push      (wrong, acc clobbered by class, above)
+	0x35, 0x03,       // ldi 0x03
+	0x22,             // lt?
+	0};
+
+// Note that this script patch is merely a reordering of the
+// instructions in the original script.
+const uint16 sq1vgaPatchEgoShowsCard[] = {
+	0x38, 0x46, 0x02, // push 0x246 (set up send frame to get timesShownID)
+	0x76,             // push0
+	0x51, 0x7c,       // class DeltaurRegion
+	0x4a, 0x04,       // send 0x04 (get timesShownID)
+	0x36,             // push
+	0x35, 0x01,       // ldi 1
+	0x02,             // add
+	0x36,             // push (this push corresponds to the wrong one above)
+	0x38, 0x46, 0x02, // push 0x246 (set up send frame to set timesShownID)
+	0x78,             // push1
+	0x36,             // push
+	0x51, 0x7c,       // class DeltaurRegion
+	0x4a, 0x06,       // send 0x06 (set timesShownID)
+	0x35, 0x03,       // ldi 0x03
+	0x22,             // lt?
+	PATCH_END};
+
+
+//    script, description,                                      magic DWORD,                                  adjust
+const SciScriptSignature sq1vgaSignatures[] = {
+	{   58, "Sarien armory droid zapping ego first time", 1, PATCH_MAGICDWORD( 0x72, 0x88, 0x15, 0x36 ), -70,  
+		sq1vgaSignatureEgoShowsCard, sq1vgaPatchEgoShowsCard },
+
+	SCI_SIGNATUREENTRY_TERMINATOR};
+
 // will actually patch previously found signature area
 void Script::applyPatch(const uint16 *patch, byte *scriptData, const uint32 scriptSize, int32 signatureOffset) {
 	byte orgData[PATCH_VALUELIMIT];
@@ -1028,6 +1198,9 @@ void Script::matchSignatureAndPatch(uint16 scriptNr, byte *scriptData, const uin
 	case GID_LAURABOW2:
 		signatureTable = laurabow2Signatures;
 		break;
+	case GID_LONGBOW:
+		signatureTable = longbowSignatures;
+		break;
 	case GID_LSL6:
 		signatureTable = larry6Signatures;
 		break;
@@ -1042,6 +1215,9 @@ void Script::matchSignatureAndPatch(uint16 scriptNr, byte *scriptData, const uin
 		break;
 	case GID_QFG3:
 		signatureTable = qfg3Signatures;
+		break;
+	case GID_SQ1:
+		signatureTable = sq1vgaSignatures;
 		break;
 	case GID_SQ4:
 		signatureTable = sq4Signatures;

@@ -24,10 +24,11 @@
  */
 
 #include "common/config-manager.h"
+#include "common/debug.h"
 #include "common/file.h"
 #include "common/fs.h"
-#include "common/util.h"
 #include "common/system.h"
+#include "common/textconsole.h"
 
 DECLARE_SINGLETON(Common::ConfigManager);
 
@@ -120,7 +121,7 @@ void ConfigManager::addDomain(const Common::String &domainName, const ConfigMana
 	if (domainName == kApplicationDomain) {
 		_appDomain = domain;
 #ifdef ENABLE_KEYMAPPER
-	} else if (domain == kKeymapperDomain) {
+	} else if (domainName == kKeymapperDomain) {
 		_keymapperDomain = domain;
 #endif
 	} else if (domain.contains("gameid")) {

@@ -175,7 +175,7 @@ reg_t kReadNumber(EngineState *s, int argc, reg_t *argv) {
 #define ALIGN_NONE 0
 #define ALIGN_RIGHT 1
 #define ALIGN_LEFT -1
-#define ALIGN_CENTRE 2
+#define ALIGN_CENTER 2
 
 /*  Format(targ_address, textresnr, index_inside_res, ...)
 ** or
@@ -190,7 +190,6 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 	char targetbuf[4096];
 	char *target = targetbuf;
 	reg_t position = argv[1]; /* source */
-	int index = argv[2].toUint16();
 	int mode = 0;
 	int paramindex = 0; /* Next parameter to evaluate */
 	char xfer;
@@ -201,9 +200,16 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 
 	if (position.segment)
 		startarg = 2;
-	else
-		startarg = 3; /* First parameter to use for formatting */
+	else {
+		// WORKAROUND: QFG1 VGA Mac calls this without the first parameter (dest). It then
+		// treats the source as the dest and overwrites the source string with an empty string.
+		if (argc < 3)
+			return NULL_REG;
 
+		startarg = 3; /* First parameter to use for formatting */
+	}
+
+	int index = (startarg == 3) ? argv[2].toUint16() : 0;
 	Common::String source_str = g_sci->getKernel()->lookupText(position, index);
 	const char* source = source_str.c_str();
 
@@ -240,7 +246,7 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 				if (xfer == '0')
 					fillchar = '0';
 				else if (xfer == '=')
-					align = ALIGN_CENTRE;
+					align = ALIGN_CENTER;
 				else if (isdigit(xfer) || (xfer == '-'))
 					source--; // Go to start of length argument
 
@@ -252,7 +258,7 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 				if (str_leng < 0) {
 					align = ALIGN_LEFT;
 					str_leng = -str_leng;
-				} else if (align != ALIGN_CENTRE)
+				} else if (align != ALIGN_CENTER)
 					align = ALIGN_RIGHT;
 
 				xfer = *source++;
@@ -292,7 +298,7 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 						*target++ = ' '; /* Format into the text */
 					break;
 
-				case ALIGN_CENTRE: {
+				case ALIGN_CENTER: {
 					int half_extralen = extralen >> 1;
 					while (half_extralen-- > 0)
 						*target++ = ' '; /* Format into the text */
@@ -309,7 +315,7 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 
 				switch (align) {
 
-				case ALIGN_CENTRE: {
+				case ALIGN_CENTER: {
 					int half_extralen;
 					align = 0;
 					half_extralen = extralen - (extralen >> 1);

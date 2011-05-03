@@ -63,7 +63,7 @@ void SegManager::resetSegMan() {
 	// Free memory
 	for (uint i = 0; i < _heap.size(); i++) {
 		if (_heap[i])
-			deallocate(i, false);
+			deallocate(i);
 	}
 
 	_heap.clear();
@@ -151,16 +151,17 @@ Script *SegManager::allocateScript(int script_nr, SegmentId *segid) {
 	return (Script *)mem;
 }
 
-void SegManager::deallocate(SegmentId seg, bool recursive) {
-	VERIFY(check(seg), "invalid seg id");
+void SegManager::deallocate(SegmentId seg) {
+	if (!check(seg))
+		error("SegManager::deallocate(): invalid segment ID");
 
 	SegmentObj *mobj = _heap[seg];
 
 	if (mobj->getType() == SEG_TYPE_SCRIPT) {
 		Script *scr = (Script *)mobj;
 		_scriptSegMap.erase(scr->getScriptNumber());
-		if (recursive && scr->_localsSegment)
-			deallocate(scr->_localsSegment, recursive);
+		if (scr->_localsSegment)
+			deallocate(scr->_localsSegment);
 	}
 
 	delete mobj;
@@ -176,8 +177,7 @@ bool SegManager::isHeapObject(reg_t pos) const {
 }
 
 void SegManager::deallocateScript(int script_nr) {
-	SegmentId seg = getScriptSegment(script_nr);
-	deallocate(seg, true);
+	deallocate(getScriptSegment(script_nr));
 }
 
 Script *SegManager::getScript(const SegmentId seg) {
@@ -360,9 +360,8 @@ LocalVariables *SegManager::allocLocalsSegment(Script *scr) {
 
 		if (scr->_localsSegment) {
 			locals = (LocalVariables *)_heap[scr->_localsSegment];
-			VERIFY(locals != NULL, "Re-used locals segment was NULL'd out");
-			VERIFY(locals->getType() == SEG_TYPE_LOCALS, "Re-used locals segment did not consist of local variables");
-			VERIFY(locals->script_id == scr->getScriptNumber(), "Re-used locals segment belonged to other script");
+			if (!locals || locals->getType() != SEG_TYPE_LOCALS || locals->script_id != scr->getScriptNumber())
+				error("Invalid script locals segment while allocating locals");
 		} else
 			locals = (LocalVariables *)allocSegment(new LocalVariables(), &scr->_localsSegment);
 
@@ -864,7 +863,7 @@ bool SegManager::freeDynmem(reg_t addr) {
 	if (addr.segment < 1 || addr.segment >= _heap.size() || !_heap[addr.segment] || _heap[addr.segment]->getType() != SEG_TYPE_DYNMEM)
 		return false; // error
 
-	deallocate(addr.segment, true);
+	deallocate(addr.segment);
 
 	return true; // OK
 }
@@ -1022,7 +1021,7 @@ void SegManager::uninstantiateScript(int script_nr) {
 	SegmentId segmentId = getScriptSegment(script_nr);
 	Script *scr = getScriptIfLoaded(segmentId);
 
-	if (!scr) {   // Is it already unloaded?
+	if (!scr || scr->isMarkedAsDeleted()) {   // Is it already unloaded?
 		//warning("unloading script 0x%x requested although not loaded", script_nr);
 		// This is perfectly valid SCI behaviour
 		return;
@@ -1079,15 +1078,7 @@ void SegManager::uninstantiateScriptSci0(int script_nr) {
 					if (scr->getLockers())
 						scr->decrementLockers();  // Decrease lockers if this is us ourselves
 				} else {
-					if (g_sci->getGameId() == GID_HOYLE3 && (superclass_script == 0 || superclass_script >= 990)) {
-						// HACK for Hoyle 3: when exiting Checkers or Pachisi, scripts 0, 999 and some others
-						// are deleted but are never instantiated again. We ignore deletion of these scripts
-						// here for Hoyle 3 - bug #3038837
-						// TODO/FIXME: find out why this happens, seems like there is a problem with the object
-						// lock code
-					} else {
-						uninstantiateScript(superclass_script);
-					}
+					uninstantiateScript(superclass_script);
 				}
 				// Recurse to assure that the superclass lockers number gets decreased
 			}

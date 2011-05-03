@@ -28,9 +28,9 @@
 #include "common/config-manager.h"
 #include "common/file.h"
 #include "common/memstream.h"
+#include "common/system.h"
 
 #include "audio/fmopl.h"
-#include "audio/softsynth/emumidi.h"
 
 #include "sci/resource.h"
 #include "sci/engine/features.h"
@@ -104,7 +104,7 @@ private:
 		uint8 volume;
 
 		Channel() : mappedPatch(MIDI_UNMAPPED), patch(MIDI_UNMAPPED), velocityMapIdx(0), playing(false),
-			keyShift(0), volAdjust(0), pan(0x80), hold(0), volume(0x7f) { }
+			keyShift(0), volAdjust(0), pan(0x40), hold(0), volume(0x7f) { }
 	};
 
 	bool _isMt32;
@@ -132,7 +132,7 @@ private:
 
 MidiPlayer_Midi::MidiPlayer_Midi(SciVersion version) : MidiPlayer(version), _playSwitch(true), _masterVolume(15), _isMt32(false), _hasReverb(false), _useMT32Track(true) {
 	MidiDriver::DeviceHandle dev = MidiDriver::detectDevice(MDT_MIDI);
-	_driver = createMidi(dev);
+	_driver = MidiDriver::createMidi(dev);
 
 	if (MidiDriver::getMusicType(dev) == MT_MT32 || ConfMan.getBool("native_mt32"))
 		_isMt32 = true;
@@ -393,7 +393,7 @@ int MidiPlayer_Midi::getVolume() {
 
 void MidiPlayer_Midi::setReverb(int8 reverb) {
 	assert(reverb < kReverbConfigNr);
-	
+
 	if (_hasReverb && (_reverb != reverb))
 		sendMt32SysEx(0x100001, _reverbConfig[reverb], 3, true);
 
@@ -611,7 +611,7 @@ void MidiPlayer_Midi::readMt32DrvData() {
 		int size = f.size();
 
 		// Skip before-SysEx text
-		if (size == 1773 || size == 1759)	// XMAS88 / KQ4 early
+		if (size == 1773 || size == 1759 || size == 1747)	// XMAS88 / KQ4 early (0.000.253 / 0.000.274)
 			f.seek(0x59);
 		else if (size == 2771)				// LSL2 early
 			f.seek(0x29);
@@ -745,7 +745,7 @@ uint8 MidiPlayer_Midi::getGmInstrument(const Mt32ToGmMap &Mt32Ins) {
 void MidiPlayer_Midi::mapMt32ToGm(byte *data, size_t size) {
 	// FIXME: Clean this up
 	int memtimbres, patches;
-	uint8 group, number, keyshift, finetune, bender_range;
+	uint8 group, number, keyshift, /*finetune,*/ bender_range;
 	uint8 *patchpointer;
 	uint32 pos;
 	int i;
@@ -784,7 +784,7 @@ void MidiPlayer_Midi::mapMt32ToGm(byte *data, size_t size) {
 		group = *patchpointer;
 		number = *(patchpointer + 1);
 		keyshift = *(patchpointer + 2);
-		finetune = *(patchpointer + 3);
+		//finetune = *(patchpointer + 3);
 		bender_range = *(patchpointer + 4);
 
 		debugCN(kDebugLevelSound, "  [%03d] ", i);

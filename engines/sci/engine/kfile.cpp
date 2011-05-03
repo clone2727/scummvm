@@ -28,6 +28,7 @@
 #include "common/file.h"
 #include "common/str.h"
 #include "common/savefile.h"
+#include "common/system.h"
 #include "common/translation.h"
 
 #include "gui/saveload.h"
@@ -1163,9 +1164,7 @@ reg_t kSave(EngineState *s, int argc, reg_t *argv) {
 	case 2:
 		return kGetSaveDir(s, argc - 1, argv + 1);
 	case 5:
-		// TODO
-		// 3 parameters: game ID, a string and an array
-		return s->r_acc;
+		return kGetSaveFiles(s, argc - 1, argv + 1);
 	case 8:
 		// TODO
 		// This is a timer callback, with 1 parameter: the timer object

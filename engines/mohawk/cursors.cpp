@@ -23,11 +23,9 @@
  *
  */
 
-#include "mohawk/bitmap.h"
 #include "mohawk/cursors.h"
+#include "mohawk/mohawk.h"
 #include "mohawk/resource.h"
-#include "mohawk/graphics.h"
-#include "mohawk/myst.h"
 
 #include "common/macresman.h"
 #include "common/system.h"
@@ -35,6 +33,11 @@
 #include "common/winexe_pe.h"
 #include "graphics/cursorman.h"
 #include "graphics/wincursor.h"
+
+#ifdef ENABLE_MYST
+#include "mohawk/bitmap.h"
+#include "mohawk/myst.h"
+#endif
 
 namespace Mohawk {
 
@@ -115,6 +118,8 @@ void DefaultCursorManager::setCursor(uint16 id) {
 	setMacXorCursor(_vm->getResource(_tag, id));
 }
 
+#ifdef ENABLE_MYST
+
 MystCursorManager::MystCursorManager(MohawkEngine_Myst *vm) : _vm(vm) {
 	_bmpDecoder = new MystBitmap();
 }
@@ -143,7 +148,7 @@ void MystCursorManager::setCursor(uint16 id) {
 	delete clrcStream;
 
 	// Myst ME stores some cursors as 24bpp images instead of 8bpp
-	if (surface->bytesPerPixel == 1) {
+	if (surface->format.bytesPerPixel == 1) {
 		CursorMan.replaceCursor((byte *)surface->pixels, surface->w, surface->h, hotspotX, hotspotY, 0);
 		CursorMan.replaceCursorPalette(mhkSurface->getPalette(), 0, 256);
 	} else {
@@ -158,6 +163,8 @@ void MystCursorManager::setCursor(uint16 id) {
 void MystCursorManager::setDefaultCursor() {
 	setCursor(kDefaultMystCursor);
 }
+
+#endif
 
 NECursorManager::NECursorManager(const Common::String &appName) {
 	_exe = new Common::NEResources();
@@ -214,7 +221,7 @@ void MacCursorManager::setCursor(uint16 id) {
 	}
 
 	// Try a color cursor first
-	Common::SeekableReadStream *stream = _resFork->getResource(MKID_BE('crsr'), id);
+	Common::SeekableReadStream *stream = _resFork->getResource(MKTAG('c','r','s','r'), id);
 
 	if (stream) {
 		byte *cursor, *palette;
@@ -232,7 +239,7 @@ void MacCursorManager::setCursor(uint16 id) {
 	}
 
 	// Fall back to b&w cursors
-	stream = _resFork->getResource(MKID_BE('CURS'), id);
+	stream = _resFork->getResource(MKTAG('C','U','R','S'), id);
 
 	if (stream) {
 		setMacXorCursor(stream);

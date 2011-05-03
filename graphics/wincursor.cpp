@@ -23,12 +23,9 @@
  *
  */
 
-#include "common/debug.h"
-#include "common/file.h"
-#include "common/memstream.h"
 #include "common/ptr.h"
-#include "common/str.h"
 #include "common/stream.h"
+#include "common/textconsole.h"
 #include "common/winexe_ne.h"
 #include "common/winexe_pe.h"
 
@@ -138,7 +135,7 @@ bool WinCursor::readFromStream(Common::SeekableReadStream &stream) {
 
 		if (bitsPerPixel == 1) {
 			// 1bpp
-			for (uint32 j = 0; j < (_width / 8); j++) {
+			for (uint16 j = 0; j < (_width / 8); j++) {
 				byte p = src[j];
 
 				for (int k = 0; k < 8; k++, rowDest++, p <<= 1) {

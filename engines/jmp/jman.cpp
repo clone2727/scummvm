@@ -22,8 +22,10 @@
 
 #include "jmp/jman.h"
 
+#include "common/error.h"
 #include "common/events.h"
 #include "common/rect.h"
+#include "common/textconsole.h"
 
 namespace JMP {
 

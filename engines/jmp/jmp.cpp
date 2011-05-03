@@ -21,7 +21,9 @@
  */
 
 #include "common/config-manager.h"
+#include "common/events.h"
 #include "common/file.h"
+#include "common/textconsole.h"
 
 #include "base/plugins.h"
 #include "base/version.h"
@@ -78,9 +80,9 @@ void JMPEngine::playVideo(Video::VideoDecoder *video, uint16 x, uint16 y) {
 			Graphics::Surface *convertedFrame = 0;
 
 			if (frame) {
-				if (frame->bytesPerPixel == 1) {
+				if (frame->format.bytesPerPixel == 1) {
 					convertedFrame = new Graphics::Surface();
-					convertedFrame->create(frame->w, frame->h, _system->getScreenFormat().bytesPerPixel);
+					convertedFrame->create(frame->w, frame->h, _system->getScreenFormat());
 					const byte *palette = video->getPalette();
 					assert(palette);
 
@@ -148,17 +150,7 @@ void JMPEngine::loadMandatoryEXE(Common::String filename) {
 	error("Could not open exe '%s'", filename.c_str());
 }
 
-Common::Array<Common::NECursorGroup> JMPEngine::getCursorGroups() {
-	for (uint32 i = 0; i < _exeFiles.size(); i++) {
-		Common::Array<Common::NECursorGroup> group = _exeFiles[i]->getCursors();
-		if (!group.empty())
-			return group;
-	}
-
-	return Common::Array<Common::NECursorGroup>();
-}
-
-Common::SeekableReadStream *JMPEngine::getEXEResource(uint16 type, Common::NEResourceID id) {
+Common::SeekableReadStream *JMPEngine::getEXEResource(uint16 type, Common::WinResourceID id) {
 	for (uint32 i = 0; i < _exeFiles.size(); i++) {
 		Common::SeekableReadStream *stream = _exeFiles[i]->getResource(type, id);
 

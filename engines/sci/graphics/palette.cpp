@@ -28,6 +28,8 @@
 #include "common/util.h"
 #include "common/system.h"
 
+#include "graphics/palette.h"
+
 #include "sci/sci.h"
 #include "sci/engine/state.h"
 #include "sci/graphics/cache.h"
@@ -903,7 +905,7 @@ void GfxPalette::loadMacIconBarPalette() {
 	if (!g_sci->hasMacIconBar())
 		return;
 
-	Common::SeekableReadStream *clutStream = g_sci->getMacExecutable()->getResource(MKID_BE('clut'), 150);
+	Common::SeekableReadStream *clutStream = g_sci->getMacExecutable()->getResource(MKTAG('c','l','u','t'), 150);
 
 	if (!clutStream)
 		error("Could not find clut 150 for the Mac icon bar");

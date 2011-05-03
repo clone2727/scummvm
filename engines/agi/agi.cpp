@@ -32,6 +32,7 @@
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
 #include "common/random.h"
+#include "common/textconsole.h"
 
 #include "engines/util.h"
 
@@ -354,12 +355,12 @@ int AgiEngine::agiInit() {
 
 	switch (getVersion() >> 12) {
 	case 2:
-		debug("Emulating Sierra AGI v%x.%03x\n",
+		debug("Emulating Sierra AGI v%x.%03x",
 				(int)(getVersion() >> 12) & 0xF,
 				(int)(getVersion()) & 0xFFF);
 		break;
 	case 3:
-		debug("Emulating Sierra AGI v%x.002.%03x\n",
+		debug("Emulating Sierra AGI v%x.002.%03x",
 				(int)(getVersion() >> 12) & 0xF,
 				(int)(getVersion()) & 0xFFF);
 		break;

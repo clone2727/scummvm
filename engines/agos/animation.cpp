@@ -31,8 +31,10 @@
 #include "common/events.h"
 #include "common/file.h"
 #include "common/system.h"
+#include "common/textconsole.h"
 
 #include "graphics/cursorman.h"
+#include "graphics/palette.h"
 #include "graphics/surface.h"
 
 #include "agos/animation.h"
@@ -301,7 +303,7 @@ void MoviePlayerDXA::stopVideo() {
 void MoviePlayerDXA::startSound() {
 	uint32 offset, size;
 
-	if (getSoundTag() == MKID_BE('WAVE')) {
+	if (getSoundTag() == MKTAG('W','A','V','E')) {
 		size = _fileStream->readUint32BE();
 
 		if (_sequenceNum) {

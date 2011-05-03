@@ -25,6 +25,7 @@
 #include "engines/advancedDetector.h"
 #include "common/config-manager.h"
 #include "common/file.h"
+#include "common/textconsole.h"
 
 #include "jmp/jmp.h"
 #include "jmp/jman.h"

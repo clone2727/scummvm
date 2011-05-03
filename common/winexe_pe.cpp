@@ -23,9 +23,10 @@
  *
  */
 
+#include "common/array.h"
 #include "common/debug.h"
+#include "common/endian.h"
 #include "common/file.h"
-#include "common/memstream.h"
 #include "common/str.h"
 #include "common/stream.h"
 #include "common/winexe_pe.h"
@@ -78,7 +79,7 @@ bool PEResources::loadFromEXE(SeekableReadStream *stream) {
 
 	stream->seek(peOffset);
 
-	if (stream->readUint32BE() != MKID_BE('PE\0\0'))
+	if (stream->readUint32BE() != MKTAG('P','E',0,0))
 		return false;
 
 	stream->skip(2);
@@ -123,7 +124,7 @@ void PEResources::parseResourceLevel(Section &section, uint32 offset, int level)
 	uint16 namedEntryCount = _exe->readUint16LE();
 	uint16 intEntryCount = _exe->readUint16LE();
 
-	for (uint32 i = 0; i < namedEntryCount + intEntryCount; i++) {
+	for (uint32 i = 0; i < (uint32)(namedEntryCount + intEntryCount); i++) {
 		uint32 value = _exe->readUint32LE();
 
 		WinResourceID id;

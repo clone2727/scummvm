@@ -28,7 +28,7 @@
 #include "common/util.h"
 #include "common/system.h"
 #include "common/rect.h"
-#include "common/ne_exe.h"
+#include "common/winexe_ne.h"
 
 #include "engines/engine.h"
 
@@ -81,8 +81,9 @@ public:
 	GraphicsManager *_gfx;
 	Sound *_sound;
 
-	Common::SeekableReadStream *getEXEResource(uint16 type, Common::NEResourceID id);
-	Common::Array<Common::NECursorGroup> getCursorGroups();
+	Common::SeekableReadStream *getEXEResource(uint16 type, Common::WinResourceID id);
+
+	Common::Array<Common::NEResources*> _exeFiles;
 
 protected:
 	void playVideo(Common::String filename, uint16 x = 0, uint16 y = 0);
@@ -92,8 +93,6 @@ protected:
 
 private:
 	void playVideo(Video::VideoDecoder *video, uint16 x, uint16 y);
-
-	Common::Array<Common::NEResources*> _exeFiles;
 };
 
 } // End of namespace JMP

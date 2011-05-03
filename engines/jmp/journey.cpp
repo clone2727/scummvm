@@ -19,7 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
- 
+
+#include "common/error.h"
 #include "common/events.h"
 #include "common/rect.h"
 

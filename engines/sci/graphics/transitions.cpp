@@ -24,9 +24,8 @@
  */
 
 #include "common/events.h"
-#include "common/util.h"
-#include "common/stack.h"
 #include "common/system.h"
+#include "graphics/palette.h"
 #include "graphics/surface.h"
 
 #include "sci/sci.h"
@@ -463,7 +462,6 @@ void GfxTransitions::scrollCopyOldToScreen(Common::Rect screenRect, int16 x, int
 // Scroll old screen (up/down/left/right) and insert new screen that way - works
 // on _picRect area only.
 void GfxTransitions::scroll(int16 number) {
-	int16 screenWidth, screenHeight;
 	int16 stepNr = 0;
 	Common::Rect oldMoveRect = _picRect;
 	Common::Rect oldScreenRect = _picRect;
@@ -472,7 +470,6 @@ void GfxTransitions::scroll(int16 number) {
 	uint32 msecCount = 0;
 
 	_screen->copyFromScreen(_oldScreen);
-	screenWidth = _screen->getDisplayWidth(); screenHeight = _screen->getDisplayHeight();
 
 	switch (number) {
 	case SCI_TRANSITIONS_SCROLL_LEFT:
@@ -516,7 +513,7 @@ void GfxTransitions::scroll(int16 number) {
 		newScreenRect.bottom = newScreenRect.top;
 		newMoveRect.top = newMoveRect.bottom;
 		while (oldMoveRect.top < oldMoveRect.bottom) {
-			oldMoveRect.top++; oldScreenRect.top++; 
+			oldMoveRect.top++; oldScreenRect.top++;
 			newScreenRect.bottom++;	newMoveRect.top--;
 
 			msecCount += 5;

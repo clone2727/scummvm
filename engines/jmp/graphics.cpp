@@ -27,10 +27,12 @@
 #include "common/file.h"
 #include "common/str-array.h"
 #include "common/stream.h"
+#include "common/textconsole.h"
 #include "engines/util.h"
 #include "graphics/cursorman.h"
 #include "graphics/fontman.h"
 #include "graphics/imagedec.h"
+#include "graphics/wincursor.h"
 #include "video/codecs/cinepak.h"
 
 namespace JMP {
@@ -91,14 +93,17 @@ void GraphicsManager::setCursor(uint16 id) {
 		return;
 	}
 
-	Common::Array<Common::NECursorGroup> cursors = _vm->getCursorGroups();
+	Graphics::WinCursorGroup *cursorGroup = 0;
 
-	for (uint32 i = 0; i < cursors.size(); i++)
-		if (cursors[i].id == id) {
-			CursorMan.replaceCursor(cursors[i].cursors[0]->getSurface(), cursors[i].cursors[0]->getWidth(), cursors[i].cursors[0]->getHeight(), cursors[i].cursors[0]->getHotspotX(), cursors[i].cursors[0]->getHotspotY(), 0);
-			CursorMan.replaceCursorPalette(cursors[i].cursors[0]->getPalette(), 0, 255);
-			break;
-		}
+	for (uint32 i = 0; i < _vm->_exeFiles.size() && !cursorGroup; i++)
+		cursorGroup = Graphics::WinCursorGroup::createCursorGroup(*_vm->_exeFiles[i], id);
+
+	if (cursorGroup) {
+		Graphics::WinCursor *cursor = cursorGroup->cursors[0].cursor;
+		CursorMan.replaceCursor(cursor->getSurface(), cursor->getWidth(), cursor->getHeight(), cursor->getHotspotX(), cursor->getHotspotY(), cursor->getKeyColor());
+		CursorMan.replaceCursorPalette(cursor->getPalette(), 0, 256);
+		delete cursorGroup;
+	}
 }
 	
 void GraphicsManager::drawString(Common::String string, Common::Rect rect, byte color) {
@@ -154,7 +159,7 @@ Graphics::Surface GraphicsManager::decodeBitmap(Common::String filename) {
 	return decodeBitmapNoHeader(file, header.imageOffset);
 }
 
-#define BITMAP_CINEPAK_TAG MKID_BE('divc')
+#define BITMAP_CINEPAK_TAG MKTAG('d', 'i', 'v', 'c')
 
 Graphics::Surface GraphicsManager::decodeBitmapNoHeader(Common::SeekableReadStream *stream, uint32 imageOffset) {
 	assert(stream);
@@ -191,7 +196,7 @@ Graphics::Surface GraphicsManager::decodeBitmapNoHeader(Common::SeekableReadStre
 		assert(info.bitsPerPixel == 24);
 	
 	Graphics::Surface surface;
-	surface.create(info.width, info.height, _pixelFormat.bytesPerPixel);
+	surface.create(info.width, info.height, _pixelFormat);
 
 	if (imageOffset != 0)
 		stream->seek(imageOffset);

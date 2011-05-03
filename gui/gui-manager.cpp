@@ -27,7 +27,8 @@
 #include "common/util.h"
 #include "common/config-manager.h"
 #include "common/algorithm.h"
-#include "common/timer.h"
+#include "common/rect.h"
+#include "common/textconsole.h"
 #include "common/translation.h"
 
 #include "backends/keymapper/keymapper.h"
@@ -37,6 +38,7 @@
 #include "gui/ThemeEngine.h"
 #include "gui/ThemeEval.h"
 #include "gui/Tooltip.h"
+#include "gui/widget.h"
 
 #include "graphics/cursorman.h"
 
@@ -294,7 +296,6 @@ void GuiManager::runLoop() {
 		Common::Event event;
 
 		while (eventMan->pollEvent(event)) {
-
 			// The top dialog can change during the event loop. In that case, flush all the
 			// dialog-related events since they were probably generated while the old dialog
 			// was still visible, and therefore not intended for the new one.
@@ -305,12 +306,6 @@ void GuiManager::runLoop() {
 				continue;
 
 			Common::Point mouse(event.mouse.x - activeDialog->_x, event.mouse.y - activeDialog->_y);
-
-			if (lastRedraw + waitTime < _system->getMillis()) {
-				_theme->updateScreen();
-				_system->updateScreen();
-				lastRedraw = _system->getMillis();
-			}
 
 			switch (event.type) {
 			case Common::EVENT_KEYDOWN:
@@ -365,6 +360,12 @@ void GuiManager::runLoop() {
 				break;
 			default:
 				break;
+			}
+
+			if (lastRedraw + waitTime < _system->getMillis()) {
+				_theme->updateScreen();
+				_system->updateScreen();
+				lastRedraw = _system->getMillis();
 			}
 		}
 

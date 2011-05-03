@@ -23,32 +23,20 @@
  *
  */
 
+#include "common/debug.h"
+
 #include "toon/audio.h"
 #include "common/memstream.h"
 #include "common/substream.h"
+#include "audio/decoders/adpcm_intern.h"
 
 namespace Toon {
-
-static int ADPCM_index[8] = {
-	-1, -1, -1, -1, 2 , 4 , 6 , 8
-};
-static int ADPCM_table[89] = {
-	7,     8,     9,     10,    11,    12,    13,    14,    16,    17,
-	19,    21,    23,    25,    28,    31,    34,    37,    41,    45,
-	50,    55,    60,    66,    73,    80,    88,    97,    107,   118,
-	130,   143,   157,   173,   190,   209,   230,   253,   279,   307,
-	337,   371,   408,   449,   494,   544,   598,   658,   724,   796,
-	876,   963,   1060,  1166,  1282,  1411,  1552,  1707,  1878,  2066,
-	2272,  2499,  2749,  3024,  3327,  3660,  4026,  4428,  4871,  5358,
-	5894,  6484,  7132,  7845,  8630,  9493,  10442, 11487, 12635, 13899,
-	15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-};
 
 AudioManager::AudioManager(ToonEngine *vm, Audio::Mixer *mixer) : _vm(vm), _mixer(mixer) {
 	for (int32 i = 0; i < 16; i++)
 		_channels[i] = NULL;
 
-	for (int32 i = 0; i < 4; i++) 
+	for (int32 i = 0; i < 4; i++)
 		_audioPacks[i] = NULL;
 
 	for (int32 i = 0; i < 4; i++) {
@@ -209,7 +197,6 @@ void AudioManager::stopCurrentVoice() {
 		_channels[2]->stop(false);
 }
 
-
 void AudioManager::closeAudioPack(int32 id) {
 	delete _audioPacks[id];
 	_audioPacks[id] = NULL;
@@ -288,7 +275,7 @@ AudioStreamInstance::~AudioStreamInstance() {
 int AudioStreamInstance::readBuffer(int16 *buffer, const int numSamples) {
 	debugC(5, kDebugAudio, "readBuffer(buffer, %d)", numSamples);
 
-	if(_stopped) 
+	if(_stopped)
 		return 0;
 
 	handleFade(numSamples);
@@ -373,7 +360,7 @@ void AudioStreamInstance::decodeADPCM(uint8 *comp, int16 *dest, int32 packetSize
 
 		int32 v31 = v30 & 0x8;
 		int32 v32 = v30 & 0x7;
-		int32 v33 = ADPCM_table[v19];
+		int32 v33 = Audio::Ima_ADPCMStream::_imaTable[v19];
 		int32 v34 = v33 >> 3;
 		if (v32 & 4)
 			v34 += v33;
@@ -384,12 +371,8 @@ void AudioStreamInstance::decodeADPCM(uint8 *comp, int16 *dest, int32 packetSize
 		if (v32 & 1)
 			v34 += v33 >> 2;
 
-		v19 += ADPCM_index[v32];
-		if (v19 < 0)
-			v19 = 0;
-
-		if (v19 > 88)
-			v19 = 88;
+		v19 += Audio::ADPCMStream::_stepAdjustTable[v32];
+		v19 = CLIP<int32>(v19, 0, ARRAYSIZE(Audio::Ima_ADPCMStream::_imaTable) - 1);
 
 		if (v31)
 			v18 -= v34;
@@ -427,7 +410,7 @@ void AudioStreamInstance::handleFade(int32 numSamples) {
 	debugC(5, kDebugAudio, "handleFade(%d)", numSamples);
 
 	// Fading enabled only for music
-	if (_soundType != Audio::Mixer::kMusicSoundType) 
+	if (_soundType != Audio::Mixer::kMusicSoundType)
 		return;
 
 	int32 finalVolume = _volume;
@@ -461,7 +444,7 @@ void AudioStreamInstance::handleFade(int32 numSamples) {
 			_musicAttenuation = 250;
 	} else {
 		_musicAttenuation += numSamples >> 5;
-		if (_musicAttenuation > 1000) 
+		if (_musicAttenuation > 1000)
 			_musicAttenuation = 1000;
 	}
 
@@ -557,7 +540,7 @@ void AudioManager::startAmbientSFX(int32 id, int32 delay, int32 mode, int32 volu
 		}
 	}
 
-	if (found < 0) 
+	if (found < 0)
 		return;
 
 	_ambientSFXs[found]._lastTimer = _vm->getOldMilli() - 1;
@@ -616,13 +599,14 @@ void AudioManager::killAllAmbientSFX()
 
 void AudioManager::updateAmbientSFX()
 {
-	if (_vm->getMoviePlayer()->isPlaying()) return;
+	if (_vm->getMoviePlayer()->isPlaying())
+		return;
 
 	for (int32 i = 0; i < 4; i++) {
 		AudioAmbientSFX* ambient = &_ambientSFXs[i];
 		if (ambient->_enabled && (ambient->_channel < 0 || !(_channels[ambient->_channel] && _channels[ambient->_channel]->isPlaying()))) {
 			if(ambient->_mode == 1) {
-				if (_vm->randRange(0, 32767) < ambient->_delay) {					
+				if (_vm->randRange(0, 32767) < ambient->_delay) {
 					ambient->_channel = playSFX(ambient->_id, ambient->_volume, false);
 				}
 			} else {
@@ -634,7 +618,6 @@ void AudioManager::updateAmbientSFX()
 		}
 	}
 }
-
 
 } // End of namespace Toon
 

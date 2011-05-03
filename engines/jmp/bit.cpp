@@ -24,11 +24,13 @@
 
 #include "common/archive.h"
 #include "common/config-manager.h"
+#include "common/error.h"
 #include "common/events.h"
 #include "common/file.h"
 #include "common/fs.h"
 #include "common/rect.h"
 #include "common/str.h"
+#include "common/textconsole.h"
 #include "graphics/cursorman.h"
 
 namespace JMP {
