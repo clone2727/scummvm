@@ -42,13 +42,16 @@
 
 #include "made/made.h"
 #include "made/database.h"
-#include "made/pmv_decoder.h"
 #include "made/resource.h"
 #include "made/screen.h"
 #include "made/script.h"
 #include "made/sound.h"
 #include "made/music.h"
 #include "made/redreader.h"
+
+// Video formats
+#include "made/pmv_decoder.h"
+#include "video/segafilm_decoder.h"
 
 namespace Made {
 
@@ -286,9 +289,13 @@ void MadeEngine::handleEvents() {
 }
 
 Common::Error MadeEngine::run() {
-
 	// Initialize backend
-	initGraphics(320, 200, false);
+	if (getPlatform() == Common::kPlatformPSX || getPlatform() == Common::kPlatformSaturn)
+		initGraphics(320, 240, false, 0); // true color
+	else if (getPlatform() == Common::kPlatformMacintosh)
+		initGraphics(640, 480, true);
+	else
+		initGraphics(320, 200, false);
 
 	resetAllTimers();
 
@@ -348,10 +355,16 @@ Common::Error MadeEngine::run() {
 bool MadeEngine::playMovie(const Common::String &fileName) {
 	Video::VideoDecoder *decoder = 0;
 
-	// DOS, Mac, PC-98, FM Towns use PMV/MMV
-	decoder = new PMVDecoder();
-
-	// TODO: PSX, Saturn, MPEG-2 DOS, MPEG-2 Mac
+	if (getPlatform() == Common::kPlatformSaturn) {
+		// Saturn version uses Sega FILM
+		decoder = new Video::SegaFILMDecoder();
+	} else if (getPlatform() == Common::kPlatformPSX) {
+		// TODO: PlayStation streams
+	} else {
+		// DOS, Mac, PC-98, FM Towns use PMV/MMV
+		// TODO: MPEG-2 DOS and MPEG-2 Mac
+		decoder = new PMVDecoder();
+	}
 
 	if (!decoder)
 		return false;
