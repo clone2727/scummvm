@@ -166,14 +166,29 @@ void ScriptFunctions::setupExternalsTable() {
 		External(sfReadMenu);
 		External(sfDrawMenu);
 		External(sfGetMenuCount);
-		External(sfSaveGame);
-		External(sfLoadGame);
-		External(sfGetGameDescription);
+
+		if (_vm->getPlatform() == Common::kPlatformPSX) {
+			// The PlayStation version subs in these two functions
+			External(sfFaceIcon);
+			External(sfLaunchedGame);
+		} else {
+			External(sfSaveGame);
+			External(sfLoadGame);
+			External(sfGetGameDescription);
+		}
+
 		External(sfShakeScreen);
 		External(sfPlaceMenu);
 		External(sfSetSoundVolume);
 		External(sfGetSynthType);
 		External(sfIsSlowSystem);
+
+		if (_vm->getPlatform() == Common::kPlatformPSX) {
+			// The PlayStation version adds in these three functions
+			External(sfMovieCall);
+			External(sfCursorXY);
+			External(sfSoundFile);
+		}
 	}
 
 }
@@ -1041,6 +1056,31 @@ int16 ScriptFunctions::sfIsSlowSystem(int16 argc, int16 *argv) {
 	// There are 2 versions of each video: one with sound, and one without
 	// An example is FINTRO00.PMV (with sound) and FINTRO01.PMV (without sound)
 	// One could maybe think about returning 1 here on actually slower systems.
+	return 0;
+}
+
+int16 ScriptFunctions::sfFaceIcon(int16 argc, int16 *argv) {
+	// TODO: Used in RTZ PSX
+	return 0;
+}
+
+int16 ScriptFunctions::sfLaunchedGame(int16 argc, int16 *argv) {
+	// TODO: Used in RTZ PSX
+	return 0;
+}
+
+int16 ScriptFunctions::sfMovieCall(int16 argc, int16 *argv) {
+	// Found in RTZ PSX, but never called
+	return 0;
+}
+
+int16 ScriptFunctions::sfCursorXY(int16 argc, int16 *argv) {
+	// TODO: Used in RTZ PSX
+	return 0;
+}
+
+int16 ScriptFunctions::sfSoundFile(int16 argc, int16 *argv) {
+	// Found in RTZ PSX, but never called
 	return 0;
 }
 
