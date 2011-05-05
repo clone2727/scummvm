@@ -382,6 +382,23 @@ static const MadeGameDescription gameDescriptions[] = {
 	},
 
 	{
+		// Return to Zork - Japanese PlayStation
+		{
+			"rtz",
+			"",
+			AD_ENTRY1("psj_rtz.dat", "e1c738ecc5216b9fd63629861a35efc3"),
+			Common::JA_JPN,
+			Common::kPlatformPSX,
+			ADGF_NO_FLAGS,
+			GUIO_NONE
+		},
+		GID_RTZ,
+		0,
+		GF_CD,
+		3,
+	},
+
+	{
 		// The Manhole: New and Enhanced
 		{
 			"manhole",
