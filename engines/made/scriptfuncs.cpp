@@ -167,10 +167,11 @@ void ScriptFunctions::setupExternalsTable() {
 		External(sfDrawMenu);
 		External(sfGetMenuCount);
 
-		if (_vm->getPlatform() == Common::kPlatformPSX) {
-			// The PlayStation version subs in these two functions
+		if (_vm->getPlatform() == Common::kPlatformPSX || _vm->getPlatform() == Common::kPlatformSaturn) {
+			// Replacement PlayStation/Saturn functions
 			External(sfFaceIcon);
-			External(sfLaunchedGame);
+			if (_vm->getPlatform() == Common::kPlatformPSX)
+				External(sfLaunchedGame);
 		} else {
 			External(sfSaveGame);
 			External(sfLoadGame);
@@ -183,8 +184,8 @@ void ScriptFunctions::setupExternalsTable() {
 		External(sfGetSynthType);
 		External(sfIsSlowSystem);
 
-		if (_vm->getPlatform() == Common::kPlatformPSX) {
-			// The PlayStation version adds in these three functions
+		if (_vm->getPlatform() == Common::kPlatformPSX || _vm->getPlatform() == Common::kPlatformSaturn) {
+			// Replacement PlayStation/Saturn functions
 			External(sfMovieCall);
 			External(sfCursorXY);
 			External(sfSoundFile);
@@ -1060,7 +1061,7 @@ int16 ScriptFunctions::sfIsSlowSystem(int16 argc, int16 *argv) {
 }
 
 int16 ScriptFunctions::sfFaceIcon(int16 argc, int16 *argv) {
-	// TODO: Used in RTZ PSX
+	// TODO: Used in RTZ PSX/Saturn
 	return 0;
 }
 
@@ -1071,16 +1072,18 @@ int16 ScriptFunctions::sfLaunchedGame(int16 argc, int16 *argv) {
 
 int16 ScriptFunctions::sfMovieCall(int16 argc, int16 *argv) {
 	// Found in RTZ PSX, but never called
+	// TODO: Check if called in Saturn
 	return 0;
 }
 
 int16 ScriptFunctions::sfCursorXY(int16 argc, int16 *argv) {
-	// TODO: Used in RTZ PSX
+	// TODO: Used in RTZ PSX/Saturn
 	return 0;
 }
 
 int16 ScriptFunctions::sfSoundFile(int16 argc, int16 *argv) {
 	// Found in RTZ PSX, but never called
+	// TODO: Check if called in Saturn
 	return 0;
 }
 
