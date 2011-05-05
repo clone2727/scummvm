@@ -293,7 +293,10 @@ Common::Error MadeEngine::run() {
 	resetAllTimers();
 
 	if (getGameID() == GID_RTZ) {
-		if (getFeatures() & GF_DEMO) {
+		if (getPlatform() == Common::kPlatformPSX) {
+			_dat->open("psj_rtz.dat");
+			_res->open("psj_rtz.prj");
+		} else if (getFeatures() & GF_DEMO) {
 			_dat->open("demo.dat");
 			_res->open("demo.prj");
 		} else if (getFeatures() & GF_CD) {
