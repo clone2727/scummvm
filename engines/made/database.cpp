@@ -605,6 +605,8 @@ void GameDatabaseV3::load(Common::SeekableReadStream &sourceS) {
 	if (strncmp(header, "ADVSYS", 6))
 		warning ("Unexpected database header, expected ADVSYS");
 
+	// TODO: Mac and Saturn versions are BE
+
 	/*uint32 unk = */sourceS.readUint32LE();
 
 	sourceS.skip(20);

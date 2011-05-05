@@ -399,6 +399,23 @@ static const MadeGameDescription gameDescriptions[] = {
 	},
 
 	{
+		// Return to Zork - English Macintosh
+		{
+			"rtz",
+			"",
+			AD_ENTRY1("rtz.dat", "b9d0f34207dc2b2f35b34c8c35b16fbf"),
+			Common::EN_ANY,
+			Common::kPlatformMacintosh,
+			ADGF_NO_FLAGS,
+			GUIO_NONE
+		},
+		GID_RTZ,
+		0,
+		GF_CD,
+		3,
+	},
+
+	{
 		// The Manhole: New and Enhanced
 		{
 			"manhole",
