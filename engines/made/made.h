@@ -80,7 +80,6 @@ const uint32 kTimerResolution = 40;
 struct MadeGameDescription;
 
 class ResourceReader;
-class PmvPlayer;
 class Screen;
 class ScriptInterpreter;
 class GameDatabase;
@@ -116,8 +115,8 @@ public:
 
 private:
 	MadeConsole *_console;
+
 public:
-	PmvPlayer *_pmvPlayer;
 	ResourceReader *_res;
 	Screen *_screen;
 	GameDatabase *_dat;
@@ -150,6 +149,7 @@ public:
 
 	void handleEvents();
 
+	bool playMovie(const Common::String &fileName);
 };
 
 } // End of namespace Made

@@ -23,44 +23,59 @@
  *
  */
 
-#ifndef MADE_PMVPLAYER_H
-#define MADE_PMVPLAYER_H
+#ifndef MADE_PMV_DECODER_H
+#define MADE_PMV_DECODER_H
 
-#include "common/system.h"
-#include "common/events.h"
-#include "common/file.h"
-#include "common/endian.h"
-#include "graphics/surface.h"
 #include "audio/mixer.h"
-#include "audio/audiostream.h"
+#include "common/rational.h"
+#include "graphics/surface.h"
 
-#include "made/graphics.h"
-#include "made/sound.h"
-#include "made/made.h"
+#include "video/video_decoder.h"
+
+namespace Audio {
+	class QueuingAudioStream;
+}
 
 namespace Made {
 
-class PmvPlayer {
+class PMVDecoder : public Video::FixedRateVideoDecoder {
 public:
-	PmvPlayer(MadeEngine *vm, Audio::Mixer *mixer);
-	~PmvPlayer();
-	// Returns true if the movie was played till the end
-	bool play(const char *filename);
+	PMVDecoder();
+	~PMVDecoder();
+
+	// VideoDecoder API
+	bool loadStream(Common::SeekableReadStream *stream);
+	void close();
+	bool isVideoLoaded() const;
+	uint16 getWidth() const { return _surface ? _surface->w : 0; }
+	uint16 getHeight() const { return _surface ? _surface->h : 0; }
+	Graphics::PixelFormat getPixelFormat() const { return Graphics::PixelFormat::createFormatCLUT8(); }
+	const byte *getPalette() { return _paletteRGB; }
+	bool hasDirtyPalette() const { return _dirtyPalette; }
+	uint32 getFrameCount() const { return _frameCount; }
+	uint32 getElapsedTime() const;
+	Graphics::Surface *decodeNextFrame();
+
 protected:
-	MadeEngine *_vm;
-	Audio::Mixer *_mixer;
-	Common::File *_fd;
+	// FixedRateVideoDecoder API
+	Common::Rational getFrameRate() const { return Common::Rational(1000, _frameDelay); }
+
+protected:
+	byte _paletteRGB[768];
+	bool _dirtyPalette;
+	Graphics::Surface *_surface;
+
+	uint16 _frameDelay;
+	uint16 _frameCount;
+
+	Common::SeekableReadStream *_stream;
 	Audio::QueuingAudioStream *_audioStream;
 	Audio::SoundHandle _audioStreamHandle;
-	byte _paletteRGB[768];
-	Graphics::Surface *_surface;
-	bool _aborted;
+
 	void readChunk(uint32 &chunkType, uint32 &chunkSize);
-	void handleEvents();
-	void updateScreen();
 	void decompressPalette(byte *palData, byte *outPal, uint32 palDataSize);
 };
 
-}
+} // End of namespace Made
 
 #endif

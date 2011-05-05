@@ -35,7 +35,6 @@
 #include "made/screen.h"
 #include "made/script.h"
 #include "made/sound.h"
-#include "made/pmvplayer.h"
 #include "made/scriptfuncs.h"
 #include "made/music.h"
 
@@ -747,7 +746,7 @@ int16 ScriptFunctions::sfGetTextWidth(int16 argc, int16 *argv) {
 int16 ScriptFunctions::sfPlayMovie(int16 argc, int16 *argv) {
 	const char *movieName = _vm->_dat->getObjectString(argv[1]);
 	_vm->_system->showMouse(false);
-	bool completed = _vm->_pmvPlayer->play(movieName);
+	bool completed = _vm->playMovie(movieName);
 	_vm->_system->showMouse(true);
 	// Return true/false according to if the movie was canceled or not
 	return completed ? -1 : 0;

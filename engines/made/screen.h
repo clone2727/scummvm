@@ -88,7 +88,7 @@ public:
 
 	void drawSurface(Graphics::Surface *sourceSurface, int x, int y, int16 flipX, int16 flipY, int16 mask, const ClipInfo &clipInfo);
 
-	void setRGBPalette(byte *palRGB, int start = 0, int count = 256);
+	void setRGBPalette(const byte *palRGB, int start = 0, int count = 256);
 	bool isPaletteLocked() { return _paletteLock; }
 	void setPaletteLock(bool lock) { _paletteLock = lock; }
 	bool isScreenLocked() { return _screenLock; }

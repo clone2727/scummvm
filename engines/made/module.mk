@@ -7,7 +7,7 @@ MODULE_OBJS := \
 	graphics.o \
 	made.o \
 	music.o \
-	pmvplayer.o \
+	pmv_decoder.o \
 	redreader.o \
 	resource.o \
 	screen.o \

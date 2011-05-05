@@ -219,7 +219,7 @@ void Screen::drawSurface(Graphics::Surface *sourceSurface, int x, int y, int16 f
 
 }
 
-void Screen::setRGBPalette(byte *palRGB, int start, int count) {
+void Screen::setRGBPalette(const byte *palRGB, int start, int count) {
 	_vm->_system->getPaletteManager()->setPalette(palRGB, start, count);
 }
 
