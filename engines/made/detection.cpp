@@ -399,6 +399,24 @@ static const MadeGameDescription gameDescriptions[] = {
 	},
 
 	{
+		// Return to Zork - Japanese Sega Saturn
+		{
+			"rtz",
+			"",
+			AD_ENTRY1("rtz.dat", "023e46f6b43913792bd535558cce7bf7"),
+			Common::JA_JPN,
+			Common::kPlatformSaturn,
+			ADGF_NO_FLAGS,
+			GUIO_NONE
+		},
+		GID_RTZ,
+		0,
+		GF_CD,
+		3,
+	},
+
+
+	{
 		// Return to Zork - English Macintosh
 		{
 			"rtz",

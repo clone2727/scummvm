@@ -299,7 +299,7 @@ Common::Error MadeEngine::run() {
 		} else if (getFeatures() & GF_DEMO) {
 			_dat->open("demo.dat");
 			_res->open("demo.prj");
-		} else if (getPlatform() == Common::kPlatformMacintosh || getFeatures() & GF_FLOPPY) {
+		} else if (getPlatform() == Common::kPlatformMacintosh || getPlatform() == Common::kPlatformSaturn || getFeatures() & GF_FLOPPY) {
 			_dat->open("rtz.dat");
 			_res->open("rtz.prj");
 		} else if (getFeatures() & GF_CD) {
