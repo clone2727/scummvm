@@ -184,6 +184,7 @@ Graphics::Surface *PMVDecoder::decodeNextFrame() {
 	debug(2, "width = %d; height = %d; cmdOffs = %04X; pixelOffs = %04X; maskOffs = %04X; lineSize = %d\n",
 		getWidth(), getHeight(), cmdOffs, pixelOffs, maskOffs, lineSize);
 
+	// TODO: Mac 'MMV' use additional compression methods not yet handled
 	decompressMovieImage(imageData, *_surface, cmdOffs, pixelOffs, maskOffs, lineSize);
 
 	_curFrame++;
