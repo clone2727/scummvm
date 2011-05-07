@@ -99,14 +99,14 @@ bool PMVDecoder::loadStream(Common::SeekableReadStream *stream) {
 	uint16 width = _stream->readUint16LE();
 	uint16 height = _stream->readUint16LE();
 
+	// Create our surface
 	_surface = new Graphics::Surface();
 	_surface->create(width, height, getPixelFormat());
 	_stream->seek(startPos);
 
-	// TODO: Sound can still be a little choppy. A bug in the decoder or -
-	// perhaps more likely - do we have to implement double buffering to
-	// get it to work well?
+	// Initialize sound
 	_audioStream = Audio::makeQueuingAudioStream(soundFreq, false);
+	g_system->getMixer()->playStream(Audio::Mixer::kPlainSoundType, &_audioStreamHandle, _audioStream);
 
 	return true;
 }
@@ -189,10 +189,8 @@ Graphics::Surface *PMVDecoder::decodeNextFrame() {
 
 	_curFrame++;
 
-	if (_curFrame == 0) {
+	if (_curFrame == 0)
 		_startTime = g_system->getMillis();
-		g_system->getMixer()->playStream(Audio::Mixer::kPlainSoundType, &_audioStreamHandle, _audioStream);
-	}
 
 	delete[] frameData;
 	return _surface;
@@ -222,15 +220,32 @@ void PMVDecoder::decompressPalette(byte *palData, byte *outPal, uint32 palDataSi
 }
 
 uint32 PMVDecoder::getElapsedTime() const {
-#if 0
+	// FIXME: Using this A/V synced code cannot work properly. While it is correct in
+	// theory, PMV files do not have properly interleaving. For example, in the intro
+	// video, the first audio frame is 98ms while every frame is 101ms. This leads to
+	// audio underflow and the Mixer getting confused because it stops getting samples
+	// for ~3ms. This results in very choppy playback. The old code worked because
+	// its syncing calculation would *always* end up skipping the first frame.
+	//
+	// The syncing using only start time should be sufficient for now, and would only
+	// break if we decoded frames too quickly, which shouldn't happen if only
+	// needsUpdate() and getTimeToNextFrame() are used (which is normal operation
+	// anyway).
+	//
+	// In order to get better A/V sync, we can do one of the following things:
+	// 1) Ignore interleaving and do manual demuxing
+	// 2) Skip the first frame like the old code did (very hacky)
+	//
+	// IMO, neither are really worth it as this code works well enough.
+#if 1
+	return VideoDecoder::getElapsedTime();
+#else
 	if (!isVideoLoaded() || _curFrame < 0)
 		return 0;
 
 	// TODO: This is not working properly
 	// It sometimes jumps backwards in time. I can't explain it.
 	return g_system->getMixer()->getSoundElapsedTime(_audioStreamHandle);
-#else
-	return VideoDecoder::getElapsedTime();
 #endif
 }
 
