@@ -192,6 +192,10 @@ Common::String MadeEngine::getSavegameFilename(int16 saveNum) {
 	return filename;
 }
 
+bool MadeEngine::isBigEndian() const {
+	return getPlatform() == Common::kPlatformMacintosh || getPlatform() == Common::kPlatformSaturn;
+}
+
 void MadeEngine::handleEvents() {
 
 	Common::Event event;

@@ -112,6 +112,7 @@ public:
 	uint32 getFeatures() const;
 	uint16 getVersion() const;
 	Common::Platform getPlatform() const;
+	bool isBigEndian() const;
 
 private:
 	MadeConsole *_console;

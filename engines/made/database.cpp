@@ -28,6 +28,7 @@
 #include "common/util.h"
 #include "common/savefile.h"
 #include "common/textconsole.h"
+#include "common/substream.h"
 
 #include "made/database.h"
 
@@ -187,15 +188,18 @@ int ObjectV1::load(Common::SeekableReadStream &source) {
 	return _objSize;
 }
 
+#define READ_V3_UINT16() \
+	(_isBigEndian ? source.readUint16BE() : source.readUint16LE())
+
 int ObjectV3::load(Common::SeekableReadStream &source) {
 
 	_freeData = true;
 	source.readUint16LE(); // skip flags
-	uint16 type = source.readUint16LE();
+	uint16 type = READ_V3_UINT16();
 	if (type == 0x7FFF) {
-		_objSize = source.readUint16LE();
+		_objSize = READ_V3_UINT16();
 	} else if (type == 0x7FFE) {
-		_objSize = source.readUint16LE() * 2;
+		_objSize = READ_V3_UINT16() * 2;
 	} else if (type < 0x7FFE) {
 		byte count1 = source.readByte();
 		byte count2 = source.readByte();
@@ -209,6 +213,8 @@ int ObjectV3::load(Common::SeekableReadStream &source) {
 
 }
 
+#undef READ_V3_UINT16
+
 int ObjectV3::load(byte *source) {
 	_objData = source;
 	_freeData = false;
@@ -221,22 +227,27 @@ int ObjectV3::load(byte *source) {
 	return _objSize;
 }
 
+#define READ_V3_UINT16(x) \
+	(_isBigEndian ? READ_BE_UINT16((x)) : READ_LE_UINT16((x)))
+
 int ObjectV3::save(Common::WriteStream &dest) {
 	// Not implemented/used for version 3 objects
 	return 0;
 }
 
 uint16 ObjectV3::getFlags() {
-	return READ_LE_UINT16(_objData);
+	return READ_V3_UINT16(_objData);
 }
 
 uint16 ObjectV3::getClass() {
-	return READ_LE_UINT16(_objData + 2);
+	return READ_V3_UINT16(_objData + 2);
 }
 
 uint16 ObjectV3::getSize() {
-	return READ_LE_UINT16(_objData + 4);
+	return READ_V3_UINT16(_objData + 4);
 }
+
+#undef READ_V3_UINT16
 
 byte ObjectV3::getCount1() {
 	return _objData[4];
@@ -600,38 +611,41 @@ GameDatabaseV3::GameDatabaseV3(MadeEngine *vm) : GameDatabase(vm) {
 }
 
 void GameDatabaseV3::load(Common::SeekableReadStream &sourceS) {
+	Common::SeekableSubReadStreamEndian *endianStream =
+		new Common::SeekableSubReadStreamEndian(&sourceS, 0, sourceS.size(), _vm->isBigEndian());
+
 	char header[6];
-	sourceS.read(header, 6);
+	endianStream->read(header, 6);
 	if (strncmp(header, "ADVSYS", 6))
-		warning ("Unexpected database header, expected ADVSYS");
+		warning("Unexpected database header, expected ADVSYS");
 
-	// TODO: Mac and Saturn versions are BE
+	/*uint32 unk = */endianStream->readUint32();
 
-	/*uint32 unk = */sourceS.readUint32LE();
+	endianStream->skip(20);
 
-	sourceS.skip(20);
-
-	uint32 objectIndexOffs = sourceS.readUint32LE();
-	uint16 objectCount = sourceS.readUint16LE();
-	_gameStateOffs = sourceS.readUint32LE();
-	_gameStateSize = sourceS.readUint32LE();
-	uint32 objectsOffs = sourceS.readUint32LE();
-	uint32 objectsSize = sourceS.readUint32LE();
-	_mainCodeObjectIndex = sourceS.readUint16LE();
+	uint32 objectIndexOffs = endianStream->readUint32();
+	uint16 objectCount = endianStream->readUint16();
+	_gameStateOffs = endianStream->readUint32();
+	_gameStateSize = endianStream->readUint32();
+	uint32 objectsOffs = endianStream->readUint32();
+	uint32 objectsSize = endianStream->readUint32();
+	_mainCodeObjectIndex = endianStream->readUint16();
 
 	debug(2, "objectIndexOffs = %08X; objectCount = %d; gameStateOffs = %08X; gameStateSize = %d; objectsOffs = %08X; objectsSize = %d\n", objectIndexOffs, objectCount, _gameStateOffs, _gameStateSize, objectsOffs, objectsSize);
 
 	_gameState = new byte[_gameStateSize];
-	sourceS.seek(_gameStateOffs);
-	sourceS.read(_gameState, _gameStateSize);
+	endianStream->seek(_gameStateOffs);
+	endianStream->read(_gameState, _gameStateSize);
 
 	Common::Array<uint32> objectOffsets;
-	sourceS.seek(objectIndexOffs);
+	endianStream->seek(objectIndexOffs);
 	for (uint32 i = 0; i < objectCount; i++)
-		objectOffsets.push_back(sourceS.readUint32LE());
+		objectOffsets.push_back(endianStream->readUint32());
+
+	delete endianStream;
 
 	for (uint32 i = 0; i < objectCount; i++) {
-		Object *obj = new ObjectV3();
+		Object *obj = new ObjectV3(_vm->isBigEndian());
 		// The LSB indicates if it's a constant or variable object.
 		// Constant objects are loaded from disk, while variable objects exist
 		// in the _gameState buffer.
@@ -643,7 +657,6 @@ void GameDatabaseV3::load(Common::SeekableReadStream &sourceS) {
 		}
 		_objects.push_back(obj);
 	}
-
 }
 
 void GameDatabaseV3::reloadFromStream(Common::SeekableReadStream &sourceS) {
@@ -747,6 +760,9 @@ int16 GameDatabaseV3::loadgame(const char *filename, int16 version) {
 	return 0;
 }
 
+#define READ_V3_PROPERTY(x) \
+	(_vm->isBigEndian() ? READ_BE_UINT16(prop) : READ_LE_UINT16(prop))
+
 int16 *GameDatabaseV3::findObjectProperty(int16 objectIndex, int16 propertyId, int16 &propertyFlag) {
 	Object *obj = getObject(objectIndex);
 	if (obj->getClass() >= 0x7FFE) {
@@ -762,10 +778,10 @@ int16 *GameDatabaseV3::findObjectProperty(int16 objectIndex, int16 propertyId, i
 
 	// First see if the property exists in the given object
 	while (count2-- > 0) {
-		if ((READ_LE_UINT16(prop) & 0x3FFF) == propertyId) {
-			if (READ_LE_UINT16(prop) & 0x4000) {
+		if ((READ_V3_PROPERTY(prop) & 0x3FFF) == propertyId) {
+			if (READ_V3_PROPERTY(prop) & 0x4000) {
 				propertyFlag = 1;
-				return (int16*)_gameState + READ_LE_UINT16(propPtr1);
+				return (int16*)_gameState + READ_V3_PROPERTY(propPtr1);
 			} else {
 				propertyFlag = obj->getFlags() & 1;
 				return propPtr1;
@@ -793,11 +809,11 @@ int16 *GameDatabaseV3::findObjectProperty(int16 objectIndex, int16 propertyId, i
 		int16 *propertyPtr = prop + count1;
 
 		while (count2-- > 0) {
-			if (!(READ_LE_UINT16(prop) & 0x8000)) {
-				if ((READ_LE_UINT16(prop) & 0x3FFF) == propertyId) {
-					if (READ_LE_UINT16(prop) & 0x4000) {
+			if (!(READ_V3_PROPERTY(prop) & 0x8000)) {
+				if ((READ_V3_PROPERTY(prop) & 0x3FFF) == propertyId) {
+					if (READ_V3_PROPERTY(prop) & 0x4000) {
 						propertyFlag = 1;
-						return (int16*)_gameState + READ_LE_UINT16(propPtr1);
+						return (int16*)_gameState + READ_V3_PROPERTY(propPtr1);
 					} else {
 						propertyFlag = obj->getFlags() & 1;
 						return propPtr1;
@@ -806,10 +822,10 @@ int16 *GameDatabaseV3::findObjectProperty(int16 objectIndex, int16 propertyId, i
 					propPtr1++;
 				}
 			} else {
-				if ((READ_LE_UINT16(prop) & 0x3FFF) == propertyId) {
-					if (READ_LE_UINT16(prop) & 0x4000) {
+				if ((READ_V3_PROPERTY(prop) & 0x3FFF) == propertyId) {
+					if (READ_V3_PROPERTY(prop) & 0x4000) {
 						propertyFlag = 1;
-						return (int16*)_gameState + READ_LE_UINT16(propertyPtr);
+						return (int16*)_gameState + READ_V3_PROPERTY(propertyPtr);
 					} else {
 						propertyFlag = obj->getFlags() & 1;
 						return propertyPtr;
@@ -827,6 +843,8 @@ int16 *GameDatabaseV3::findObjectProperty(int16 objectIndex, int16 propertyId, i
 	return NULL;
 
 }
+
+#undef READ_V3_PROPERTY
 
 const char *GameDatabaseV3::getString(uint16 offset) {
 	// Not used in version 3 games

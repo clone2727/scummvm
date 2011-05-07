@@ -97,6 +97,8 @@ public:
 
 class ObjectV3 : public Object {
 public:
+	ObjectV3(bool isBigEndian) { _isBigEndian = isBigEndian; }
+
 	int load(Common::SeekableReadStream &source);
 	int load(byte *source);
 	int save(Common::WriteStream &dest);
@@ -111,6 +113,8 @@ public:
 		return !(getFlags() & 1);
 	}
 
+private:
+	bool _isBigEndian;
 };
 
 class GameDatabase {
