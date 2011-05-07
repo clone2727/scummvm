@@ -403,7 +403,7 @@ bool MadeEngine::playMovie(const Common::String &fileName) {
 			}
 		}
 
-		//_system->delayMillis(10);
+		_system->delayMillis(10);
 	}
 
 	delete decoder;
