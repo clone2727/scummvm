@@ -421,7 +421,7 @@ static const MadeGameDescription gameDescriptions[] = {
 		{
 			"rtz",
 			"",
-			AD_ENTRY1("rtz.dat", "b9d0f34207dc2b2f35b34c8c35b16fbf"),
+			AD_ENTRY1("rtz.dat", "b04a46d4bb4ae0b3ba8e52ee7d774b01"),
 			Common::EN_ANY,
 			Common::kPlatformMacintosh,
 			ADGF_NO_FLAGS,
