@@ -1071,8 +1071,7 @@ int16 ScriptFunctions::sfLaunchedGame(int16 argc, int16 *argv) {
 }
 
 int16 ScriptFunctions::sfMovieCall(int16 argc, int16 *argv) {
-	// Found in RTZ PSX, but never called
-	// TODO: Check if called in Saturn
+	// Found in RTZ PSX/Saturn, but never called
 	return 0;
 }
 
@@ -1082,8 +1081,7 @@ int16 ScriptFunctions::sfCursorXY(int16 argc, int16 *argv) {
 }
 
 int16 ScriptFunctions::sfSoundFile(int16 argc, int16 *argv) {
-	// Found in RTZ PSX, but never called
-	// TODO: Check if called in Saturn
+	// Found in RTZ PSX/Saturn, but never called
 	return 0;
 }
 
