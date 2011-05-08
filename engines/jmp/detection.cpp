@@ -120,39 +120,6 @@ static const JMPGameDescription gameDescriptions[] = {
 		0,
 		0,
 	},
-	
-	// The Mac version is *separate* from the PC version
-
-	{
-		{
-			"turbo",
-			"",
-			AD_ENTRY1("Init Film", "f41b1f496f8613c24253c6af85e6f063"),
-			Common::EN_ANY,
-			Common::kPlatformMacintosh,
-			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
-		},
-		GType_JMAN,
-		0,
-		0,
-	},
-
-	// From Mac Turbo! disc (will I even support this?)
-	{
-		{
-			"turbo",
-			"Demo",
-			AD_ENTRY1("Mars Robot Down.QT", "a8a6ef33a560fdd24ea0ac517b2d1515"),
-			Common::EN_ANY,
-			Common::kPlatformMacintosh,
-			ADGF_DEMO,
-			Common::GUIO_NONE
-		},
-		GType_JMAN,
-		GF_DEMO,
-		0,
-	},
 
 	// From Turbo! CD
 
@@ -170,24 +137,6 @@ static const JMPGameDescription gameDescriptions[] = {
 		0,
 		0,
 	},
-	
-	// Macintosh version (will I even support this?)
-	
-	{
-		{
-			"journey",
-			"",
-			AD_ENTRY1("Intro.Single", "639316688361f3780185a263e71a0f96"),
-			Common::EN_ANY,
-			Common::kPlatformMacintosh,
-			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
-		},
-		GType_JOURNEY,
-		0,
-		0,
-	},
-
 		
 	// TODO: Use non-compressed version :P
 	{
