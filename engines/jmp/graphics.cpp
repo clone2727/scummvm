@@ -106,7 +106,7 @@ void GraphicsManager::setCursor(uint16 id) {
 	}
 }
 	
-void GraphicsManager::drawString(Common::String string, Common::Rect rect, byte color) {
+void GraphicsManager::drawString(Common::String string, Common::Rect rect, uint32 color) {
 	if (!_font)
 		return;
 
@@ -114,7 +114,7 @@ void GraphicsManager::drawString(Common::String string, Common::Rect rect, byte 
 	Common::StringArray strList;
 	_font->wordWrapText(string, rect.width(), strList);
 	for (uint i = 0; i < strList.size(); i++)
-		_font->drawString(surf, strList[i], rect.left, rect.top + i * (_font->getFontHeight() + 2), rect.width(), color);
+		_font->drawString(surf, strList[i], rect.left, rect.top + i * (_font->getFontHeight() + 1), rect.width(), color);
 	_vm->_system->unlockScreen();
 	_vm->_system->updateScreen();
 }

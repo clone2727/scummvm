@@ -65,7 +65,7 @@ public:
 	void useStandardCursor();
 	void setCursor(uint16 id);
 		
-	void drawString(Common::String string, Common::Rect rect, byte color);
+	void drawString(Common::String string, Common::Rect rect, uint32 color);
 
 	void drawBitmap(Common::String filename, int x, int y);
 	void drawBitmap(Common::String filename, Common::Rect srcRect, int x, int y, bool updateScreen = true);

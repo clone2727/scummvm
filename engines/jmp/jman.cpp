@@ -90,8 +90,8 @@ int JMPEngine_JMAN::runMainMenu() {
 	// This is all very hacky
 	// The music sounds nice, of course
 
-	_gfx->drawBitmap(Common::String("mainmnu1.bmp"), 0, 0);
-	_sound->playSound(Common::String("shared/caltheme.wav"));
+	_gfx->drawBitmap("mainmnu1.bmp", 0, 0);
+	_sound->playSound("shared/caltheme.wav");
 	Common::Event event;
 	int buttonSelected = kNoButtonSelected;
 	int textSelected = kNoButtonSelected;
@@ -105,7 +105,7 @@ int JMPEngine_JMAN::runMainMenu() {
 							if (mainMenuButtons[i].contains(event.mouse))
 								textSelected = i;
 						if (textSelected != kNoButtonSelected)
-							_gfx->drawString(jmanEnglishMenuDescriptions[textSelected], mainMenuTextBox, 0xFF);
+							_gfx->drawString(jmanEnglishMenuDescriptions[textSelected], mainMenuTextBox, _system->getScreenFormat().RGBToColor(0, 0, 0));
 					} else {
 						if (!mainMenuButtons[textSelected].contains(event.mouse)) {
 							_gfx->drawBitmap("mainmnu1.bmp", mainMenuTextBox, mainMenuTextBox.left, mainMenuTextBox.top, false);
@@ -318,6 +318,8 @@ Common::Error JMPEngine_JMAN::run() {
 	// Opening Videos:
 	playVideoCentered("slogo.avi");
 	playVideoCentered("presto.avi");
+	_system->fillScreen(_system->getScreenFormat().RGBToColor(0, 0, 0));
+	_system->updateScreen();
 	// show present.bmp
 	playVideoCentered("jmanspin.avi");
 	
