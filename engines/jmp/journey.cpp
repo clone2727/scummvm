@@ -65,9 +65,11 @@ Common::Error JMPEngine_Journey::run() {
 		Common::Rect(390, 299, 528, 386)
 	};
 
-	_gfx->drawBitmap(Common::String("rawmenu.bmp"), 0, 0);
-	// TODO: Play intro video
-	_sound->playSound(Common::String("j2loop.wav"), true);
+	static const Common::Point videoWindow(378, 84);
+
+	_gfx->drawBitmap("rawmenu.bmp", 0, 0);
+	playVideo("intro.avi", videoWindow.x, videoWindow.y);
+	_sound->playSound("j2loop.wav", true);
 	Common::Event event;
 	int buttonSelected = NoVideoButtonSelected;
 	
@@ -87,15 +89,30 @@ Common::Error JMPEngine_Journey::run() {
 						if (videoButtons[i].contains(event.mouse))
 								buttonSelected = i;
 		
-					if (buttonSelected != NoVideoButtonSelected) {
+					if (buttonSelected != NoVideoButtonSelected)
 						_gfx->drawBitmap(Common::String("highligt.bmp"), videoButtons[buttonSelected], videoButtons[buttonSelected].left, videoButtons[buttonSelected].top);
-						// TODO: Play requested video
-						// TODO: Some sort of play position bar interactivity too
-					}
 					break;
 				case Common::EVENT_LBUTTONUP:
 					if (buttonSelected != NoVideoButtonSelected) {
 						_gfx->drawBitmap(Common::String("rawmenu.bmp"), videoButtons[buttonSelected], videoButtons[buttonSelected].left, videoButtons[buttonSelected].top);
+
+						// Stop audio
+						_sound->stopSound();
+						
+						// Choose wisely...
+						if (buttonSelected == PlayAll) {
+							for (int i = TheDream; i < PlayAll; i++)
+								playVideo(Common::String::format("%d.avi", i + 1), videoWindow.x, videoWindow.y);
+						} else {
+							playVideo(Common::String::format("%d.avi", buttonSelected + 1), videoWindow.x, videoWindow.y);
+						}
+
+						// Restart sound
+						_sound->playSound("j2loop.wav", true);
+
+						// TODO: Some sort of play position bar interactivity too
+						// TODO: Allow for other buttons to be pressed which change the current movie
+
 						buttonSelected = NoVideoButtonSelected;
 					}
 					break;
