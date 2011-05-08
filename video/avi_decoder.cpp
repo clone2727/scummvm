@@ -253,11 +253,22 @@ bool AviDecoder::loadStream(Common::SeekableReadStream *stream) {
 
 	// Ignore the 'movi' LIST
 	if (nextTag == ID_LIST) {
-		_fileStream->readUint32BE(); // Skip size
+		uint32 listSize = _fileStream->readUint32LE();
 		if (_fileStream->readUint32BE() != ID_MOVI)
-			error ("Expected 'movi' LIST");
+			error("Expected 'movi' LIST");
+
+		// Let's go find the index (if present)
+		uint32 startPos = _fileStream->pos();
+		_fileStream->skip(listSize + (listSize & 1) - 4);
+
+		uint32 tag = _fileStream->readUint32BE();
+		if (!_fileStream->eos() && tag == ID_IDX1)
+			runHandle(ID_IDX1);
+
+		// Seek back
+		_fileStream->seek(startPos);
 	} else
-		error ("Expected 'movi' LIST");
+		error("Expected 'movi' LIST");
 
 	// Now, create the codec
 	_videoCodec = createCodec();
@@ -384,10 +395,9 @@ const Graphics::Surface *AviDecoder::decodeNextFrame() {
 		// No alignment necessary. It's always even.
 	} else if (nextTag == ID_JUNK) {
 		runHandle(ID_JUNK);
-	} else if (nextTag == ID_IDX1) {
-		runHandle(ID_IDX1);
-	} else
+	} else if (nextTag != ID_IDX1) {
 		error("Tag = \'%s\', %d", tag2str(nextTag), _fileStream->pos());
+	}
 
 	return NULL;
 }
