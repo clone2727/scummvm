@@ -80,7 +80,7 @@ bool JMPEngine::hasFeature(EngineFeature f) const {
 static const PlainGameDescriptor jmpGames[] = {
 	{"jmp", "Journeyman Project game"},
 	{"jman", "The Journeyman Project"},
-	{"turbo", "The Journeyman Project Turbo!"},
+	{"jmanturbo", "The Journeyman Project Turbo!"},
 	{"journey", "The Journey (Making of The Journeyman Project)"},
 	{"bit", "The Journeyman Project 2: Buried in Time"},
 	{0, 0}
@@ -92,9 +92,9 @@ namespace JMP {
 static const JMPGameDescription gameDescriptions[] = {
 	{
 		{
-			"turbo",
+			"jmanturbo",
 			"",
-			AD_ENTRY1("MAINMNU1.BMP", "0eed699e30b7563d9791d63443739f8b"),
+			AD_ENTRY1("JMAN.EXE", "4e557b8864b0eec060be6d31ce457858"),
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
@@ -105,12 +105,14 @@ static const JMPGameDescription gameDescriptions[] = {
 		0,
 	},
 
+#if 0
+	// FIXME: Update to detection based on executable
 	// From jvprat
 	{
 		{
-			"turbo",
+			"jmanturbo",
 			"",
-			AD_ENTRY1("MAINMNU1.BMP", "d75b9682be004aae0c28164ef492e603"),
+			AD_ENTRY1("JMAN.EXE", ""),
 			Common::ES_ESP,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
@@ -120,6 +122,7 @@ static const JMPGameDescription gameDescriptions[] = {
 		0,
 		0,
 	},
+#endif
 
 	// From Turbo! CD
 
@@ -250,32 +253,6 @@ static const JMPGameDescription gameDescriptions[] = {
 	{ AD_TABLE_END_MARKER, 0, 0, 0 }
 };
 
-//////////////////////////////
-//Fallback detection
-//////////////////////////////
-
-static const JMPGameDescription fallbackDescs[] = {
-	{
-		{
-			"turbo",
-			"unknown",
-			AD_ENTRY1(0, 0),
-			Common::UNK_LANG,
-			Common::kPlatformWindows,
-			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
-		},
-		GType_JMAN,
-		0,
-		0
-	}
-};
-
-static const ADFileBasedFallback fileBased[] = {
-	{ &fallbackDescs[0], { "MAINMNU1.BMP", 0 } },
-	{ 0, { 0 } }
-};
-
 } // End of namespace JMP
 
 static const ADParams detectionParams = {
@@ -292,7 +269,7 @@ static const ADParams detectionParams = {
 	// Name of single gameid (optional)
 	"jmp",
 	// List of files for file-based fallback detection (optional)
-	JMP::fileBased,
+	0,
 	// Flags
 	0,
 	// Additional GUI options (for every game)

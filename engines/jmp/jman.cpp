@@ -90,8 +90,8 @@ int JMPEngine_JMAN::runMainMenu() {
 	// This is all very hacky
 	// The music sounds nice, of course
 
-	_gfx->drawBitmap("mainmnu1.bmp", 0, 0);
-	_sound->playSound("shared/caltheme.wav");
+	_gfx->drawBitmap("support/mainmnu1.bmp", 0, 0);
+	_sound->playSound("support/shared/caltheme.wav");
 	Common::Event event;
 	int buttonSelected = kNoButtonSelected;
 	int textSelected = kNoButtonSelected;
@@ -108,13 +108,13 @@ int JMPEngine_JMAN::runMainMenu() {
 							_gfx->drawString(jmanEnglishMenuDescriptions[textSelected], mainMenuTextBox, _system->getScreenFormat().RGBToColor(0, 0, 0));
 					} else {
 						if (!mainMenuButtons[textSelected].contains(event.mouse)) {
-							_gfx->drawBitmap("mainmnu1.bmp", mainMenuTextBox, mainMenuTextBox.left, mainMenuTextBox.top, false);
+							_gfx->drawBitmap("support/mainmnu1.bmp", mainMenuTextBox, mainMenuTextBox.left, mainMenuTextBox.top, false);
 							textSelected = kNoButtonSelected;
 						}
 					}
 					if (buttonSelected != kNoButtonSelected)
 						if (!mainMenuButtons[buttonSelected].contains(event.mouse)) {
-							_gfx->drawBitmap(Common::String("mainmnu1.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top, false);
+							_gfx->drawBitmap(Common::String("support/mainmnu1.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top, false);
 							buttonSelected = kNoButtonSelected;
 						}
 					_system->updateScreen();
@@ -124,11 +124,11 @@ int JMPEngine_JMAN::runMainMenu() {
 						if (mainMenuButtons[i].contains(event.mouse))
 								buttonSelected = i;
 					if (buttonSelected != kNoButtonSelected)
-						_gfx->drawBitmap(Common::String("mainmnu2.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top);
+						_gfx->drawBitmap(Common::String("support/mainmnu2.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top);
 					break;
 				case Common::EVENT_LBUTTONUP:
 					if (buttonSelected != kNoButtonSelected) {
-						_gfx->drawBitmap(Common::String("mainmnu1.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top);
+						_gfx->drawBitmap(Common::String("support/mainmnu1.bmp"), mainMenuButtons[buttonSelected], mainMenuButtons[buttonSelected].left, mainMenuButtons[buttonSelected].top);
 						switch (buttonSelected) {
 							//case kNewGameButton:
 							//case kNewGameSkipBkgButton:
@@ -143,7 +143,7 @@ int JMPEngine_JMAN::runMainMenu() {
 								runCredits();
 								if (!shouldQuit()) {
 									_system->fillScreen(0);
-									_gfx->drawBitmap(Common::String("mainmnu1.bmp"), 0, 0);
+									_gfx->drawBitmap(Common::String("support/mainmnu1.bmp"), 0, 0);
 								}
 								break;
 							default:
@@ -167,7 +167,7 @@ int JMPEngine_JMAN::runMainMenu() {
 /////////////////////////////////////////////////////
 	
 void JMPEngine_JMAN::redrawScreen() {
-	_gfx->drawBitmap("fullscrn.bmp", 0, 0);
+	_gfx->drawBitmap("support/fullscrn.bmp", 0, 0);
 	// drawCompass();
 	drawDate();
 	// drawInventory();
@@ -194,12 +194,12 @@ void JMPEngine_JMAN::drawDate() {
 /////////////////////////////////////////////////////
 
 void JMPEngine_JMAN::runDreamSequence() {
-	_sound->playSound("dream/intro.wav");
+	_sound->playSound("support/dream/intro.wav");
 	// TODO: Play frames from dream/dream.avi and dream/wake.avi at the correct timing.
 }
 
 void JMPEngine_JMAN::runSepiaTone() {
-	_sound->playSound("sepiaton/sepiaton.wav");
+	_sound->playSound("support/sepiaton/sepiaton.wav");
 	// TODO: Play frames from sepiaton/sepiaton.avi at the correct timing.
 }
 
@@ -245,14 +245,14 @@ void JMPEngine_JMAN::runCredits() {
 		facesClicked[i] = false;
 	
 	// Get the main background up
-	_gfx->drawBitmap("credits/crdscrn1.bmp", 0, 0);
+	_gfx->drawBitmap("support/credits/crdscrn1.bmp", 0, 0);
 	
 	while (!shouldQuit()) {
 		while (_eventMan->pollEvent(event)) {
 			switch (event.type) {
 				case Common::EVENT_MOUSEMOVE:
 					if (buttonSelected == kCreditsReturnButton && !creditsButtons[buttonSelected].contains(event.mouse)) {
-						_gfx->drawBitmap("credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+						_gfx->drawBitmap("support/credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
 						buttonSelected = kNoButtonSelected;
 					}
 					_system->updateScreen();
@@ -262,7 +262,7 @@ void JMPEngine_JMAN::runCredits() {
 						if (creditsButtons[i].contains(event.mouse))
 								buttonSelected = i;
 					if (buttonSelected == kCreditsReturnButton) {
-						_gfx->drawBitmap("credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+						_gfx->drawBitmap("support/credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
 						_system->updateScreen();
 					}
 					break;
@@ -273,13 +273,13 @@ void JMPEngine_JMAN::runCredits() {
 							if (textState == 3) textState = 0;
 							switch (textState) {
 								case 0:
-									_gfx->drawBitmap("credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+									_gfx->drawBitmap("support/credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
 									break;
 								case 1:
-									_gfx->drawBitmap("credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+									_gfx->drawBitmap("support/credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
 									break;
 								case 2:
-									_gfx->drawBitmap("credits/crdscrn3.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+									_gfx->drawBitmap("support/credits/crdscrn3.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
 									break;
 							}
 						} else if (buttonSelected == kCreditsReturnButton) {
@@ -287,11 +287,11 @@ void JMPEngine_JMAN::runCredits() {
 						} else {
 							facesClicked[buttonSelected] = !facesClicked[buttonSelected];
 							if (facesClicked[buttonSelected]) {
-								_gfx->drawBitmap("credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
-								_sound->playSound("credits/crd_open.wav");
+								_gfx->drawBitmap("support/credits/crdscrn2.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+								_sound->playSound("support/credits/crd_open.wav");
 							} else {
-								_gfx->drawBitmap("credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
-								_sound->playSound("credits/crd_clos.wav");
+								_gfx->drawBitmap("support/credits/crdscrn1.bmp", creditsButtons[buttonSelected], creditsButtons[buttonSelected].left, creditsButtons[buttonSelected].top, 0);
+								_sound->playSound("support/credits/crd_clos.wav");
 							}
 						}
 					}
@@ -316,14 +316,17 @@ Common::Error JMPEngine_JMAN::run() {
 	// Initialization:
 	init();
 	//initVars();
+
+	// Load our EXE
+	loadMandatoryEXE("JMAN.EXE");
 	
 	// Opening Videos:
-	playVideoCentered("slogo.avi");
-	playVideoCentered("presto.avi");
+	playVideoCentered("support/slogo.avi");
+	playVideoCentered("support/presto.avi");
 	_system->fillScreen(_system->getScreenFormat().RGBToColor(0, 0, 0));
 	_system->updateScreen();
 	// show present.bmp
-	playVideoCentered("jmanspin.avi");
+	playVideoCentered("support/jmanspin.avi");
 	
 	// Main Menu/Introduction:
 	int menuResult = runMainMenu();
