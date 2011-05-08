@@ -25,6 +25,7 @@
 #include "common/error.h"
 #include "common/events.h"
 #include "common/rect.h"
+#include "common/stream.h"
 #include "common/textconsole.h"
 
 namespace JMP {
@@ -76,16 +77,8 @@ int JMPEngine_JMAN::runMainMenu() {
 	};
 	
 	static const Common::Rect mainMenuTextBox = Common::Rect(407, 386, 608, 415);
-	
-	static const char *jmanEnglishMenuDescriptions[] = {
-		"Show me how to use the Journeyman's interface.",
-		"Start the game from the very beginning.",
-		"Start the game at the introductory animation.",
-		"Start from after the background and introductory animations.",
-		"Run the credits.",
-		"Restart a previously saved game.",
-		"Quit, so I can optimize my system for best performance."
-	};
+
+	Common::StringArray jmanMenuDescriptions = getStringResource(0x33);
 
 	// This is all very hacky
 	// The music sounds nice, of course
@@ -105,7 +98,7 @@ int JMPEngine_JMAN::runMainMenu() {
 							if (mainMenuButtons[i].contains(event.mouse))
 								textSelected = i;
 						if (textSelected != kNoButtonSelected)
-							_gfx->drawString(jmanEnglishMenuDescriptions[textSelected], mainMenuTextBox, _system->getScreenFormat().RGBToColor(0, 0, 0));
+							_gfx->drawString(jmanMenuDescriptions[textSelected], mainMenuTextBox, _system->getScreenFormat().RGBToColor(0, 0, 0));
 					} else {
 						if (!mainMenuButtons[textSelected].contains(event.mouse)) {
 							_gfx->drawBitmap("support/mainmnu1.bmp", mainMenuTextBox, mainMenuTextBox.left, mainMenuTextBox.top, false);
@@ -319,6 +312,11 @@ Common::Error JMPEngine_JMAN::run() {
 
 	// Load our EXE
 	loadMandatoryEXE("JMAN.EXE");
+
+	// TODO: Parse the 0x2c0 resources found in the EXE
+	// NAVDATA holds data about frames in each navigation video
+	// INVDATA holds data about each inventory item
+	// The rest hold what is most likely node data
 	
 	// Opening Videos:
 	playVideoCentered("support/slogo.avi");
