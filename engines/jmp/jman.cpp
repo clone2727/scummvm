@@ -64,29 +64,29 @@ enum {
 	kMaxMainMenuButtons = 7
 };
 	
-static const Common::Rect mainMenuButtons[] = {
-	Common::Rect(402, 64,  612, 116),
-	Common::Rect(402, 128, 612, 176),
-	Common::Rect(402, 182, 504, 230),
-	Common::Rect(510, 182, 612, 230),
-	Common::Rect(402, 245, 612, 293),
-	Common::Rect(402, 299, 504, 347),
-	Common::Rect(510, 299, 612, 347)
-};
-	
-static const Common::Rect mainMenuTextBox = Common::Rect(407, 386, 608, 415);
-	
-static const Common::String jmanEnglishMenuDescriptions[] = {
-	"Show me how to use the Journeyman's interface.",
-	"Start the game from the very beginning.",
-	"Start the game at the introductory animation.",
-	"Start from after the background and introductory animations.",
-	"Run the credits.",
-	"Restart a previously saved game.",
-	"Quit, so I can optimize my system for best performance."
-};
-	
 int JMPEngine_JMAN::runMainMenu() {
+	static const Common::Rect mainMenuButtons[] = {
+		Common::Rect(402, 64,  612, 116),
+		Common::Rect(402, 128, 612, 176),
+		Common::Rect(402, 182, 504, 230),
+		Common::Rect(510, 182, 612, 230),
+		Common::Rect(402, 245, 612, 293),
+		Common::Rect(402, 299, 504, 347),
+		Common::Rect(510, 299, 612, 347)
+	};
+	
+	static const Common::Rect mainMenuTextBox = Common::Rect(407, 386, 608, 415);
+	
+	static const char *jmanEnglishMenuDescriptions[] = {
+		"Show me how to use the Journeyman's interface.",
+		"Start the game from the very beginning.",
+		"Start the game at the introductory animation.",
+		"Start from after the background and introductory animations.",
+		"Run the credits.",
+		"Restart a previously saved game.",
+		"Quit, so I can optimize my system for best performance."
+	};
+
 	// This is all very hacky
 	// The music sounds nice, of course
 
@@ -174,6 +174,7 @@ void JMPEngine_JMAN::redrawScreen() {
 }
 
 void JMPEngine_JMAN::drawDate() {
+#if 0
 	static const Common::Rect dateRects[] = {
 		Common::Rect(0, 1 , 65, 11),
 		Common::Rect(0, 13, 65, 23),
@@ -183,6 +184,7 @@ void JMPEngine_JMAN::drawDate() {
 	};
 
 	static const Common::Point dateLocation = Common::Point(473, 64);
+#endif
 
 	// TODO
 }
@@ -209,20 +211,6 @@ void JMPEngine_JMAN::runTutorial() {
 // Credits Functions
 /////////////////////////////////////////////////////
 
-static const Common::Rect creditsButtons[] = {
-	Common::Rect(290, 9, 401, 163),
-	Common::Rect(402, 9, 513, 163),
-	Common::Rect(514, 9, 625, 163),
-	Common::Rect(290, 164, 401, 316),
-	Common::Rect(402, 164, 513, 316),
-	Common::Rect(514, 164, 625, 316),
-	Common::Rect(290, 317, 401, 471),
-	Common::Rect(402, 317, 513, 471),
-	Common::Rect(514, 317, 625, 471),
-	Common::Rect(189, 433, 262, 461),
-	Common::Rect(27, 55, 262, 399)
-};
-
 enum {
 	kCreditsReturnButton = 9,
 	kCreditsText = 10,
@@ -230,6 +218,20 @@ enum {
 };
 
 void JMPEngine_JMAN::runCredits() {
+	static const Common::Rect creditsButtons[] = {
+		Common::Rect(290, 9, 401, 163),
+		Common::Rect(402, 9, 513, 163),
+		Common::Rect(514, 9, 625, 163),
+		Common::Rect(290, 164, 401, 316),
+		Common::Rect(402, 164, 513, 316),
+		Common::Rect(514, 164, 625, 316),
+		Common::Rect(290, 317, 401, 471),
+		Common::Rect(402, 317, 513, 471),
+		Common::Rect(514, 317, 625, 471),
+		Common::Rect(189, 433, 262, 461),
+		Common::Rect(27, 55, 262, 399)
+	};
+
 	// This also is very hacky
 	// And the swipes don't happen correctly
 	// etc, etc, etc

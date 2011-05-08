@@ -1,4 +1,4 @@
-/* ScummVM - Graphic Adventure Engine
+ /* ScummVM - Graphic Adventure Engine
  *
  * ScummVM is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
@@ -46,24 +46,24 @@ enum {
 		
 	NoVideoButtonSelected = -1
 };
-	
-static const Common::Rect videoButtons[] = {
-	Common::Rect(28, 58, 283, 96),
-	Common::Rect(28, 96, 283, 134),
-	Common::Rect(28, 134, 283, 170),
-	Common::Rect(28, 170, 283, 206),
-	Common::Rect(28, 206, 283, 244),
-	Common::Rect(28, 244, 283, 280),
-	Common::Rect(28, 280, 283, 318),
-	Common::Rect(28, 318, 283, 356),
-	Common::Rect(28, 356, 283, 394),
-	Common::Rect(28, 394, 283, 430),
-	Common::Rect(28, 430, 283, 470),
-	Common::Rect(390, 299, 528, 386)
-};
 
 Common::Error JMPEngine_Journey::run() {
 	init();
+
+	static const Common::Rect videoButtons[] = {
+		Common::Rect(28, 58, 283, 96),
+		Common::Rect(28, 96, 283, 134),
+		Common::Rect(28, 134, 283, 170),
+		Common::Rect(28, 170, 283, 206),
+		Common::Rect(28, 206, 283, 244),
+		Common::Rect(28, 244, 283, 280),
+		Common::Rect(28, 280, 283, 318),
+		Common::Rect(28, 318, 283, 356),
+		Common::Rect(28, 356, 283, 394),
+		Common::Rect(28, 394, 283, 430),
+		Common::Rect(28, 430, 283, 470),
+		Common::Rect(390, 299, 528, 386)
+	};
 
 	_gfx->drawBitmap(Common::String("rawmenu.bmp"), 0, 0);
 	// TODO: Play intro video

@@ -196,16 +196,16 @@ enum {
 	kDemoNoButtonSelected = -1
 };
 
-static const Common::Rect demoMainMenuButtons[] = {
-	Common::Rect( 28, 155, 168, 326),
-	Common::Rect(177, 155, 315, 326),
-	Common::Rect(324, 155, 462, 326),
-	Common::Rect(471, 155, 609, 326),
-	Common::Rect(551, 439, 640, 480)
-};
-
 Common::Error JMPEngine_BITDemo::run() {
 	init();
+
+	static const Common::Rect demoMainMenuButtons[] = {
+		Common::Rect( 28, 155, 168, 326),
+		Common::Rect(177, 155, 315, 326),
+		Common::Rect(324, 155, 462, 326),
+		Common::Rect(471, 155, 609, 326),
+		Common::Rect(551, 439, 640, 480)
+	};
 	
 	// Hide the cursor for the opening.
 	CursorMan.showMouse(false);
