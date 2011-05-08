@@ -73,7 +73,6 @@ AviDecoder::AviDecoder(Audio::Mixer *mixer, Audio::Mixer::SoundType soundType) :
 	memset(&_bmInfo, 0, sizeof(BITMAPINFOHEADER));
 	memset(&_vidsHeader, 0, sizeof(AVIStreamHeader));
 	memset(&_audsHeader, 0, sizeof(AVIStreamHeader));
-	memset(&_ixInfo, 0, sizeof(AVIOLDINDEX));
 }
 
 AviDecoder::~AviDecoder() {
@@ -123,15 +122,14 @@ void AviDecoder::runHandle(uint32 tag) {
 			_fileStream->skip(junkSize + (junkSize & 1)); // Alignment
 			} break;
 		case ID_IDX1:
-			_ixInfo.size = _fileStream->readUint32LE();
-			_ixInfo.indices = new AVIOLDINDEX::Index[_ixInfo.size / 16];
-			debug (0, "%d Indices", (_ixInfo.size / 16));
-			for (uint32 i = 0; i < (_ixInfo.size / 16); i++) {
-				_ixInfo.indices[i].id = _fileStream->readUint32BE();
-				_ixInfo.indices[i].flags = _fileStream->readUint32LE();
-				_ixInfo.indices[i].offset = _fileStream->readUint32LE();
-				_ixInfo.indices[i].size = _fileStream->readUint32LE();
-				debug (0, "Index %d == Tag \'%s\', Offset = %d, Size = %d", i, tag2str(_ixInfo.indices[i].id), _ixInfo.indices[i].offset, _ixInfo.indices[i].size);
+			_ixInfo.resize(_fileStream->readUint32LE() / 16);
+			debug (0, "%d Indices", _ixInfo.size());
+			for (uint32 i = 0; i < _ixInfo.size(); i++) {
+				_ixInfo[i].id = _fileStream->readUint32BE();
+				_ixInfo[i].flags = _fileStream->readUint32LE();
+				_ixInfo[i].offset = _fileStream->readUint32LE();
+				_ixInfo[i].size = _fileStream->readUint32LE();
+				debug (0, "Index %d == Tag \'%s\', Offset = %d, Size = %d", i, tag2str(_ixInfo[i].id), _ixInfo[i].offset, _ixInfo[i].size);
 			}
 			break;
 		default:
@@ -306,15 +304,13 @@ void AviDecoder::close() {
 	delete _videoCodec;
 	_videoCodec = 0;
 
-	delete[] _ixInfo.indices;
-	_ixInfo.indices = 0;
+	_ixInfo.clear();
 
 	memset(_palette, 0, sizeof(_palette));
 	memset(&_wvInfo, 0, sizeof(PCMWAVEFORMAT));
 	memset(&_bmInfo, 0, sizeof(BITMAPINFOHEADER));
 	memset(&_vidsHeader, 0, sizeof(AVIStreamHeader));
 	memset(&_audsHeader, 0, sizeof(AVIStreamHeader));
-	memset(&_ixInfo, 0, sizeof(AVIOLDINDEX));
 
 	reset();
 }

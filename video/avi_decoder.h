@@ -26,6 +26,7 @@
 #ifndef VIDEO_AVI_PLAYER_H
 #define VIDEO_AVI_PLAYER_H
 
+#include "common/array.h"
 #include "common/endian.h"
 #include "common/rational.h"
 #include "common/rect.h"
@@ -119,14 +120,11 @@ struct WAVEFORMATEX : public WAVEFORMAT {
 	uint16 size;
 };
 
-struct AVIOLDINDEX {
+struct OldIndexEntry {
+	uint32 id;
+	uint32 flags;
+	uint32 offset;
 	uint32 size;
-	struct Index {
-		uint32 id;
-		uint32 flags;
-		uint32 offset;
-		uint32 size;
-	} *indices;
 };
 
 // Index Flags
@@ -215,7 +213,7 @@ private:
 	Audio::Mixer *_mixer;
 	BITMAPINFOHEADER _bmInfo;
 	PCMWAVEFORMAT _wvInfo;
-	AVIOLDINDEX _ixInfo;
+	Common::Array<OldIndexEntry> _ixInfo;
 	AVIHeader _header;
 	AVIStreamHeader _vidsHeader;
 	AVIStreamHeader _audsHeader;
