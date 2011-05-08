@@ -26,6 +26,7 @@
 #include "common/array.h"
 #include "common/scummsys.h"
 #include "common/util.h"
+#include "common/str-array.h"
 #include "common/system.h"
 #include "common/rect.h"
 #include "common/winexe_ne.h"
@@ -81,9 +82,10 @@ public:
 	GraphicsManager *_gfx;
 	Sound *_sound;
 
+	// EXE parsing
 	Common::SeekableReadStream *getEXEResource(uint16 type, Common::WinResourceID id);
-
 	Common::Array<Common::NEResources*> _exeFiles;
+	Common::StringArray getStringResource(Common::WinResourceID id);
 
 protected:
 	void playVideo(Common::String filename, uint16 x = 0, uint16 y = 0);

@@ -161,4 +161,25 @@ Common::SeekableReadStream *JMPEngine::getEXEResource(uint16 type, Common::WinRe
 	return 0;
 }
 
+Common::StringArray JMPEngine::getStringResource(Common::WinResourceID id) {
+	Common::StringArray stringArray;
+
+	Common::SeekableReadStream *stream = getEXEResource(Common::kNEString, id);
+	if (!stream)
+		return stringArray;
+
+	while (stream->pos() < stream->size()) {
+		Common::String string;
+		byte length = stream->readByte();
+
+		while (length--)
+			string += stream->readByte();
+
+		stringArray.push_back(string);
+	}
+
+	delete stream;
+	return stringArray;
+}
+
 } // End of namespace JMP
