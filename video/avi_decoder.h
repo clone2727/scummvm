@@ -86,6 +86,7 @@ class Codec;
 #define ID_MSVC MKTAG('m','s','v','c')
 #define ID_WHAM MKTAG('W','H','A','M')
 #define ID_CVID MKTAG('c','v','i','d')
+#define ID_IV31 MKTAG('i','v','3','1')
 #define ID_IV32 MKTAG('i','v','3','2')
 #define ID_DUCK MKTAG('D','U','C','K')
 

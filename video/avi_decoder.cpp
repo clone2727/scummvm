@@ -409,6 +409,7 @@ Codec *AviDecoder::createCodec() {
 		case ID_CVID:
 			return new CinepakDecoder(_bmInfo.bitCount);
 #ifdef USE_INDEO3
+		case ID_IV31:
 		case ID_IV32:
 			return new Indeo3Decoder(_bmInfo.width, _bmInfo.height);
 #endif
