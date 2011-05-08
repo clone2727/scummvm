@@ -84,7 +84,6 @@ int JMPEngine_JMAN::runMainMenu() {
 	// The music sounds nice, of course
 
 	_gfx->drawBitmap("support/mainmnu1.bmp", 0, 0);
-	_sound->playSound("support/shared/caltheme.wav");
 	Common::Event event;
 	int buttonSelected = kNoButtonSelected;
 	int textSelected = kNoButtonSelected;
@@ -322,9 +321,11 @@ Common::Error JMPEngine_JMAN::run() {
 	playVideoCentered("support/slogo.avi");
 	playVideoCentered("support/presto.avi");
 	_system->fillScreen(_system->getScreenFormat().RGBToColor(0, 0, 0));
-	_system->updateScreen();
-	// show present.bmp
+	_gfx->drawBitmap("support/present.bmp", 213, 223);
+	_system->delayMillis(5000);
 	playVideoCentered("support/jmanspin.avi");
+	_sound->playSound("support/shared/caltheme.wav");
+	_system->delayMillis(10000);
 	
 	// Main Menu/Introduction:
 	int menuResult = runMainMenu();
