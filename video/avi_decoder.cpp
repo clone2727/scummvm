@@ -123,13 +123,13 @@ void AviDecoder::runHandle(uint32 tag) {
 			} break;
 		case ID_IDX1:
 			_ixInfo.resize(_fileStream->readUint32LE() / 16);
-			debug (0, "%d Indices", _ixInfo.size());
+			debug(3, "%d Indices", _ixInfo.size());
 			for (uint32 i = 0; i < _ixInfo.size(); i++) {
 				_ixInfo[i].id = _fileStream->readUint32BE();
 				_ixInfo[i].flags = _fileStream->readUint32LE();
 				_ixInfo[i].offset = _fileStream->readUint32LE();
 				_ixInfo[i].size = _fileStream->readUint32LE();
-				debug (0, "Index %d == Tag \'%s\', Offset = %d, Size = %d", i, tag2str(_ixInfo[i].id), _ixInfo[i].offset, _ixInfo[i].size);
+				debug(4, "Index %d == Tag \'%s\', Offset = %d, Size = %d", i, tag2str(_ixInfo[i].id), _ixInfo[i].offset, _ixInfo[i].size);
 			}
 			break;
 		default:
