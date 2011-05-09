@@ -199,6 +199,11 @@ enum {
 Common::Error JMPEngine_BITDemo::run() {
 	init();
 
+	if (useHighColor())
+		loadMandatoryEXE("BIT2416.EXE");
+	else
+		loadMandatoryEXE("BIT816.EXE");
+
 	static const Common::Rect demoMainMenuButtons[] = {
 		Common::Rect( 28, 155, 168, 326),
 		Common::Rect(177, 155, 315, 326),
@@ -219,6 +224,7 @@ Common::Error JMPEngine_BITDemo::run() {
 		return Common::kNoError;
 	
 	// Next, play the Presto Studios logo.
+	_system->fillScreen(_system->getScreenFormat().RGBToColor(0, 0, 0));
 	playVideoCentered("misc/presto.avi");
 	
 	if (shouldQuit())
