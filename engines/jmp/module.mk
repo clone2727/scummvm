@@ -7,6 +7,7 @@ MODULE_OBJS = \
 	detection.o \
 	graphics.o \
 	jman.o \
+	jman_trailer.o \
 	jmp.o \
 	journey.o \
 	sound.o

@@ -128,6 +128,17 @@ private:
 	void drawDate();
 };
 
+class JMPEngine_JMANTrailer : public JMPEngine {
+public:
+	JMPEngine_JMANTrailer(OSystem *syst, const JMPGameDescription *gamedesc);
+	~JMPEngine_JMANTrailer();
+
+	Common::Error run();
+
+private:
+	void runFinalImage(int index, uint32 delay);
+};
+
 } // End of namespace JMP
 
 #endif

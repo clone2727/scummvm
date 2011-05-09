@@ -20,52 +20,58 @@
  *
  */
 
-#include "common/error.h"
-#include "common/textconsole.h"
+#include "jmp/jman.h"
 
-#include "jmp/bit.h"
+#include "common/error.h"
+#include "common/events.h"
+#include "common/rect.h"
+#include "common/stream.h"
+#include "common/textconsole.h"
+#include "graphics/cursorman.h"
 
 namespace JMP {
 
-Common::Error JMPEngine_BITTrailer::run() {
+JMPEngine_JMANTrailer::JMPEngine_JMANTrailer(OSystem *syst, const JMPGameDescription *gamedesc) : JMPEngine(syst, gamedesc) {
+}
+
+JMPEngine_JMANTrailer::~JMPEngine_JMANTrailer() {
+}
+
+Common::Error JMPEngine_JMANTrailer::run() {
+	// Initialization:
 	init();
 
-	// HACK
-	if (getEXEFileName() == "DEMOMV.AVI") {
-		warning("No support for the Old Buried in Time demo yet");
-		return Common::kNoError;
-	}
+	// Show the video portion
+	CursorMan.showMouse(false);
+	_gfx->drawBitmap("UI.BMP", 0, 0);
+	playVideo("JM1DEMO.AVI", 128, 90);
 
-	loadMandatoryEXE(getEXEFileName());
+	// Draw the ending images
+	runFinalImage(1, 6000);
+	runFinalImage(2, 6000);
+	runFinalImage(3, 2000);
+	runFinalImage(4, 6000);
+	runFinalImage(5, 4000);
+	runFinalImage(6, 6000);
 
-	// For Buried in Time trailers:
-	// Bitmap 101 is the 8bpp version
-	// Bitmap 102 is the 24bpp version
-
-	int baseID = 101;
-	int videoX = 103, videoY = 135;
-
-	if (getEXEFileName() == "JDCDEMO.EXE") {
-		// TODO: handle animation
-		baseID = 114;
-		videoX = 76;
-		videoY = 164;
-	} else {
-		// Adjust overview coordinates
-		if (getEXEFileName() == "BITOVRVW.EXE") {
-			videoX = 160;
-			videoY = 112;
-		}
-
-		// Adjust to get the 24bpp image
-		if (useHighColor())
-			baseID++;
-	}
-
-	_gfx->drawEXEBitmap(baseID);
-	playVideo(getAVIFileName(), videoX, videoY);
-		
 	return Common::kNoError;
 }
 
+void JMPEngine_JMANTrailer::runFinalImage(int index, uint32 delay) {
+	if (shouldQuit())
+		return;
+
+	_gfx->drawBitmap(Common::String::format("FINAL%d.BMP", index), 0, 0);
+
+	uint32 startTime = _system->getMillis();
+
+	while (_system->getMillis() < startTime + delay && !shouldQuit()) {
+		Common::Event event;
+		while (_eventMan->pollEvent(event))
+			;
+
+		_system->delayMillis(10);
+	}
+}
+	
 } // End of namespace JMP

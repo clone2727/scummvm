@@ -90,6 +90,22 @@ static const PlainGameDescriptor jmpGames[] = {
 namespace JMP {
 
 static const JMPGameDescription gameDescriptions[] = {
+	// From the Turbo! CD
+	{
+		{
+			"jman",
+			"Trailer",
+			AD_ENTRY1("JM1DEMO.AVI", "22ded699870850886163e718246c4845"),
+			Common::EN_ANY,
+			Common::kPlatformWindows,
+			ADGF_NO_FLAGS,
+			Common::GUIO_NONE
+		},
+		GType_JMAN,
+		GF_TRAILER,
+		0,
+	},
+
 	{
 		{
 			"jmanturbo",
@@ -125,7 +141,6 @@ static const JMPGameDescription gameDescriptions[] = {
 #endif
 
 	// From Turbo! CD
-
 	{
 		{
 			"journey",
@@ -170,6 +185,22 @@ static const JMPGameDescription gameDescriptions[] = {
 		},
 		GType_BIT,
 		GF_DEMO,
+		0,
+	},
+
+	// From the Turbo! CD
+	{
+		{
+			"bit",
+			"Old Trailer",
+			AD_ENTRY1("DEMOMV.AVI", "577d2f394e37266cba8dc14cea4b2df6"),
+			Common::EN_ANY,
+			Common::kPlatformWindows,
+			ADGF_NO_FLAGS,
+			Common::GUIO_NONE
+		},
+		GType_BIT,
+		GF_TRAILER,
 		0,
 	},
 
@@ -300,7 +331,10 @@ bool JMPMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGameD
 	if (gd) {
 		switch (gd->gameType) {
 		case JMP::GType_JMAN:
-			*engine = new JMP::JMPEngine_JMAN(syst, gd);
+			if (gd->features & JMP::GF_TRAILER)
+				*engine = new JMP::JMPEngine_JMANTrailer(syst, gd);
+			else
+				*engine = new JMP::JMPEngine_JMAN(syst, gd);
 			break;
 		case JMP::GType_JOURNEY:
 			*engine = new JMP::JMPEngine_Journey(syst, gd);
