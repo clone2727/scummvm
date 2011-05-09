@@ -261,6 +261,11 @@ public:
 	virtual void seekToTime(Audio::Timestamp time) = 0;
 
 	/**
+	 * Seek to the specified frame (0 = first frame)
+	 */
+	virtual void seekToFrame(uint32 frame) = 0;
+
+	/**
 	 * Seek to the specified time (in ms).
 	 */
 	void seekToTime(uint32 msecs) { seekToTime(Audio::Timestamp(msecs, 1000)); }
@@ -278,11 +283,6 @@ public:
 
 class FixedRateSeekableVideoDecoder : public virtual FixedRateVideoDecoder, public virtual SeekableVideoDecoder {
 public:
-	/**
-	 * Seek to the specified frame (0 = first frame)
-	 */
-	virtual void seekToFrame(uint32 frame) = 0;
-
 	/**
 	 * Implementation of SeekableVideoDecoder::seekToTime()
 	 */
