@@ -48,7 +48,7 @@ void JMPEngine::init() {
 }
 
 void JMPEngine::playVideo(Common::String filename, uint16 x, uint16 y) {
-	Video::VideoDecoder *video = new Video::AviDecoder(_mixer);
+	Video::SeekableVideoDecoder *video = new Video::AviDecoder(_mixer);
 
 	if (!video->loadFile(filename)) {
 		delete video;
@@ -60,7 +60,7 @@ void JMPEngine::playVideo(Common::String filename, uint16 x, uint16 y) {
 }
 
 void JMPEngine::playVideoCentered(Common::String filename) {
-	Video::VideoDecoder *video = new Video::AviDecoder(_mixer);
+	Video::SeekableVideoDecoder *video = new Video::AviDecoder(_mixer);
 
 	if (!video->loadFile(filename)) {
 		delete video;
@@ -71,7 +71,7 @@ void JMPEngine::playVideoCentered(Common::String filename) {
 	delete video;
 }
 
-void JMPEngine::playVideo(Video::VideoDecoder *video, uint16 x, uint16 y) {
+void JMPEngine::playVideo(Video::SeekableVideoDecoder *video, uint16 x, uint16 y) {
 	bool continuePlaying = true;
 
 	while (!shouldQuit() && !video->endOfVideo() && continuePlaying) {		
