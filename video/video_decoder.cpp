@@ -28,6 +28,7 @@
 #include "common/rational.h"
 #include "common/file.h"
 #include "common/system.h"
+#include "common/textconsole.h"
 
 #include "graphics/palette.h"
 
@@ -116,6 +117,17 @@ uint32 FixedRateVideoDecoder::getFrameBeginTime(uint32 frame) const {
 	Common::Rational beginTime = frame * 1000;
 	beginTime /= getFrameRate();
 	return beginTime.toInt();
+}
+
+void FixedRateSeekableVideoDecoder::seekToTime(Audio::Timestamp time) {
+	Common::Rational frame = getFrameRate() * time.msecs();
+	frame /= 1000;
+	seekToFrame(frame.toInt());
+}
+
+uint32 FixedRateSeekableVideoDecoder::getDuration() const {
+	// Since it's fixed rate, we can easily calculate this
+	return getFrameBeginTime(getFrameCount());
 }
 
 } // End of namespace Video

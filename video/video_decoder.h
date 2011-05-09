@@ -228,7 +228,9 @@ protected:
 	 */
 	virtual Common::Rational getFrameRate() const = 0;
 
-private:
+	/**
+	 * Return the time the request frame should start in ms.
+	 */
 	uint32 getFrameBeginTime(uint32 frame) const;
 };
 
@@ -272,6 +274,24 @@ public:
 	 * Get the total duration of the video (in ms).
 	 */
 	virtual uint32 getDuration() const = 0;
+};
+
+class FixedRateSeekableVideoDecoder : public virtual FixedRateVideoDecoder, public virtual SeekableVideoDecoder {
+public:
+	/**
+	 * Seek to the specified frame (0 = first frame)
+	 */
+	virtual void seekToFrame(uint32 frame) = 0;
+
+	/**
+	 * Implementation of SeekableVideoDecoder::seekToTime()
+	 */
+	virtual void seekToTime(Audio::Timestamp time);
+
+	/**
+	 * Implementation of SeekableVideoDecoder::getDuration()
+	 */
+	virtual uint32 getDuration() const;
 };
 
 } // End of namespace Video
