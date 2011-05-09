@@ -23,6 +23,7 @@
  *
  */
 
+#include "common/queue.h"
 #include "common/stream.h"
 #include "common/system.h"
 #include "common/textconsole.h"
@@ -68,6 +69,9 @@ AviDecoder::AviDecoder(Audio::Mixer *mixer, Audio::Mixer::SoundType soundType) :
 	_fileStream = NULL;
 	_audHandle = new Audio::SoundHandle();
 	_dirtyPalette = false;
+	_movieListStart = 0;
+	_audioStartOffset = 0;
+
 	memset(_palette, 0, sizeof(_palette));
 	memset(&_wvInfo, 0, sizeof(PCMWAVEFORMAT));
 	memset(&_bmInfo, 0, sizeof(BITMAPINFOHEADER));
@@ -127,9 +131,9 @@ void AviDecoder::runHandle(uint32 tag) {
 			for (uint32 i = 0; i < _ixInfo.size(); i++) {
 				_ixInfo[i].id = _fileStream->readUint32BE();
 				_ixInfo[i].flags = _fileStream->readUint32LE();
-				_ixInfo[i].offset = _fileStream->readUint32LE();
+				_ixInfo[i].offset = _fileStream->readUint32LE() + _movieListStart; // Based on the movie list start
 				_ixInfo[i].size = _fileStream->readUint32LE();
-				debug(4, "Index %d == Tag \'%s\', Offset = %d, Size = %d", i, tag2str(_ixInfo[i].id), _ixInfo[i].offset, _ixInfo[i].size);
+				debug(4, "Index %d == Tag \'%s\', Offset = %d, Size = %d, Flags = %08x", i, tag2str(_ixInfo[i].id), _ixInfo[i].offset, _ixInfo[i].size, _ixInfo[i].flags);
 			}
 			break;
 		default:
@@ -252,11 +256,14 @@ bool AviDecoder::loadStream(Common::SeekableReadStream *stream) {
 	// Ignore the 'movi' LIST
 	if (nextTag == ID_LIST) {
 		uint32 listSize = _fileStream->readUint32LE();
+
+		// Store the movie list start for use with seeking
+		_movieListStart = _fileStream->pos();
+
 		if (_fileStream->readUint32BE() != ID_MOVI)
 			error("Expected 'movi' LIST");
 
 		// Let's go find the index (if present)
-		uint32 startPos = _fileStream->pos();
 		_fileStream->skip(listSize + (listSize & 1) - 4);
 
 		uint32 tag = _fileStream->readUint32BE();
@@ -264,7 +271,7 @@ bool AviDecoder::loadStream(Common::SeekableReadStream *stream) {
 			runHandle(ID_IDX1);
 
 		// Seek back
-		_fileStream->seek(startPos);
+		_fileStream->seek(_movieListStart + 4);
 	} else
 		error("Expected 'movi' LIST");
 
@@ -298,6 +305,7 @@ void AviDecoder::close() {
 	// Deinitialize sound
 	_mixer->stopHandle(*_audHandle);
 	_audStream = 0;
+	_audioStartOffset = 0;
 
 	_decodedHeader = false;
 
@@ -317,9 +325,22 @@ void AviDecoder::close() {
 
 uint32 AviDecoder::getElapsedTime() const {
 	if (_audStream)
-		return _mixer->getSoundElapsedTime(*_audHandle);
+		return _mixer->getSoundElapsedTime(*_audHandle) + _audioStartOffset;
 
 	return FixedRateVideoDecoder::getElapsedTime();
+}
+
+static bool tagIsVideoStream(uint32 tag) {
+	switch (getStreamType(tag)) {
+	case 'dc':
+	case 'id':
+	case 'AM':
+	case '32':
+	case 'iv':
+		return true;
+	}
+
+	return false;
 }
 
 const Graphics::Surface *AviDecoder::decodeNextFrame() {
@@ -353,9 +374,7 @@ const Graphics::Surface *AviDecoder::decodeNextFrame() {
 		uint32 chunkSize = _fileStream->readUint32LE();
 		queueAudioBuffer(chunkSize);
 		_fileStream->skip(chunkSize & 1); // Alignment
-	} else if (getStreamType(nextTag) == 'dc' || getStreamType(nextTag) == 'id' ||
-	           getStreamType(nextTag) == 'AM' || getStreamType(nextTag) == '32' ||
-			   getStreamType(nextTag) == 'iv') {
+	} else if (tagIsVideoStream(nextTag)) {
 		// Compressed Frame
 		_curFrame++;
 		uint32 chunkSize = _fileStream->readUint32LE();
@@ -461,6 +480,90 @@ void AviDecoder::queueAudioBuffer(uint32 chunkSize) {
 	} else if (_wvInfo.tag == kWaveFormatDK3) {
 		_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, chunkSize, Audio::kADPCMDK3, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
 	}
+}
+
+void AviDecoder::seekToFrame(uint32 frame) {
+	if (_ixInfo.empty())
+		error("AviDecoder::seekToFrame(): No index present");
+
+	if (frame >= getFrameCount())
+		error("AviDecoder::seekToFrame(): Frame %d out of bounds", frame);
+
+	// Reinitialize audio
+	_mixer->stopHandle(*_audHandle);
+	_audStream = createAudioStream();
+
+	_curFrame = -1;
+	int lastRecordIndex = -1;
+	int lastKeyFrameIndex = -1;
+	Common::Queue<int> lastWaveBuffers;
+
+	for (uint32 i = 0; i < _ixInfo.size(); i++) {
+		if (_ixInfo[i].id == ID_REC) {
+			lastRecordIndex = i;
+		} else if (getStreamType(_ixInfo[i].id) == 'wb') {
+			// We need to get 'initialFrames' worth of audio buffers in
+			// However, we ignore the last one for the current frame
+			lastWaveBuffers.push(i);
+			if ((uint32)lastWaveBuffers.size() > _audsHeader.initialFrames + 1)
+				lastWaveBuffers.pop();
+		} else if (tagIsVideoStream(_ixInfo[i].id)) {
+			_curFrame++;
+
+			// If we have a key frame, mark it down
+			if (_ixInfo[i].flags & AVIIF_KEYFRAME)
+				lastKeyFrameIndex = i;
+
+			if ((uint32)_curFrame == frame) {
+				// We need a key frame to continue
+				if (lastKeyFrameIndex < 0)
+					error("AviDecoder::seekToFrame(): No key frame found");
+
+				// Buffer in audio, ignore this frame's audio
+				while (lastWaveBuffers.size() > 1) {
+					uint32 bufferIndex = lastWaveBuffers.pop();
+					_fileStream->seek(_ixInfo[bufferIndex].offset + 8);
+					queueAudioBuffer(_ixInfo[bufferIndex].size);
+				}
+
+				// Decode from the key frame to the frame before this one
+				for (; (uint32)lastKeyFrameIndex < i; lastKeyFrameIndex++) {
+					if (tagIsVideoStream(_ixInfo[lastKeyFrameIndex].id)) {
+						_fileStream->seek(_ixInfo[lastKeyFrameIndex].offset + 8);
+	
+						if (_ixInfo[lastKeyFrameIndex].size != 0) {
+							Common::SeekableReadStream *frameData = _fileStream->readStream(_ixInfo[lastKeyFrameIndex].size);
+							_videoCodec->decodeImage(frameData);
+							delete frameData;
+						}
+					}
+				}
+
+				// If we have a record, use that directly. Otherwise, just to our frame
+				if (lastRecordIndex < 0)
+					_fileStream->seek(_ixInfo[i].offset);
+				else
+					_fileStream->seek(_ixInfo[lastRecordIndex].offset);
+
+				// Adjust the current frame variable
+				_curFrame--;
+
+				// Reset our new start time
+				_audioStartOffset = getFrameBeginTime(frame);
+				_startTime = g_system->getMillis() - _audioStartOffset;
+
+				// Begin playing audio again
+				if (_audStream)
+					_mixer->playStream(_soundType, _audHandle, _audStream);
+
+				// We're done!
+				return;
+			}
+		}
+	}
+
+	// Should never happen
+	error("AviDecoder::seekToFrame(): Could not find frame %d", frame);
 }
 
 } // End of namespace Video

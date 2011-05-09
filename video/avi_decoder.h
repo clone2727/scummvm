@@ -129,8 +129,9 @@ struct OldIndexEntry {
 };
 
 // Index Flags
+// This should be the only one that's useful to us
 enum IndexFlags {
-	AVIIF_INDEX = 0x10
+	AVIIF_KEYFRAME = 0x10
 };
 
 // Audio Codecs
@@ -188,7 +189,7 @@ struct AVIStreamHeader {
  * Video decoder used in engines:
  *  - sci
  */
-class AviDecoder : public FixedRateVideoDecoder {
+class AviDecoder : public FixedRateSeekableVideoDecoder {
 public:
 	AviDecoder(Audio::Mixer *mixer,
 			Audio::Mixer::SoundType soundType = Audio::Mixer::kPlainSoundType);
@@ -207,6 +208,9 @@ public:
 	const byte *getPalette() { _dirtyPalette = false; return _palette; }
 	bool hasDirtyPalette() const { return _dirtyPalette; }
 
+	// FixedRateSeekableVideoDecoder API
+	void seekToFrame(uint32 frame);
+
 protected:
 	Common::Rational getFrameRate() const { return Common::Rational(_vidsHeader.rate, _vidsHeader.scale); }
 
@@ -223,6 +227,7 @@ private:
 
 	Common::SeekableReadStream *_fileStream;
 	bool _decodedHeader;
+	uint32 _movieListStart;
 
 	Codec *_videoCodec;
 	Codec *createCodec();
@@ -236,6 +241,7 @@ private:
 
 	Audio::SoundHandle *_audHandle;
 	Audio::QueuingAudioStream *_audStream;
+	uint32 _audioStartOffset;
 	Audio::QueuingAudioStream *createAudioStream();
 	void queueAudioBuffer(uint32 chunkSize);
 };
