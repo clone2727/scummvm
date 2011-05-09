@@ -502,10 +502,9 @@ void AviDecoder::seekToFrame(uint32 frame) {
 		if (_ixInfo[i].id == ID_REC) {
 			lastRecordIndex = i;
 		} else if (getStreamType(_ixInfo[i].id) == 'wb') {
-			// We need to get 'initialFrames' worth of audio buffers in
-			// However, we ignore the last one for the current frame
+			// We need to buffer 'initialFrames' worth of audio frames
 			lastWaveBuffers.push(i);
-			if ((uint32)lastWaveBuffers.size() > _audsHeader.initialFrames + 1)
+			if ((uint32)lastWaveBuffers.size() > _audsHeader.initialFrames)
 				lastWaveBuffers.pop();
 		} else if (tagIsVideoStream(_ixInfo[i].id)) {
 			_curFrame++;
@@ -520,7 +519,7 @@ void AviDecoder::seekToFrame(uint32 frame) {
 					error("AviDecoder::seekToFrame(): No key frame found");
 
 				// Buffer in audio, ignore this frame's audio
-				while (lastWaveBuffers.size() > 1) {
+				while (!lastWaveBuffers.empty()) {
 					uint32 bufferIndex = lastWaveBuffers.pop();
 					_fileStream->seek(_ixInfo[bufferIndex].offset + 8);
 					queueAudioBuffer(_ixInfo[bufferIndex].size);
@@ -539,11 +538,8 @@ void AviDecoder::seekToFrame(uint32 frame) {
 					}
 				}
 
-				// If we have a record, use that directly. Otherwise, just to our frame
-				if (lastRecordIndex < 0)
-					_fileStream->seek(_ixInfo[i].offset);
-				else
-					_fileStream->seek(_ixInfo[lastRecordIndex].offset);
+				// Seek to our frame
+				_fileStream->seek(_ixInfo[i].offset);
 
 				// Adjust the current frame variable
 				_curFrame--;
