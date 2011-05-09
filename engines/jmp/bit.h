@@ -167,7 +167,11 @@ public:
 private:
 	void waitUntilMouseClick();
 	void drawMiscBitmap(Common::String filename, uint16 x, uint16 y);
+
 	void quitFromMainMenu();
+	void runGallery();
+	void runOverview();
+	void runTrailer();
 };
 
 class JMPEngine_BITTrailer : public JMPEngine_BIT {

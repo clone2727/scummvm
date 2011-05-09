@@ -32,6 +32,10 @@
 namespace JMP {
 
 enum {
+	kDemoMainMenuOverview = 0,
+	kDemoMainMenuTrailer = 1,
+	kDemoMainMenuBeginGame = 2,
+	kDemoMainMenuGallery = 3,
 	kDemoMainMenuQuit = 4,
 	kDemoMaxMainMenuButtons = 5,
 	
@@ -106,14 +110,22 @@ Common::Error JMPEngine_BITDemo::run() {
 							buttonSelected = i;
 					break;
 				case Common::EVENT_LBUTTONUP:
-					if (buttonSelected == kDemoNoButtonSelected)
-						break;
 					switch (buttonSelected) {
+						case kDemoMainMenuOverview:
+							runOverview();
+							break;
+						case kDemoMainMenuTrailer:
+							runTrailer();
+							break;
+						case kDemoMainMenuBeginGame:
+							warning("Cannot start game just yet");
+							break;
+						case kDemoMainMenuGallery:
+							runGallery();
+							break;
 						case kDemoMainMenuQuit:
 							quitFromMainMenu();
 							return Common::kNoError;
-						default:
-							warning("Unhandled BIT Demo main menu button");
 					}
 					break;
 				default:
@@ -177,6 +189,30 @@ void JMPEngine_BITDemo::waitUntilMouseClick() {
 
 		_system->delayMillis(10);
 	}
+}
+
+void JMPEngine_BITDemo::runGallery() {
+	_sound->stopSound();
+	drawMiscBitmap("gallery.bmp", 0, 0);
+	playVideo("misc/gallery.avi", 104, 136);
+	_sound->playSound("misc/menuloop.wav", true);
+	drawMiscBitmap("mainmenu.bmp", 0, 0);
+}
+
+void JMPEngine_BITDemo::runOverview() {
+	_sound->stopSound();
+	drawMiscBitmap("overview.bmp", 0, 0);
+	playVideo("misc/overview.avi", 160, 112);
+	_sound->playSound("misc/menuloop.wav", true);
+	drawMiscBitmap("mainmenu.bmp", 0, 0);
+}
+
+void JMPEngine_BITDemo::runTrailer() {
+	_sound->stopSound();
+	drawMiscBitmap("trailer.bmp", 0, 0);
+	playVideo("misc/trailer.avi", 104, 136);
+	_sound->playSound("misc/menuloop.wav", true);
+	drawMiscBitmap("mainmenu.bmp", 0, 0);
 }
 
 } // End of namespace JMP
