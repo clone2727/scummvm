@@ -494,14 +494,11 @@ void AviDecoder::seekToFrame(uint32 frame) {
 	_audStream = createAudioStream();
 
 	_curFrame = -1;
-	int lastRecordIndex = -1;
 	int lastKeyFrameIndex = -1;
 	Common::Queue<int> lastWaveBuffers;
 
 	for (uint32 i = 0; i < _ixInfo.size(); i++) {
-		if (_ixInfo[i].id == ID_REC) {
-			lastRecordIndex = i;
-		} else if (getStreamType(_ixInfo[i].id) == 'wb') {
+		if (getStreamType(_ixInfo[i].id) == 'wb') {
 			// We need to buffer 'initialFrames' worth of audio frames
 			lastWaveBuffers.push(i);
 			if ((uint32)lastWaveBuffers.size() > _audsHeader.initialFrames)
