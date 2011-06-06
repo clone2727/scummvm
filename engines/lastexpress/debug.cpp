@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/debug.h"
@@ -868,7 +865,7 @@ bool Debugger::cmdBeetle(int argc, const char **argv) {
 				askForRedraw();
 				redrawScreen();
 
-				while (g_engine->getEventManager()->pollEvent(ev)) {
+				while (g_system->getEventManager()->pollEvent(ev)) {
 
 					switch (ev.type) {
 					default:

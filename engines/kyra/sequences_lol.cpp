@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_LOL
@@ -205,8 +202,7 @@ void LoLEngine::setupPrologueData(bool load) {
 void LoLEngine::showIntro() {
 	_tim = new TIMInterpreter(this, _screen, _system);
 	assert(_tim);
-	_animator = _tim->animator();
-
+	
 	if (_flags.platform == Common::kPlatformPC98)
 		showStarcraftLogo();
 
@@ -265,7 +261,6 @@ void LoLEngine::showIntro() {
 
 	delete _tim;
 	_tim = 0;
-	_animator = 0;
 
 	_screen->fadePalette(_screen->getPalette(1), 30, 0);
 }
@@ -273,7 +268,6 @@ void LoLEngine::showIntro() {
 int LoLEngine::chooseCharacter() {
 	_tim = new TIMInterpreter(this, _screen, _system);
 	assert(_tim);
-	_animator = _tim->animator();
 
 	_tim->setLangData("LOLINTRO.DIP");
 
@@ -390,7 +384,6 @@ int LoLEngine::chooseCharacter() {
 
 	delete _tim;
 	_tim = 0;
-	_animator = 0;
 
 	return _charSelection;
 }
@@ -1064,7 +1057,6 @@ void LoLEngine::showOutro(int character, bool maxDifficulty) {
 	setupEpilogueData(true);
 	TIMInterpreter *timBackUp = _tim;
 	_tim = new TIMInterpreter(this, _screen, _system);
-	_animator = _tim->animator();
 
 	_screen->getPalette(0).clear();
 	_screen->setScreenPalette(_screen->getPalette(0));
@@ -1120,47 +1112,49 @@ void LoLEngine::showOutro(int character, bool maxDifficulty) {
 
 	_screen->fadeToBlack(30);
 
-	showCredits();
+	if (!shouldQuit())
+		showCredits();
 
 	_eventList.clear();
+	
+	if (!shouldQuit()) {
+		switch (character) {
+		case 0:
+			_screen->loadBitmap("KIERAN.CPS", 3, 3, &_screen->getPalette(0));
+			break;
 
-	switch (character) {
-	case 0:
-		_screen->loadBitmap("KIERAN.CPS", 3, 3, &_screen->getPalette(0));
-		break;
+		case 1:
+			_screen->loadBitmap("AK'SHEL.CPS", 3, 3, &_screen->getPalette(0));
+			break;
 
-	case 1:
-		_screen->loadBitmap("AK'SHEL.CPS", 3, 3, &_screen->getPalette(0));
-		break;
+		case 2:
+			_screen->loadBitmap("MICHAEL.CPS", 3, 3, &_screen->getPalette(0));
+			break;
 
-	case 2:
-		_screen->loadBitmap("MICHAEL.CPS", 3, 3, &_screen->getPalette(0));
-		break;
+		case 3:
+			_screen->loadBitmap("CONRAD.CPS", 3, 3, &_screen->getPalette(0));
+			break;
 
-	case 3:
-		_screen->loadBitmap("CONRAD.CPS", 3, 3, &_screen->getPalette(0));
-		break;
+		default:
+			_screen->clearPage(3);
+			_screen->getPalette(0).clear();
+		}
 
-	default:
-		_screen->clearPage(3);
-		_screen->getPalette(0).clear();
+		_screen->copyRegion(0, 0, 0, 0, 320, 200, 2, 0, Screen::CR_NO_P_CHECK);
+		if (maxDifficulty && !_flags.use16ColorMode)
+			_tim->displayText(0x8000, 0, 0xDC);
+		_screen->updateScreen();
+		_screen->fadePalette(_screen->getPalette(0), 30, 0);
+
+		while (!checkInput(0) && !shouldQuit())
+			delay(_tickLength);
+
+		_screen->fadeToBlack(30);
 	}
-
-	_screen->copyRegion(0, 0, 0, 0, 320, 200, 2, 0, Screen::CR_NO_P_CHECK);
-	if (maxDifficulty && !_flags.use16ColorMode)
-		_tim->displayText(0x8000, 0, 0xDC);
-	_screen->updateScreen();
-	_screen->fadePalette(_screen->getPalette(0), 30, 0);
-
-	while (!checkInput(0) && !shouldQuit())
-		delay(_tickLength);
-
-	_screen->fadeToBlack(30);
 
 	_tim->clearLangData();
 	delete _tim;
 	_tim = timBackUp;
-	_animator = 0;
 
 	setupEpilogueData(false);
 }
@@ -1248,7 +1242,7 @@ void LoLEngine::processCredits(char *t, int dimState, int page, int delayTime) {
 
 	int curShapeFile = 0;
 	uint8 *shapes[12];
-	memset(&shapes, 0, sizeof(shapes));
+	memset(shapes, 0, sizeof(shapes));
 
 	loadOutroShapes(curShapeFile++, shapes);
 	uint8 *monsterPal = 0;

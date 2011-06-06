@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/config-manager.h"
@@ -362,8 +359,19 @@ void SaveLoadChooser::updateSaveList() {
 	}
 
 	// Fill the rest of the save slots with empty saves
+
+	int maximumSaveSlots = (*_plugin)->getMaximumSaveSlot();
+
+#ifdef __DS__
+	// Low memory on the DS means too many save slots are impractical, so limit
+	// the maximum here.
+	if (maximumSaveSlots > 99) {
+		maximumSaveSlots = 99;
+	}
+#endif
+
 	Common::String emptyDesc;
-	for (int i = curSlot; i <= (*_plugin)->getMaximumSaveSlot(); i++) {
+	for (int i = curSlot; i <= maximumSaveSlots; i++) {
 		saveNames.push_back(emptyDesc);
 		SaveStateDescriptor dummySave(i, "");
 		_saveList.push_back(dummySave);

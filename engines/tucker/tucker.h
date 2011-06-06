@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TUCKER_ENGINE_H
@@ -568,7 +565,7 @@ protected:
 
 	template <class S> void saveOrLoadGameStateData(S &s);
 	virtual Common::Error loadGameState(int num);
-	virtual Common::Error saveGameState(int num, const char *description);
+	virtual Common::Error saveGameState(int num, const Common::String &description);
 	virtual bool canLoadGameStateCurrently();
 	virtual bool canSaveGameStateCurrently();
 

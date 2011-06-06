@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -51,36 +48,35 @@ public:
 	AnimationResource(const Common::String &filename);
 	virtual ~AnimationResource();
 
-	virtual const Frame    &getFrame(uint index) const {
-		assert(index < _frames.size());
+	virtual const Frame &getFrame(uint index) const {
 		return _frames[index];
 	}
-	virtual uint    getFrameCount() const {
+	virtual uint getFrameCount() const {
 		return _frames.size();
 	}
-	virtual void            unlock() {
+	virtual void unlock() {
 		release();
 	}
 
-	Animation::ANIMATION_TYPES   getAnimationType() const {
+	Animation::ANIMATION_TYPES getAnimationType() const {
 		return _animationType;
 	}
-	int                             getFPS() const {
+	int getFPS() const {
 		return _FPS;
 	}
-	int                             getMillisPerFrame() const {
+	int getMillisPerFrame() const {
 		return _millisPerFrame;
 	}
-	bool                            isScalingAllowed() const {
+	bool isScalingAllowed() const {
 		return _scalingAllowed;
 	}
-	bool                            isAlphaAllowed() const {
+	bool isAlphaAllowed() const {
 		return _alphaAllowed;
 	}
-	bool                            isColorModulationAllowed() const {
+	bool isColorModulationAllowed() const {
 		return _colorModulationAllowed;
 	}
-	bool                            isValid() const {
+	bool isValid() const {
 		return _valid;
 	}
 

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -352,6 +349,7 @@ void OSystem_IPHONE::showOverlay() {
 	//printf("showOverlay()\n");
 	_overlayVisible = true;
 	dirtyFullOverlayScreen();
+	updateScreen();
 	iPhone_enableOverlay(true);
 }
 
@@ -371,7 +369,7 @@ void OSystem_IPHONE::clearOverlay() {
 
 void OSystem_IPHONE::grabOverlay(OverlayColor *buf, int pitch) {
 	//printf("grabOverlay()\n");
-	int h = _screenHeight;
+	int h = _overlayHeight;
 	OverlayColor *src = _overlayBuffer;
 
 	do {

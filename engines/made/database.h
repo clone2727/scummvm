@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MADE_DATABASE_H
@@ -65,7 +62,7 @@ public:
 	int16 getVectorItem(int16 index);
 	void setVectorItem(int16 index, int16 value);
 
-	void dump(const char *filename);
+	void dump(const Common::String &filename);
 
 protected:
 	bool _freeData;

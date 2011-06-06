@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef SOUND_MUSICPLUGIN_H
@@ -91,6 +88,13 @@ public:
 	 * Returns a list of the available devices.
 	 */
 	virtual MusicDevices getDevices() const = 0;
+
+	/**
+	 * Checks whether a device can actually be used. Currently this is only
+	 * implemented for the MT-32 emulator to check whether the required rom
+	 * files are present.
+	 */
+	virtual bool checkDevice(MidiDriver::DeviceHandle) const { return true; }
 
 	/**
 	 * Tries to instantiate a MIDI Driver instance based on the device

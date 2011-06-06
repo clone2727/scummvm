@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/events.h"
@@ -247,7 +244,7 @@ void rotatePalette(byte *palette, int size) {
  */
 void GFXtests::setupMouseLoop(bool disableCursorPalette, const char *gfxModeName, int cursorTargetScale) {
 	bool isFeaturePresent;
-	isFeaturePresent = g_system->hasFeature(OSystem::kFeatureCursorHasPalette);
+	isFeaturePresent = g_system->hasFeature(OSystem::kFeatureCursorPalette);
 	Common::Rect cursorRect;
 
 	if (isFeaturePresent) {

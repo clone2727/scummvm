@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "gob/gob.h"
@@ -670,15 +667,13 @@ void Sound::bgPlay(const char *base, const char *ext, SoundType type, int count)
 	_bgatmos->stopBA();
 	_bgatmos->queueClear();
 
-	int length = strlen(base) + 7;
-	char *fileName = new char[length];
 	SoundDesc *sndDesc;
 
 	for (int i = 1; i <= count; i++) {
-		snprintf(fileName, length, "%s%02d.%s", base, i, ext);
+		Common::String fileName = Common::String::format("%s%02d.%s", base, i, ext);
 
 		sndDesc = new SoundDesc;
-		if (sampleLoad(sndDesc, type, fileName))
+		if (sampleLoad(sndDesc, type, fileName.c_str()))
 			_bgatmos->queueSample(*sndDesc);
 		else
 			delete sndDesc;

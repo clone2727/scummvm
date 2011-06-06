@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MOUSE_H
@@ -56,6 +53,7 @@ public:
 	Buffer &buffer() { return _buffer; }
 	void setCursorPalette(const byte *colors, uint start, uint num);
 	void enableCursorPalette(bool enable);
+	bool isCursorPaletteEnabled() const { return _useCursorPalette; }
 	void setLimits(uint32 width, uint32 height);
 	void setXY(int x, int y);
 	int32 getX() const { return _x; }

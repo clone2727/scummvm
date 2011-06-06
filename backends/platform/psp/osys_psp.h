@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef OSYS_PSP_H
@@ -102,7 +99,6 @@ protected:
 	void grabPalette(byte *colors, uint start, uint num);
 public:
 	void setCursorPalette(const byte *colors, uint start, uint num);
-	void disableCursorPalette(bool disable);
 
 	// Screen related
 	void copyRectToScreen(const byte *buf, int pitch, int x, int y, int w, int h);
@@ -160,9 +156,7 @@ public:
 
 	void logMessage(LogMessageType::Type type, const char *message);
 
-	Common::SeekableReadStream *createConfigReadStream();
-	Common::WriteStream *createConfigWriteStream();
-
+	virtual Common::String getDefaultConfigFileName();
 };
 
 #endif /* OSYS_PSP_H */

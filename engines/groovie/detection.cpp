@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "groovie/groovie.h"
@@ -110,6 +107,20 @@ static const GroovieGameDescription gameDescriptions[] = {
 			},
 			Common::RU_RUS, Common::kPlatformPC, ADGF_NO_FLAGS,
 			Common::GUIO_MIDIADLIB | Common::GUIO_MIDIMT32 | Common::GUIO_MIDIGM
+		},
+		kGroovieT7G, 0
+	},
+
+	{
+		{
+			"t7g", "",
+			{
+				{ "script.grv", 0, "d1b8033b40aa67c076039881eccce90d", 16659},
+				{ "SeventhGuest", 0, NULL, -1},
+				{ NULL, 0, NULL, 0}
+			},
+			Common::EN_ANY, Common::kPlatformIOS, ADGF_NO_FLAGS,
+			Common::GUIO_NOMIDI
 		},
 		kGroovieT7G, 0
 	},
@@ -222,7 +233,7 @@ public:
 	GroovieMetaEngine() : AdvancedMetaEngine(detectionParams) {}
 
 	const char *getName() const {
-		return "Groovie Engine";
+		return "Groovie";
 	}
 
 	const char *getOriginalCopyright() const {

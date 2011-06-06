@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Scripting module script function component
@@ -1556,18 +1553,15 @@ void Script::sfNull(SCRIPTFUNC_PARAMS) {
 }
 
 void Script::sfStub(const char *name, ScriptThread *thread, int nArgs) {
-	char buf[256], buf1[100];
-
-	snprintf(buf, 256, "STUB: %s(", name);
+	debugN(0, "STUB: %s(", name);
 
 	for (int i = 0; i < nArgs; i++) {
-		snprintf(buf1, 100, "%d", thread->pop());
-		strncat(buf, buf1, sizeof(buf) - strlen(buf) - 1);
+		debugN(0, "%d", thread->pop());
 		if (i + 1 < nArgs)
-			strncat(buf, ", ", sizeof(buf) - strlen(buf) - 1);
+			debugN(0, ", ");
 	}
 
-	debug(0, "%s)", buf);
+	debug(0, ")");
 }
 
 } // End of namespace Saga

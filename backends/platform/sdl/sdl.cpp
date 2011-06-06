@@ -18,12 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #define FORBIDDEN_SYMBOL_EXCEPTION_time_h
+#define FORBIDDEN_SYMBOL_EXCEPTION_exit
 
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -208,6 +206,8 @@ void OSystem_SDL::initBackend() {
 	setupIcon();
 
 	_inited = true;
+
+	ModularBackend::initBackend();
 }
 
 void OSystem_SDL::initSDL() {
@@ -244,20 +244,6 @@ void OSystem_SDL::addSysArchivesToSearchSet(Common::SearchSet &s, int priority) 
 	}
 #endif
 
-}
-
-Common::String OSystem_SDL::getDefaultConfigFileName() {
-	return "scummvm.ini";
-}
-
-Common::SeekableReadStream *OSystem_SDL::createConfigReadStream() {
-	Common::FSNode file(getDefaultConfigFileName());
-	return file.createReadStream();
-}
-
-Common::WriteStream *OSystem_SDL::createConfigWriteStream() {
-	Common::FSNode file(getDefaultConfigFileName());
-	return file.createWriteStream();
 }
 
 void OSystem_SDL::setWindowCaption(const char *caption) {

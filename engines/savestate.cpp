@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "engines/savestate.h"
@@ -55,20 +52,20 @@ void SaveStateDescriptor::setWriteProtectedFlag(bool state) {
 }
 
 void SaveStateDescriptor::setSaveDate(int year, int month, int day) {
-	char buffer[32];
-	snprintf(buffer, 32, "%.2d.%.2d.%.4d", day, month, year);
+	Common::String buffer;
+	buffer = Common::String::format("%.2d.%.2d.%.4d", day, month, year);
 	setVal("save_date", buffer);
 }
 
 void SaveStateDescriptor::setSaveTime(int hour, int min) {
-	char buffer[32];
-	snprintf(buffer, 32, "%.2d:%.2d", hour, min);
+	Common::String buffer;
+	buffer = Common::String::format("%.2d:%.2d", hour, min);
 	setVal("save_time", buffer);
 }
 
 void SaveStateDescriptor::setPlayTime(int hours, int minutes) {
-	char buffer[32];
-	snprintf(buffer, 32, "%.2d:%.2d", hours, minutes);
+	Common::String buffer;
+	buffer = Common::String::format("%.2d:%.2d", hours, minutes);
 	setVal("play_time", buffer);
 }
 

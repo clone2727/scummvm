@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/timer.h"
@@ -111,7 +108,7 @@ GfxScreen::GfxScreen(ResourceManager *resMan) : _resMan(resMan) {
 
 	_picNotValid = 0;
 	_picNotValidSci11 = 0;
-	_unditherState = true;
+	_unditheringEnabled = true;
 	_fontIsUpscaled = false;
 
 	if (_resMan->getViewType() != kViewEga) {
@@ -560,7 +557,7 @@ void GfxScreen::dither(bool addToFlag) {
 	byte *visualPtr = _visualScreen;
 	byte *displayPtr = _displayScreen;
 
-	if (!_unditherState) {
+	if (!_unditheringEnabled) {
 		// Do dithering on visual and display-screen
 		for (y = 0; y < _height; y++) {
 			for (x = 0; x < _width; x++) {
@@ -624,13 +621,13 @@ void GfxScreen::ditherForceDitheredColor(byte color) {
 	_ditheredPicColors[color] = 256;
 }
 
-void GfxScreen::debugUnditherSetState(bool flag) {
-	_unditherState = flag;
+void GfxScreen::enableUndithering(bool flag) {
+	_unditheringEnabled = flag;
 }
 
 int16 *GfxScreen::unditherGetDitheredBgColors() {
-	if (_unditherState)
-		return (int16 *)&_ditheredPicColors;
+	if (_unditheringEnabled)
+		return _ditheredPicColors;
 	else
 		return NULL;
 }
@@ -766,11 +763,14 @@ int16 GfxScreen::kernelPicNotValid(int16 newPicNotValid) {
 uint16 GfxScreen::getLowResScreenHeight() {
 	// Some Mac SCI1/1.1 games only take up 190 rows and do not
 	// have the menu bar.
+	// TODO: Verify that LSL1 and LSL5 use height 190
 	if (g_sci->getPlatform() == Common::kPlatformMacintosh) {
 		switch (g_sci->getGameId()) {
 		case GID_FREDDYPHARKAS:
 		case GID_KQ5:
 		case GID_KQ6:
+		case GID_LSL1:
+		case GID_LSL5:
 		case GID_SQ1:
 			return 190;
 		default:

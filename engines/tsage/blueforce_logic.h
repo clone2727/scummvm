@@ -11,44 +11,32 @@
 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
  * GNU General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
-// Only compile if Mohawk is enabled or if we're building dynamic modules
-#if defined(ENABLE_MOHAWK) || defined(DYNAMIC_MODULES)
+#ifndef TSAGE_BLUEFORCE_LOGIC_H
+#define TSAGE_BLUEFORCE_LOGIC_H
 
-#ifndef VIDEO_CODECS_QDM2_H
-#define VIDEO_CODECS_QDM2_H
+#include "common/scummsys.h"
+#include "tsage/events.h"
+#include "tsage/core.h"
+#include "tsage/scenes.h"
+#include "tsage/globals.h"
 
-namespace Common {
-class SeekableReadStream;
-}
+namespace tSage {
 
-namespace Audio {
-class AudioStream;
-}
+class BlueForceGame: public Game {
+public:
+	virtual void start();
+	virtual Scene *createScene(int sceneNumber);
+};
 
-namespace Video {
+} // End of namespace tSage
 
-/**
- * Create a new AudioStream from the QDM2 data in the given stream.
- *
- * @param stream       the SeekableReadStream from which to read the FLAC data
- * @param extraData    the QuickTime extra data stream
- * @return   a new AudioStream, or NULL, if an error occurred
- */
-Audio::AudioStream *makeQDM2Stream(Common::SeekableReadStream *stream, Common::SeekableReadStream *extraData);
-
-} // End of namespace Video
-
-#endif // VIDEO_CODECS_QDM2_H
-#endif // Mohawk/Plugins guard
+#endif

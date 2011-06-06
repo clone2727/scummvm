@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef GROOVIE_H
@@ -75,6 +72,12 @@ enum DebugLevels {
 		// the current limitation is 32 debug levels (1 << 31 is the last one)
 };
 
+enum GameSpeed {
+	kGroovieSpeedNormal,
+	kGroovieSpeediOS,
+	kGroovieSpeedTweaked
+};
+
 struct GroovieGameDescription;
 
 class GroovieEngine : public Engine {
@@ -88,7 +91,6 @@ protected:
 
 	// Engine APIs
 	Common::Error run();
-	virtual void errorString(const char *buf_input, char *buf_output, int buf_output_size);
 
 	virtual bool hasFeature(EngineFeature f) const;
 
@@ -112,6 +114,8 @@ public:
 	const Graphics::Font *_font;
 
 	Common::MacResManager *_macResFork;
+
+	GameSpeed _modeSpeed;
 
 private:
 	const GroovieGameDescription *_gameDescription;

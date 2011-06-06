@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "base/plugins.h"
@@ -107,7 +104,7 @@ public:
 	TinselMetaEngine() : AdvancedMetaEngine(detectionParams) {}
 
 	virtual const char *getName() const {
-		return "Tinsel Engine";
+		return "Tinsel";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -413,7 +410,7 @@ Common::Error TinselEngine::loadGameState(int slot) {
 }
 
 #if 0
-Common::Error TinselEngine::saveGameState(int slot, const char *desc) {
+Common::Error TinselEngine::saveGameState(int slot, const Common::String &desc) {
 	Common::String saveName = _vm->getSavegameFilename((int16)(slot + 1));
 	char saveDesc[SG_DESC_LEN];
 	Common::strlcpy(saveDesc, desc, SG_DESC_LEN);

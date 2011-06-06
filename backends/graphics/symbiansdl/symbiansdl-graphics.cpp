@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -57,7 +54,7 @@ bool SymbianSdlGraphicsManager::hasFeature(OSystem::Feature f) {
 	switch (f) {
 	case OSystem::kFeatureFullscreenMode:
 	case OSystem::kFeatureAspectRatioCorrection:
-	case OSystem::kFeatureCursorHasPalette:
+	case OSystem::kFeatureCursorPalette:
 #ifdef  USE_VIBRA_SE_PXXX
 	case OSystem::kFeatureVibration:
 #endif

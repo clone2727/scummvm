@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "graphics/cursorman.h"
@@ -52,7 +49,7 @@ void Object9350::draw() {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9100
+ * Scene 9100 - Near beach: Slave washing clothes
  *
  *--------------------------------------------------------------------------*/
 void Scene9100::SceneHotspot1::doAction(int action) {
@@ -177,7 +174,7 @@ void Scene9100::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9150
+ * Scene 9150 - Castle: Outside the bulwarks
  *
  *--------------------------------------------------------------------------*/
 void Scene9150::Object3::signal() {
@@ -297,7 +294,7 @@ void Scene9150::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9200
+ * Scene 9200 - Castle: Near the fountain
  *
  *--------------------------------------------------------------------------*/
 void Scene9200::SceneHotspot1::doAction(int action) {
@@ -473,7 +470,7 @@ void Scene9200::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9300
+ * Scene 9300 - Castle: In front of a large guarded door
  *
  *--------------------------------------------------------------------------*/
 void Scene9300::signal() {
@@ -540,7 +537,7 @@ void Scene9300::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9350
+ * Scene 9350 - Castle: In a hallway
  *
  *--------------------------------------------------------------------------*/
 
@@ -626,7 +623,7 @@ void Scene9350::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9360
+ * Scene 9360 - Castle: In a hallway
  *
  *--------------------------------------------------------------------------*/
 
@@ -704,7 +701,7 @@ void Scene9360::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9400
+ * Scene 9400 - Castle: Black-Smith room
  *
  *--------------------------------------------------------------------------*/
 Scene9400::Scene9400() {
@@ -822,8 +819,14 @@ void Scene9400::postInit(SceneObjectList *OwnerList) {
 	setAction(&_sequenceManager, this, 9400, &_globals->_player, &_object1, &_object3, NULL);
 }
 
+void Scene9400::synchronize(Serializer &s) {
+	Scene::synchronize(s);
+	if (s.getVersion() >= 3)
+		s.syncAsSint16LE(_field1032);
+}
+
 /*--------------------------------------------------------------------------
- * Scene 9450
+ * Scene 9450 - Castle: Dining room
  *
  *--------------------------------------------------------------------------*/
 void Scene9450::Object2::signal() {
@@ -860,7 +863,7 @@ void Scene9450::Hotspot3::doAction(int action) {
 	case OBJECT_TUNIC2:
 		scene->_sceneMode = 9460;
 		_globals->_player.disableControl();
-		setAction(&scene->_sequenceManager1, scene, 9460, &_globals->_player, &scene->_object2, &scene->_object1, NULL);
+		scene->setAction(&scene->_sequenceManager1, scene, 9460, &_globals->_player, &scene->_object2, &scene->_object1, NULL);
 		break;
 	case OBJECT_TUNIC:
 		SceneItem::display(9450, 49, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
@@ -878,13 +881,13 @@ void Scene9450::Hotspot3::doAction(int action) {
 				scene->_object2._action->remove();
 			scene->_sceneMode = 9459;
 			_globals->_player.disableControl();
-			setAction(&scene->_sequenceManager1, scene, 9459, &scene->_object2, &scene->_object1, &scene->_object3, &_globals->_player, NULL);
+			scene->setAction(&scene->_sequenceManager1, scene, 9459, &scene->_object2, &scene->_object1, &scene->_object3, &_globals->_player, NULL);
 		} else if ((RING_INVENTORY._cloak._sceneNumber != 1) && (RING_INVENTORY._jacket._sceneNumber != 1) && (RING_INVENTORY._tunic2._sceneNumber != 1)) {
 			SceneItem::display(9450, 38, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		} else {
 			scene->_sceneMode = 9460;
 			_globals->_player.disableControl();
-			setAction(&scene->_sequenceManager1, scene, 9460, &_globals->_player, &scene->_object2, &scene->_object1, NULL);
+			scene->setAction(&scene->_sequenceManager1, scene, 9460, &_globals->_player, &scene->_object2, &scene->_object1, NULL);
 		}
 		break;
 	default:
@@ -911,8 +914,10 @@ void Scene9450::signal() {
 			_sceneMode = 1001;
 			if (_object2._action)
 				_object2._action->remove();
+			// Eat
+			setAction(&_sequenceManager1, this, 9455, &_object2, &_object1, &_object3, NULL);
 		}
-		// No break on purpose
+		break;
 	case 1001:
 	case 1003:
 		// Eat
@@ -980,7 +985,7 @@ void Scene9450::postInit(SceneObjectList *OwnerList) {
 	} else {
 		_object3.postInit();
 		_object3.hide();
-		_object3.setAction(&_sequenceManager2, 0, 9455, &_object2, &_object1, NULL);
+		_object3.setAction(&_sequenceManager2, NULL, 9455, &_object2, &_object1, NULL);
 	}
 
 	if (RING_INVENTORY._tunic._sceneNumber != 1)
@@ -1004,7 +1009,7 @@ void Scene9450::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9500
+ * Scene 9500 - Castle: Bedroom
  *
  *--------------------------------------------------------------------------*/
 void Scene9500::Hotspot1::doAction(int action) {
@@ -1225,7 +1230,7 @@ void Scene9500::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9700
+ * Scene 9700 - Castle: Balcony
  *
  *--------------------------------------------------------------------------*/
 void Scene9700::signal() {
@@ -1240,7 +1245,7 @@ void Scene9700::signal() {
 		_gfxButton1.draw();
 		_gfxButton1._bounds.expandPanes();
 		_globals->_player.enableControl();
-		_globals->_player._canWalk = 0;
+		_globals->_player._canWalk = false;
 		_globals->_events.setCursor(CURSOR_USE);
 		break;
 	case 9704:
@@ -1251,6 +1256,7 @@ void Scene9700::signal() {
 }
 
 void Scene9700::process(Event &event) {
+	Scene::process(event);
 	if ((event.eventType == EVENT_BUTTON_DOWN) && !_action) {
 		if (_gfxButton1.process(event)) {
 			_globals->_sceneManager.changeScene(9200);
@@ -1275,7 +1281,7 @@ void Scene9700::postInit(SceneObjectList *OwnerList) {
 
 	_sceneHotspot1.setup(84, 218, 151, 278, 9700, 14, -1);
 	_sceneHotspot2.setup(89, 11, 151, 121, 9700, 14, -1);
-	_sceneHotspot3.setup(69, 119, 138, 218, 9700, 15, 16);
+	_sceneHotspot3.setup(69, 119, 138, 216, 9700, 15, 16);
 	_sceneHotspot4.setup(34, 13, 88, 116, 9700, 17, -1);
 	_sceneHotspot5.setup(52, 119, 68, 204, 9700, 17, -1);
 	_sceneHotspot6.setup(0, 22, 56, 275, 9700, 18, -1);
@@ -1283,7 +1289,7 @@ void Scene9700::postInit(SceneObjectList *OwnerList) {
 	_object1.postInit();
 	_object1.hide();
 	_globals->_player.postInit();
-	if (_globals->getFlag(97)) {
+	if (!_globals->getFlag(97)) {
 		_globals->_player.disableControl();
 		_sceneMode = 9701;
 		setAction(&_sequenceManager, this, 9701, &_globals->_player, &_object1, NULL);
@@ -1296,7 +1302,7 @@ void Scene9700::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9750
+ * Scene 9750 - Castle: In the garden
  *
  *--------------------------------------------------------------------------*/
 void Scene9750::signal() {
@@ -1332,7 +1338,7 @@ void Scene9750::postInit(SceneObjectList *OwnerList) {
 
 
 /*--------------------------------------------------------------------------
- * Scene 9850
+ * Scene 9850 - Castle: Dressing room
  *
  *--------------------------------------------------------------------------*/
 void Scene9850::Object6::doAction(int action) {
@@ -1369,12 +1375,12 @@ void Scene9850::Hotspot12::doAction(int action) {
 			RING_INVENTORY._tunic2._sceneNumber = 1;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9858;
-			setAction(&scene->_sequenceManager, scene, 9858, &_globals->_player, &scene->_objTunic2, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9858, &_globals->_player, &scene->_objTunic2, NULL);
 		} else {
 			RING_INVENTORY._tunic2._sceneNumber = 9850;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9861;
-			setAction(&scene->_sequenceManager, scene, 9861, &_globals->_player, &scene->_objTunic2, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9861, &_globals->_player, &scene->_objTunic2, NULL);
 		}
 	} else if ((action != CURSOR_LOOK) || (RING_INVENTORY._tunic2._sceneNumber != 1)) {
 		NamedHotspot::doAction(action);
@@ -1391,12 +1397,12 @@ void Scene9850::Hotspot14::doAction(int action) {
 			RING_INVENTORY._jacket._sceneNumber = 1;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9857;
-			setAction(&scene->_sequenceManager, scene, 9857, &_globals->_player, &scene->_objJacket, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9857, &_globals->_player, &scene->_objJacket, NULL);
 		} else {
 			RING_INVENTORY._jacket._sceneNumber = 9850;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9860;
-			setAction(&scene->_sequenceManager, scene, 9860, &_globals->_player, &scene->_objJacket, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9860, &_globals->_player, &scene->_objJacket, NULL);
 		}
 	} else if ((action != CURSOR_LOOK) || (RING_INVENTORY._jacket._sceneNumber != 1)) {
 		NamedHotspot::doAction(action);
@@ -1413,12 +1419,12 @@ void Scene9850::Hotspot16::doAction(int action) {
 			RING_INVENTORY._cloak._sceneNumber = 1;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9862;
-			setAction(&scene->_sequenceManager, scene, 9862, &_globals->_player, &scene->_objCloak, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9862, &_globals->_player, &scene->_objCloak, NULL);
 		} else {
 			RING_INVENTORY._cloak._sceneNumber = 9850;
 			_globals->_player.disableControl();
 			scene->_sceneMode = 9859;
-			setAction(&scene->_sequenceManager, scene, 9859, &_globals->_player, &scene->_objCloak, NULL);
+			scene->setAction(&scene->_sequenceManager, scene, 9859, &_globals->_player, &scene->_objCloak, NULL);
 		}
 	} else if ((action != CURSOR_LOOK) || (RING_INVENTORY._cloak._sceneNumber != 1)) {
 		NamedHotspot::doAction(action);
@@ -1636,7 +1642,7 @@ void Scene9850::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9900
+ * Scene 9900 - Ending
  *
  *--------------------------------------------------------------------------*/
 void Scene9900::strAction1::signal() {
@@ -1775,6 +1781,15 @@ void Scene9900::strAction2::dispatch() {
 		_txtArray2[1]._flags |= OBJFLAG_PANES;
 //	}
 	Action::dispatch();
+}
+
+void Scene9900::strAction2::synchronize(Serializer &s) {
+	Action::synchronize(s);
+	if (s.getVersion() >= 3) {
+		s.syncAsSint16LE(_lineNum);
+		s.syncAsSint16LE(_txtArray1Index);
+		s.syncAsSint16LE(_var3);
+	}
 }
 
 void Scene9900::strAction3::signal() {
@@ -1982,7 +1997,7 @@ void Scene9900::postInit(SceneObjectList *OwnerList) {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 9999
+ * Scene 9999 - Space travel
  *
  *--------------------------------------------------------------------------*/
 

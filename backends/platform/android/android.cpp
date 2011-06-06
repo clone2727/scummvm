@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #if defined(__ANDROID__)
@@ -391,6 +388,8 @@ void OSystem_Android::initBackend() {
 		warning("couldn't renice the main thread");
 
 	JNI::setReadyForEvents(true);
+
+	BaseBackend::initBackend();
 }
 
 void OSystem_Android::addPluginDirectories(Common::FSList &dirs) const {
@@ -402,7 +401,7 @@ void OSystem_Android::addPluginDirectories(Common::FSList &dirs) const {
 bool OSystem_Android::hasFeature(Feature f) {
 	return (f == kFeatureFullscreenMode ||
 			f == kFeatureAspectRatioCorrection ||
-			f == kFeatureCursorHasPalette ||
+			f == kFeatureCursorPalette ||
 			f == kFeatureVirtualKeyboard ||
 			f == kFeatureOverlaySupportsAlpha);
 }
@@ -423,6 +422,11 @@ void OSystem_Android::setFeatureState(Feature f, bool enable) {
 		_virtkeybd_on = enable;
 		showVirtualKeyboard(enable);
 		break;
+	case kFeatureCursorPalette:
+		_use_mouse_palette = !enable;
+		if (!enable)
+			disableCursorPalette();
+		break;
 	default:
 		break;
 	}
@@ -436,6 +440,8 @@ bool OSystem_Android::getFeatureState(Feature f) {
 		return _ar_correction;
 	case kFeatureVirtualKeyboard:
 		return _virtkeybd_on;
+	case kFeatureCursorPalette:
+		return _use_mouse_palette;
 	default:
 		return false;
 	}
@@ -571,6 +577,10 @@ void OSystem_Android::addSysArchivesToSearchSet(Common::SearchSet &s,
 void OSystem_Android::logMessage(LogMessageType::Type type,
 									const char *message) {
 	switch (type) {
+	case LogMessageType::kInfo:
+		__android_log_write(ANDROID_LOG_INFO, android_log_tag, message);
+		break;
+
 	case LogMessageType::kDebug:
 		__android_log_write(ANDROID_LOG_DEBUG, android_log_tag, message);
 		break;

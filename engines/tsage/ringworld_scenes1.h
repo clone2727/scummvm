@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_RINGWORLD_SCENES1_H
@@ -443,7 +440,6 @@ class Scene95 : public Scene {
 
 public:
 	Action1 _action1;
-	int _field326;
 	SceneObject _object1, _object2, _object3;
 	SoundHandler _soundHandler;
 
@@ -487,6 +483,8 @@ class Scene6100 : public Scene {
 	class Object : public SceneObject {
 	public:
 		FloatSet _floats;
+
+		virtual void synchronize(Serializer &s);
 	};
 	class ProbeMover : public NpcMover {
 	public:
@@ -523,6 +521,8 @@ public:
 	Object *_objList[4];
 	bool _msgActive;
 
+	Scene6100();
+	virtual void synchronize(Serializer &s);
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
 	virtual void remove();
 	virtual void process(Event &event);

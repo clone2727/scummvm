@@ -18,18 +18,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #define FORBIDDEN_SYMBOL_EXCEPTION_unistd_h
 
+#include "common/scummsys.h"
+
+#if defined(SAMSUNGTV)
+
 #include "backends/platform/samsungtv/samsungtv.h"
 #include "backends/plugins/sdl/sdl-provider.h"
 #include "base/main.h"
-
-#if defined(SAMSUNGTV)
 
 #include <unistd.h>
 
@@ -41,7 +40,7 @@ extern "C" int Game_Main(char *path, char *) {
 	assert(g_system);
 
 	// Pre initialize the backend
-	((OSystem_SDL_SamsungTV *)g_system)->init();
+	((OSystem_POSIX *)g_system)->init();
 
 #ifdef DYNAMIC_MODULES
 	PluginManager::instance().addPluginProvider(new SDLPluginProvider());
@@ -51,7 +50,7 @@ extern "C" int Game_Main(char *path, char *) {
 	int res = scummvm_main(0, 0);
 
 	// Free OSystem
-	delete g_system;
+	delete (OSystem_SDL_SamsungTV *)g_system;
 
 	return res;
 }

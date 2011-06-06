@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_H
@@ -758,6 +755,7 @@ public:
 	virtual void clearKeyQueue() = 0;
 
 	AgiBase(OSystem *syst, const AGIGameDescription *gameDesc);
+	~AgiBase();
 
 	virtual void clearImageStack() = 0;
 	virtual void recordImageStackCall(uint8 type, int16 p1, int16 p2, int16 p3,
@@ -809,7 +807,7 @@ public:
 	virtual ~AgiEngine();
 
 	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const char *desc);
+	Common::Error saveGameState(int slot, const Common::String &desc);
 
 private:
 	uint32 _lastTick;
@@ -971,7 +969,7 @@ public:
 	int showWords();
 	int loadWords(const char *);
 	void unloadWords();
-	int findWord(char *word, int *flen);
+	int findWord(const char *word, int *flen);
 	void dictionaryWords(char *);
 
 	// Motion

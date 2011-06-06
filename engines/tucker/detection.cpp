@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -146,7 +143,7 @@ public:
 	}
 
 	virtual const char *getName() const {
-		return "Tucker Engine";
+		return "Tucker";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -204,8 +201,7 @@ public:
 		}
 		for (int slot = 0; slot <= Tucker::kLastSaveSlot; ++slot) {
 			if (slotsTable[slot]) {
-				char description[64];
-				snprintf(description, sizeof(description), "savegm.%02d", slot);
+				Common::String description = Common::String::format("savegm.%02d", slot);
 				saveList.push_back(SaveStateDescriptor(slot, description));
 			}
 		}

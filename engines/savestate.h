@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef ENGINES_SAVESTATE_H
@@ -52,9 +49,7 @@ public:
 	}
 
 	SaveStateDescriptor(int s, const Common::String &d) : _thumbnail() {
-		char buf[16];
-		sprintf(buf, "%d", s);
-		setVal("save_slot", buf);
+		setVal("save_slot", Common::String::format("%d", s));
 		setVal("description", d);
 	}
 

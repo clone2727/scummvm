@@ -18,12 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
+#include "common/config-manager.h"
 #include "engines/engine.h"
 #include "graphics/palette.h"
 #include "tsage/tsage.h"
@@ -1166,6 +1164,10 @@ ScenePalette::ScenePalette() {
 	_field412 = 0;
 }
 
+ScenePalette::~ScenePalette() {
+	clearListeners();
+}
+
 ScenePalette::ScenePalette(int paletteNum) {
 	loadPalette(paletteNum);
 }
@@ -1351,6 +1353,8 @@ void ScenePalette::changeBackground(const Rect &bounds, FadeMode fadeMode) {
 void ScenePalette::synchronize(Serializer &s) {
 	if (s.getVersion() >= 2)
 		SavedObject::synchronize(s);
+	if (s.getVersion() >= 5)
+		_listeners.synchronize(s);
 
 	s.syncBytes(_palette, 256 * 3);
 	s.syncAsSint32LE(_colors.foreground);
@@ -1686,6 +1690,7 @@ SceneObject::SceneObject() : SceneHotspot() {
 	_flags |= OBJFLAG_PANES;
 
 	_frameChange = 0;
+	_visage = 0;
 }
 
 SceneObject::SceneObject(const SceneObject &so) : SceneHotspot() {
@@ -2535,6 +2540,8 @@ void SceneText::setup(const Common::String &msg) {
 	gfxMan._font._colors2.foreground = _color3;
 
 	gfxMan.getStringBounds(msg.c_str(), textRect, _width);
+	_bounds.setWidth(textRect.width());
+	_bounds.setHeight(textRect.height());
 
 	// Set up a new blank surface to hold the text
 	_textSurface.create(textRect.width(), textRect.height());
@@ -2559,6 +2566,9 @@ void SceneText::synchronize(Serializer &s) {
 	s.syncAsSint16LE(_color2);
 	s.syncAsSint16LE(_color3);
 	SYNC_ENUM(_textMode, TextAlign);
+
+	if (s.getVersion() >= 5)
+		_textSurface.synchronize(s);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -2619,6 +2629,12 @@ int Visage::getFrameCount() const {
 }
 
 /*--------------------------------------------------------------------------*/
+
+Player::Player(): SceneObject() {
+	_canWalk = false;
+	_uiEnabled = false;
+	_field8C = 0;
+}
 
 void Player::postInit(SceneObjectList *OwnerList) {
 	SceneObject::postInit();
@@ -2902,15 +2918,22 @@ void Region::uniteRect(const Rect &rect) {
 
 void SceneRegions::load(int sceneNum) {
 	clear();
-
-	byte *regionData = _resourceManager->getResource(RES_CONTROL, sceneNum, 9999, true);
+	bool altRegions = _vm->getFeatures() & GF_ALT_REGIONS;
+	byte *regionData = _resourceManager->getResource(RES_CONTROL, sceneNum, altRegions ? 1 : 9999, true);
 
 	if (regionData) {
 		int regionCount = READ_LE_UINT16(regionData);
 		for (int regionCtr = 0; regionCtr < regionCount; ++regionCtr) {
-			int rlbNum = READ_LE_UINT16(regionData + regionCtr * 6 + 2);
+			int regionId = READ_LE_UINT16(regionData + regionCtr * 6 + 2);
 
-			push_back(Region(sceneNum, rlbNum));
+			if (altRegions) {
+				// Load data from within this resource
+				uint32 dataOffset = READ_LE_UINT32(regionData + regionCtr * 6 + 4);
+				push_back(Region(regionId, regionData + dataOffset));
+			} else {
+				// Load region from a separate resource
+				push_back(Region(sceneNum, regionId));
+			}
 		}
 
 		DEALLOCATE(regionData);
@@ -3465,52 +3488,11 @@ void SceneHandler::postInit(SceneObjectList *OwnerList) {
 
 void SceneHandler::process(Event &event) {
 	// Main keypress handler
-	if ((event.eventType == EVENT_KEYPRESS) && !event.handled) {
-		switch (event.kbd.keycode) {
-		case Common::KEYCODE_F1:
-			// F1 - Help
-			MessageDialog::show((_vm->getFeatures() & GF_DEMO) ? DEMO_HELP_MSG : HELP_MSG, OK_BTN_STRING);
-			break;
+	if (!event.handled) {
+		_globals->_game->processEvent(event);
 
-		case Common::KEYCODE_F2: {
-			// F2 - Sound Options
-			ConfigDialog *dlg = new ConfigDialog();
-			dlg->runModal();
-			delete dlg;
+		if (event.eventType == EVENT_KEYPRESS)
 			_globals->_events.setCursorFromFlag();
-			break;
-		}
-
-		case Common::KEYCODE_F3:
-			// F3 - Quit
-			_globals->_game->quitGame();
-			event.handled = false;
-			break;
-
-		case Common::KEYCODE_F4:
-			// F4 - Restart
-			_globals->_game->restartGame();
-			_globals->_events.setCursorFromFlag();
-			break;
-
-		case Common::KEYCODE_F7:
-			// F7 - Restore
-			_globals->_game->restoreGame();
-			_globals->_events.setCursorFromFlag();
-			break;
-
-		case Common::KEYCODE_F10:
-			// F10 - Pause
-			GfxDialog::setPalette();
-			MessageDialog::show(GAME_PAUSED_MSG, OK_BTN_STRING);
-			_globals->_events.setCursorFromFlag();
-			break;
-
-		default:
-			break;
-		}
-
-		_globals->_events.setCursorFromFlag();
 	}
 
 	// Check for displaying right-click dialog
@@ -3629,24 +3611,6 @@ void SceneHandler::dispatchObject(EventHandler *obj) {
 
 void SceneHandler::saveListener(Serializer &ser) {
 	warning("TODO: SceneHandler::saveListener");
-}
-
-/*--------------------------------------------------------------------------*/
-
-void Game::execute() {
-	// Main game loop
-	bool activeFlag = false;
-	do {
-		// Process all currently atcive game handlers
-		activeFlag = false;
-		for (SynchronizedList<GameHandler *>::iterator i = _handlers.begin(); i != _handlers.end(); ++i) {
-			GameHandler *gh = *i;
-			if (gh->_lockCtr.getCtr() == 0) {
-				gh->execute();
-				activeFlag = true;
-			}
-		}
-	} while (activeFlag && !_vm->getEventManager()->shouldQuit());
 }
 
 } // End of namespace tSage

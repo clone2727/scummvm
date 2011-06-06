@@ -18,16 +18,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
 #include "common/events.h"
-#include "common/EventRecorder.h"
 #include "common/keyboard.h"
 #include "common/translation.h"
+#include "common/system.h"
 
 #include "mohawk/cursors.h"
 #include "mohawk/graphics.h"
@@ -121,8 +118,7 @@ Common::Error MohawkEngine_Riven::run() {
 	_optionsDialog = new RivenOptionsDialog(this);
 	_scriptMan = new RivenScriptManager(this);
 
-	_rnd = new Common::RandomSource();
-	g_eventRec.registerRandomSource(*_rnd, "riven");
+	_rnd = new Common::RandomSource("riven");
 
 	// Create the cursor manager
 	if (Common::File::exists("rivendmo.exe"))
@@ -731,7 +727,7 @@ Common::Error MohawkEngine_Riven::loadGameState(int slot) {
 	return _saveLoad->loadGame(_saveLoad->generateSaveGameList()[slot]) ? Common::kNoError : Common::kUnknownError;
 }
 
-Common::Error MohawkEngine_Riven::saveGameState(int slot, const char *desc) {
+Common::Error MohawkEngine_Riven::saveGameState(int slot, const Common::String &desc) {
 	Common::StringArray saveList = _saveLoad->generateSaveGameList();
 
 	if ((uint)slot < saveList.size())

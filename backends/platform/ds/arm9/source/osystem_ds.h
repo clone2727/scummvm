@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -175,14 +172,13 @@ public:
 
 	virtual void setCursorPalette(const byte *colors, uint start, uint num);
 
-	virtual void disableCursorPalette(bool dis) { _disableCursorPalette = dis; refreshCursor(); }
-
-	FilesystemFactory *getFilesystemFactory();
+	virtual FilesystemFactory *getFilesystemFactory();
 
 	void refreshCursor();
 
-	Common::WriteStream *createConfigWriteStream();
-	Common::SeekableReadStream *createConfigReadStream();
+	virtual Common::String getDefaultConfigFileName();
+
+	virtual void logMessage(LogMessageType::Type type, const char *message);
 
 	u16 applyGamma(u16 color);
 	void setGammaValue(int gamma) { _gammaValue = gamma; }

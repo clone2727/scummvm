@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -167,7 +164,7 @@ int MidiDriver_ALSA::open() {
 	}
 
 	printf("Connected to Alsa sequencer client [%d:%d]\n", seq_client, seq_port);
-	printf("ALSA client initialised [%d:0]\n", my_client);
+	printf("ALSA client initialized [%d:0]\n", my_client);
 
 	return 0;
 }
@@ -183,6 +180,11 @@ void MidiDriver_ALSA::close() {
 }
 
 void MidiDriver_ALSA::send(uint32 b) {
+	if (!_isOpen) {
+		warning("MidiDriver_ALSA: Got event while not open");
+		return;
+	}
+
 	unsigned int midiCmd[4];
 	ev.type = SND_SEQ_EVENT_OSS;
 
@@ -256,6 +258,11 @@ void MidiDriver_ALSA::send(uint32 b) {
 }
 
 void MidiDriver_ALSA::sysEx(const byte *msg, uint16 length) {
+	if (!_isOpen) {
+		warning("MidiDriver_ALSA: Got SysEx while not open");
+		return;
+	}
+
 	unsigned char buf[266];
 
 	assert(length + 2 <= ARRAYSIZE(buf));
@@ -375,7 +382,7 @@ MusicDevices AlsaMusicPlugin::getDevices() const {
 
 	AlsaDevices alsaDevices = getAlsaDevices();
 
-	// Since the default behaviour is to use the first device in the list,
+	// Since the default behavior is to use the first device in the list,
 	// try to put something sensible there. We used to have 17:0 and 65:0
 	// as defaults.
 

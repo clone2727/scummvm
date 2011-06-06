@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides for FILE as that is used in FLAC headers
@@ -610,8 +607,8 @@ size_t std_fwrite(const void *ptr, size_t size, size_t numItems, FILE *handle) {
 
 	if ((handle == stderr) || (handle == stdout)) {
 #ifndef DISABLE_TEXT_CONSOLE
-		nocashMessage((char *) ptr);
-//		consolePrintf((char *) ptr);
+		nocashMessage((char *)ptr);
+//		consolePrintf((char *)ptr);
 #endif
 		return size;
 	}

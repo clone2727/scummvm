@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/config-manager.h"
@@ -50,7 +47,9 @@
 
 namespace TeenAgent {
 
-TeenAgentEngine::TeenAgentEngine(OSystem *system, const ADGameDescription *gd) : Engine(system), action(kActionNone), _gameDescription(gd) {
+TeenAgentEngine::TeenAgentEngine(OSystem *system, const ADGameDescription *gd)
+	: Engine(system), action(kActionNone), _gameDescription(gd),
+	_rnd("teenagent") {
 	music = new MusicPlayer();
 
 	console = 0;
@@ -241,7 +240,7 @@ Common::Error TeenAgentEngine::loadGameState(int slot) {
 	return Common::kNoError;
 }
 
-Common::Error TeenAgentEngine::saveGameState(int slot, const char *desc) {
+Common::Error TeenAgentEngine::saveGameState(int slot, const Common::String &desc) {
 	debug(0, "saving to slot %d", slot);
 	Common::ScopedPtr<Common::OutSaveFile> out(_saveFileMan->openForSaving(Common::String::format("teenagent.%02d", slot)));
 	if (!out)
@@ -254,7 +253,7 @@ Common::Error TeenAgentEngine::saveGameState(int slot, const char *desc) {
 	res->dseg.set_word(0x64B1, pos.y);
 
 	assert(res->dseg.size() >= 0x6478 + 0x777a);
-	strncpy((char *)res->dseg.ptr(0x6478), desc, 0x16);
+	strncpy((char *)res->dseg.ptr(0x6478), desc.c_str(), 0x16);
 	out->write(res->dseg.ptr(0x6478), 0x777a);
 	if (!Graphics::saveThumbnail(*out))
 		warning("saveThumbnail failed");
@@ -399,8 +398,8 @@ bool TeenAgentEngine::showMetropolis() {
 			//generate colors matrix
 			memmove(colors + 320, colors + 480, 8480);
 			for(uint c = 0; c < 17; ++c) {
-				byte x = (random.getRandomNumber(184) + 5) & 0xff;
-				uint offset = 8800 + random.getRandomNumber(158);
+				byte x = (_rnd.getRandomNumber(184) + 5) & 0xff;
+				uint offset = 8800 + _rnd.getRandomNumber(158);
 				colors[offset++] = x;
 				colors[offset++] = x;
 			}

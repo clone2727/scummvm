@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/stream.h"
@@ -808,7 +805,7 @@ void SegManager::reconstructClones() {
 #pragma mark -
 
 
-bool gamestate_save(EngineState *s, Common::WriteStream *fh, const char* savename, const char *version) {
+bool gamestate_save(EngineState *s, Common::WriteStream *fh, const Common::String &savename, const Common::String &version) {
 	TimeDate curTime;
 	g_system->getTimeAndDate(curTime);
 

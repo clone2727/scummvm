@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // MIDI and digital music class
@@ -83,9 +80,8 @@ void MusicPlayer::playSMF(int track, bool loop) {
 
 	// Load MIDI resource data
 	Common::File musicFile;
-	char musicFileName[40];
-	snprintf(musicFileName, sizeof(musicFileName), _pathMask.c_str(), track);
-	musicFile.open(musicFileName);
+	Common::String musicFileName = Common::String::format(_pathMask.c_str(), track);
+	musicFile.open(musicFileName.c_str());
 	if (!musicFile.isOpen()) {
 		debugC(2, kDraciSoundDebugLevel, "Cannot open track %d", track);
 		return;

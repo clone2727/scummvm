@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "base/version.h"
@@ -688,10 +685,7 @@ void LauncherDialog::updateListing() {
 		}
 
 		if (description.empty()) {
-			char tmp[200];
-
-			snprintf(tmp, 200, "Unknown (target %s, gameid %s)", iter->_key.c_str(), gameid.c_str());
-			description = tmp;
+			description = Common::String::format("Unknown (target %s, gameid %s)", iter->_key.c_str(), gameid.c_str());
 		}
 
 		if (!gameid.empty() && !description.empty()) {
@@ -721,6 +715,8 @@ void LauncherDialog::updateListing() {
 
 void LauncherDialog::addGame() {
 	int modifiers = g_system->getEventManager()->getModifierState();
+
+#ifndef DISABLE_MASS_ADD
 	const bool massAdd = (modifiers & Common::KBD_SHIFT) != 0;
 
 	if (massAdd) {
@@ -749,6 +745,7 @@ void LauncherDialog::addGame() {
 		updateButtons();
 		return;
 	}
+#endif
 
 	// Allow user to add a new game to the list.
 	// 1) show a dir selection dialog which lets the user pick the directory
@@ -841,12 +838,10 @@ Common::String addGameToConf(const GameDescriptor &result) {
 	assert(!domain.empty());
 	if (ConfMan.hasGameDomain(domain)) {
 		int suffixN = 1;
-		char suffix[16];
 		Common::String gameid(domain);
 
 		while (ConfMan.hasGameDomain(domain)) {
-			snprintf(suffix, 16, "-%d", suffixN);
-			domain = gameid + suffix;
+			domain = gameid + Common::String::format("-%d", suffixN);
 			suffixN++;
 		}
 	}
@@ -921,7 +916,7 @@ void LauncherDialog::loadGame(int item) {
 		gameId = _domains[item];
 
 	const EnginePlugin *plugin = 0;
-	
+
 	EngineMan.findGame(gameId, &plugin);
 
 	String target = _domains[item];

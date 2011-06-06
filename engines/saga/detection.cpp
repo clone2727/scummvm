@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Game detection, general game parameters
@@ -134,7 +131,7 @@ public:
 	SagaMetaEngine() : AdvancedMetaEngine(detectionParams) {}
 
 	virtual const char *getName() const {
-		return "Saga engine ["
+		return "SAGA ["
 
 #if defined(ENABLE_IHNM) && defined(ENABLE_SAGA2)
 			"all games"
@@ -226,11 +223,8 @@ SaveStateList SagaMetaEngine::listSaves(const char *target) const {
 int SagaMetaEngine::getMaximumSaveSlot() const { return MAX_SAVES - 1; }
 
 void SagaMetaEngine::removeSaveState(const char *target, int slot) const {
-	char extension[6];
-	snprintf(extension, sizeof(extension), ".s%02d", slot);
-
 	Common::String filename = target;
-	filename += extension;
+	filename += Common::String::format(".s%02d", slot);;
 
 	g_system->getSavefileManager()->removeSavefile(filename);
 }
@@ -366,8 +360,8 @@ Common::Error SagaEngine::loadGameState(int slot) {
 	return Common::kNoError;	// TODO: return success/failure
 }
 
-Common::Error SagaEngine::saveGameState(int slot, const char *desc) {
-	save(calcSaveFileName((uint)slot), desc);
+Common::Error SagaEngine::saveGameState(int slot, const Common::String &desc) {
+	save(calcSaveFileName((uint)slot), desc.c_str());
 	return Common::kNoError;	// TODO: return success/failure
 }
 

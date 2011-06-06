@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 #ifndef ENGINES_ADVANCED_DETECTOR_H
 #define ENGINES_ADVANCED_DETECTOR_H
@@ -103,11 +100,6 @@ struct ADFileBasedFallback {
 
 
 enum ADFlags {
-	/**
-	 * Generate/augment preferred target with information on the language (if
-	 * not equal to english) and platform (if not equal to PC).
-	 */
-	kADFlagDontAugmentPreferredTarget = (1 << 0),
 	/**
 	 * Warn user about new variant if his version was detected with fallback
 	 */

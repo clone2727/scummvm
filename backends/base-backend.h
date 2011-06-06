@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_BASE_BACKEND_H
@@ -31,22 +28,12 @@
 
 class BaseBackend : public OSystem, Common::EventSource {
 public:
-	BaseBackend();
-	~BaseBackend();
+	virtual void initBackend();
 
-	virtual Common::EventManager *getEventManager();
 	virtual void displayMessageOnOSD(const char *msg);
 	virtual void fillScreen(uint32 col);
 
-	virtual Common::SeekableReadStream *createConfigReadStream();
-	virtual Common::WriteStream *createConfigWriteStream();
-
-	virtual AudioCDManager *getAudioCDManager();
-
 	virtual void resetGraphicsScale();
-
-protected:
-	AudioCDManager *_audiocdManager;
 };
 
 

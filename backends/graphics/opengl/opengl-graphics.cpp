@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -94,7 +91,7 @@ void OpenGLGraphicsManager::initEventObserver() {
 bool OpenGLGraphicsManager::hasFeature(OSystem::Feature f) {
 	return
 		(f == OSystem::kFeatureAspectRatioCorrection) ||
-		(f == OSystem::kFeatureCursorHasPalette);
+		(f == OSystem::kFeatureCursorPalette);
 }
 
 void OpenGLGraphicsManager::setFeatureState(OSystem::Feature f, bool enable) {
@@ -106,6 +103,11 @@ void OpenGLGraphicsManager::setFeatureState(OSystem::Feature f, bool enable) {
 	case OSystem::kFeatureAspectRatioCorrection:
 		_videoMode.aspectRatioCorrection = enable;
 		_transactionDetails.needRefresh = true;
+		break;
+
+	case OSystem::kFeatureCursorPalette:
+		_cursorPaletteDisabled = !enable;
+		_cursorNeedsRedraw = true;
 		break;
 
 	default:
@@ -120,6 +122,9 @@ bool OpenGLGraphicsManager::getFeatureState(OSystem::Feature f) {
 
 	case OSystem::kFeatureAspectRatioCorrection:
 		return _videoMode.aspectRatioCorrection;
+
+	case OSystem::kFeatureCursorPalette:
+		return !_cursorPaletteDisabled;
 
 	default:
 		return false;
@@ -642,11 +647,6 @@ void OpenGLGraphicsManager::setCursorPalette(const byte *colors, uint start, uin
 	memcpy(_cursorPalette + start * 3, colors, num * 3);
 
 	_cursorPaletteDisabled = false;
-	_cursorNeedsRedraw = true;
-}
-
-void OpenGLGraphicsManager::disableCursorPalette(bool disable) {
-	_cursorPaletteDisabled = disable;
 	_cursorNeedsRedraw = true;
 }
 

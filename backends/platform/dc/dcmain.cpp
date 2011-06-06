@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Allow use of stuff in <time.h>
@@ -66,7 +63,9 @@ void OSystem_Dreamcast::initBackend()
   _mixer = new Audio::MixerImpl(this, sampleRate);
   _mixer->setReady(true);
 
-  _cdManager = new DCCDManager();
+  _audiocdManager = new DCCDManager();
+
+  BaseBackend::initBackend();
 }
 
 
@@ -166,7 +165,7 @@ bool OSystem_Dreamcast::hasFeature(Feature f)
   case kFeatureAspectRatioCorrection:
   case kFeatureVirtualKeyboard:
   case kFeatureOverlaySupportsAlpha:
-  case kFeatureCursorHasPalette:
+  case kFeatureCursorPalette:
     return true;
   default:
     return false;
@@ -184,6 +183,9 @@ void OSystem_Dreamcast::setFeatureState(Feature f, bool enable)
   case kFeatureVirtualKeyboard:
     _softkbd_on = enable;
     break;
+  case kFeatureCursorPalette:
+    _enable_cursor_palette = enable;
+    break;
   default:
     break;
   }
@@ -196,6 +198,8 @@ bool OSystem_Dreamcast::getFeatureState(Feature f)
     return _aspect_stretch;
   case kFeatureVirtualKeyboard:
     return _softkbd_on;
+  case kFeatureCursorPalette:
+    return _enable_cursor_palette;
   default:
     return false;
   }

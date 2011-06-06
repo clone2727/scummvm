@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "base/plugins.h"
@@ -93,7 +90,7 @@ public:
 	CineMetaEngine() : AdvancedMetaEngine(detectionParams) {}
 
 	virtual const char *getName() const {
-		return "Cinematique evo 1 engine";
+		return "Cine";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -188,10 +185,7 @@ void CineMetaEngine::removeSaveState(const char *target, int slot) const {
 	memset(saveNames, 0, sizeof(saveNames));
 
 	Common::InSaveFile *in;
-	char tmp[80];
-
-	snprintf(tmp, 80, "%s.dir", target);
-	in = g_system->getSavefileManager()->openForLoading(tmp);
+	in = g_system->getSavefileManager()->openForLoading(Common::String::format("%s.dir", target));
 
 	if (!in)
 		return;
@@ -205,12 +199,10 @@ void CineMetaEngine::removeSaveState(const char *target, int slot) const {
 	strncpy(saveNames[slot], slotName, 20);
 
 	// Update savegame descriptions
-	char indexFile[80];
-	snprintf(indexFile, 80, "%s.dir", target);
-
+	Common::String indexFile = Common::String::format("%s.dir", target);
 	Common::OutSaveFile *out = g_system->getSavefileManager()->openForSaving(indexFile);
 	if (!out) {
-		warning("Unable to open file %s for saving", indexFile);
+		warning("Unable to open file %s for saving", indexFile.c_str());
 		return;
 	}
 
@@ -240,21 +232,20 @@ Common::Error CineEngine::loadGameState(int slot) {
 	return gameLoaded ? Common::kNoError : Common::kUnknownError;
 }
 
-Common::Error CineEngine::saveGameState(int slot, const char *desc) {
+Common::Error CineEngine::saveGameState(int slot, const Common::String &desc) {
 	// Load savegame descriptions from index file
 	loadSaveDirectory();
 
 	// Set description for selected slot making sure it ends with a trailing zero
-	strncpy(currentSaveName[slot], desc, 20);
+	strncpy(currentSaveName[slot], desc.c_str(), 20);
 	currentSaveName[slot][sizeof(CommandeType) - 1] = 0;
 
 	// Update savegame descriptions
-	char indexFile[80];
-	snprintf(indexFile, 80, "%s.dir", _targetName.c_str());
+	Common::String indexFile = _targetName + ".dir";
 
 	Common::OutSaveFile *fHandle = _saveFileMan->openForSaving(indexFile);
 	if (!fHandle) {
-		warning("Unable to open file %s for saving", indexFile);
+		warning("Unable to open file %s for saving", indexFile.c_str());
 		return Common::kUnknownError;
 	}
 

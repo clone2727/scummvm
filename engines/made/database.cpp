@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -110,7 +107,7 @@ void Object::setVectorItem(int16 index, int16 value) {
 	}
 }
 
-void Object::dump(const char *filename) {
+void Object::dump(const Common::String &filename) {
 	/*
 	FILE *o = fopen(filename, "wb");
 	fwrite(_objData, _objSize, 1, o);
@@ -387,9 +384,7 @@ int16 GameDatabase::setObjectProperty(int16 objectIndex, int16 propertyId, int16
 
 void GameDatabase::dumpObject(int16 index) {
 	Object *obj = getObject(index);
-	char fn[512];
-	sprintf(fn, "obj%04X.0", index);
-	obj->dump(fn);
+	obj->dump(Common::String::format("obj%04X.0", index));
 }
 
 

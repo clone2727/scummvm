@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "backends/base-backend.h"
@@ -56,7 +53,7 @@ class DCHardware {
 };
 
 class DCCDManager : public DefaultAudioCDManager {
-  // Initialise the specified CD drive for audio playback.
+  // Initialize the specified CD drive for audio playback.
   bool openCD(int drive);
 
   // Poll cdrom status
@@ -148,9 +145,6 @@ public:
   // Replace the specified range of cursor the palette with new colors.
   void setCursorPalette(const byte *colors, uint start, uint num);
 
-  // Disable or enable cursor palette.
-  void disableCursorPalette(bool disable);
-
   // Shaking is used in SCUMM. Set current shake position.
   void setShakePos(int shake_pos);
 
@@ -166,8 +160,6 @@ public:
   // Get the next event.
   // Returns true if an event was retrieved.
   bool pollEvent(Common::Event &event);
-
-  AudioCDManager *getAudioCDManager() { return _cdManager; }
 
   // Quit
   void quit();
@@ -212,7 +204,6 @@ public:
   Audio::MixerImpl *_mixer;
   DefaultTimerManager *_timer;
   SoftKeyboard _softkbd;
-  DCCDManager *_cdManager;
 
   int _ms_cur_x, _ms_cur_y, _ms_cur_w, _ms_cur_h, _ms_old_x, _ms_old_y;
   int _ms_hotspot_x, _ms_hotspot_y, _ms_visible, _devpoll, _last_screen_refresh;

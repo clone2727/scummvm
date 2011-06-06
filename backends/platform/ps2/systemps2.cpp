@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -36,36 +33,42 @@
 #include <assert.h>
 #include <iopcontrol.h>
 #include <iopheap.h>
-#include "common/scummsys.h"
-#include "engines/engine.h"
-#include "backends/platform/ps2/systemps2.h"
-#include "backends/platform/ps2/Gs2dScreen.h"
-#include "backends/platform/ps2/ps2input.h"
-#include "backends/platform/ps2/irxboot.h"
+
 #include <sjpcm.h>
 #include <libhdd.h>
-#include "backends/platform/ps2/savefilemgr.h"
-#include "common/file.h"
-#include "backends/platform/ps2/sysdefs.h"
-#include "backends/platform/ps2/fileio.h"
 #include <libmc.h>
 #include <libpad.h>
-#include "backends/platform/ps2/cd.h"
 #include <fileXio_rpc.h>
-#include "backends/platform/ps2/asyncfio.h"
 #include "eecodyvdfs.h"
-#include "graphics/surface.h"
-#include "graphics/font.h"
-#include "backends/timer/default/default-timer.h"
-#include "audio/mixer_intern.h"
-#include "common/events.h"
-#include "backends/platform/ps2/ps2debug.h"
-#include "backends/fs/ps2/ps2-fs-factory.h"
 
+#include "common/config-manager.h"
+#include "common/events.h"
+#include "common/file.h"
+#include "common/scummsys.h"
+
+#include "backends/platform/ps2/asyncfio.h"
+#include "backends/platform/ps2/cd.h"
+#include "backends/platform/ps2/fileio.h"
+#include "backends/platform/ps2/Gs2dScreen.h"
+#include "backends/platform/ps2/irxboot.h"
+#include "backends/platform/ps2/ps2debug.h"
+#include "backends/platform/ps2/ps2input.h"
+#include "backends/platform/ps2/savefilemgr.h"
+#include "backends/platform/ps2/sysdefs.h"
+#include "backends/platform/ps2/systemps2.h"
+
+#include "backends/fs/ps2/ps2-fs-factory.h"
 #include "backends/plugins/ps2/ps2-provider.h"
 
 #include "backends/saves/default/default-saves.h"
-#include "common/config-manager.h"
+#include "backends/timer/default/default-timer.h"
+
+#include "audio/mixer_intern.h"
+
+#include "engines/engine.h"
+
+#include "graphics/font.h"
+#include "graphics/surface.h"
 
 #include "icon.h"
 #include "ps2temp.h"
@@ -348,6 +351,7 @@ void OSystem_PS2::init(void) {
 	_scummTimerManager = new DefaultTimerManager();
 	_scummMixer = new Audio::MixerImpl(this, 48000);
 	_scummMixer->setReady(true);
+
 	initTimer();
 
 	sioprintf("Starting SavefileManager\n");
@@ -599,11 +603,7 @@ void OSystem_PS2::delayMillis(uint msecs) {
 Common::TimerManager *OSystem_PS2::getTimerManager() {
 	return _scummTimerManager;
 }
-/*
-Common::EventManager *OSystem_PS2::getEventManager() {
-	return getEventManager();
-}
-*/
+
 Audio::Mixer *OSystem_PS2::getMixer() {
 	return _scummMixer;
 }
@@ -979,12 +979,18 @@ void OSystem_PS2::makeConfigPath() {
 	_configFile = strdup(path);
 }
 
-Common::SeekableReadStream *OSystem_PS2::createConfigReadStream() {
-	Common::FSNode file(_configFile);
-	return file.createReadStream();
+Common::String OSystem_PS2::getDefaultConfigFileName() {
+	return _configFile
 }
 
-Common::WriteStream *OSystem_PS2::createConfigWriteStream() {
-	Common::FSNode file(_configFile);
-	return file.createWriteStream();
+void OSystem_PS2::logMessage(LogMessageType::Type type, const char *message) {
+	FILE *output = 0;
+
+	if (type == LogMessageType::kInfo || type == LogMessageType::kDebug)
+		output = stdout;
+	else
+		output = stderr;
+
+	ps2_fputs(message, output);
+	ps2_fflush(output);
 }

@@ -41,6 +41,8 @@
 #include "touchkeyboard.h"
 #include "backends/fs/ds/ds-fs-factory.h"
 
+#include "backends/audiocd/default/default-audiocd.h"
+
 #ifdef ENABLE_AGI
 #include "wordcompletion.h"
 #endif
@@ -118,21 +120,32 @@ void OSystem_DS::initBackend() {
 	_mixer = new Audio::MixerImpl(this, DS::getSoundFrequency());
 	_mixer->setReady(true);
 
-	OSystem::initBackend();
+	/* TODO/FIXME: The NDS should use a custom AudioCD manager instance!
+	if (!_audiocdManager)
+		_audiocdManager = new DSAudioCDManager();
+	*/
+
+	BaseBackend::initBackend();
 }
 
 bool OSystem_DS::hasFeature(Feature f) {
-	return (f == kFeatureVirtualKeyboard) || (f == kFeatureCursorHasPalette);
+	return (f == kFeatureVirtualKeyboard) || (f == kFeatureCursorPalette);
 }
 
 void OSystem_DS::setFeatureState(Feature f, bool enable) {
 	if (f == kFeatureVirtualKeyboard)
 		DS::setKeyboardIcon(enable);
+	else if (f == kFeatureCursorPalette) {
+		_disableCursorPalette = !enable;
+		refreshCursor();
+	}
 }
 
 bool OSystem_DS::getFeatureState(Feature f) {
 	if (f == kFeatureVirtualKeyboard)
 		return DS::getKeyboardIcon();
+	if (f == kFeatureCursorPalette)
+		return !_disableCursorPalette;
 	return false;
 }
 
@@ -840,16 +853,15 @@ void OSystem_DS::setCharactersEntered(int count) {
 	DS::setCharactersEntered(count);
 }
 
-Common::SeekableReadStream *OSystem_DS::createConfigReadStream() {
-	Common::FSNode file(DEFAULT_CONFIG_FILE);
-//	consolePrintf("R %s", DEFAULT_CONFIG_FILE);
-	return file.createReadStream();
+Common::String OSystem_DS::getDefaultConfigFileName() {
+	return DEFAULT_CONFIG_FILE;
 }
 
-Common::WriteStream *OSystem_DS::createConfigWriteStream() {
-	Common::FSNode file(DEFAULT_CONFIG_FILE);
-//	consolePrintf("W %s", DEFAULT_CONFIG_FILE);
-	return file.createWriteStream();
+void OSystem_DS::logMessage(LogMessageType::Type type, const char *message) {
+#ifndef DISABLE_TEXT_CONSOLE
+	nocashMessage((char *)message);
+//	consolePrintf((char *)message);
+#endif
 }
 
 u16 OSystem_DS::applyGamma(u16 color) {

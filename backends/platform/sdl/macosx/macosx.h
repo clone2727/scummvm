@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef PLATFORM_SDL_MACOSX_H
@@ -31,6 +28,10 @@
 class OSystem_MacOSX : public OSystem_POSIX {
 public:
 	OSystem_MacOSX();
+
+	virtual bool hasFeature(Feature f);
+
+	virtual bool displayLogFile();
 
 	virtual void initBackend();
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s, int priority = 0);

@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef GRAPHICS_CURSORMAN_H
@@ -111,9 +108,9 @@ public:
 	 * Test whether cursor palettes are supported.
 	 *
 	 * This is just an convenience wrapper for checking for
-	 * OSystem::kFeatureCursorHasPalette to be supported by OSystem.
+	 * OSystem::kFeatureCursorPalette to be supported by OSystem.
 	 *
-	 * @see OSystem::kFeatureCursorHasPalette
+	 * @see OSystem::kFeatureCursorPalette
 	 * @see OSystem::hasFeature
 	 */
 	bool supportsCursorPalettes();

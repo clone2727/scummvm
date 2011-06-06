@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -58,9 +55,9 @@ void *OSystem_IPHONE::s_soundParam = NULL;
 OSystem_IPHONE::OSystem_IPHONE() :
 	_savefile(NULL), _mixer(NULL), _timer(NULL), _offscreen(NULL),
 	_overlayVisible(false), _fullscreen(NULL),
-	_mouseHeight(0), _mouseWidth(0), _mouseBuf(NULL), _lastMouseTap(0),
-	_secondaryTapped(false), _lastSecondaryTap(0), _screenOrientation(kScreenOrientationFlippedLandscape),
-	_needEventRestPeriod(false), _mouseClickAndDragEnabled(false),
+	_mouseHeight(0), _mouseWidth(0), _mouseBuf(NULL), _lastMouseTap(0), _queuedEventTime(0),
+	_secondaryTapped(false), _lastSecondaryTap(0),
+	_screenOrientation(kScreenOrientationFlippedLandscape), _mouseClickAndDragEnabled(false),
 	_gestureStartX(-1), _gestureStartY(-1), _fullScreenIsDirty(false), _fullScreenOverlayIsDirty(false),
 	_mouseDirty(false), _timeSuspended(0), _lastDragPosX(-1), _lastDragPosY(-1), _screenChangeCount(0),
 	_overlayHeight(0), _overlayWidth(0), _overlayBuffer(0)
@@ -104,7 +101,7 @@ void OSystem_IPHONE::initBackend() {
 
 	setTimerCallback(&OSystem_IPHONE::timerHandler, 10);
 
-	OSystem::initBackend();
+	BaseBackend::initBackend();
 }
 
 bool OSystem_IPHONE::hasFeature(Feature f) {
@@ -232,29 +229,16 @@ OSystem *OSystem_IPHONE_create() {
 	return new OSystem_IPHONE();
 }
 
-Common::SeekableReadStream *OSystem_IPHONE::createConfigReadStream() {
+CCommon::String OSystem_IPHONE::getDefaultConfigFileName() {
 #ifdef IPHONE_OFFICIAL
-	char buf[256];
-	strncpy(buf, iPhone_getDocumentsDir(), 256);
-	strncat(buf, "/Preferences", 256 - strlen(buf) );
-	Common::FSNode file(buf);
+	Common::String path = iPhone_getDocumentsDir();
+	path += "/Preferences";
+	return path;
 #else
-	Common::FSNode file(SCUMMVM_PREFS_PATH);
+	return SCUMMVM_PREFS_PATH;
 #endif
-	return file.createReadStream();
 }
 
-Common::WriteStream *OSystem_IPHONE::createConfigWriteStream() {
-#ifdef IPHONE_OFFICIAL
-	char buf[256];
-	strncpy(buf, iPhone_getDocumentsDir(), 256);
-	strncat(buf, "/Preferences", 256 - strlen(buf) );
-	Common::FSNode file(buf);
-#else
-	Common::FSNode file(SCUMMVM_PREFS_PATH);
-#endif
-	return file.createWriteStream();
-}
 
 void OSystem_IPHONE::addSysArchivesToSearchSet(Common::SearchSet &s, int priority) {
 	// Get URL of the Resource directory of the .app bundle

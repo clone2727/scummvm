@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef DRASCULA_H
@@ -591,7 +588,7 @@ public:
 	void quadrant_2();
 	void quadrant_3();
 	void quadrant_4();
-	void saveGame(char[]);
+	void saveGame(const char *gameName);
 	void increaseFrameNum();
 	int whichObject();
 	bool checkMenuFlags();

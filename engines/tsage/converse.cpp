@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/str-array.h"
@@ -349,17 +346,19 @@ void SequenceManager::setMessage(int resNum, int lineNum, int color, const Commo
 	// Get the display message
 	Common::String msg = _resourceManager->getMessage(resNum, lineNum);
 
-	// Get the needed rect, and move it to the desired position
-	Rect textRect;
-	_globals->gfxManager().getStringBounds(msg.c_str(), textRect, width);
+	// Set the text message
+	_sceneText.setup(msg);
+
+	// Move the text to the correct position
+	Rect textRect = _sceneText._bounds;
 	Rect sceneBounds = _globals->_sceneManager._scene->_sceneBounds;
 	sceneBounds.collapse(4, 2);
 	textRect.moveTo(pt);
 	textRect.contain(sceneBounds);
 
-	// Set the text message
-	_sceneText.setup(msg);
 	_sceneText.setPosition(Common::Point(textRect.left, textRect.top));
+
+	// Draw the text
 	_sceneText.fixPriority(255);
 	_sceneText.show();
 
@@ -419,8 +418,10 @@ int ConversationChoiceDialog::execute(const Common::StringArray &choiceList) {
 	Event event;
 	while (!_vm->getEventManager()->shouldQuit()) {
 		while (!_globals->_events.getEvent(event, EVENT_KEYPRESS | EVENT_BUTTON_DOWN | EVENT_MOUSE_MOVE) &&
-				!_vm->getEventManager()->shouldQuit())
-			;
+				!_vm->getEventManager()->shouldQuit()) {
+			g_system->delayMillis(10);
+			g_system->updateScreen();
+		}
 		if (_vm->getEventManager()->shouldQuit())
 			break;
 

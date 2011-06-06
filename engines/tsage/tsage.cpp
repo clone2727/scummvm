@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/debug-channels.h"
@@ -63,7 +60,7 @@ bool TSageEngine::hasFeature(EngineFeature f) const {
 		(f == kSupportsSavingDuringRuntime);
 }
 
-void TSageEngine::initialise() {
+void TSageEngine::initialize() {
 	_saver = new Saver();
 
 	// Set up the resource manager
@@ -71,16 +68,22 @@ void TSageEngine::initialise() {
 	if (_vm->getFeatures() & GF_DEMO) {
 		// Add the single library file associated with the demo
 		_resourceManager->addLib(getPrimaryFilename());
-	} else {
+	} else if (_vm->getGameID() == GType_Ringworld) {
 		_resourceManager->addLib("RING.RLB");
 		_resourceManager->addLib("TSAGE.RLB");
+	} else if (_vm->getGameID() == GType_BlueForce) {
+		_resourceManager->addLib("BLUE.RLB");
+		if (_vm->getFeatures() & GF_FLOPPY) {
+			_resourceManager->addLib("FILES.RLB");
+			_resourceManager->addLib("TSAGE.RLB");
+		}
 	}
 
 	_globals = new Globals();
 	_globals->gfxManager().setDefaults();
 }
 
-void TSageEngine::deinitialise() {
+void TSageEngine::deinitialize() {
 	delete _globals;
 	delete _resourceManager;
 	delete _saver;
@@ -88,12 +91,12 @@ void TSageEngine::deinitialise() {
 
 Common::Error TSageEngine::run() {
 	// Basic initialisation
-	initialise();
+	initialize();
 
 	_globals->_sceneHandler.registerHandler();
 	_globals->_game->execute();
 
-	deinitialise();
+	deinitialize();
 	return Common::kNoError;
 }
 
@@ -101,14 +104,14 @@ Common::Error TSageEngine::run() {
  * Returns true if it is currently okay to restore a game
  */
 bool TSageEngine::canLoadGameStateCurrently() {
-	return (_globals->getFlag(50) == 0) && _globals->_player._uiEnabled;
+	return (_globals->getFlag(50) == 0);
 }
 
 /**
  * Returns true if it is currently okay to save the game
  */
 bool TSageEngine::canSaveGameStateCurrently() {
-	return (_globals->getFlag(50) == 0) && _globals->_player._uiEnabled;
+	return (_globals->getFlag(50) == 0);
 }
 
 /**
@@ -121,7 +124,7 @@ Common::Error TSageEngine::loadGameState(int slot) {
 /**
  * Save the game to the given slot index, and with the given name
  */
-Common::Error TSageEngine::saveGameState(int slot, const char *desc) {
+Common::Error TSageEngine::saveGameState(int slot, const Common::String &desc) {
 	return _saver->save(slot, desc);
 }
 

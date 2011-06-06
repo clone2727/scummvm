@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SYSTEMPS2_H
@@ -97,7 +94,6 @@ public:
 	virtual uint32 getMillis();
 	virtual void delayMillis(uint msecs);
 	virtual Common::TimerManager *getTimerManager();
-//	virtual Common::EventManager *getEventManager();
 	virtual bool pollEvent(Common::Event &event);
 
 	virtual Audio::Mixer *getMixer();
@@ -115,8 +111,9 @@ public:
 
 	virtual void quit();
 
-	virtual Common::SeekableReadStream *createConfigReadStream();
-	virtual Common::WriteStream *createConfigWriteStream();
+	virtual Common::String getDefaultConfigFileName();
+
+	virtual void logMessage(LogMessageType::Type type, const char *message);
 
 	virtual Graphics::PixelFormat getOverlayFormat() const;
 	virtual Common::SaveFileManager *getSavefileManager();

@@ -27,6 +27,9 @@
     <ClInclude Include="..\visualstudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\xcode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -47,6 +50,9 @@
     <ClCompile Include="..\visualstudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\xcode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\scripts\prebuild.cmd">
@@ -56,6 +62,9 @@
       <Filter>scripts</Filter>
     </None>
     <None Include="..\scripts\postbuild.cmd">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="..\scripts\installer.vbs">
       <Filter>scripts</Filter>
     </None>
   </ItemGroup>

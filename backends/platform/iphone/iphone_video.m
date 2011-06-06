@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "iphone_video.h"
@@ -88,6 +85,8 @@ void iPhone_setMouseCursor(short* buffer, int width, int height) {
 
 void iPhone_enableOverlay(int state) {
 	_overlayIsEnabled = state;
+
+	[sharedInstance performSelectorOnMainThread:@selector(clearColorBuffer) withObject:nil waitUntilDone: YES];
 }
 
 int iPhone_getScreenHeight() {
@@ -178,13 +177,18 @@ const char* iPhone_getDocumentsDir() {
 }
 
 bool getLocalMouseCoords(CGPoint *point) {
-	if (point->x < _screenRect.origin.x || point->x >= _screenRect.origin.x + _screenRect.size.width ||
-		point->y < _screenRect.origin.y || point->y >= _screenRect.origin.y + _screenRect.size.height) {
-			return false;
-	}
+	if (_overlayIsEnabled) {
+		point->x = point->x / _overlayHeight;
+		point->y = point->y / _overlayWidth;
+	} else {
+		if (point->x < _screenRect.origin.x || point->x >= _screenRect.origin.x + _screenRect.size.width ||
+			point->y < _screenRect.origin.y || point->y >= _screenRect.origin.y + _screenRect.size.height) {
+				return false;
+		}
 
-	point->x = (point->x - _screenRect.origin.x) / _screenRect.size.width;
-	point->y = (point->y - _screenRect.origin.y) / _screenRect.size.height;
+		point->x = (point->x - _screenRect.origin.x) / _screenRect.size.width;
+		point->y = (point->y - _screenRect.origin.y) / _screenRect.size.height;
+	}
 
 	return true;
 }
@@ -476,12 +480,7 @@ bool getLocalMouseCoords(CGPoint *point) {
 
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, _viewRenderbuffer); printOpenGLError();
 
-	// The color buffer is triple-buffered, so we clear it multiple times right away to avid doing any glClears later.
-	int clearCount = 5;
-	while (clearCount-- > 0) {
-		glClear(GL_COLOR_BUFFER_BIT); printOpenGLError();
-		[_context presentRenderbuffer:GL_RENDERBUFFER_OES];
-	}
+	[self clearColorBuffer];
 
 	if (_keyboardView != nil) {
 		[_keyboardView removeFromSuperview];
@@ -530,6 +529,15 @@ bool getLocalMouseCoords(CGPoint *point) {
 		[self addSubview: _keyboardView];
 		[[_keyboardView inputView] becomeFirstResponder];
 		_overlayPortraitRatio = (_overlayHeight * ratio) / _overlayWidth;
+	}
+}
+
+- (void)clearColorBuffer {
+	// The color buffer is triple-buffered, so we clear it multiple times right away to avid doing any glClears later.
+	int clearCount = 5;
+	while (clearCount-- > 0) {
+		glClear(GL_COLOR_BUFFER_BIT); printOpenGLError();
+		[_context presentRenderbuffer:GL_RENDERBUFFER_OES];
 	}
 }
 

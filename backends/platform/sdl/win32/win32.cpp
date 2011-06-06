@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -35,9 +32,12 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef ARRAYSIZE // winnt.h defines ARRAYSIZE, but we want our own one...
+#include <shellapi.h>
 
 #include "backends/platform/sdl/win32/win32.h"
 #include "backends/fs/windows/windows-fs-factory.h"
+
+#include "common/memstream.h"
 
 #define DEFAULT_CONFIG_FILE "scummvm.ini"
 
@@ -86,6 +86,49 @@ void OSystem_Win32::init() {
 
 	// Invoke parent implementation of this method
 	OSystem_SDL::init();
+}
+
+
+bool OSystem_Win32::hasFeature(Feature f) {
+	if (f == kFeatureDisplayLogFile)
+		return true;
+
+	return OSystem_SDL::hasFeature(f);
+}
+
+bool OSystem_Win32::displayLogFile() {
+	if (_logFilePath.empty())
+		return false;
+
+	// Try opening the log file with the default text editor
+	// log files should be registered as "txtfile" by default and thus open in the default text editor
+	HINSTANCE shellExec = ShellExecute(NULL, NULL, _logFilePath.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	if ((intptr_t)shellExec > 32)
+		return true;
+
+	// ShellExecute with the default verb failed, try the "Open with..." dialog
+	PROCESS_INFORMATION processInformation;
+	STARTUPINFO startupInfo;
+	memset(&processInformation, 0, sizeof(processInformation));
+	memset(&startupInfo, 0, sizeof(startupInfo));
+	startupInfo.cb = sizeof(startupInfo);
+
+	char cmdLine[MAX_PATH * 2];  // CreateProcess may change the contents of cmdLine
+	sprintf(cmdLine, "rundll32 shell32.dll,OpenAs_RunDLL %s", _logFilePath.c_str());
+	BOOL result = CreateProcess(NULL,
+	                            cmdLine,
+	                            NULL,
+	                            NULL,
+	                            FALSE,
+	                            NORMAL_PRIORITY_CLASS,
+	                            NULL,
+	                            NULL,
+	                            &startupInfo,
+	                            &processInformation);
+	if (result)
+		return true;
+
+	return false;
 }
 
 Common::String OSystem_Win32::getDefaultConfigFileName() {
@@ -137,6 +180,10 @@ Common::String OSystem_Win32::getDefaultConfigFileName() {
 }
 
 Common::WriteStream *OSystem_Win32::createLogFile() {
+	// Start out by resetting _logFilePath, so that in case
+	// of a failure, we know that no log file is open.
+	_logFilePath.clear();
+
 	char logFile[MAXPATHLEN];
 
 	OSVERSIONINFO win32OsVersion;
@@ -164,10 +211,98 @@ Common::WriteStream *OSystem_Win32::createLogFile() {
 		strcat(logFile, "\\scummvm.log");
 
 		Common::FSNode file(logFile);
-		return file.createWriteStream();
+		Common::WriteStream *stream = file.createWriteStream();
+		if (stream)
+			_logFilePath= logFile;
+
+		return stream;
 	} else {
 		return 0;
 	}
+}
+
+namespace {
+
+class Win32ResourceArchive : public Common::Archive {
+	friend BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam);
+public:
+	Win32ResourceArchive();
+
+	virtual bool hasFile(const Common::String &name);
+	virtual int listMembers(Common::ArchiveMemberList &list);
+	virtual Common::ArchiveMemberPtr getMember(const Common::String &name);
+	virtual Common::SeekableReadStream *createReadStreamForMember(const Common::String &name) const;
+private:
+	typedef Common::List<Common::String> FilenameList;
+
+	FilenameList _files;
+};
+
+BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCTSTR lpszType, LPTSTR lpszName, LONG_PTR lParam) {
+	if (IS_INTRESOURCE(lpszName))
+		return TRUE;
+
+	Win32ResourceArchive *arch = (Win32ResourceArchive *)lParam;
+	arch->_files.push_back(lpszName);
+	return TRUE;
+}
+
+Win32ResourceArchive::Win32ResourceArchive() {
+	EnumResourceNames(NULL, MAKEINTRESOURCE(256), &EnumResNameProc, (LONG_PTR)this);
+}
+
+bool Win32ResourceArchive::hasFile(const Common::String &name) {
+	for (FilenameList::const_iterator i = _files.begin(); i != _files.end(); ++i) {
+		if (i->equalsIgnoreCase(name))
+			return true;
+	}
+
+	return false;
+}
+
+int Win32ResourceArchive::listMembers(Common::ArchiveMemberList &list) {
+	int count = 0;
+
+	for (FilenameList::const_iterator i = _files.begin(); i != _files.end(); ++i, ++count)
+		list.push_back(Common::ArchiveMemberPtr(new Common::GenericArchiveMember(*i, this)));
+
+	return count;
+}
+
+Common::ArchiveMemberPtr Win32ResourceArchive::getMember(const Common::String &name) {
+	return Common::ArchiveMemberPtr(new Common::GenericArchiveMember(name, this));
+}
+
+Common::SeekableReadStream *Win32ResourceArchive::createReadStreamForMember(const Common::String &name) const {
+	HRSRC resource = FindResource(NULL, name.c_str(), MAKEINTRESOURCE(256));
+
+	if (resource == NULL)
+		return 0;
+
+	HGLOBAL handle = LoadResource(NULL, resource);
+
+	if (handle == NULL)
+		return 0;
+
+	const byte *data = (const byte *)LockResource(handle);
+
+	if (data == NULL)
+		return 0;
+
+	uint32 size = SizeofResource(NULL, resource);
+
+	if (size == 0)
+		return 0;
+
+	return new Common::MemoryReadStream(data, size);
+}
+
+} // End of anonymous namespace
+
+void OSystem_Win32::addSysArchivesToSearchSet(Common::SearchSet &s, int priority) {
+	s.add("Win32Res", new Win32ResourceArchive());
+
+	OSystem_SDL::addSysArchivesToSearchSet(s, priority);
 }
 
 #endif

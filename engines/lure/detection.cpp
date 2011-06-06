@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "base/plugins.h"
@@ -208,7 +205,7 @@ public:
 	LureMetaEngine() : AdvancedMetaEngine(detectionParams) {}
 
 	virtual const char *getName() const {
-		return "Lure of the Temptress Engine";
+		return "Lure";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -274,11 +271,8 @@ SaveStateList LureMetaEngine::listSaves(const char *target) const {
 int LureMetaEngine::getMaximumSaveSlot() const { return 999; }
 
 void LureMetaEngine::removeSaveState(const char *target, int slot) const {
-	char extension[6];
-	snprintf(extension, sizeof(extension), ".%03d", slot);
-
 	Common::String filename = target;
-	filename += extension;
+	filename += Common::String::format(".%03d", slot);
 
 	g_system->getSavefileManager()->removeSavefile(filename);
 }

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #define RONIN_TIMER_ACCESS
@@ -172,11 +169,6 @@ void OSystem_Dreamcast::setCursorPalette(const byte *colors, uint start, uint nu
       colors += 3;
     }
   _enable_cursor_palette = true;
-}
-
-void OSystem_Dreamcast::disableCursorPalette(bool disable)
-{
-  _enable_cursor_palette = !disable;
 }
 
 void OSystem_Dreamcast::grabPalette(byte *colors, uint start, uint num)

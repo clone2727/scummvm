@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TOUCHE_ENGINE_H
@@ -516,7 +513,7 @@ protected:
 
 	void saveGameStateData(Common::WriteStream *stream);
 	void loadGameStateData(Common::ReadStream *stream);
-	virtual Common::Error saveGameState(int num, const char *description);
+	virtual Common::Error saveGameState(int num, const Common::String &description);
 	virtual Common::Error loadGameState(int num);
 	virtual bool canLoadGameStateCurrently();
 	virtual bool canSaveGameStateCurrently();

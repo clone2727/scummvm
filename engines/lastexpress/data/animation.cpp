@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Based on Deniz Oezmen's code: http://oezmen.eu/
@@ -97,7 +94,7 @@ bool Animation::load(Common::SeekableReadStream *stream, int flag) {
 	}
 	_currentChunk = _chunks.begin();
 	_changed = false;
-	_startTime = g_engine->_system->getMillis();
+	_startTime = g_system->getMillis();
 
 	return true;
 }
@@ -113,7 +110,7 @@ bool Animation::process() {
 	//       - Re-implement to be closer to the original engine
 	//       - Add support for subtitles
 	//       - Use engine sound queue instead of our own appendable sound instance
-	int32 currentFrame = (g_engine->_system->getMillis() - _startTime) * 3 / 100;
+	int32 currentFrame = (g_system->getMillis() - _startTime) * 3 / 100;
 
 	// Process all chunks until the current frame
 	while (!_changed && _currentChunk != NULL && currentFrame > _currentChunk->frame && !hasEnded()) {
@@ -183,7 +180,7 @@ bool Animation::process() {
 
 			// Synchronize the audio by resetting the start time
 			if (_currentChunk->frame == 0)
-				_startTime = g_engine->_system->getMillis();
+				_startTime = g_system->getMillis();
 			break;
 
 		case kChunkTypeAudioEnd:
@@ -263,7 +260,8 @@ void Animation::processChunkAudio(Common::SeekableReadStream *in, const Chunk &c
 
 // TODO: this method will probably go away and be integrated in the main loop
 void Animation::play() {
-	while (!hasEnded() && !g_engine->getEventManager()->shouldQuit() && !g_engine->getEventManager()->shouldRTL()) {
+	Common::EventManager *eventMan = g_system->getEventManager();
+	while (!hasEnded() && !Engine::shouldQuit()) {
 		process();
 
 		if (_changed) {
@@ -286,11 +284,11 @@ void Animation::play() {
 		g_system->updateScreen();
 
 		//FIXME: implement subtitles
-		g_engine->_system->delayMillis(20);
+		g_system->delayMillis(20);
 
 		// Handle right-click to interrupt animations
 		Common::Event ev = Common::Event();
-		while (g_engine->getEventManager()->pollEvent(ev)) {
+		while (eventMan->pollEvent(ev)) {
 			if (ev.type == Common::EVENT_RBUTTONUP) {
 				// Stop audio
 				if (_audio)

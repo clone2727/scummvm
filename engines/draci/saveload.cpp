@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "draci/draci.h"
@@ -89,7 +86,7 @@ void writeSavegameHeader(Common::OutSaveFile *out, const DraciSavegameHeader &he
 }
 
 Common::Error saveSavegameData(int saveGameIdx, const Common::String &saveName, DraciEngine &vm) {
-	const char *filename = vm.getSavegameFile(saveGameIdx);
+	Common::String filename = vm.getSavegameFile(saveGameIdx);
 	Common::SaveFileManager *saveMan = g_system->getSavefileManager();
 	Common::OutSaveFile *f = saveMan->openForSaving(filename);
 	if (f == NULL)

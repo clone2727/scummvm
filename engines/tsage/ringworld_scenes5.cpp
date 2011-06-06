@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -37,6 +34,7 @@ namespace tSage {
  *--------------------------------------------------------------------------*/
 
 void Scene4000::Action1::signal() {
+	// Quinn has the peg. Everybody enter the screen.
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -47,7 +45,6 @@ void Scene4000::Action1::signal() {
 		scene->_hotspot5.animate(ANIM_MODE_1, NULL);
 		scene->_hotspot5.setPosition(Common::Point(116, 160));
 
-//		ADD_PLAYER_MOVER_NULL(scene->_hotspot5, 208, 169);
 		Common::Point pt(208, 169);
 		NpcMover *mover = new NpcMover();
 		scene->_hotspot5.addMover(mover, &pt, this);
@@ -102,7 +99,7 @@ void Scene4000::Action1::signal() {
 	}
 	case 4:
 		ADD_MOVER(scene->_miranda, -30, 86);
-		ADD_MOVER(scene->_hotspot5, -40, 86);
+		ADD_MOVER_NULL(scene->_hotspot5, -40, 86);
 		break;
 	case 5:
 		_globals->_soundHandler.startSound(155);
@@ -128,6 +125,8 @@ void Scene4000::Action1::signal() {
 }
 
 void Scene4000::Action2::signal() {
+	// Quinn, Seeker and Miranda walks down to the village
+	// Then, they talk to Rock, and enter the priest hut
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -183,6 +182,7 @@ void Scene4000::Action2::signal() {
 }
 
 void Scene4000::Action3::signal() {
+	// The guard walks to the left and exits the screen
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -201,6 +201,7 @@ void Scene4000::Action3::signal() {
 }
 
 void Scene4000::Action4::signal() {
+	// Quinn ties the rope to the rock
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -239,6 +240,7 @@ void Scene4000::Action4::signal() {
 }
 
 void Scene4000::Action5::signal() {
+	// Chat with Miranda
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -265,6 +267,8 @@ void Scene4000::Action5::signal() {
 }
 
 void Scene4000::Action6::signal() {
+	// Quinn and Miranda enter the screen and walk to the village.
+	// Rock comes and notices the alcohol. They all enter his hut.
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -326,6 +330,7 @@ void Scene4000::Action7::signal() {
 }
 
 void Scene4000::Action8::signal() {
+	// Climb down right Chimney using a rope
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -339,7 +344,7 @@ void Scene4000::Action8::signal() {
 	case 1:
 		_globals->_player.setVisage(4008);
 		_globals->_player.setStrip(5);
-		_globals->_player.setPriority(16);
+		_globals->_player.fixPriority(16);
 		_globals->_player.setFrame(1);
 		_globals->_player.setPosition(Common::Point(283, 52));
 		_globals->_player.animate(ANIM_MODE_5, this);
@@ -366,6 +371,7 @@ void Scene4000::Action8::signal() {
 }
 
 void Scene4000::Action9::signal() {
+	// Villager animations
 	switch (_actionIndex++) {
 	case 0:
 		setDelay(_globals->_randomSource.getRandomNumber(119) + 240);
@@ -378,6 +384,7 @@ void Scene4000::Action9::signal() {
 }
 
 void Scene4000::Action10::signal() {
+	// Villager animations
 	switch (_actionIndex++) {
 	case 0:
 		setDelay(_globals->_randomSource.getRandomNumber(119) + 240);
@@ -436,6 +443,7 @@ void Scene4000::Action11::signal() {
 }
 
 void Scene4000::Action12::signal() {
+	// Quinn enter Rock's hut
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -477,6 +485,7 @@ void Scene4000::Action12::signal() {
 }
 
 void Scene4000::Action13::signal() {
+	// Lander is landing
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (_actionIndex++) {
@@ -542,6 +551,7 @@ void Scene4000::Miranda::doAction(int action) {
 }
 
 void Scene4000::Hotspot8::doAction(int action) {
+	// Guard
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (action) {
@@ -656,7 +666,7 @@ void Scene4000::TheTech::doAction(int action) {
 }
 
 void Scene4000::Hotspot13::doAction(int action) {
-	// Rock
+	// Rock between the two chimneys
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (action) {
@@ -676,6 +686,7 @@ void Scene4000::Hotspot13::doAction(int action) {
 }
 
 void Scene4000::Hotspot::doAction(int action) {
+	// Wall between the two doors
 	Scene4000 *scene = (Scene4000 *)_globals->_sceneManager._scene;
 
 	switch (action) {
@@ -756,6 +767,7 @@ void Scene4000::Hotspot18::doAction(int action) {
 }
 
 void Scene4000::Hotspot23::doAction(int action) {
+	// Door of the temple
 	switch (action) {
 	case CURSOR_LOOK:
 		SceneItem::display2(4000, _globals->getFlag(31) ? 10 : 9);
@@ -989,7 +1001,6 @@ void Scene4000::postInit(SceneObjectList *OwnerList) {
 		_globals->_player.enableControl();
 
 		if (RING_INVENTORY._ladder._sceneNumber != 4000) {
-			_hotspot8.postInit();
 			_hotspot8.setVisage(4017);
 			_hotspot8.animate(ANIM_MODE_1, NULL);
 			_hotspot8.setPosition(Common::Point(199, 188));
@@ -1001,6 +1012,7 @@ void Scene4000::postInit(SceneObjectList *OwnerList) {
 			_miranda.setPosition(Common::Point(246, 146));
 
 		if (_globals->getFlag(39)) {
+			// Ollo follows Quinn and gives explanations on the Tech.
 			_globals->clearFlag(39);
 
 			_olo.postInit();
@@ -1009,8 +1021,11 @@ void Scene4000::postInit(SceneObjectList *OwnerList) {
 			_olo.setObjectWrapper(new SceneObjectWrapper());
 			_olo.setPosition(Common::Point(219, 150));
 
+			_sceneMode = 4010;
 			_globals->_player.disableControl();
-			setAction(&_sequenceManager1, this, 4010, &_globals->_player, NULL);
+			// This is the buggy animation where Miranda comments the Tech even
+			// if she's not in the room but in the lander.
+			setAction(&_sequenceManager1, this, 4010, &_globals->_player, &_olo, NULL);
 		}
 
 		if (_globals->_stripNum == 4000) {
@@ -1137,6 +1152,10 @@ void Scene4000::postInit(SceneObjectList *OwnerList) {
 
 void Scene4000::signal() {
 	switch (_sceneMode) {
+	case 4010:
+		_globals->setFlag(38);
+		_olo.remove();
+		// Deliberate fall-through
 	case 4001:
 		_globals->_player.enableControl();
 		break;
@@ -1168,10 +1187,6 @@ void Scene4000::signal() {
 		break;
 	case 4009:
 		_globals->_sceneManager.changeScene(2200);
-		break;
-	case 4010:
-		_globals->setFlag(38);
-		_olo.remove();
 		break;
 	case 4012:
 		_globals->_player.checkAngle(&_theTech);
@@ -1462,7 +1477,7 @@ void Scene4025::Hole::doAction(int action) {
 void Scene4025::Peg::synchronize(Serializer &s) {
 	SceneObject::synchronize(s);
 	s.syncAsSint16LE(_field88);
-	SYNC_POINTER(_armStrip);
+	s.syncAsSint16LE(_armStrip);
 }
 
 void Scene4025::Peg::doAction(int action) {
@@ -1831,10 +1846,10 @@ Scene4045::Scene4045() :
 	_hotspot7(9, CURSOR_LOOK, 4045, 0, CURSOR_USE, 4045, 15, LIST_END),
 	_hotspot8(10, CURSOR_LOOK, 4045, 2, LIST_END),
 	_hotspot9(11, CURSOR_LOOK, 4045, 3, CURSOR_USE, 4045, 15, LIST_END),
-	_hotspot10(12, CURSOR_LOOK, 4045, 4, CURSOR_USE, 4045, 19, LIST_END),
+	_hotspot10(12, CURSOR_LOOK, 4045, 4, CURSOR_USE, 4100, 19, LIST_END),
 	_hotspot11(13, CURSOR_LOOK, 4045, 6, CURSOR_USE, 4045, 15, LIST_END),
-	_hotspot12(14, CURSOR_LOOK, 4045, 7, CURSOR_USE, 4045, 29, LIST_END),
-	_hotspot13(15, CURSOR_LOOK, 4045, 8, CURSOR_USE, 4045, 19, LIST_END),
+	_hotspot12(14, CURSOR_LOOK, 4045, 7, CURSOR_USE, 4150, 29, LIST_END),
+	_hotspot13(15, CURSOR_LOOK, 4045, 8, CURSOR_USE, 4100, 19, LIST_END),
 	_hotspot14(0, CURSOR_LOOK, 4045, 10, LIST_END) {
 
 	_hotspot14.setBounds(Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT));
@@ -2002,7 +2017,7 @@ void Scene4045::dispatch() {
 }
 
 /*--------------------------------------------------------------------------
- * Scene 4000 - Village - Temple
+ * Scene 4050 - Village - Outside
  *
  *--------------------------------------------------------------------------*/
 
@@ -2716,6 +2731,10 @@ void Scene4100::postInit(SceneObjectList *OwnerList) {
 			setAction(&_action4);
 
 			_globals->clearFlag(43);
+		} else {
+			// Workaround: In the original, the mouse is hidden when Quinn
+			// goes back to scene 4150 then to scene 4100. This enables everything.
+			_globals->_player.enableControl();
 		}
 
 		_globals->_player.setPosition(Common::Point(252, 139));
@@ -2982,7 +3001,7 @@ Scene4150::Scene4150() :
 		_hotspot11(0, CURSOR_LOOK, 4150, 6, CURSOR_USE, 4150, 29, LIST_END),
 		_hotspot12(0, CURSOR_LOOK, 4150, 7, CURSOR_USE, 4150, 29, LIST_END),
 		_hotspot17(0, CURSOR_LOOK, 4150, 10, CURSOR_USE, 4150, 27, OBJECT_STUNNER, 4150, 32, LIST_END),
-		_hotspot18(0, CURSOR_LOOK, 4150, 11, CURSOR_USE, 4150, 32, OBJECT_STUNNER, 4150, 27, LIST_END),
+		_hotspot18(0, CURSOR_LOOK, 4150, 11, CURSOR_USE, 4150, 27, OBJECT_STUNNER, 4150, 32, LIST_END),
 		_hotspot19(0, CURSOR_LOOK, 4150, 12, CURSOR_USE, 4150, 29, LIST_END),
 		_hotspot20(0, CURSOR_LOOK, 4150, 13, CURSOR_USE, 4150, 29, LIST_END),
 		_hotspot21(0, CURSOR_LOOK, 4150, 13, CURSOR_USE, 4150, 29, LIST_END),
@@ -3092,6 +3111,7 @@ void Scene4150::dispatch() {
 
 	if (!_action && (_globals->_player._position.x >= 316)) {
 		_globals->_soundHandler.proc1(NULL);
+		_soundHandler.proc1(NULL);
 		_globals->_player.disableControl();
 		_sceneMode = 4152;
 		setAction(&_sequenceManager, this, 4152, &_globals->_player, NULL);
