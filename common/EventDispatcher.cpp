@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/events.h"
@@ -31,12 +28,12 @@ EventDispatcher::EventDispatcher() : _mapper(0) {
 }
 
 EventDispatcher::~EventDispatcher() {
-	for (Common::List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
+	for (List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
 		if (i->autoFree)
 			delete i->source;
 	}
 
-	for (Common::List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+	for (List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
 		if (i->autoFree)
 			delete i->observer;
 	}
@@ -46,9 +43,11 @@ EventDispatcher::~EventDispatcher() {
 }
 
 void EventDispatcher::dispatch() {
-	Common::Event event;
+	Event event;
 
-	for (Common::List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
+	dispatchPoll();
+
+	for (List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
 		const bool allowMapping = i->source->allowMapping();
 
 		while (i->source->pollEvent(event)) {
@@ -86,7 +85,7 @@ void EventDispatcher::registerSource(EventSource *source, bool autoFree) {
 }
 
 void EventDispatcher::unregisterSource(EventSource *source) {
-	for (Common::List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
+	for (List<SourceEntry>::iterator i = _sources.begin(); i != _sources.end(); ++i) {
 		if (i->source == source) {
 			if (i->autoFree)
 				delete source;
@@ -97,14 +96,15 @@ void EventDispatcher::unregisterSource(EventSource *source) {
 	}
 }
 
-void EventDispatcher::registerObserver(EventObserver *obs, uint priority, bool autoFree) {
+void EventDispatcher::registerObserver(EventObserver *obs, uint priority, bool autoFree, bool notifyPoll) {
 	ObserverEntry newEntry;
 
 	newEntry.observer = obs;
 	newEntry.priority = priority;
 	newEntry.autoFree = autoFree;
+	newEntry.poll = notifyPoll;
 
-	for (Common::List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+	for (List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
 		if (i->priority < priority) {
 			_observers.insert(i, newEntry);
 			return;
@@ -115,7 +115,7 @@ void EventDispatcher::registerObserver(EventObserver *obs, uint priority, bool a
 }
 
 void EventDispatcher::unregisterObserver(EventObserver *obs) {
-	for (Common::List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+	for (List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
 		if (i->observer == obs) {
 			if (i->autoFree)
 				delete obs;
@@ -127,11 +127,18 @@ void EventDispatcher::unregisterObserver(EventObserver *obs) {
 }
 
 void EventDispatcher::dispatchEvent(const Event &event) {
-	for (Common::List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+	for (List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
 		if (i->observer->notifyEvent(event))
 			break;
 	}
 }
 
-} // End of namespace Common
+void EventDispatcher::dispatchPoll() {
+	for (List<ObserverEntry>::iterator i = _observers.begin(); i != _observers.end(); ++i) {
+		if (i->poll == true)
+			if (i->observer->notifyPoll())
+				break;
+	}
+}
 
+} // End of namespace Common

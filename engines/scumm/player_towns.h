@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCUMM_PLAYER_TOWNS_H
@@ -29,6 +26,7 @@
 #include "scumm/scumm.h"
 #include "scumm/imuse/imuse.h"
 #include "audio/softsynth/fmtowns_pc98/towns_euphony.h"
+#include "audio/softsynth/fmtowns_pc98/towns_midi.h"
 
 namespace Scumm {
 
@@ -49,8 +47,8 @@ public:
 	virtual void restoreAfterLoad();
 
 	// version 1 specific
-	virtual int getCurrentCdaSound() { return 0; } 
-	virtual int getCurrentCdaVolume() { return 0; } 
+	virtual int getCurrentCdaSound() { return 0; }
+	virtual int getCurrentCdaVolume() { return 0; }
 	virtual void setVolumeCD(int left, int right) {}
 	virtual void setSoundVolume(int sound, int left, int right) {}
 	virtual void setSoundNote(int sound, int note) {}
@@ -94,8 +92,8 @@ public:
 	void stopAllSounds();
 
 	int getSoundStatus(int sound) const;
-	int getCurrentCdaSound() { return _cdaCurrentSound; } 
-	int getCurrentCdaVolume() { return (_cdaVolLeft + _cdaVolRight + 1) >> 1; } 
+	int getCurrentCdaSound() { return _cdaCurrentSound; }
+	int getCurrentCdaVolume() { return (_cdaVolLeft + _cdaVolRight + 1) >> 1; }
 
 	int32 doCommand(int numargs, int args[]);
 
@@ -126,7 +124,7 @@ private:
 
 	uint8 _cdaVolLeft;
 	uint8 _cdaVolRight;
-	
+
 	uint8 _eupCurrentSound;
 	uint8 _eupLooping;
 	uint8 _eupVolLeft;
@@ -144,7 +142,7 @@ private:
 
 class Player_Towns_v2 : public Player_Towns {
 public:
-	Player_Towns_v2(ScummEngine *vm, IMuse *imuse, Audio::Mixer *mixer, bool disposeIMuse);
+	Player_Towns_v2(ScummEngine *vm, Audio::Mixer *mixer, IMuse *imuse, bool disposeIMuse);
 	~Player_Towns_v2();
 
 	bool init();
@@ -172,6 +170,7 @@ private:
 	SoundOvrParameters *_soundOverride;
 
 	uint8 *_sblData;
+
 	IMuse *_imuse;
 	const bool _imuseDispose;
 };

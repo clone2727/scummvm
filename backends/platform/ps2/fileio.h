@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef __PS2FILE_IO__
@@ -118,10 +115,8 @@ public:
 // TODO: Get rid of the following, instead use PS2FileStream directly.
 FILE *ps2_fopen(const char *fname, const char *mode);
 int ps2_fclose(FILE *stream);
-int ps2_fflush(FILE *stream);
 
 size_t ps2_fread(void *buf, size_t r, size_t n, FILE *stream);
 size_t ps2_fwrite(const void *buf, size_t r, size_t n, FILE *stream);
-int ps2_fputs(const char *s, FILE *stream);
 
 #endif // __PS2FILE_IO__

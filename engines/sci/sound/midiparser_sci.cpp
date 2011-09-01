@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "sci/engine/kernel.h"
@@ -224,6 +221,7 @@ byte *MidiParser_SCI::midiFilterChannels(int channelMask) {
 	byte command = 0, lastCommand = 0;
 	int delta = 0;
 	int midiParamCount = 0;
+	bool containsMidiData = false;
 
 	_mixedData = outData;
 
@@ -250,6 +248,9 @@ byte *MidiParser_SCI::midiFilterChannels(int channelMask) {
 			}
 		}
 		if ((1 << curChannel) & channelMask) {
+			if (curChannel != 0xF)
+				containsMidiData = true;
+
 			if (command != kEndOfTrack) {
 				// Write delta
 				while (delta > 240) {
@@ -306,6 +307,11 @@ byte *MidiParser_SCI::midiFilterChannels(int channelMask) {
 	*outData++ = 0x2F; // End of track (EOT)
 	*outData++ = 0x00;
 	*outData++ = 0x00;
+
+	// This occurs in the music tracks of LB1 Amiga, when using the MT-32
+	// driver (bug #3297881)
+	if (!containsMidiData)
+		warning("MIDI parser: the requested SCI0 sound has no MIDI note data for the currently selected sound driver");
 
 	return _mixedData;
 }
@@ -474,11 +480,18 @@ void MidiParser_SCI::parseNextEvent(EventInfo &info) {
 		info.basic.param2 = 0;
 		if (info.channel() == 0xF) {// SCI special case
 			if (info.basic.param1 != kSetSignalLoop) {
-				// at least in kq5/french&mac the first scene in the intro has a song that sets signal to 4 immediately
-				//  on tick 0. Signal isn't set at that point by sierra sci and it would cause the castle daventry text to
-				//  get immediately removed, so we currently filter it.
-				// Sierra SCI ignores them as well at that time
-				if ((_position._play_tick) || (info.delta)) {
+				// At least in kq5/french&mac the first scene in the intro has
+				// a song that sets signal to 4 immediately on tick 0. Signal
+				// isn't set at that point by sierra sci and it would cause the
+				// castle daventry text to get immediately removed, so we
+				// currently filter it. Sierra SCI ignores them as well at that
+				// time. However, this filtering should only be performed for
+				// SCI1 and newer games. Signalling is done differently in SCI0
+				// though, so ignoring these signals in SCI0 games will result
+				// in glitches (e.g. the intro of LB1 Amiga gets stuck - bug
+				// #3297883). Refer to MusicEntry::setSignal() in sound/music.cpp.
+				if (_soundVersion <= SCI_VERSION_0_LATE ||
+					_position._play_tick || info.delta) {
 					_signalSet = true;
 					_signalToSet = info.basic.param1;
 				}
@@ -620,7 +633,11 @@ void MidiParser_SCI::parseNextEvent(EventInfo &info) {
 			if (info.ext.type == 0x2F) {// end of track reached
 				if (_pSnd->loop)
 					_pSnd->loop--;
-				if (_pSnd->loop) {
+				// QFG3 abuses the hold flag. Its scripts call kDoSoundSetHold,
+				// but sometimes there's no hold marker in the associated songs
+				// (e.g. song 110, during the intro). The original interpreter
+				// treats this case as an infinite loop (bug #3311911).
+				if (_pSnd->loop || _pSnd->hold > 0) {
 					// We need to play it again...
 					jumpToTick(_loopTick);
 				} else {

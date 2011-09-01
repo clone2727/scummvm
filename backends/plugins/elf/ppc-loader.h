@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_PLUGINS_PPC_LOADER_H
@@ -41,4 +38,3 @@ protected:
 #endif /* defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER) && defined(PPC_TARGET) */
 
 #endif /* BACKENDS_PLUGINS_PPC_LOADER_H */
-

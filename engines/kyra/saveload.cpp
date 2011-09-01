@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "kyra/kyra_v1.h"
@@ -116,12 +113,7 @@ KyraEngine_v1::kReadSaveHeaderError KyraEngine_v1::readSaveHeader(Common::Seekab
 
 	if (header.version >= 14) {
 		if (loadThumbnail) {
-			header.thumbnail = new Graphics::Surface();
-			assert(header.thumbnail);
-			if (!Graphics::loadThumbnail(*in, *header.thumbnail)) {
-				delete header.thumbnail;
-				header.thumbnail = 0;
-			}
+			header.thumbnail = Graphics::loadThumbnail(*in);
 		} else {
 			Graphics::skipThumbnail(*in);
 		}
@@ -271,4 +263,3 @@ void KyraEngine_v1::loadGameStateCheck(int slot) {
 }
 
 } // End of namespace Kyra
-

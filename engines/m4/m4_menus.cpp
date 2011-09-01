@@ -18,13 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/algorithm.h"		// for find()
 #include "common/textconsole.h"
+#include "common/translation.h"
 #include "gui/dialog.h"
 #include "gui/message.h"
 
@@ -137,7 +135,7 @@ void OrionCallbacks::saveLoadSaveFn(DialogView *view, MenuObject *item) {
 	bool succeeded = view->vm()->_saveLoad->save(view->_selectedSlot + 1, textItem->getText());
 
 	if (!succeeded) {
-		GUI::MessageDialog dialog("Save game failed!");
+		GUI::MessageDialog dialog(_("Save game failed!"));
 		dialog.runModal();
 	}
 

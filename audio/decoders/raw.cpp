@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/endian.h"
@@ -54,7 +51,7 @@ template<bool is16Bit, bool isUnsigned, bool isLE>
 class RawStream : public SeekableAudioStream {
 public:
 	RawStream(int rate, bool stereo, DisposeAfterUse::Flag disposeStream, Common::SeekableReadStream *stream, const RawStreamBlockList &blocks)
-		: _rate(rate), _isStereo(stereo), _playtime(0, rate), _stream(stream), _disposeAfterUse(disposeStream), _blocks(blocks), _curBlock(_blocks.begin()), _blockLeft(0), _buffer(0) {
+		: _rate(rate), _isStereo(stereo), _playtime(0, rate), _stream(stream, disposeStream), _blocks(blocks), _curBlock(_blocks.begin()), _blockLeft(0), _buffer(0) {
 
 		assert(_blocks.size() > 0);
 
@@ -85,9 +82,6 @@ public:
 	}
 
 	~RawStream() {
-		if (_disposeAfterUse == DisposeAfterUse::YES)
-			delete _stream;
-
 		delete[] _buffer;
 	}
 
@@ -101,15 +95,14 @@ public:
 
 	bool seek(const Timestamp &where);
 private:
-	const int _rate;                               ///< Sample rate of stream
-	const bool _isStereo;                          ///< Whether this is an stereo stream
-	Timestamp _playtime;                           ///< Calculated total play time
-	Common::SeekableReadStream *_stream;           ///< Stream to read data from
-	const DisposeAfterUse::Flag _disposeAfterUse;  ///< Indicates whether the stream object should be deleted when this RawStream is destructed
-	const RawStreamBlockList _blocks;              ///< Audio block list
+	const int _rate;                                           ///< Sample rate of stream
+	const bool _isStereo;                                      ///< Whether this is an stereo stream
+	Timestamp _playtime;                                       ///< Calculated total play time
+	Common::DisposablePtr<Common::SeekableReadStream> _stream; ///< Stream to read data from
+	const RawStreamBlockList _blocks;                          ///< Audio block list
 
-	RawStreamBlockList::const_iterator _curBlock;  ///< Current audio block number
-	int32 _blockLeft;                              ///< How many bytes are still left in the current block
+	RawStreamBlockList::const_iterator _curBlock;              ///< Current audio block number
+	int32 _blockLeft;                                          ///< How many bytes are still left in the current block
 
 	/**
 	 * Advance one block in the stream in case

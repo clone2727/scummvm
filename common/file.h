@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_FILE_H
@@ -100,7 +97,7 @@ public:
 	 * @param	name		a string describing the 'file' corresponding to stream
 	 * @return	true if stream was non-zero, false otherwise
 	 */
-	virtual bool open(SeekableReadStream *stream, const Common::String &name);
+	virtual bool open(SeekableReadStream *stream, const String &name);
 
 	/**
 	 * Close the file, if open.

@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/config-manager.h"
@@ -116,7 +113,7 @@ bool Testsuite::handleInteractiveInput(const Common::String &textToDisplay, cons
 	return prompt.runModal() == result ? true : false;
 }
 
-void Testsuite::displayMessage(const Common::String &textToDisplay, const char *defaultButton, const char *altButton) {
+void Testsuite::displayMessage(const Common::String &textToDisplay, const char *defaultButton) {
 	GUI::MessageDialog prompt(textToDisplay, defaultButton);
 	prompt.runModal();
 }
@@ -217,10 +214,11 @@ uint Testsuite::parseEvents() {
 					return kSkipNext;
 				}
 				break;
+
 			case Common::EVENT_QUIT:
 			case Common::EVENT_RTL:
 				return kEngineQuit;
-				break;
+
 			default:
 				break;
 			}

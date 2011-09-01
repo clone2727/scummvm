@@ -18,16 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // FIXME: Avoid using fprintf
 #define FORBIDDEN_SYMBOL_EXCEPTION_fprintf
-
-// FIXME: Avoid using vfprintf
-#define FORBIDDEN_SYMBOL_EXCEPTION_vfprintf
+#define FORBIDDEN_SYMBOL_EXCEPTION_stderr
 
 
 #include "common/xmlparser.h"
@@ -86,7 +81,7 @@ void XMLParser::close() {
 	_stream = 0;
 }
 
-bool XMLParser::parserError(const char *errorString, ...) {
+bool XMLParser::parserError(const String &errStr) {
 	_state = kParserError;
 
 	const int startPosition = _stream->pos();
@@ -137,12 +132,7 @@ bool XMLParser::parserError(const char *errorString, ...) {
 		fprintf(stderr, "%c", _stream->readByte());
 
 	fprintf(stderr, "\n\nParser error: ");
-
-	va_list args;
-	va_start(args, errorString);
-	vfprintf(stderr, errorString, args);
-	va_end(args);
-
+	fprintf(stderr, "%s", errStr.c_str());
 	fprintf(stderr, "\n\n");
 
 	return false;
@@ -184,16 +174,16 @@ bool XMLParser::parseActiveKey(bool closed) {
 
 		for (List<XMLKeyLayout::XMLKeyProperty>::const_iterator i = key->layout->properties.begin(); i != key->layout->properties.end(); ++i) {
 			if (i->required && !localMap.contains(i->name))
-				return parserError("Missing required property '%s' inside key '%s'", i->name.c_str(), key->name.c_str());
+				return parserError("Missing required property '" + i->name + "' inside key '" + key->name + "'");
 			else if (localMap.contains(i->name))
 				keyCount--;
 		}
 
 		if (keyCount > 0)
-			return parserError("Unhandled property inside key '%s'.", key->name.c_str());
+			return parserError("Unhandled property inside key '" + key->name + "'.");
 
 	} else {
-		return parserError("Unexpected key in the active scope ('%s').", key->name.c_str());
+		return parserError("Unexpected key in the active scope ('" + key->name + "').");
 	}
 
 	// check if any of the parents must be ignored.
@@ -208,7 +198,7 @@ bool XMLParser::parseActiveKey(bool closed) {
 		// when keyCallback() fails, a parserError() must be set.
 		// We set it manually in that case.
 		if (_state != kParserError)
-			parserError("Unhandled exception when parsing '%s' key.", key->name.c_str());
+			parserError("Unhandled exception when parsing '" + key->name + "' key.");
 
 		return false;
 	}
@@ -273,7 +263,7 @@ bool XMLParser::vparseIntegerKey(const char *key, int count, va_list args) {
 	int *num_ptr;
 
 	while (count--) {
-		while (isspace(*key))
+		while (isspace(static_cast<unsigned char>(*key)))
 			key++;
 
 		num_ptr = va_arg(args, int*);
@@ -281,7 +271,7 @@ bool XMLParser::vparseIntegerKey(const char *key, int count, va_list args) {
 
 		key = parseEnd;
 
-		while (isspace(*key))
+		while (isspace(static_cast<unsigned char>(*key)))
 			key++;
 
 		if (count && *key++ != ',')
@@ -398,7 +388,7 @@ bool XMLParser::parse() {
 		case kParserNeedPropertyName:
 			if (activeClosure) {
 				if (!closeKey()) {
-					parserError("Missing data when closing key '%s'.", _activeKey.top()->name.c_str());
+					parserError("Missing data when closing key '" + _activeKey.top()->name + "'.");
 					break;
 				}
 
@@ -473,10 +463,10 @@ bool XMLParser::parse() {
 }
 
 bool XMLParser::skipSpaces() {
-	if (!isspace(_char))
+	if (!isspace(static_cast<unsigned char>(_char)))
 		return false;
 
-	while (_char && isspace(_char))
+	while (_char && isspace(static_cast<unsigned char>(_char)))
 		_char = _stream->readByte();
 
 	return true;
@@ -526,7 +516,7 @@ bool XMLParser::parseToken() {
 		_char = _stream->readByte();
 	}
 
-	return isspace(_char) != 0 || _char == '>' || _char == '=' || _char == '/';
+	return isspace(static_cast<unsigned char>(_char)) != 0 || _char == '>' || _char == '=' || _char == '/';
 }
 
 } // End of namespace Common

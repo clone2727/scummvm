@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/savefile.h"
@@ -136,11 +133,11 @@ TestExitStatus SaveGametests::testListingSavefile() {
 	writeDataToFile("tBedSavefileToList.1", "Save me!");
 	writeDataToFile("tBedSavefileToList.2", "Save me!");
 
-	Common::Error error = saveFileMan->getError();
+	Common::Error err = saveFileMan->getError();
 
-	if (error.getCode() != Common::kNoError) {
+	if (err.getCode() != Common::kNoError) {
 		// Abort. Some Error in writing files
-		Testsuite::logDetailedPrintf("Error while creating savefiles: %s\n", error.getDesc().c_str());
+		Testsuite::logDetailedPrintf("Error while creating savefiles: %s\n", err.getDesc().c_str());
 		return kTestFailed;
 	}
 
@@ -161,11 +158,9 @@ TestExitStatus SaveGametests::testListingSavefile() {
 			}
 		}
 		return kTestPassed;
-	} else {
-		Testsuite::logDetailedPrintf("listing Savefiles failed!\n");
-		return kTestFailed;
 	}
 
+	Testsuite::logDetailedPrintf("listing Savefiles failed!\n");
 	return kTestFailed;
 }
 
@@ -176,8 +171,8 @@ TestExitStatus SaveGametests::testErrorMessages() {
 	// Try opening a non existing file
 	readAndVerifyData("tBedSomeNonExistentSaveFile.0", "File doesn't exists!");
 
-	Common::Error error = saveFileMan->getError();
-	if (error.getCode() == Common::kNoError) {
+	Common::Error err = saveFileMan->getError();
+	if (err.getCode() == Common::kNoError) {
 		// blunder! how come?
 		Testsuite::logDetailedPrintf("SaveFileMan.getError() failed\n");
 		return kTestFailed;

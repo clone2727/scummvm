@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "agi/agi.h"
@@ -37,7 +34,7 @@ static int cocoFrequencies[] = {
 	2093, 2217, 2349, 2489, 2637, 2793, 2959, 3135, 3322, 3520, 3729, 3951
 };
 
-SoundGenCoCo3::SoundGenCoCo3(AgiEngine *vm, Audio::Mixer *pMixer) : SoundGen(vm, pMixer) {
+SoundGenCoCo3::SoundGenCoCo3(AgiBase *vm, Audio::Mixer *pMixer) : SoundGen(vm, pMixer) {
 }
 
 SoundGenCoCo3::~SoundGenCoCo3() {

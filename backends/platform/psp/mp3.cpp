@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable printf override in common/forbidden.h to avoid
@@ -182,8 +179,7 @@ bool Mp3PspStream::loadStartAudioModule(const char *modname, int partition){
 // TODO: make parallel function for unloading the 1.50 modules
 
 Mp3PspStream::Mp3PspStream(Common::SeekableReadStream *inStream, DisposeAfterUse::Flag dispose) :
-	_inStream(inStream),
-	_disposeAfterUse(dispose),
+	_inStream(inStream, dispose),
 	_pcmLength(0),
 	_posInFrame(0),
 	_state(MP3_STATE_INIT),
@@ -277,9 +273,6 @@ Mp3PspStream::~Mp3PspStream() {
 
 	deinitStream();
 	releaseStreamME(); 	// free the memory used for this stream
-
-	if (_disposeAfterUse == DisposeAfterUse::YES)
-		delete _inStream;
 }
 
 void Mp3PspStream::deinitStream() {

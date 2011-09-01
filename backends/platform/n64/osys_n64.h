@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef __OSYS_N64_H__
@@ -30,8 +27,6 @@
 #include "common/config-manager.h"
 
 #include "backends/base-backend.h"
-#include "backends/saves/default/default-saves.h"
-#include "backends/timer/default/default-timer.h"
 
 #include "base/main.h"
 
@@ -76,12 +71,9 @@ enum GraphicModeID {
 	OVERS_MPAL_340X240
 };
 
-class OSystem_N64 : public BaseBackend, public PaletteManager {
+class OSystem_N64 : public EventsBaseBackend, public PaletteManager {
 protected:
-	Common::SaveFileManager *_savefile;
 	Audio::MixerImpl *_mixer;
-	Common::TimerManager *_timer;
-	FilesystemFactory *_fsFactory;
 
 	struct display_context * _dc; // Display context for N64 on screen buffer switching
 
@@ -115,7 +107,7 @@ protected:
 	// FIXME: This must be left as "int" for now, to fix the sign-comparison problem
 	// there is a little more work involved than an int->uint change
 	int _cursorWidth, _cursorHeight;
-	
+
 	int _cursorKeycolor;
 
 	uint16	_overlayHeight, _overlayWidth;
@@ -129,7 +121,7 @@ protected:
 	volatile int _mouseMaxX, _mouseMaxY;
 	int _mouseHotspotX, _mouseHotspotY;
 
-	uint8 _controllerPort;
+	int8 _controllerPort;
 	int8 _mousePort;
 	bool _controllerHasRumble; // Gets enabled if rumble-pak is detected
 
@@ -192,7 +184,6 @@ public:
 	virtual void warpMouse(int x, int y);
 	virtual void setMouseCursor(const byte *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor, int cursorTargetScale, const Graphics::PixelFormat *format);
 	virtual void setCursorPalette(const byte *colors, uint start, uint num);
-	virtual void disableCursorPalette(bool disable);
 
 	virtual bool pollEvent(Common::Event &event);
 	virtual uint32 getMillis();
@@ -205,12 +196,10 @@ public:
 
 	virtual void quit();
 
-	virtual Common::SaveFileManager *getSavefileManager();
 	virtual Audio::Mixer *getMixer();
 	virtual void getTimeAndDate(TimeDate &t) const;
-	virtual Common::TimerManager *getTimerManager();
 	virtual void setTimerCallback(TimerProc callback, int interval);
-	FilesystemFactory *getFilesystemFactory();
+	virtual void logMessage(LogMessageType::Type type, const char *message);
 
 	void rebuildOffscreenGameBuffer(void);
 	void rebuildOffscreenMouseBuffer(void);
@@ -223,4 +212,3 @@ public:
 };
 
 #endif /* __OSYS_N64_H__ */
-

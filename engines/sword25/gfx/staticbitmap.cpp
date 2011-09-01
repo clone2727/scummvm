@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -173,7 +170,10 @@ bool StaticBitmap::unpersist(InputPersistenceBlock &reader) {
 	result &= Bitmap::unpersist(reader);
 	Common::String resourceFilename;
 	reader.readString(resourceFilename);
-	result &= initBitmapResource(resourceFilename);
+	// We may not have saves, and we actually do not need to
+	// restore them. So do not even try to load them.
+	if (!resourceFilename.hasPrefix("/saves"))
+		result &= initBitmapResource(resourceFilename);
 
 	result &= RenderObject::unpersistChildren(reader);
 

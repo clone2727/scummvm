@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/debug.h"
@@ -34,17 +31,20 @@
 #include "lastexpress/data/snd.h"
 #include "lastexpress/data/subtitle.h"
 
+#include "lastexpress/fight/fight.h"
+
 #include "lastexpress/game/action.h"
 #include "lastexpress/game/beetle.h"
-#include "lastexpress/game/fight.h"
 #include "lastexpress/game/inventory.h"
 #include "lastexpress/game/logic.h"
 #include "lastexpress/game/object.h"
 #include "lastexpress/game/savegame.h"
 #include "lastexpress/game/savepoint.h"
 #include "lastexpress/game/scenes.h"
-#include "lastexpress/game/sound.h"
 #include "lastexpress/game/state.h"
+
+#include "lastexpress/sound/queue.h"
+#include "lastexpress/sound/sound.h"
 
 #include "lastexpress/graphics.h"
 #include "lastexpress/helpers.h"
@@ -795,7 +795,7 @@ bool Debugger::cmdFight(int argc, const char **argv) {
 			restoreArchive();
 
 			// Stop audio and restore scene
-			getSound()->stopAllSound();
+			getSoundQueue()->stopAllSound();
 
 			clearBg(GraphicsManager::kBackgroundAll);
 
@@ -868,7 +868,7 @@ bool Debugger::cmdBeetle(int argc, const char **argv) {
 				askForRedraw();
 				redrawScreen();
 
-				while (g_engine->getEventManager()->pollEvent(ev)) {
+				while (g_system->getEventManager()->pollEvent(ev)) {
 
 					switch (ev.type) {
 					default:
@@ -927,7 +927,7 @@ bool Debugger::cmdBeetle(int argc, const char **argv) {
 			restoreArchive();
 
 			// Stop audio and restore scene
-			getSound()->stopAllSound();
+			getSoundQueue()->stopAllSound();
 
 			clearBg(GraphicsManager::kBackgroundAll);
 

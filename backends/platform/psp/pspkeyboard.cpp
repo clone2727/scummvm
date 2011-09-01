@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -301,7 +298,7 @@ bool PSPKeyboard::load() {
 			goto ERROR;
 		}
 
-		PngLoader image(file, _buffers[i], _palettes[i]);
+		PngLoader image(*file, _buffers[i], _palettes[i]);
 
 		if (image.allocate() != PngLoader::OK) {
 			PSP_ERROR("Failed to allocate memory for keyboard image %s\n", _guiStrings[i]);

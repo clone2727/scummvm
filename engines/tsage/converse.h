@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_CONVERSE_H
@@ -28,8 +25,9 @@
 
 #include "tsage/core.h"
 #include "tsage/dialogs.h"
+#include "tsage/sound.h"
 
-namespace tSage {
+namespace TsAGE {
 
 class StripCallback : public Action {
 public:
@@ -41,24 +39,26 @@ private:
 	void setup();
 	uint16 getNextValue();
 	void setMessage(int resNum, int lineNum, int color, const Common::Point &pt, int width);
+	void setMessage(int resNum, int lineNum, int fontNum, int color1, int color2, int color3,
+		const Common::Point &pt, int width);
 	SequenceManager *globalManager();
 public:
 	SceneText _sceneText;
 	int _resNum;
 	uint _sequenceOffset;
 	bool _keepActive;
-	int _field24;
+	int _fontNum;
 	int _field26;
 	Common::Array<byte> _sequenceData;
 	int _objectIndex;
 	SceneObject *_sceneObject;
 	SceneObject *_objectList[6];
-	SoundHandler _soundHandler;
+	ASound _soundHandler;
 public:
 	SequenceManager();
 
 	virtual Common::String getClassName() { return "SequenceManager"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void remove();
 	virtual void signal();
 	virtual void process(Event &event);
@@ -86,7 +86,7 @@ public:
 	Speaker();
 
 	virtual Common::String getClassName() { return "Speaker"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void remove();
 	virtual void proc12(Action *action);
 	virtual void setText(const Common::String &msg);
@@ -168,7 +168,7 @@ public:
 	int _id;
 	uint _scriptOffset;
 
-	virtual void synchronise(Serialiser &s) {
+	virtual void synchronize(Serializer &s) {
 		s.syncAsSint32LE(_id);
 		s.syncAsUint32LE(_scriptOffset);
 	}
@@ -184,7 +184,7 @@ public:
 	uint _speakerOffset;
 public:
 	void load(const byte *dataP);
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 };
 
 class StripManager : public Action {
@@ -212,7 +212,7 @@ public:
 	StripManager();
 	virtual ~StripManager();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void remove();
 	virtual void signal();
 	virtual void process(Event &event);
@@ -224,6 +224,6 @@ public:
 	void addSpeaker(Speaker *speaker);
 };
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

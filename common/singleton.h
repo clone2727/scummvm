@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_SINGLETON_H
@@ -92,15 +89,13 @@ protected:
 };
 
 /**
- * Note that you need to use this macro from the global namespace.
+ * Note that you need to use this macro from the Common namespace.
  *
  * This is because C++ requires initial explicit specialization
  * to be placed in the same namespace as the template.
- * It has to be put in the global namespace to assure the correct
- * namespace Common is referenced.
  */
 #define DECLARE_SINGLETON(T) \
-	template<> T *Common::Singleton<T>::_singleton = 0
+	template<> T *Singleton<T>::_singleton = 0
 
 }	// End of namespace Common
 

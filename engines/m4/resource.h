@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef M4_RESOURCE_H
@@ -112,7 +109,7 @@ public:
 enum ResourceType {RESTYPE_ROOM, RESTYPE_SC, RESTYPE_TEXT, RESTYPE_QUO, RESTYPE_I,
 	RESTYPE_OB, RESTYPE_FONT, RESTYPE_SOUND, RESTYPE_SPEECH, RESTYPE_HAS_EXT, RESTYPE_NO_EXT};
 
-enum ExtensionType {EXTTYPE_SS = 1, EXTTYPE_AA = 2, EXTTYPE_DAT = 3, EXTTYPE_HH = 4, EXTTYPE_ART = 5, 
+enum ExtensionType {EXTTYPE_SS = 1, EXTTYPE_AA = 2, EXTTYPE_DAT = 3, EXTTYPE_HH = 4, EXTTYPE_ART = 5,
 	EXTTYPE_INT = 6, EXTTYPE_NONE = -1};
 
 enum ResourcePrefixType {RESPREFIX_GL = 1, RESPREFIX_SC = 2, RESPREFIX_RM = 3};

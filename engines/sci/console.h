@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
  // Console module header file
@@ -97,6 +94,8 @@ private:
 	bool cmdPlayVideo(int argc, const char **argv);
 	bool cmdAnimateList(int argc, const char **argv);
 	bool cmdWindowList(int argc, const char **argv);
+	bool cmdSavedBits(int argc, const char **argv);
+	bool cmdShowSavedBits(int argc, const char **argv);
 	// Segments
 	bool cmdPrintSegmentTable(int argc, const char **argv);
 	bool cmdSegmentInfo(int argc, const char **argv);

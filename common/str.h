@@ -17,15 +17,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef COMMON_STRING_H
 #define COMMON_STRING_H
 
 #include "common/scummsys.h"
+
+#include <stdarg.h>
 
 namespace Common {
 
@@ -41,7 +40,7 @@ namespace Common {
  * a certain length do we allocate a buffer on the heap.
  *
  * The presence of \0 characters in the string will cause undefined
- * behaviour in some operations.
+ * behavior in some operations.
  */
 class String {
 protected:
@@ -216,9 +215,18 @@ public:
 	uint hash() const;
 
 	/**
-	 * Printf-like function. Returns a formatted String.
+	 * Print formatted data into a String object. Similar to sprintf,
+	 * except that it stores the result in (variably sized) String
+	 * instead of a fixed size buffer.
 	 */
-	static Common::String format(const char *fmt, ...) GCC_PRINTF(1,2);
+	static String format(const char *fmt, ...) GCC_PRINTF(1,2);
+
+	/**
+	 * Print formatted data into a String object. Similar to vsprintf,
+	 * except that it stores the result in (variably sized) String
+	 * instead of a fixed size buffer.
+	 */
+	static String vformat(const char *fmt, va_list args);
 
 public:
 	typedef char *        iterator;
@@ -285,7 +293,7 @@ extern char *trim(char *t);
  * @param sep character used to separate path components
  * @return The last component of the path.
  */
-Common::String lastPathComponent(const Common::String &path, const char sep);
+String lastPathComponent(const String &path, const char sep);
 
 /**
  * Normalize a given path to a canonical form. In particular:
@@ -299,7 +307,7 @@ Common::String lastPathComponent(const Common::String &path, const char sep);
  * @param sep   the separator token (usually '/' on Unix-style systems, or '\\' on Windows based stuff)
  * @return      the normalized path
  */
-Common::String normalizePath(const Common::String &path, const char sep);
+String normalizePath(const String &path, const char sep);
 
 
 /**
@@ -380,5 +388,8 @@ size_t strlcat(char *dst, const char *src, size_t size);
 
 
 } // End of namespace Common
+
+extern int scumm_stricmp(const char *s1, const char *s2);
+extern int scumm_strnicmp(const char *s1, const char *s2, uint n);
 
 #endif

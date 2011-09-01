@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // The hash map (associative array) implementation in this file is
@@ -109,8 +106,9 @@ private:
 		HASHMAP_MEMORYPOOL_SIZE = HASHMAP_MIN_CAPACITY * HASHMAP_LOADFACTOR_NUMERATOR / HASHMAP_LOADFACTOR_DENOMINATOR
 	};
 
-
+#ifdef USE_HASHMAP_MEMORY_POOL
 	ObjectPool<Node, HASHMAP_MEMORYPOOL_SIZE> _nodePool;
+#endif
 
 	Node **_storage;	///< hashtable of size arrsize.
 	uint _mask;		///< Capacity of the HashMap minus one; must be a power of two of minus one
@@ -131,12 +129,20 @@ private:
 #endif
 
 	Node *allocNode(const Key &key) {
+#ifdef USE_HASHMAP_MEMORY_POOL
 		return new (_nodePool) Node(key);
+#else
+		return new Node(key);
+#endif
 	}
 
 	void freeNode(Node *node) {
 		if (node && node != HASHMAP_DUMMY_NODE)
+#ifdef USE_HASHMAP_MEMORY_POOL
 			_nodePool.deleteChunk(node);
+#else
+			delete node;
+#endif
 	}
 
 	void assign(const HM_t &map);

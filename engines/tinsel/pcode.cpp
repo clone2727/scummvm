@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  * Virtual processor.
  */
 
@@ -143,11 +140,11 @@ static const byte fragment7[] = {OP_IMM | OPSIZE16, FRAGMENT_WORD(908), OP_JUMP 
 static const byte fragment8[] = {OP_IMM | OPSIZE16, FRAGMENT_WORD(910), OP_JUMP | OPSIZE16, FRAGMENT_WORD(644)};
 static const byte fragment9[] = {OP_JUMP | OPSIZE8, 123};
 static const byte fragment10[] = {OP_IMM | OPSIZE16, FRAGMENT_WORD(160), OP_JUMP | OPSIZE16, FRAGMENT_WORD(136)};
-static const byte fragment11[] = {OP_JMPTRUE | OPSIZE16, FRAGMENT_WORD(1572), 
+static const byte fragment11[] = {OP_JMPTRUE | OPSIZE16, FRAGMENT_WORD(1572),
 		OP_ONE, OP_LIBCALL | OPSIZE8, 14,									// Re-show the cursor
 		OP_IMM | OPSIZE16, FRAGMENT_WORD(322), OP_LIBCALL | OPSIZE8, 46,	// Give back the whistle
 		OP_JUMP | OPSIZE16, FRAGMENT_WORD(1661)};
-static const byte fragment12[] = {OP_JMPTRUE | OPSIZE16, FRAGMENT_WORD(1491), 
+static const byte fragment12[] = {OP_JMPTRUE | OPSIZE16, FRAGMENT_WORD(1491),
 		OP_ONE, OP_LIBCALL | OPSIZE8, 14,									// Re-show the cursor
 		OP_IMM | OPSIZE16, FRAGMENT_WORD(322), OP_LIBCALL | OPSIZE8, 46,	// Give back the whistle
 		OP_JUMP | OPSIZE16, FRAGMENT_WORD(1568)};
@@ -211,10 +208,10 @@ const WorkaroundEntry workaroundList[] = {
 	// See bug report #2934211.
 	{TINSEL_V1, true, 352601285, 1569, sizeof(fragment11), fragment11},
 	{TINSEL_V1, false, 352602304, 1488, sizeof(fragment12), fragment12},
-	
+
 	// DW2: Corrects a bug with global 306 not being cleared if you leave
 	// the marketplace scene whilst D'Blah is talking (even if it's not
-	// actually audible); returning to the scene and clicking on him multiple 
+	// actually audible); returning to the scene and clicking on him multiple
 	// times would cause the game to crash
 	{TINSEL_V2, true, 1109294728, 0, sizeof(fragment13), fragment13},
 
@@ -351,7 +348,7 @@ void FreeMasterInterpretContext() {
 }
 
 /**
- * Allocate and initialise an interpret context.
+ * Allocate and initialize an interpret context.
  * Called from a process prior to Interpret().
  * @param gsort			which sort of code
  * @param hCode			Handle to code to execute
@@ -388,7 +385,7 @@ INT_CONTEXT *InitInterpretContext(GSORT gsort, SCNHANDLE hCode,	TINSEL_EVENT eve
 }
 
 /**
- * Allocate and initialise an interpret context with restored data.
+ * Allocate and initialize an interpret context with restored data.
  */
 INT_CONTEXT *RestoreInterpretContext(INT_CONTEXT *ric) {
 	INT_CONTEXT *ic;

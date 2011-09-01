@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "saga/saga.h"
@@ -1168,7 +1165,15 @@ void Actor::moveDragon(ActorData *actor) {
 		dir0 = actor->_actionDirection;
 		dir1 = actor->_tileDirections[actor->_walkStepIndex++];
 		dir2 = actor->_tileDirections[actor->_walkStepIndex];
-		dir3 = actor->_tileDirections[actor->_walkStepIndex + 1];
+		// Fix for Bug #3324850 ("ITE (SAGA): crash in dog sewers")
+		// If there were more than two steps left, get the third (next) step.
+		// Otherwise, store the second step again so the anim looks right.
+		// (If you stop the move instead, Rif isn't automatically knocked into
+		// the Sewer.)
+		if (actor->_walkStepIndex + 1 < actor->_walkStepsCount)
+			dir3 = actor->_tileDirections[actor->_walkStepIndex + 1];
+		else
+			dir3 = dir2;
 
 		if (dir0 != dir1){
 			actor->_actionDirection = dir0 = dir1;

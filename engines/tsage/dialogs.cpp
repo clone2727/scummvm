@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/translation.h"
@@ -33,9 +30,9 @@
 #include "tsage/dialogs.h"
 #include "tsage/staticres.h"
 #include "tsage/globals.h"
-#include "tsage/ringworld_logic.h"
+#include "tsage/ringworld/ringworld_logic.h"
 
-namespace tSage {
+namespace TsAGE {
 
 /*--------------------------------------------------------------------------*/
 
@@ -48,19 +45,18 @@ MessageDialog::MessageDialog(const Common::String &message, const Common::String
 	addElements(&_msg, &_btn1, NULL);
 
 	_msg.set(message, 200, ALIGN_LEFT);
-	_btn1._bounds.moveTo(_msg._bounds.left, _msg._bounds.bottom + 2);
+	_msg._bounds.moveTo(0, 0);
 	_defaultButton = &_btn1;
 
 	// Set up the first button
 	_btn1.setText(btn1Message);
-	_btn1._bounds.moveTo(_msg._bounds.right - _btn1._bounds.width(), _msg._bounds.bottom);
+	_btn1._bounds.moveTo(_msg._bounds.right - _btn1._bounds.width(), _msg._bounds.bottom + 2);
 
 	if (!btn2Message.empty()) {
 		// Set up the second button
-		_defaultButton = &_btn2;
 		add(&_btn2);
 		_btn2.setText(btn2Message);
-		_btn2._bounds.moveTo(_msg._bounds.right - _btn2._bounds.width(), _msg._bounds.bottom);
+		_btn2._bounds.moveTo(_msg._bounds.right - _btn2._bounds.width(), _msg._bounds.bottom + 2);
 		_btn1._bounds.translate(-(_btn2._bounds.width() + 4), 0);
 	}
 
@@ -73,12 +69,11 @@ MessageDialog::MessageDialog(const Common::String &message, const Common::String
 
 int MessageDialog::show(const Common::String &message, const Common::String &btn1Message, const Common::String &btn2Message) {
 	// Ensure that the cursor is the arrow
-	_globals->_events.pushCursor(CURSOR_ARROW);
-	_globals->_events.showCursor();
+	_globals->_events.setCursor(CURSOR_ARROW);
 
 	int result = show2(message, btn1Message, btn2Message);
 
-	_globals->_events.popCursor();
+	_globals->_events.setCursorFromFlag();
 	return result;
 }
 
@@ -86,8 +81,9 @@ int MessageDialog::show2(const Common::String &message, const Common::String &bt
 	MessageDialog *dlg = new MessageDialog(message, btn1Message, btn2Message);
 	dlg->draw();
 
-	GfxButton *selectedButton = dlg->execute();
-	int result =  (selectedButton == &dlg->_btn1) ? 0 : 1;
+	GfxButton *defaultButton = !btn2Message.empty() ? &dlg->_btn2 : &dlg->_btn1;
+	GfxButton *selectedButton = dlg->execute(defaultButton);
+	int result =  (selectedButton == defaultButton) ? 1 : 0;
 
 	delete dlg;
 	return result;
@@ -109,186 +105,6 @@ ConfigDialog::ConfigDialog() : GUI::OptionsDialog("", "GlobalConfig") {
 
 	new GUI::ButtonWidget(this, "GlobalConfig.Ok", _("~O~K"), 0, GUI::kOKCmd);
 	new GUI::ButtonWidget(this, "GlobalConfig.Cancel", _("~C~ancel"), 0, GUI::kCloseCmd);
-}
-
-/*--------------------------------------------------------------------------*/
-
-#define BUTTON_WIDTH 28
-#define BUTTON_HEIGHT 29
-
-RightClickButton::RightClickButton(int buttonIndex, int xp, int yp) : GfxButton() {
-	_buttonIndex = buttonIndex;
-	this->_bounds.left = xp;
-	this->_bounds.top = yp;
-	this->_bounds.setWidth(BUTTON_WIDTH);
-	this->_bounds.setHeight(BUTTON_HEIGHT);
-	_savedButton = NULL;
-}
-
-void RightClickButton::highlight() {
-	if (_savedButton) {
-		// Button was previously highlighted, so de-highlight by restoring saved area
-		_globals->gfxManager().copyFrom(*_savedButton, _bounds.left, _bounds.top);
-		delete _savedButton;
-		_savedButton = NULL;
-	} else {
-		// Highlight button by getting the needed highlighted image resource
-		_savedButton = Surface_getArea(_globals->gfxManager().getSurface(), _bounds);
-
-		uint size;
-		byte *imgData = _resourceManager->getSubResource(7, 2, _buttonIndex, &size);
-
-		GfxSurface btnSelected = surfaceFromRes(imgData);
-		_globals->gfxManager().copyFrom(btnSelected, _bounds.left, _bounds.top);
-
-		DEALLOCATE(imgData);
-	}
-}
-
-/*--------------------------------------------------------------------------*/
-
-/**
- * This dialog implements the right-click dialog
- */
-RightClickDialog::RightClickDialog() : GfxDialog(),
-		_walkButton(1, 48, 12), _lookButton(2, 31, 29), _useButton(3, 65, 29),
-		_talkButton(4, 14, 47), _inventoryButton(5, 48, 47), _optionsButton(6, 83, 47) {
-	Rect rectArea, dialogRect;
-
-	// Set the palette and change the cursor
-	_gfxManager.setDialogPalette();
-	_globals->_events.setCursor(CURSOR_ARROW);
-
-	// Get the dialog image
-	_surface = surfaceFromRes(7, 1, 1);
-
-	// Set the dialog position
-	dialogRect.resize(_surface, 0, 0, 100);
-	dialogRect.center(_globals->_events._mousePos.x, _globals->_events._mousePos.y);
-
-	// Ensure the dialog will be entirely on-screen
-	Rect screenRect = _globals->gfxManager()._bounds;
-	screenRect.collapse(4, 4);
-	dialogRect.contain(screenRect);
-
-	_bounds = dialogRect;
-	_gfxManager._bounds = _bounds;
-
-	_highlightedButton = NULL;
-	_selectedAction = -1;
-}
-
-RightClickDialog::~RightClickDialog() {
-}
-
-RightClickButton *RightClickDialog::findButton(const Common::Point &pt) {
-	RightClickButton *btnList[] = {  &_walkButton, &_lookButton, &_useButton, &_talkButton, &_inventoryButton, &_optionsButton };
-
-	for (int i = 0; i < 6; ++i) {
-		btnList[i]->_owner = this;
-
-		if (btnList[i]->_bounds.contains(pt))
-			return btnList[i];
-	}
-
-	return NULL;
-}
-
-void RightClickDialog::draw() {
-	// Save the covered background area
-	_savedArea = Surface_getArea(_globals->_gfxManagerInstance.getSurface(), _bounds);
-
-	// Draw the dialog image
-	_globals->gfxManager().copyFrom(_surface, _bounds.left, _bounds.top);
-}
-
-bool RightClickDialog::process(Event &event) {
-	switch (event.eventType) {
-	case EVENT_MOUSE_MOVE: {
-		// Check whether a button is highlighted
-		RightClickButton *btn = findButton(event.mousePos);
-
-		if (btn != _highlightedButton) {
-			// De-highlight any previously selected button
-			if (_highlightedButton) {
-				_highlightedButton->highlight();
-				_highlightedButton = NULL;
-			}
-			if (btn) {
-				// Highlight the new button
-				btn->highlight();
-				_highlightedButton = btn;
-			}
-		}
-		event.handled = true;
-		return true;
-	}
-
-	case EVENT_BUTTON_DOWN:
-		// If a button is highlighted, then flag the selected button index
-		if (_highlightedButton)
-			_selectedAction = _highlightedButton->_buttonIndex;
-		else
-			_selectedAction = _lookButton._buttonIndex;
-		event.handled = true;
-		return true;
-
-	default:
-		break;
-	}
-
-	return false;
-}
-
-void RightClickDialog::execute() {
-	// Draw the dialog
-	draw();
-
-	// Dialog event handler loop
-	_gfxManager.activate();
-
-	while (!_vm->getEventManager()->shouldQuit() && (_selectedAction == -1)) {
-		Event evt;
-		while (_globals->_events.getEvent(evt, EVENT_MOUSE_MOVE | EVENT_BUTTON_DOWN)) {
-			evt.mousePos.x -= _bounds.left;
-			evt.mousePos.y -= _bounds.top;
-
-			process(evt);
-		}
-
-		g_system->delayMillis(10);
-		g_system->updateScreen();
-	}
-
-	// Execute the specified action
-	switch (_selectedAction) {
-	case 1:
-		// Look action
-		_globals->_events.setCursor(CURSOR_LOOK);
-		break;
-	case 2:
-		// Walk action
-		_globals->_events.setCursor(CURSOR_WALK);
-		break;
-	case 3:
-		// Use cursor
-		_globals->_events.setCursor(CURSOR_USE);
-		break;
-	case 4:
-		// Talk cursor
-		_globals->_events.setCursor(CURSOR_TALK);
-		break;
-	case 5:
-		// Inventory dialog
-		InventoryDialog::show();
-		break;
-	case 6:
-		// Dialog options
-		OptionsDialog::show();
-		break;
-	}
-
-	_gfxManager.deactivate();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -379,7 +195,7 @@ bool GfxInvImage::process(Event &event) {
 void InventoryDialog::show() {
 	// Determine how many items are in the player's inventory
 	int itemCount = 0;
-	SynchronisedList<InvObject *>::iterator i;
+	SynchronizedList<InvObject *>::iterator i;
 	for (i = RING_INVENTORY._itemList.begin(); i != RING_INVENTORY._itemList.end(); ++i) {
 		if ((*i)->inInventory())
 			++itemCount;
@@ -400,7 +216,7 @@ InventoryDialog::InventoryDialog() {
 	// Determine the maximum size of the image of any item in the player's inventory
 	int imgWidth = 0, imgHeight = 0;
 
-	SynchronisedList<InvObject *>::iterator i;
+	SynchronizedList<InvObject *>::iterator i;
 	for (i = RING_INVENTORY._itemList.begin(); i != RING_INVENTORY._itemList.end(); ++i) {
 		InvObject *invObject = *i;
 		if (invObject->inInventory()) {
@@ -469,13 +285,15 @@ void InventoryDialog::execute() {
 	bool lookFlag = false;
 	_gfxManager.activate();
 
-	while (!_vm->getEventManager()->shouldQuit()) {
+	while (!_vm->shouldQuit()) {
 		// Get events
 		Event event;
-		while (!_globals->_events.getEvent(event) && !_vm->getEventManager()->shouldQuit())
-			;
-		if (_vm->getEventManager()->shouldQuit())
-			return;
+		while (!_globals->_events.getEvent(event) && !_vm->shouldQuit()) {
+			g_system->delayMillis(10);
+			g_system->updateScreen();
+		}
+		if (_vm->shouldQuit())
+			break;
 
 		hiliteObj = NULL;
 		if ((event.eventType == EVENT_BUTTON_DOWN) && !_bounds.contains(event.mousePos))
@@ -597,4 +415,4 @@ OptionsDialog::OptionsDialog() {
 }
 
 
-} // End of namespace tSage
+} // End of namespace TsAGE

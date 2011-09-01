@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -411,7 +408,7 @@ void M4Surface::copyFrom(M4Surface *src, const Common::Rect &srcBounds, int dest
  * Copies a given image onto a destination surface with scaling, transferring only pixels that meet
  * the specified depth requirement on a secondary surface contain depth information
  */
-void M4Surface::copyFrom(M4Surface *src, int destX, int destY, int depth, 
+void M4Surface::copyFrom(M4Surface *src, int destX, int destY, int depth,
 						 M4Surface *depthsSurface, int scale, int transparentColor) {
 
 	if (scale == 100) {
@@ -454,7 +451,7 @@ void M4Surface::copyFrom(M4Surface *src, int destX, int destY, int depth,
 		}
 
 		src->freeData();
-		depthsSurface->freeData();	
+		depthsSurface->freeData();
 		return;
 	}
 
@@ -504,7 +501,7 @@ void M4Surface::copyFrom(M4Surface *src, int destX, int destY, int depth,
 	widthAmount -= destRight;
 	if (widthAmount > 0)
 		spriteWidth -= widthAmount;
-	
+
 	int spriteRight = spriteLeft + spriteWidth;
 	if (spriteWidth <= 0)
 		return;
@@ -571,7 +568,7 @@ void M4Surface::copyFrom(M4Surface *src, int destX, int destY, int depth,
 	}
 
 	src->freeData();
-	depthsSurface->freeData();	
+	depthsSurface->freeData();
 	this->freeData();
 }
 
@@ -922,7 +919,7 @@ void M4Surface::scrollY(int yAmount) {
 		// Vertically shift all the lines
 		Common::copy(pixelsP + (pitch * ySize), pixelsP + (pitch * height()), pixelsP);
 		// Transfer the buffered lines to the bottom of the screen
-		Common::copy(tempData, tempData + blockSize, pixelsP + (pitch * (height() - ySize))); 
+		Common::copy(tempData, tempData + blockSize, pixelsP + (pitch * (height() - ySize)));
 	}
 
 	::free(tempData);
@@ -948,7 +945,7 @@ void M4Surface::translate(RGBList *list, bool isTransparent) {
 M4Surface *M4Surface::flipHorizontal() const {
 	M4Surface *dest = new M4Surface(width(), height());
 	dest->_rgbList = (this->_rgbList == NULL) ? NULL : this->_rgbList->clone();
-	
+
 	byte *destP = dest->getBasePtr();
 
 	for (int y = 0; y < height(); ++y) {

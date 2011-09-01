@@ -17,18 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
-#include "common/str.h"
 #include "common/hash-str.h"
-#include "common/util.h"
-
+#include "common/list.h"
 #include "common/memorypool.h"
-
-#include <stdarg.h>
+#include "common/str.h"
+#include "common/util.h"
 
 namespace Common {
 
@@ -259,7 +254,7 @@ String &String::operator=(char c) {
 
 String &String::operator+=(const char *str) {
 	if (_str <= str && str <= _str + _size)
-		return operator+=(Common::String(str));
+		return operator+=(String(str));
 
 	int len = strlen(str);
 	if (len > 0) {
@@ -273,7 +268,7 @@ String &String::operator+=(const char *str) {
 
 String &String::operator+=(const String &str) {
 	if (&str == this)
-		return operator+=(Common::String(str));
+		return operator+=(String(str));
 
 	int len = str._size;
 	if (len > 0) {
@@ -410,7 +405,7 @@ void String::trim() {
 	makeUnique();
 
 	// Trim trailing whitespace
-	while (_size >= 1 && isspace(_str[_size - 1]))
+	while (_size >= 1 && isspace(static_cast<unsigned char>(_str[_size - 1])))
 		--_size;
 	_str[_size] = 0;
 
@@ -432,10 +427,22 @@ uint String::hash() const {
 // static
 String String::format(const char *fmt, ...) {
 	String output;
-	assert(output.isStorageIntern());
 
 	va_list va;
 	va_start(va, fmt);
+	output = String::vformat(fmt, va);
+	va_end(va);
+
+	return output;
+}
+
+// static
+String String::vformat(const char *fmt, va_list args) {
+	String output;
+	assert(output.isStorageIntern());
+
+	va_list va;
+	scumm_va_copy(va, args);
 	int len = vsnprintf(output._str, _builtinCapacity, fmt, va);
 	va_end(va);
 
@@ -460,7 +467,7 @@ String String::format(const char *fmt, ...) {
 			assert(!output.isStorageIntern());
 			size = output._extern._capacity;
 
-			va_start(va, fmt);
+			scumm_va_copy(va, args);
 			len = vsnprintf(output._str, size, fmt, va);
 			va_end(va);
 		} while (len == -1 || len >= size - 1);
@@ -471,7 +478,7 @@ String String::format(const char *fmt, ...) {
 	} else {
 		// vsnprintf didn't have enough space, so grow buffer
 		output.ensureCapacity(len, false);
-		va_start(va, fmt);
+		scumm_va_copy(va, args);
 		int len2 = vsnprintf(output._str, len+1, fmt, va);
 		va_end(va);
 		assert(len == len2);
@@ -599,14 +606,14 @@ String operator+(const String &x, char y) {
 }
 
 char *ltrim(char *t) {
-	while (isspace(*t))
+	while (isspace(static_cast<unsigned char>(*t)))
 		t++;
 	return t;
 }
 
 char *rtrim(char *t) {
 	int l = strlen(t) - 1;
-	while (l >= 0 && isspace(t[l]))
+	while (l >= 0 && isspace(static_cast<unsigned char>(t[l])))
 		t[l--] = 0;
 	return t;
 }
@@ -615,7 +622,7 @@ char *trim(char *t) {
 	return rtrim(ltrim(t));
 }
 
-Common::String lastPathComponent(const Common::String &path, const char sep) {
+String lastPathComponent(const String &path, const char sep) {
 	const char *str = path.c_str();
 	const char *last = str + path.size();
 
@@ -625,7 +632,7 @@ Common::String lastPathComponent(const Common::String &path, const char sep) {
 
 	// Path consisted of only slashes -> return empty string
 	if (last == str)
-		return Common::String();
+		return String();
 
 	// Now scan the whole component
 	const char *first = last - 1;
@@ -635,24 +642,26 @@ Common::String lastPathComponent(const Common::String &path, const char sep) {
 	if (*first == sep)
 		first++;
 
-	return Common::String(first, last);
+	return String(first, last);
 }
 
-Common::String normalizePath(const Common::String &path, const char sep) {
+String normalizePath(const String &path, const char sep) {
 	if (path.empty())
 		return path;
 
 	const char *cur = path.c_str();
-	Common::String result;
+	String result;
 
 	// If there is a leading slash, preserve that:
 	if (*cur == sep) {
 		result += sep;
+		// Skip over multiple leading slashes, so "//" equals "/"
 		while (*cur == sep)
 			++cur;
 	}
 
-	// Scan till the end of the String
+	// Scan for path components till the end of the String
+	List<String> comps;
 	while (*cur != 0) {
 		const char *start = cur;
 
@@ -660,23 +669,29 @@ Common::String normalizePath(const Common::String &path, const char sep) {
 		while (*cur != sep && *cur != 0)
 			cur++;
 
-		const Common::String component(start, cur);
+		const String component(start, cur);
 
-		// Skip empty components and dot components, add all others
-		if (!component.empty() && component != ".") {
-			// Add a separator before the component, unless the result
-			// string already ends with one (which happens only if the
-			// path *starts* with a separator).
-			if (!result.empty() && result.lastChar() != sep)
-				result += sep;
-
-			// Add the component
-			result += component;
+		if (component.empty() || component == ".") {
+			// Skip empty components and dot components
+		} else if (!comps.empty() && component == ".." && comps.back() != "..") {
+			// If stack is non-empty and top is not "..", remove top
+			comps.pop_back();
+		} else {
+			// Add the component to the stack
+			comps.push_back(component);
 		}
 
 		// Skip over separator chars
 		while (*cur == sep)
 			cur++;
+	}
+
+	// Finally, assemble all components back into a path
+	while (!comps.empty()) {
+		result += comps.front();
+		comps.pop_front();
+		if (!comps.empty())
+			result += sep;
 	}
 
 	return result;
@@ -752,7 +767,7 @@ String tag2string(uint32 tag) {
 		if (!isprint((unsigned char)str[i]))
 			str[i] = '.';
 	}
-	return Common::String(str);
+	return String(str);
 }
 
 size_t strlcpy(char *dst, const char *src, size_t size) {
@@ -836,3 +851,36 @@ size_t strlcat(char *dst, const char *src, size_t size) {
 }
 
 }	// End of namespace Common
+
+// Portable implementation of stricmp / strcasecmp / strcmpi.
+// TODO: Rename this to Common::strcasecmp
+int scumm_stricmp(const char *s1, const char *s2) {
+	byte l1, l2;
+	do {
+		// Don't use ++ inside tolower, in case the macro uses its
+		// arguments more than once.
+		l1 = (byte)*s1++;
+		l1 = tolower(l1);
+		l2 = (byte)*s2++;
+		l2 = tolower(l2);
+	} while (l1 == l2 && l1 != 0);
+	return l1 - l2;
+}
+
+// Portable implementation of strnicmp / strncasecmp / strncmpi.
+// TODO: Rename this to Common::strncasecmp
+int scumm_strnicmp(const char *s1, const char *s2, uint n) {
+	byte l1, l2;
+	do {
+		if (n-- == 0)
+			return 0;	// no difference found so far -> signal equality
+
+		// Don't use ++ inside tolower, in case the macro uses its
+		// arguments more than once.
+		l1 = (byte)*s1++;
+		l1 = tolower(l1);
+		l2 = (byte)*s2++;
+		l2 = tolower(l2);
+	} while (l1 == l2 && l1 != 0);
+	return l1 - l2;
+}

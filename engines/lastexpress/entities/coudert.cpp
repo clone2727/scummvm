@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/entities/coudert.h"
@@ -32,8 +29,10 @@
 #include "lastexpress/game/object.h"
 #include "lastexpress/game/savepoint.h"
 #include "lastexpress/game/scenes.h"
-#include "lastexpress/game/sound.h"
 #include "lastexpress/game/state.h"
+
+#include "lastexpress/sound/queue.h"
+#include "lastexpress/sound/sound.h"
 
 #include "lastexpress/helpers.h"
 #include "lastexpress/lastexpress.h"
@@ -261,7 +260,7 @@ IMPLEMENT_FUNCTION_NOSETUP(7, Coudert, playSound16)
 		break;
 
 	case kActionDefault:
-		getSound()->playSound(kEntityCoudert, (char *)&params->seq1, SoundManager::kFlagDefault);
+		getSound()->playSound(kEntityCoudert, (char *)&params->seq1, kFlagDefault);
 		break;
 
 	case kActionCallback:
@@ -317,7 +316,7 @@ IMPLEMENT_FUNCTION_II(9, Coudert, updateEntity, CarIndex, EntityPosition)
 	case kActionExcuseMeCath:
 		if (getData()->clothes == kClothes1)
 			getSound()->playSound(kEntityPlayer, "ZFX1003", getSound()->getSoundFlag(kEntityCoudert));
-		else if (!getSound()->isBuffered(kEntityCoudert))
+		else if (!getSoundQueue()->isBuffered(kEntityCoudert))
 			getSound()->playSound(kEntityPlayer, "JAC1112", getSound()->getSoundFlag(kEntityCoudert));
 		break;
 
@@ -412,7 +411,7 @@ IMPLEMENT_FUNCTION_I(12, Coudert, excuseMe, EntityIndex)
 	if (savepoint.action != kActionDefault)
 		return;
 
-	if (getSound()->isBuffered(kEntityCoudert)) {
+	if (getSoundQueue()->isBuffered(kEntityCoudert)) {
 		CALLBACK_ACTION();
 		return;
 	}
@@ -826,7 +825,7 @@ IMPLEMENT_FUNCTION(18, Coudert, function18)
 		getScenes()->loadSceneFromItemPosition(kItem5);
 
 		if (getEntities()->isPlayerPosition(kCarRedSleeping, 68)) {
-			if (!getSound()->isBuffered(kEntityCoudert))
+			if (!getSoundQueue()->isBuffered(kEntityCoudert))
 				getSound()->playSound(kEntityCoudert, "JAC1111");
 
 			getScenes()->loadSceneFromPosition(kCarRedSleeping, 25);
@@ -1645,7 +1644,7 @@ IMPLEMENT_FUNCTION_I(31, Coudert, function31, uint32)
 			break;
 
 		case 1:
-			if (getSound()->isBuffered(kEntityCoudert)) {
+			if (getSoundQueue()->isBuffered(kEntityCoudert)) {
 				getEntities()->drawSequenceLeft(kEntityCoudert, "627K");
 			} else {
 				setCallback(2);
@@ -1932,7 +1931,7 @@ IMPLEMENT_FUNCTION_I(35, Coudert, function35, bool)
 			break;
 
 		case 1:
-			if (!getSound()->isBuffered(kEntityCoudert))
+			if (!getSoundQueue()->isBuffered(kEntityCoudert))
 				getSound()->playSound(kEntityCoudert, "Ann3124");
 
 			if (params->param1)
@@ -2011,8 +2010,8 @@ IMPLEMENT_FUNCTION(37, Coudert, function37)
 		break;
 
 	case kActionDefault:
-		if (getSound()->isBuffered(kEntityCoudert))
-			getSound()->processEntry(kEntityCoudert);
+		if (getSoundQueue()->isBuffered(kEntityCoudert))
+			getSoundQueue()->processEntry(kEntityCoudert);
 
 		if (ENTITY_PARAM(0, 7)) {
 			getData()->entityPosition = kPosition_8200;
@@ -2271,7 +2270,7 @@ label_callback_8:
 		}
 
 label_callback_9:
-		if (ENTITY_PARAM(0, 1) && !getSound()->isBuffered(kEntityCoudert))
+		if (ENTITY_PARAM(0, 1) && !getSoundQueue()->isBuffered(kEntityCoudert))
 			getSound()->playSound(kEntityCoudert, rnd(2) ? "JAC1065" : "JAC1065A");
 
 		if (getState()->time > kTime1107000 && !ENTITY_PARAM(0, 1) && !getEvent(kEventVassiliSeizure)) {
@@ -3022,7 +3021,7 @@ IMPLEMENT_FUNCTION(46, Coudert, function46)
 			// Fallback to next case
 
 		case 7:
-			if (getSound()->isBuffered(kEntityCoudert)) {
+			if (getSoundQueue()->isBuffered(kEntityCoudert)) {
 				setCallback(7);
 				setup_updateFromTime(75);
 			} else {
@@ -3091,7 +3090,7 @@ IMPLEMENT_FUNCTION_I(47, Coudert, function47, bool)
 			// Fallback to next case
 
 		case 4:
-			if (getSound()->isBuffered(kEntityCoudert)) {
+			if (getSoundQueue()->isBuffered(kEntityCoudert)) {
 				setCallback(4);
 				setup_updateFromTime(225);
 			} else {

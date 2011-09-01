@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_HE
@@ -174,7 +171,10 @@ void ScummEngine_v80he::o80_readConfigFile() {
 	case 6: // number
 		ConfFile.getKey((const char *)option, (const char *)section, entry);
 
-		push(atoi(entry.c_str()));
+		if (!strcmp((char *)option, "Benchmark"))
+			push(2);
+		else
+			push(atoi(entry.c_str()));
 		break;
 	case 77: // HE 100
 	case 7: // string

@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TESTBED_TESTSUITE_H
@@ -115,7 +112,7 @@ public:
 	 */
 	static bool handleInteractiveInput(const Common::String &textToDisplay, const char *opt1 = "Yes", const char *opt2 = "No", OptionSelected result = kOptionLeft);
 
-	static void displayMessage(const Common::String &textToDisplay, const char *defaultButton = "OK", const char *altButton = 0);
+	static void displayMessage(const Common::String &textToDisplay, const char *defaultButton = "OK");
 	static Common::Rect writeOnScreen(const Common::String &textToDisplay, const Common::Point &pt, bool flag = false);
 	static void clearScreen(const Common::Rect &rect);
 	static void clearEntireScreen() {
@@ -148,7 +145,7 @@ public:
 
 	static void logPrintf(const char *s, ...) GCC_PRINTF(1, 2);
 	static void logDetailedPrintf(const char *s, ...) GCC_PRINTF(1, 2);
-	
+
 	// Progress bar (Information Display) related methods.
 	/**
 	 * Display region is in the bottom. Probably 1/4th of the game screen.
@@ -183,7 +180,7 @@ protected:
 	bool		_isTsEnabled;
 
 private:
-	
+
 	/**
 	 * Used from the code to decide if the engine needs to exit
 	 */

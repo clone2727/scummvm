@@ -18,24 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_GRAPHICS_SDL_DINGUX_H
 #define BACKENDS_GRAPHICS_SDL_DINGUX_H
 
-#include "backends/graphics/sdl/sdl-graphics.h"
+#include "backends/graphics/surfacesdl/surfacesdl-graphics.h"
 
-#include "graphics/scaler/aspect.h"	// for aspect2Real 
+#include "graphics/scaler/aspect.h"	// for aspect2Real
 #include "graphics/scaler/downscaler.h"
 
 enum {
 	GFX_HALF = 12
 };
 
-class DINGUXSdlGraphicsManager : public SdlGraphicsManager {
+class DINGUXSdlGraphicsManager : public SurfaceSdlGraphicsManager {
 public:
 	DINGUXSdlGraphicsManager(SdlEventSource *boss);
 
@@ -57,10 +54,10 @@ public:
 	void undrawMouse();
 	virtual void warpMouse(int x, int y);
 
-	SdlGraphicsManager::MousePos *getMouseCurState();
-	SdlGraphicsManager::VideoState *getVideoMode();
+	SurfaceSdlGraphicsManager::MousePos *getMouseCurState();
+	SurfaceSdlGraphicsManager::VideoState *getVideoMode();
 
-	virtual void adjustMouseEvent(const Common::Event &event);
+	virtual void transformMouseCoordinates(Common::Point &point);
 };
 
 #endif /* BACKENDS_GRAPHICS_SDL_DINGUX_H */

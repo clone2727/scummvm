@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TOON_AUDIO_H
@@ -87,8 +84,8 @@ protected:
 	Audio::SoundHandle _handle;
 	Audio::Mixer::SoundType _soundType;
 	Audio::Mixer *_mixer;
-	int32 _lastADPCMval1;
-	int32 _lastADPCMval2;
+	int32 _lastSample;
+	int32 _lastStepIndex;
 	bool _stopped;
 	AudioManager *_man;
 	int32 _totalSize;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_LOL
@@ -318,7 +315,6 @@ private:
 	GUI_LoL *_gui;
 
 	TIMInterpreter *_tim;
-	TimAnimator *_animator;
 
 	Common::Error init();
 	Common::Error go();
@@ -367,12 +363,13 @@ private:
 	void showIntro();
 
 	struct CharacterPrev {
-		const char *name;
 		int x, y;
 		int attrib[3];
 	};
 
 	static const CharacterPrev _charPreviews[];
+	static const char *const _charPreviewNamesDefault[];
+	static const char *const _charPreviewNamesRussianFloppy[];
 
 	// PC98 specific data
 	static const uint16 _charPosXPC98[];
@@ -721,7 +718,7 @@ private:
 	int olol_setScriptTimer(EMCState *script);
 	int olol_createHandItem(EMCState *script);
 	int olol_playAttackSound(EMCState *script);
-	int olol_characterJoinsParty(EMCState *script);
+	int olol_addRemoveCharacter(EMCState *script);
 	int olol_giveItem(EMCState *script);
 	int olol_loadTimScript(EMCState *script);
 	int olol_runTimScript(EMCState *script);
@@ -879,6 +876,7 @@ private:
 	char *getLangString(uint16 id);
 	uint8 *getTableEntry(uint8 *buffer, uint16 id);
 	void decodeSjis(const char *src, char *dst);
+	int decodeCyrillic(const char *src, char *dst);
 
 	static const char * const _languageExt[];
 
@@ -1218,7 +1216,7 @@ private:
 	void setItemPosition(Item item, uint16 x, uint16 y, int flyingHeight, int b);
 	void removeLevelItem(Item item, int block);
 	bool launchObject(int objectType, Item item, int startX, int startY, int flyingHeight, int direction, int, int attackerId, int c);
-	void endObjectFlight(FlyingObject *t, int x, int y, int objectOnNextBlock);
+	void endObjectFlight(FlyingObject *t, int x, int y, int collisionObject);
 	void processObjectFlight(FlyingObject *t, int x, int y);
 	void updateObjectFlightPosition(FlyingObject *t);
 	void objectFlightProcessHits(FlyingObject *t, int x, int y, int objectOnNextBlock);
@@ -1529,4 +1527,3 @@ private:
 #endif
 
 #endif // ENABLE_LOL
-

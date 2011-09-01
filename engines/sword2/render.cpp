@@ -20,9 +20,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 
@@ -345,10 +342,10 @@ void Screen::renderParallax(byte *ptr, int16 l) {
 #define LIMIT_FRAME_RATE
 
 /**
- * Initialises the timers before the render loop is entered.
+ * Initializes the timers before the render loop is entered.
  */
 
-void Screen::initialiseRenderCycle() {
+void Screen::initializeRenderCycle() {
 	_initialTime = _vm->_system->getMillis();
 	_totalTime = _initialTime + (1000 / _vm->getFramesPerSecond());
 }
@@ -402,7 +399,7 @@ bool Screen::endRenderCycle() {
 		renderCountIndex = 0;
 
 	if (_renderTooSlow) {
-		initialiseRenderCycle();
+		initializeRenderCycle();
 		return true;
 	}
 
@@ -464,13 +461,13 @@ void Screen::resetRenderEngine() {
  * or a NULL pointer in order of background parallax to foreground parallax.
  */
 
-int32 Screen::initialiseBackgroundLayer(byte *parallax) {
+int32 Screen::initializeBackgroundLayer(byte *parallax) {
 	Parallax p;
 	uint16 i, j, k;
 	byte *data;
 	byte *dst;
 
-	debug(2, "initialiseBackgroundLayer");
+	debug(2, "initializeBackgroundLayer");
 
 	assert(_layer < MAXLAYERS);
 
@@ -591,14 +588,14 @@ int32 Screen::initialiseBackgroundLayer(byte *parallax) {
  * ratio correction), while PC backgrounds are in tiles of 64x64.
  */
 
-int32 Screen::initialisePsxBackgroundLayer(byte *parallax) {
+int32 Screen::initializePsxBackgroundLayer(byte *parallax) {
 	uint16 bgXres, bgYres;
 	uint16 trueXres, stripeNumber, totStripes;
 	uint32 baseAddress, stripePos;
 	uint16 i, j;
 	byte *dst;
 
-	debug(2, "initialisePsxBackgroundLayer");
+	debug(2, "initializePsxBackgroundLayer");
 
 	assert(_layer < MAXLAYERS);
 
@@ -701,14 +698,12 @@ int32 Screen::initialisePsxBackgroundLayer(byte *parallax) {
  * can be understood by renderParallax functions.
  */
 
-int32 Screen::initialisePsxParallaxLayer(byte *parallax) {
-	uint16 plxXres, plxYres;
-	uint16 xTiles, yTiles;
+int32 Screen::initializePsxParallaxLayer(byte *parallax) {
 	uint16 i, j, k;
 	byte *data;
 	byte *dst;
 
-	debug(2, "initialisePsxParallaxLayer");
+	debug(2, "initializePsxParallaxLayer");
 
 	assert(_layer < MAXLAYERS);
 
@@ -717,10 +712,10 @@ int32 Screen::initialisePsxParallaxLayer(byte *parallax) {
 		return RD_OK;
 	}
 
-	plxXres = READ_LE_UINT16(parallax);
-	plxYres = READ_LE_UINT16(parallax + 2);
-	xTiles = READ_LE_UINT16(parallax + 4);
-	yTiles = READ_LE_UINT16(parallax + 6);
+	// uint16 plxXres = READ_LE_UINT16(parallax);
+	// uint16 plxYres = READ_LE_UINT16(parallax + 2);
+	uint16 xTiles = READ_LE_UINT16(parallax + 4);
+	uint16 yTiles = READ_LE_UINT16(parallax + 6);
 
 	// Beginning of parallax table composed by uint32,
 	// if word is 0, corresponding tile contains no data and must be skipped,

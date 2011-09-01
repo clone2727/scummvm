@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "kyra/sound_intern.h"
@@ -110,13 +107,13 @@ void SoundTowns::haltTrack() {
 	g_system->getAudioCDManager()->stop();
 	g_system->getAudioCDManager()->updateCD();
 	_cdaPlaying = false;
-	
+
 	for (int i = 0; i < 6; i++)
 		_driver->chanVolume(i, 0);
 	for (int i = 0x40; i < 0x46; i++)
-		_driver->chanVolume(i, 0);	
+		_driver->chanVolume(i, 0);
 	for (int i = 0; i < 32; i++)
-		_driver->chanEnable(i, 0);
+		_driver->configChan_enable(i, 0);
 	_driver->stopParser();
 }
 
@@ -131,7 +128,7 @@ void SoundTowns::loadSoundFile(uint file) {
 void SoundTowns::playSoundEffect(uint8 track) {
 	if (!_sfxEnabled || !_sfxFileData)
 		return;
-	
+
 	if (track == 0 || track == 10) {
 		stopAllSoundEffects();
 		return;
@@ -261,13 +258,13 @@ void SoundTowns::beginFadeOut() {
 
 		uint16 fadeVolCur[12];
 		uint16 fadeVolStep[12];
-		
+
 		for (int i = 0; i < 6; i++) {
 			fadeVolCur[i] = READ_LE_UINT16(&_musicFadeTable[(_lastTrack * 12 + i) * 2]);
 			fadeVolStep[i] = fadeVolCur[i] / 50;
 			fadeVolCur[i + 6] = READ_LE_UINT16(&_musicFadeTable[(_lastTrack * 12 + 6 + i) * 2]);
 			fadeVolStep[i + 6] = fadeVolCur[i + 6] / 30;
-		}	
+		}
 
 		for (int i = 0; i < 12; i++) {
 			for (int ii = 0; ii < 6; ii++)
@@ -300,8 +297,6 @@ bool SoundTowns::loadInstruments() {
 	if (!twm)
 		return false;
 
-	Common::StackLock lock(_mutex);
-
 	Screen::decodeFrame4(twm, _musicTrackData, 50570);
 	for (int i = 0; i < 128; i++)
 		_driver->loadInstrument(0, i, &_musicTrackData[i * 48 + 8]);
@@ -325,23 +320,21 @@ bool SoundTowns::loadInstruments() {
 }
 
 void SoundTowns::playEuphonyTrack(uint32 offset, int loop) {
-	Common::StackLock lock(_mutex);
-
 	uint8 *twm = _vm->resource()->fileData("twmusic.pak", 0);
 	Screen::decodeFrame4(twm + 19312 + offset, _musicTrackData, 50570);
 	delete[] twm;
 
 	const uint8 *src = _musicTrackData + 852;
 	for (int i = 0; i < 32; i++)
-		_driver->chanEnable(i, *src++);
+		_driver->configChan_enable(i, *src++);
 	for (int i = 0; i < 32; i++)
-		_driver->chanMode(i, *src++);
+		_driver->configChan_setMode(i, *src++);
 	for (int i = 0; i < 32; i++)
-		_driver->chanOrdr(i, *src++);
+		_driver->configChan_remap(i, *src++);
 	for (int i = 0; i < 32; i++)
-		_driver->chanVolumeShift(i, *src++);
+		_driver->configChan_adjustVolume(i, *src++);
 	for (int i = 0; i < 32; i++)
-		_driver->chanNoteShift(i, *src++);
+		_driver->configChan_setTranspose(i, *src++);
 
 	src = _musicTrackData + 1748;
 	for (int i = 0; i < 6; i++)
@@ -351,7 +344,7 @@ void SoundTowns::playEuphonyTrack(uint32 offset, int loop) {
 
 	uint32 trackSize = READ_LE_UINT32(_musicTrackData + 2048);
 	uint8 startTick = _musicTrackData[2052];
-	
+
 	_driver->setMusicTempo(_musicTrackData[2053]);
 
 	src = _musicTrackData + 2054;
@@ -680,4 +673,3 @@ void SoundTownsPC98_v2::updateVolumeSettings() {
 } // End of namespace Kyra
 
 #undef EUPHONY_FADEOUT_TICKS
-

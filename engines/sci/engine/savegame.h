@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_ENGINE_SAVEGAME_H
@@ -54,7 +51,7 @@ struct EngineState;
  *      19 - exportsAreWide
  *      18 - SCI32 arrays/strings
  *      17 - sound
- * 
+ *
  */
 
 enum {
@@ -82,7 +79,7 @@ struct SavegameMetadata {
  * @param savename	The description of the savegame
  * @return 0 on success, 1 otherwise
  */
-bool gamestate_save(EngineState *s, Common::WriteStream *save, const char *savename, const char *version);
+bool gamestate_save(EngineState *s, Common::WriteStream *save, const Common::String &savename, const Common::String &version);
 
 /**
  * Restores a game state from a directory.

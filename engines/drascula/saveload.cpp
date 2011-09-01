@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/textconsole.h"
@@ -29,33 +26,74 @@
 
 namespace Drascula {
 
-bool DrasculaEngine::saveLoadScreen() {
-	char names[10][23];
-	char file[50];
-	char fileEpa[50];
-	int n, n2, num_sav = 0, y = 27;
+/**
+ * Loads the save names from the EPA index file.
+ *
+ * TODO: We should move the save names in their respective save files and get
+ * rid of this completely. A good example is the sword1 engine, which also used
+ * to have an index file for its saves, that has been removed.
+ * sword1 contains code that converts the old index-based saves into the new
+ * format without the index file, so we could apply this idea to drascula as
+ * well.
+ */
+void DrasculaEngine::loadSaveNames() {
 	Common::InSaveFile *sav;
+	Common::String fileEpa = Common::String::format("%s.epa", _targetName.c_str());
 
-	clearRoom();
-
-	snprintf(fileEpa, 50, "%s.epa", _targetName.c_str());
+	// Create and initialize the index file, if it doesn't exist
 	if (!(sav = _saveFileMan->openForLoading(fileEpa))) {
 		Common::OutSaveFile *epa;
 		if (!(epa = _saveFileMan->openForSaving(fileEpa)))
-			error("Can't open %s file", fileEpa);
-		for (n = 0; n < NUM_SAVES; n++)
+			error("Can't open %s file", fileEpa.c_str());
+		for (int n = 0; n < NUM_SAVES; n++)
 			epa->writeString("*\n");
 		epa->finalize();
 		delete epa;
 		if (!(sav = _saveFileMan->openForLoading(fileEpa))) {
-			error("Can't open %s file", fileEpa);
+			error("Can't open %s file", fileEpa.c_str());
 		}
 	}
-	for (n = 0; n < NUM_SAVES; n++) {
-		strncpy(names[n], sav->readLine().c_str(), 23);
-		names[n][22] = '\0';	// make sure the savegame name is 0-terminated
+
+	// Load the index file
+	for (int n = 0; n < NUM_SAVES; n++) {
+		strncpy(_saveNames[n], sav->readLine().c_str(), 23);
+		_saveNames[n][22] = '\0';	// make sure the savegame name is 0-terminated
 	}
 	delete sav;
+}
+
+/**
+ * Saves the save names into the EPA index file.
+ *
+ * TODO: We should move the save names in their respective save files and get
+ * rid of this completely. A good example is the sword1 engine, which also used
+ * to have an index file for its saves, that has been removed.
+ * sword1 contains code that converts the old index-based saves into the new
+ * format without the index file, so we could apply this idea to drascula as
+ * well.
+ */
+void DrasculaEngine::saveSaveNames() {
+	Common::OutSaveFile *tsav;
+	Common::String fileEpa = Common::String::format("%s.epa", _targetName.c_str());
+
+	if (!(tsav = _saveFileMan->openForSaving(fileEpa))) {
+		error("Can't open %s file", fileEpa.c_str());
+	}
+	for (int n = 0; n < NUM_SAVES; n++) {
+		tsav->writeString(_saveNames[n]);
+		tsav->writeString("\n");
+	}
+	tsav->finalize();
+	delete tsav;
+}
+
+bool DrasculaEngine::saveLoadScreen() {
+	Common::String file;
+	int n, n2, num_sav = 0, y = 27;
+
+	clearRoom();
+
+	loadSaveNames();
 
 	loadPic("savescr.alg", bgSurface, HALF_PAL);
 
@@ -70,7 +108,7 @@ bool DrasculaEngine::saveLoadScreen() {
 		y = 27;
 		copyBackground();
 		for (n = 0; n < NUM_SAVES; n++) {
-			print_abc(names[n], 116, y);
+			print_abc(_saveNames[n], 116, y);
 			y = y + 9;
 		}
 		print_abc(select, 117, 15);
@@ -83,37 +121,28 @@ bool DrasculaEngine::saveLoadScreen() {
 			delay(50);
 			for (n = 0; n < NUM_SAVES; n++) {
 				if (mouseX > 115 && mouseY > y + (9 * n) && mouseX < 115 + 175 && mouseY < y + 10 + (9 * n)) {
-					strcpy(select, names[n]);
+					strcpy(select, _saveNames[n]);
 
 					if (strcmp(select, "*"))
 						selectionMade = 1;
 					else {
 						enterName();
-						strcpy(names[n], select);
+						strcpy(_saveNames[n], select);
 						if (selectionMade == 1) {
-							snprintf(file, 50, "%s%02d", _targetName.c_str(), n + 1);
-							saveGame(file);
-							Common::OutSaveFile *tsav;
-							if (!(tsav = _saveFileMan->openForSaving(fileEpa))) {
-								error("Can't open %s file", fileEpa);
-							}
-							for (n = 0; n < NUM_SAVES; n++) {
-								tsav->writeString(names[n]);
-								tsav->writeString("\n");
-							}
-							tsav->finalize();
-							delete tsav;
+							file = Common::String::format("%s%02d", _targetName.c_str(), n + 1);
+							saveGame(file.c_str());
+							saveSaveNames();
 						}
 					}
 
 					print_abc(select, 117, 15);
 					y = 27;
 					for (n2 = 0; n2 < NUM_SAVES; n2++) {
-						print_abc(names[n2], 116, y);
+						print_abc(_saveNames[n2], 116, y);
 						y = y + 9;
 					}
 					if (selectionMade == 1) {
-						snprintf(file, 50, "%s%02d", _targetName.c_str(), n + 1);
+						file = Common::String::format("%s%02d", _targetName.c_str(), n + 1);
 					}
 					num_sav = n;
 				}
@@ -121,48 +150,30 @@ bool DrasculaEngine::saveLoadScreen() {
 
 			if (mouseX > 117 && mouseY > 15 && mouseX < 295 && mouseY < 24 && selectionMade == 1) {
 				enterName();
-				strcpy(names[num_sav], select);
+				strcpy(_saveNames[num_sav], select);
 				print_abc(select, 117, 15);
 				y = 27;
 				for (n2 = 0; n2 < NUM_SAVES; n2++) {
-					print_abc(names[n2], 116, y);
+					print_abc(_saveNames[n2], 116, y);
 					y = y + 9;
 				}
 
 				if (selectionMade == 1) {
-					snprintf(file, 50, "%s%02d", _targetName.c_str(), n + 1);
-					saveGame(file);
-					Common::OutSaveFile *tsav;
-					if (!(tsav = _saveFileMan->openForSaving(fileEpa))) {
-						error("Can't open %s file", fileEpa);
-					}
-					for (n = 0; n < NUM_SAVES; n++) {
-						tsav->writeString(names[n]);
-						tsav->writeString("\n");
-					}
-					tsav->finalize();
-					delete tsav;
+					file = Common::String::format("%s%02d", _targetName.c_str(), n + 1);
+					saveGame(file.c_str());
+					saveSaveNames();
 				}
 			}
 
 			if (mouseX > 125 && mouseY > 123 && mouseX < 199 && mouseY < 149 && selectionMade == 1) {
-				if (!loadGame(file)) {
+				if (!loadGame(file.c_str())) {
 					_system->setFeatureState(OSystem::kFeatureVirtualKeyboard, false);
 					return false;
 				}
 				break;
 			} else if (mouseX > 208 && mouseY > 123 && mouseX < 282 && mouseY < 149 && selectionMade == 1) {
-				saveGame(file);
-				Common::OutSaveFile *tsav;
-				if (!(tsav = _saveFileMan->openForSaving(fileEpa))) {
-					error("Can't open %s file", fileEpa);
-				}
-				for (n = 0; n < NUM_SAVES; n++) {
-					tsav->writeString(names[n]);
-					tsav->writeString("\n");
-				}
-				tsav->finalize();
-				delete tsav;
+				saveGame(file.c_str());
+				saveSaveNames();
 			} else if (mouseX > 168 && mouseY > 154 && mouseX < 242 && mouseY < 180)
 				break;
 			else if (selectionMade == 0) {
@@ -232,7 +243,7 @@ bool DrasculaEngine::loadGame(const char *gameName) {
 	return true;
 }
 
-void DrasculaEngine::saveGame(char gameName[]) {
+void DrasculaEngine::saveGame(const char *gameName) {
 	Common::OutSaveFile *out;
 	int l;
 

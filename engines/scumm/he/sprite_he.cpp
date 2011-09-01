@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_HE
@@ -807,12 +804,18 @@ void Sprite::setSpriteImage(int spriteId, int imageNum) {
 
 	if (_spriteTable[spriteId].image) {
 		_spriteTable[spriteId].imageStateCount = _vm->_wiz->getWizImageStates(_spriteTable[spriteId].image);
-		_spriteTable[spriteId].flags |= kSFActive | kSFAutoAnim | kSFMarkDirty | kSFBlitDirectly;
+
+		if (_vm->VAR(139))
+			_spriteTable[spriteId].flags |= kSFActive;
+		else
+			_spriteTable[spriteId].flags |= kSFActive | kSFAutoAnim | kSFMarkDirty | kSFBlitDirectly;
 
 		if (_spriteTable[spriteId].image != origResId || _spriteTable[spriteId].imageStateCount != origResWizStates)
 			_spriteTable[spriteId].flags |= kSFChanged | kSFNeedRedraw;
 	} else {
-		if (_spriteTable[spriteId].flags & kSFImageless)
+		if (_vm->VAR(139))
+			_spriteTable[spriteId].flags &= ~kSFActive;
+		else if (_spriteTable[spriteId].flags & kSFImageless)
 			_spriteTable[spriteId].flags = 0;
 		else
 			_spriteTable[spriteId].flags = kSFChanged | kSFBlitDirectly;

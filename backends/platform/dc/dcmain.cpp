@@ -18,15 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
-// Allow use of stuff in <time.h>
-#define FORBIDDEN_SYMBOL_EXCEPTION_time_h
-
-#define FORBIDDEN_SYMBOL_EXCEPTION_printf
+#define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #include <common/scummsys.h>
 #include <engines/engine.h>
@@ -47,26 +41,29 @@ const char *gGameName;
 
 OSystem_Dreamcast::OSystem_Dreamcast()
   : _devpoll(0), screen(NULL), mouse(NULL), overlay(NULL), _softkbd(this),
-    _ms_buf(NULL), _timer(NULL), _mixer(NULL), _savefile(NULL),
+    _ms_buf(NULL), _mixer(NULL),
     _current_shake_pos(0), _aspect_stretch(false), _softkbd_on(false),
     _softkbd_motion(0), _enable_cursor_palette(false), _screenFormat(0)
 {
   memset(screen_tx, 0, sizeof(screen_tx));
   memset(mouse_tx, 0, sizeof(mouse_tx));
   memset(ovl_tx, 0, sizeof(ovl_tx));
+  _fsFactory = this;
 }
 
 void OSystem_Dreamcast::initBackend()
 {
   ConfMan.setInt("autosave_period", 0);
-  _savefile = createSavefileManager();
-  _timer = new DefaultTimerManager();
+  _savefileManager = createSavefileManager();
+  _timerManager = new DefaultTimerManager();
 
   uint sampleRate = initSound();
   _mixer = new Audio::MixerImpl(this, sampleRate);
   _mixer->setReady(true);
 
-  _cdManager = new DCCDManager();
+  _audiocdManager = new DCCDManager();
+
+  EventsBaseBackend::initBackend();
 }
 
 
@@ -166,7 +163,7 @@ bool OSystem_Dreamcast::hasFeature(Feature f)
   case kFeatureAspectRatioCorrection:
   case kFeatureVirtualKeyboard:
   case kFeatureOverlaySupportsAlpha:
-  case kFeatureCursorHasPalette:
+  case kFeatureCursorPalette:
     return true;
   default:
     return false;
@@ -184,6 +181,9 @@ void OSystem_Dreamcast::setFeatureState(Feature f, bool enable)
   case kFeatureVirtualKeyboard:
     _softkbd_on = enable;
     break;
+  case kFeatureCursorPalette:
+    _enable_cursor_palette = enable;
+    break;
   default:
     break;
   }
@@ -196,6 +196,8 @@ bool OSystem_Dreamcast::getFeatureState(Feature f)
     return _aspect_stretch;
   case kFeatureVirtualKeyboard:
     return _softkbd_on;
+  case kFeatureCursorPalette:
+    return _enable_cursor_palette;
   default:
     return false;
   }
@@ -232,7 +234,7 @@ void OSystem_Dreamcast::logMessage(LogMessageType::Type type, const char *messag
 namespace DC_Flash {
   static int syscall_info_flash(int sect, int *info)
   {
-    return (*(int (**)(int, void*, int, int))0x8c0000b8)(sect,info,0,0);  
+    return (*(int (**)(int, void*, int, int))0x8c0000b8)(sect,info,0,0);
   }
 
   static int syscall_read_flash(int offs, void *buf, int cnt)
@@ -253,24 +255,24 @@ namespace DC_Flash {
     }
     return (unsigned short)~n;
   }
-  
+
   static int flash_read_sector(int partition, int sec, unsigned char *dst)
   {
     int s, r, n, b, bmb, got=0;
     int info[2];
     char buf[64];
     char bm[64];
-    
+
     if((r = syscall_info_flash(partition, info))<0)
       return r;
-    
+
     if((r = syscall_read_flash(info[0], buf, 64))<0)
       return r;
-    
+
     if(memcmp(buf, "KATANA_FLASH", 12) ||
        buf[16] != partition || buf[17] != 0)
       return -2;
-    
+
     n = (info[1]>>6)-1-((info[1] + 0x7fff)>>15);
     bmb = n+1;
     for(b = 0; b < n; b++) {
@@ -375,4 +377,3 @@ int DCLauncherDialog::runModal()
 
   return 0;
 }
-

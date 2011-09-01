@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -101,7 +98,6 @@ void Disk::openFile(uint8 fileNum) {
 		error("Could not open %s", sFilename);
 
 	char buffer[7];
-	uint32 bytesRead;
 
 	// If it's the support file, then move to the correct language area
 
@@ -133,7 +129,7 @@ void Disk::openFile(uint8 fileNum) {
 
 	// Validate the header
 
-	bytesRead = _fileHandle->read(buffer, 6);
+	_fileHandle->read(buffer, 6);
 	buffer[6] = '\0';
 	if (strcmp(buffer, HEADER_IDENT_STRING) != 0)
 		error("The file %s was not a valid VGA file", sFilename);

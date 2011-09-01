@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_MIXER_SDL_H
@@ -70,13 +67,13 @@ protected:
 	 * The obtained audio specification after opening the
 	 * audio system.
 	 */
-	SDL_AudioSpec _obtainedRate;
+	SDL_AudioSpec _obtained;
 
 	/** State of the audio system */
 	bool _audioSuspended;
 
 	/**
-	 * Returns the desired audio specification 
+	 * Returns the desired audio specification
 	 */
 	virtual SDL_AudioSpec getAudioSpec(uint32 rate);
 

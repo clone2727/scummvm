@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/scummsys.h"
@@ -108,7 +105,9 @@ static const byte imxOtherTable[6][64] = {
 
 void releaseImcTables() {
 	free(_destImcTable);
+	_destImcTable = NULL;
 	free(_destImcTable2);
+	_destImcTable2 = NULL;
 }
 
 void initializeImcTables() {
@@ -209,7 +208,7 @@ int32 decompressADPCM(byte *compInput, byte *compOutput, int channels) {
 	int32 destPos;
 	int16 firstWord;
 	byte initialTablePos[MAX_CHANNELS] = {0, 0};
-	int32 initialimcTableEntry[MAX_CHANNELS] = {7, 7};
+	//int32 initialimcTableEntry[MAX_CHANNELS] = {7, 7};
 	int32 initialOutputWord[MAX_CHANNELS] = {0, 0};
 	int32 totalBitOffset, curTablePos, outputWord;
 	byte *dst;
@@ -248,7 +247,7 @@ int32 decompressADPCM(byte *compInput, byte *compOutput, int channels) {
 		for (i = 0; i < channels; i++) {
 			initialTablePos[i] = *src;
 			src += 1;
-			initialimcTableEntry[i] = READ_BE_UINT32(src);
+			//initialimcTableEntry[i] = READ_BE_UINT32(src);
 			src += 4;
 			initialOutputWord[i] = READ_BE_UINT32(src);
 			src += 4;

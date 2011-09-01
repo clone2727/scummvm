@@ -18,14 +18,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "agos/agos.h"
 #include "agos/vga.h"
 
+#include "common/endian.h"
 #include "common/textconsole.h"
 
 namespace AGOS {
@@ -468,8 +466,8 @@ void AGOSEngine_PN::opn_opcode35() {
 void AGOSEngine_PN::opn_opcode36() {
 	for (int i = 0; i < _dataBase[57] + 1; ++i)
 		_wordcp[i] = 0;
-	if (isspace(*_inpp))
-		while ((*_inpp) && (isspace(*_inpp)))
+	if (isspace(static_cast<unsigned char>(*_inpp)))
+		while ((*_inpp) && (isspace(static_cast<unsigned char>(*_inpp))))
 			_inpp++;
 	if (*_inpp == 0) {
 		setScriptReturn(false);
@@ -483,7 +481,7 @@ void AGOSEngine_PN::opn_opcode36() {
 	}
 
 	int ct = 1;
-	while ((*_inpp != '.') && (*_inpp != ',') && (!isspace(*_inpp)) && (*_inpp != '\0') &&
+	while ((*_inpp != '.') && (*_inpp != ',') && (!isspace(static_cast<unsigned char>(*_inpp))) && (*_inpp != '\0') &&
 		(*_inpp!='"')) {
 		if (ct < _dataBase[57])
 			_wordcp[ct++] = *_inpp;
@@ -583,7 +581,7 @@ void AGOSEngine_PN::opn_opcode46() {
 		return;
 	}
 	x++;
-	while ((*x != '.') && (*x != ',') && (*x != '"') && (!isspace(*x)) && (*x != '\0'))
+	while ((*x != '.') && (*x != ',') && (*x != '"') && (!isspace(static_cast<unsigned char>(*x))) && (*x != '\0'))
 		pcf(*x++);
 	setScriptReturn(true);
 }

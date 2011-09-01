@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/entities/francois.h"
@@ -32,6 +29,8 @@
 #include "lastexpress/game/object.h"
 #include "lastexpress/game/savepoint.h"
 #include "lastexpress/game/state.h"
+
+#include "lastexpress/sound/queue.h"
 
 #include "lastexpress/helpers.h"
 #include "lastexpress/lastexpress.h"
@@ -278,7 +277,7 @@ IMPLEMENT_FUNCTION_I(11, Francois, function11, TimeValue)
 		break;
 
 	case kActionNone:
-		if (!getSound()->isBuffered(kEntityFrancois)) {
+		if (!getSoundQueue()->isBuffered(kEntityFrancois)) {
 
 			UPDATE_PARAM_PROC(CURRENT_PARAM(1, 1), getState()->timeTicks, params->param6)
 				switch (rnd(7)) {
@@ -373,8 +372,8 @@ label_callback:
 			getData()->field_4A3 = 30;
 			getData()->inventoryItem = kItemNone;
 
-			if (getSound()->isBuffered(kEntityFrancois))
-				getSound()->processEntry(kEntityFrancois);
+			if (getSoundQueue()->isBuffered(kEntityFrancois))
+				getSoundQueue()->processEntry(kEntityFrancois);
 
 			setCallback(4);
 			setup_updateEntity(kCarRedSleeping, kPosition_5790);
@@ -384,8 +383,8 @@ label_callback:
 	case kAction1:
 		getData()->inventoryItem = kItemNone;
 
-		if (getSound()->isBuffered(kEntityFrancois))
-			getSound()->processEntry(kEntityFrancois);
+		if (getSoundQueue()->isBuffered(kEntityFrancois))
+			getSoundQueue()->processEntry(kEntityFrancois);
 
 		setCallback(6);
 		setup_savegame(kSavegameTypeEvent, kEventFrancoisWhistle);

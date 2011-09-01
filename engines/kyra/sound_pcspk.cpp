@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "kyra/sound_intern.h"
@@ -367,4 +364,3 @@ const uint8 MidiDriver_PCSpeaker::_noteTable2[] = {
 };
 
 } // End of namespace Kyra
-

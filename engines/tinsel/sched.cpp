@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  * Process scheduler.
  */
 
@@ -73,6 +70,7 @@ Scheduler::Scheduler() {
 
 	active = new PROCESS;
 	active->pPrevious = NULL;
+	active->pNext = NULL;
 
 	g_scheduler = this;	// FIXME HACK
 }
@@ -114,6 +112,14 @@ void Scheduler::reset() {
 
 		// fill with garbage
 		memset(processList, 'S', MAX_PROCESSES * sizeof(PROCESS));
+	}
+
+	// Kill all running processes (i.e. free memory allocated for their state).
+	PROCESS *pProc = active->pNext;
+	while (pProc != NULL) {
+		delete pProc->state;
+		pProc->state = 0;
+		pProc = pProc->pNext;
 	}
 
 	// no active processes

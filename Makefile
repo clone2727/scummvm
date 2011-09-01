@@ -1,5 +1,3 @@
-# $URL$
-# $Id$
 
 #######################################################################
 # Default compilation parameters. Normally don't edit these           #
@@ -92,4 +90,3 @@ endif
 ifneq ($(origin port_mk), undefined)
 include $(srcdir)/$(port_mk)
 endif
-

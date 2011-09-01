@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef POSIX_FILESYSTEM_FACTORY_H
@@ -33,6 +30,7 @@
  * Parts of this class are documented in the base interface class, FilesystemFactory.
  */
 class POSIXFilesystemFactory : public FilesystemFactory {
+protected:
 	virtual AbstractFSNode *makeRootFileNode() const;
 	virtual AbstractFSNode *makeCurrentDirectoryFileNode() const;
 	virtual AbstractFSNode *makeFileNodePath(const Common::String &path) const;

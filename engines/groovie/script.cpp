@@ -18,10 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
+
+#include "audio/mididrv.h"
+#include "audio/mixer.h"
 
 #include "groovie/script.h"
 #include "groovie/cell.h"
@@ -36,9 +36,10 @@
 #include "common/archive.h"
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
-#include "common/EventRecorder.h"
+#include "common/events.h"
 #include "common/file.h"
 #include "common/macresman.h"
+#include "common/translation.h"
 
 #include "gui/message.h"
 
@@ -68,7 +69,9 @@ static void debugScript(int level, bool nl, const char *s, ...) {
 
 Script::Script(GroovieEngine *vm, EngineVersion version) :
 	_code(NULL), _savedCode(NULL), _stacktop(0), _debugger(NULL), _vm(vm),
-	_videoFile(NULL), _videoRef(0), _staufsMove(NULL) {
+	_videoFile(NULL), _videoRef(0), _staufsMove(NULL), _lastCursor(0xff),
+	_version(version), _random("GroovieScripts") {
+
 	// Initialize the opcode set depending on the engine version
 	switch (version) {
 	case kGroovieT7G:
@@ -78,9 +81,6 @@ Script::Script(GroovieEngine *vm, EngineVersion version) :
 		_opcodes = _opcodesV2;
 		break;
 	}
-
-	// Initialize the random source
-	g_eventRec.registerRandomSource(_random, "GroovieScripts");
 
 	// Prepare the variables
 	_bitflags = 0;
@@ -390,6 +390,7 @@ bool Script::hotspot(Common::Rect rect, uint16 address, uint8 cursor) {
 
 		// If clicked with the mouse, jump to the specified address
 		if (_mouseClicked) {
+			_lastCursor = cursor;
 			_inputAction = address;
 		}
 	}
@@ -416,7 +417,7 @@ void Script::savegame(uint slot) {
 
 	if (!file) {
 		debugC(9, kGroovieDebugScript, "Save file pointer is null");
-		GUI::MessageDialog dialog("Failed to save game", "OK");
+		GUI::MessageDialog dialog(_("Failed to save game"), _("OK"));
 		dialog.runModal();
 		return;
 	}
@@ -589,6 +590,10 @@ bool Script::playvideofromref(uint32 fileref) {
 
 		if (_videoFile) {
 			_videoRef = fileref;
+			// If teeth cursor, and in main script, mark video prefer low-speed
+			// filename check as sometimes teeth used for puzzle movements (bishops)
+			if (_version == kGroovieT7G && _lastCursor == 7 && _scriptFile == "script.grv")
+				_bitflags |= (1 << 15);
 			_vm->_videoPlayer->load(_videoFile, _bitflags);
 		} else {
 			error("Couldn't open file");
@@ -1348,15 +1353,15 @@ void Script::o_checkvalidsaves() {
 	uint count = 0;
 	SaveStateList::iterator it = list.begin();
 	while (it != list.end()) {
-		int8 slot = it->getVal("save_slot").lastChar() - '0';
+		int8 slot = it->getSaveSlot();
 		if (SaveLoad::isSlotValid(slot)) {
-			debugScript(2, true, "  Found valid savegame: %s", it->getVal("description").c_str());
+			debugScript(2, true, "  Found valid savegame: %s", it->getDescription().c_str());
 
 			// Mark this slot as used
 			setVariable(slot, 1);
 
 			// Cache this slot's description
-			_saveNames[slot] = it->getVal("description");
+			_saveNames[slot] = it->getDescription();
 			count++;
 		}
 		it++;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef PARALLACTION_MUSIC_H
@@ -29,10 +26,9 @@
 #include "common/util.h"
 #include "common/mutex.h"
 
+#include "audio/mixer.h"
 #include "audio/audiostream.h"
 #include "audio/decoders/iff_sound.h"
-#include "audio/mixer.h"
-#include "audio/mididrv.h"
 
 #define PATH_LEN 200
 
@@ -134,11 +130,11 @@ class DosSoundMan_ns : public SoundMan_ns {
 
 	MidiPlayer	*_midiPlayer;
 	bool		_playing;
-	
+
 	bool isLocationSilent(const char *locationName);
 	bool locationHasOwnSoftMusic(const char *locationName);
 
-	
+
 public:
 	DosSoundMan_ns(Parallaction_ns *vm);
 	~DosSoundMan_ns();

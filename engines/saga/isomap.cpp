@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Isometric level module
@@ -839,7 +836,7 @@ void IsoMap::drawTile(uint16 tileIndex, const Point &point, const Location *loca
 					count = colDiff;
 					col += colDiff;
 				}
-				
+
 				colDiff = _tileClip.right - col;
 				if (colDiff > 0) {
 					int countDiff = fgRunCount - count;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_SOUND_SARIEN_H
@@ -71,7 +68,7 @@ struct ChannelInfo {
 
 class SoundGenSarien : public SoundGen, public Audio::AudioStream {
 public:
-	SoundGenSarien(AgiEngine *vm, Audio::Mixer *pMixer);
+	SoundGenSarien(AgiBase *vm, Audio::Mixer *pMixer);
 	~SoundGenSarien();
 
 	void play(int resnum);

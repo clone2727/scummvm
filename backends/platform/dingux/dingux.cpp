@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #if defined(DINGUX)
@@ -36,7 +33,7 @@ void OSystem_SDL_Dingux::initBackend() {
 
 	// Create the graphics manager
 	if (_graphicsManager == 0) {
-		_graphicsManager = new DINGUXSdlGraphicsManager(_eventSource); 
+		_graphicsManager = new DINGUXSdlGraphicsManager(_eventSource);
 	}
 
 	// Call parent implementation of this method

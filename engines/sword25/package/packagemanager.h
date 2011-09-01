@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -144,6 +141,9 @@ public:
 		uint fileSize;
 		char *data = (char *)getFile(fileName, &fileSize);
 		char *result = (char *)malloc(fileSize + strlen(versionStr) + 1);
+		if (!result)
+			error("[PackageManager::getXmlFile] Cannot allocate memory");
+
 		strcpy(result, versionStr);
 		Common::copy(data, data + fileSize, result + strlen(versionStr));
 		result[fileSize + strlen(versionStr)] = '\0';
@@ -154,7 +154,7 @@ public:
 
 		return result;
 	}
-	
+
 	/**
 	 * Returns the path to the current directory.
 	 * @return              Returns a string containing the path to the current directory.

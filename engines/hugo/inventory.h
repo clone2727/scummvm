@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -59,7 +56,7 @@ private:
 	HugoEngine *_vm;
 
 	static const int kStepDy = 8;                   // Pixels per step movement
-	
+
 	int16    _firstIconId;                          // Index of first icon to display
 	int16   *_invent;
 	istate_t _inventoryState;                       // Inventory icon bar state

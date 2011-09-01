@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_ENGINE_KERNEL_TABLES_H
@@ -561,16 +558,16 @@ static SciKernelMapEntry s_kernelMap[] = {
 	// SetWindowsOption is used to set Windows specific options, like for example the title bar visibility of
 	// the game window in Phantasmagoria 2. We ignore these settings completely.
 	{ MAP_EMPTY(SetWindowsOption), SIG_EVERYWHERE,             "ii",                  NULL,            NULL },
-	
+
 	// Used by the Windows version of Phantasmagoria 1 to get the video speed setting. This is called after
-	// kGetConfig and overrides the setting obtained by it. It is a dummy function in the DOS Version. We can 
+	// kGetConfig and overrides the setting obtained by it. It is a dummy function in the DOS Version. We can
 	// just use GetConfig and mark this one as empty, like the DOS version does.
 	{ MAP_EMPTY(GetSierraProfileInt), SIG_EVERYWHERE,        "(.*)",                  NULL,            NULL },
 
 	// Unused / debug SCI2.1 unused functions, always mapped to kDummy
 
 	// The debug functions are called from the inbuilt debugger or polygon
-	// editor in SCI2.1 games. Related objects are: PEditor, EditablePolygon, 
+	// editor in SCI2.1 games. Related objects are: PEditor, EditablePolygon,
 	// aeDisplayClass and scalerCode
 	{ MAP_DUMMY(FindSelector),      SIG_EVERYWHERE,           "(.*)",                 NULL,            NULL },
 	{ MAP_DUMMY(FindClass),         SIG_EVERYWHERE,           "(.*)",                 NULL,            NULL },

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -106,7 +103,7 @@ struct MenuData {
 	void addCharToDescription(int slot, char chr) {
 		char *description = saveLoadDescriptionsTable[slot];
 		int descriptionLen = strlen(description);
-		if (descriptionLen < 32 && isprint(chr)) {
+		if (descriptionLen < 32 && isprint(static_cast<unsigned char>(chr))) {
 			description[descriptionLen] = chr;
 			description[descriptionLen + 1] = 0;
 		}

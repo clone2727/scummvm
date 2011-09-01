@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -41,11 +38,11 @@
 
 namespace Sword25 {
 
-namespace {
-const int   DEFAULT_FPS = 10;
-const int   MIN_FPS     = 1;
-const int   MAX_FPS     = 200;
-}
+enum {
+	DEFAULT_FPS = 10,
+	MIN_FPS     = 1,
+	MAX_FPS     = 200
+};
 
 AnimationResource::AnimationResource(const Common::String &filename) :
 		Resource(filename, Resource::TYPE_ANIMATION),
@@ -67,7 +64,7 @@ AnimationResource::AnimationResource(const Common::String &filename) :
 	char *xmlData = _pPackage->getXmlFile(getFileName(), &fileSize);
 	if (!xmlData) {
 		error("Could not read \"%s\".", getFileName().c_str());
-		return; 
+		return;
 	}
 
 	// Parse the contents
@@ -115,13 +112,13 @@ bool AnimationResource::parseBooleanKey(Common::String s, bool &result) {
 
 bool AnimationResource::parserCallback_animation(ParserNode *node) {
 	if (!parseIntegerKey(node->values["fps"], 1, &_FPS) || (_FPS < MIN_FPS) || (_FPS > MAX_FPS)) {
-		return parserError("Illegal or missing fps attribute in <animation> tag in \"%s\". Assuming default (\"%d\").",
-		                 getFileName().c_str(), DEFAULT_FPS);
+		return parserError(Common::String::format("Illegal or missing fps attribute in <animation> tag in \"%s\". Assuming default (\"%d\").",
+		                 getFileName().c_str(), DEFAULT_FPS));
 	}
 
 	// Loop type value
 	const char *loopTypeString = node->values["type"].c_str();
-	
+
 	if (strcmp(loopTypeString, "oneshot") == 0) {
 		_animationType = Animation::AT_ONESHOT;
 	} else if (strcmp(loopTypeString, "loop") == 0) {
@@ -151,7 +148,7 @@ bool AnimationResource::parserCallback_frame(ParserNode *node) {
 	}
 	frame.fileName = _pPackage->getAbsolutePath(fileString);
 	if (frame.fileName.empty()) {
-		error("Could not create absolute path for file specified in <frame> tag in \"%s\": \"%s\".", 
+		error("Could not create absolute path for file specified in <frame> tag in \"%s\": \"%s\".",
 			getFileName().c_str(), fileString);
 		return false;
 	}

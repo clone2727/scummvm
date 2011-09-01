@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "cruise/cruise.h"
@@ -234,9 +231,7 @@ int32 opcodeType2() {
 		int type = getByteFromScript();
 		int overlay = getByteFromScript();
 
-		int firstOffset;
-		int offset;
-		firstOffset = offset = getShortFromScript();
+		int offset = getShortFromScript();
 		offset += index;
 
 		int typ7 = type & 7;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_GRAPHICS_GFX_H
@@ -54,7 +51,7 @@ private:
 	GfxCoordAdjuster *_coordAdjuster;
 
 	uint16 isOnControl(uint16 screenMask, const Common::Rect &rect);
-	
+
 	/**
 	 * This function checks whether any of the objects in the given list,
 	 * *different* from checkObject, has a brRect which is contained inside

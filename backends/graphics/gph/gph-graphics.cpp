@@ -35,8 +35,8 @@ static const OSystem::GraphicsMode s_supportedGraphicsModes[] = {
 	{0, 0, 0}
 };
 
-GPHGraphicsManager::GPHGraphicsManager(SdlEventSource *boss)
- : SdlGraphicsManager(boss) {
+GPHGraphicsManager::GPHGraphicsManager(SdlEventSource *sdlEventSource)
+ : SurfaceSdlGraphicsManager(sdlEventSource) {
 }
 
 const OSystem::GraphicsMode *GPHGraphicsManager::getSupportedGraphicsModes() const {
@@ -110,8 +110,26 @@ void GPHGraphicsManager::setGraphicsModeIntern() {
 	blitCursor();
 }
 
-void GPHGraphicsManager::initSize(uint w, uint h) {
+void GPHGraphicsManager::initSize(uint w, uint h, const Graphics::PixelFormat *format) {
 	assert(_transactionMode == kTransactionActive);
+
+#ifdef USE_RGB_COLOR
+	// Avoid redundant format changes
+	Graphics::PixelFormat newFormat;
+	if (!format)
+		newFormat = Graphics::PixelFormat::createFormatCLUT8();
+	else
+		newFormat = *format;
+
+	assert(newFormat.bytesPerPixel > 0);
+
+	if (newFormat != _videoMode.format) {
+		_videoMode.format = newFormat;
+		_transactionDetails.formatChanged = true;
+		_screenFormat = newFormat;
+	}
+#endif
+
 
 	// Avoid redundant res changes
 	if ((int)w == _videoMode.screenWidth && (int)h == _videoMode.screenHeight)
@@ -119,11 +137,15 @@ void GPHGraphicsManager::initSize(uint w, uint h) {
 
 	_videoMode.screenWidth = w;
 	_videoMode.screenHeight = h;
+
 	if (w > 320 || h > 240){
 		setGraphicsMode(GFX_HALF);
 		setGraphicsModeIntern();
-		_sdlEventSource->toggleMouseGrab();
+		_eventSource->toggleMouseGrab();
 	}
+
+	_videoMode.overlayWidth = 320;
+	_videoMode.overlayHeight = 240;
 
 	_transactionDetails.sizeChanged = true;
 }
@@ -421,7 +443,7 @@ void GPHGraphicsManager::showOverlay() {
 		_mouseCurState.x = _mouseCurState.x / 2;
 		_mouseCurState.y = _mouseCurState.y / 2;
 	}
-	SdlGraphicsManager::showOverlay();
+	SurfaceSdlGraphicsManager::showOverlay();
 }
 
 void GPHGraphicsManager::hideOverlay() {
@@ -429,30 +451,69 @@ void GPHGraphicsManager::hideOverlay() {
 		_mouseCurState.x = _mouseCurState.x * 2;
 		_mouseCurState.y = _mouseCurState.y * 2;
 	}
-	SdlGraphicsManager::hideOverlay();
+	SurfaceSdlGraphicsManager::hideOverlay();
 }
 
 
+//bool GPHGraphicsManager::loadGFXMode() {
+
+
+//	_videoMode.overlayWidth = 320;
+//	_videoMode.overlayHeight = 240;
+//	_videoMode.fullscreen = true;
+//
+//	/* Forcefully disable aspect ratio correction for games
+//	   that start with a native 240px height resolution
+//	   This corrects games with non-standard resolutions
+//	   such as MM Nes (256x240).
+//	*/
+//	if(_videoMode.screenHeight == 240) {
+//		_videoMode.aspectRatioCorrection = false;
+//	}
+
+//	debug("Game ScreenMode = %d*%d", _videoMode.screenWidth, _videoMode.screenHeight);
+//	if (_videoMode.screenWidth > 320 || _videoMode.screenHeight > 240) {
+//		_videoMode.aspectRatioCorrection = false;
+//		setGraphicsMode(GFX_HALF);
+//		debug("GraphicsMode set to HALF");
+//	} else {
+//		setGraphicsMode(GFX_NORMAL);
+//		debug("GraphicsMode set to NORMAL");
+//	}
+
+
+//	if ((_videoMode.mode == GFX_HALF) && !_overlayVisible) {
+//		//_videoMode.overlayWidth = _videoMode.screenWidth / 2;
+//		//_videoMode.overlayHeight = _videoMode.screenHeight / 2;
+//		_videoMode.overlayWidth = 320;
+//		_videoMode.overlayHeight = 240;
+//		_videoMode.fullscreen = true;
+//	} else {
+//
+//		_videoMode.overlayWidth = _videoMode.screenWidth * _videoMode.scaleFactor;
+//		_videoMode.overlayHeight = _videoMode.screenHeight * _videoMode.scaleFactor;
+//
+//		if (_videoMode.aspectRatioCorrection)
+//			_videoMode.overlayHeight = real2Aspect(_videoMode.overlayHeight);
+//
+//		//_videoMode.hardwareWidth = _videoMode.screenWidth * _videoMode.scaleFactor;
+//		//_videoMode.hardwareHeight = effectiveScreenHeight();
+//		_videoMode.hardwareWidth = 320;
+//		_videoMode.hardwareHeight = 240;
+//
+//	}
+
+//	return SurfaceSdlGraphicsManager::loadGFXMode();
+//}
+
 bool GPHGraphicsManager::loadGFXMode() {
-
-	/* Forcefully disable aspect ratio correction for games
-	   that start with a native 240px height resolution
-	   This corrects games with non-standard resolutions
-	   such as MM Nes (256x240).
-	*/
-
-	if(_videoMode.screenHeight == 240) {
-		_videoMode.aspectRatioCorrection = false;
-	}
-
-	debug("Game ScreenMode = %d*%d", _videoMode.screenWidth, _videoMode.screenHeight);
 	if (_videoMode.screenWidth > 320 || _videoMode.screenHeight > 240) {
 		_videoMode.aspectRatioCorrection = false;
 		setGraphicsMode(GFX_HALF);
-		debug("GraphicsMode set to HALF");
+//		printf("GFX_HALF\n");
 	} else {
 		setGraphicsMode(GFX_NORMAL);
-		debug("GraphicsMode set to NORMAL");
+//		printf("GFX_NORMAL\n");
 	}
 
 	if ((_videoMode.mode == GFX_HALF) && !_overlayVisible) {
@@ -470,13 +531,13 @@ bool GPHGraphicsManager::loadGFXMode() {
 		_videoMode.hardwareWidth = _videoMode.screenWidth * _videoMode.scaleFactor;
 		_videoMode.hardwareHeight = effectiveScreenHeight();
 	}
-	return SdlGraphicsManager::loadGFXMode();
+	return SurfaceSdlGraphicsManager::loadGFXMode();
 }
 
 bool GPHGraphicsManager::hasFeature(OSystem::Feature f) {
 	return
 	    (f == OSystem::kFeatureAspectRatioCorrection) ||
-	    (f == OSystem::kFeatureCursorHasPalette);
+	    (f == OSystem::kFeatureCursorPalette);
 }
 
 void GPHGraphicsManager::setFeatureState(OSystem::Feature f, bool enable) {
@@ -500,11 +561,11 @@ bool GPHGraphicsManager::getFeatureState(OSystem::Feature f) {
 	}
 }
 
-SdlGraphicsManager::MousePos* GPHGraphicsManager::getMouseCurState() {
+SurfaceSdlGraphicsManager::MousePos *GPHGraphicsManager::getMouseCurState() {
 	return &_mouseCurState;
 }
 
-SdlGraphicsManager::VideoState* GPHGraphicsManager::getVideoMode() {
+SurfaceSdlGraphicsManager::VideoState *GPHGraphicsManager::getVideoMode() {
 	return &_videoMode;
 }
 
@@ -515,24 +576,19 @@ void GPHGraphicsManager::warpMouse(int x, int y) {
 			y = y / 2;
 		}
 	}
-	SdlGraphicsManager::warpMouse(x, y);
+	SurfaceSdlGraphicsManager::warpMouse(x, y);
 }
 
-void GPHGraphicsManager::adjustMouseEvent(const Common::Event &event) {
-	if (!event.synthetic) {
-		Common::Event newEvent(event);
-		newEvent.synthetic = true;
-		if (!_overlayVisible) {
-			if (_videoMode.mode == GFX_HALF) {
-				newEvent.mouse.x *= 2;
-				newEvent.mouse.y *= 2;
-			}
-			newEvent.mouse.x /= _videoMode.scaleFactor;
-			newEvent.mouse.y /= _videoMode.scaleFactor;
-			if (_videoMode.aspectRatioCorrection)
-				newEvent.mouse.y = aspect2Real(newEvent.mouse.y);
+void GPHGraphicsManager::transformMouseCoordinates(Common::Point &point) {
+	if (!_overlayVisible) {
+		if (_videoMode.mode == GFX_HALF) {
+			point.x *= 2;
+			point.y *= 2;
 		}
-		g_system->getEventManager()->pushEvent(newEvent);
+		point.x /= _videoMode.scaleFactor;
+		point.y /= _videoMode.scaleFactor;
+		if (_videoMode.aspectRatioCorrection)
+			point.y = aspect2Real(point.y);
 	}
 }
 

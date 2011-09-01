@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "m4/m4.h"
@@ -100,8 +97,8 @@ void Sound::playSound(const char *soundName, int volume, bool loop, int channel)
 	_mixer->playStream(Audio::Mixer::kSFXSoundType, &handle->handle, stream, -1, volume);
 }
 
-void Sound::playSound(int soundNum) { 
-	warning("TODO: playSound(%d)", soundNum); 
+void Sound::playSound(int soundNum) {
+	warning("TODO: playSound(%d)", soundNum);
 }
 
 void Sound::pauseSound() {

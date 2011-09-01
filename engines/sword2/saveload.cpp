@@ -20,9 +20,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 // ---------------------------------------------------------------------------
@@ -52,11 +49,8 @@
 
 namespace Sword2 {
 
-char *Sword2Engine::getSaveFileName(uint16 slotNo) {
-	static char buf[128];
-
-	snprintf(buf, sizeof(buf), "%s.%.3d", _targetName.c_str(), slotNo);
-	return buf;
+Common::String Sword2Engine::getSaveFileName(uint16 slotNo) {
+	return Common::String::format("%s.%.3d", _targetName.c_str(), slotNo);
 }
 
 /**
@@ -131,7 +125,7 @@ uint32 Sword2Engine::saveGame(uint16 slotNo, const byte *desc) {
 }
 
 uint32 Sword2Engine::saveData(uint16 slotNo, byte *buffer, uint32 bufferSize) {
-	char *saveFileName = getSaveFileName(slotNo);
+	Common::String saveFileName = getSaveFileName(slotNo);
 
 	Common::OutSaveFile *out;
 
@@ -209,7 +203,7 @@ uint32 Sword2Engine::restoreGame(uint16 slotNo) {
 }
 
 uint32 Sword2Engine::restoreData(uint16 slotNo, byte *buffer, uint32 bufferSize) {
-	char *saveFileName = getSaveFileName(slotNo);
+	Common::String saveFileName = getSaveFileName(slotNo);
 
 	Common::InSaveFile *in;
 
@@ -374,7 +368,7 @@ uint32 Sword2Engine::restoreFromBuffer(byte *buffer, uint32 size) {
  */
 
 uint32 Sword2Engine::getSaveDescription(uint16 slotNo, byte *description) {
-	char *saveFileName = getSaveFileName(slotNo);
+	Common::String saveFileName = getSaveFileName(slotNo);
 
 	Common::InSaveFile *in;
 
@@ -397,7 +391,7 @@ bool Sword2Engine::saveExists() {
 }
 
 bool Sword2Engine::saveExists(uint16 slotNo) {
-	char *saveFileName = getSaveFileName(slotNo);
+	Common::String saveFileName = getSaveFileName(slotNo);
 	Common::InSaveFile *in;
 
 	if (!(in = _saveFileMan->openForLoading(saveFileName))) {

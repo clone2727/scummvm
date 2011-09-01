@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "agi/agi.h"
@@ -44,6 +41,10 @@ AgiSound *AgiSound::createFromRawResource(uint8 *data, uint32 len, int resnum, S
 		return NULL;
 	uint16 type = READ_LE_UINT16(data);
 
+	// For V1 sound resources
+	if (type != AGI_SOUND_SAMPLE && (type & 0xFF) == 0x01)
+		return new PCjrSound(data, len, resnum, manager);
+
 	switch (type) { // Create a sound object based on the type
 	case AGI_SOUND_SAMPLE:
 		return new IIgsSample(data, len, resnum, manager);
@@ -65,6 +66,11 @@ PCjrSound::PCjrSound(uint8 *data, uint32 len, int resnum, SoundMgr &manager) : A
 	_data = data; // Save the resource pointer
 	_len  = len;  // Save the resource's length
 	_type = READ_LE_UINT16(data); // Read sound resource's type
+
+	// Detect V1 sound resources
+	if ((_type & 0xFF) == 0x01)
+		_type = AGI_SOUND_4CHN;
+
 	_isValid = (_type == AGI_SOUND_4CHN) && (_data != NULL) && (_len >= 2);
 
 	if (!_isValid) // Check for errors
@@ -102,51 +108,63 @@ void SoundMgr::unloadSound(int resnum) {
 	}
 }
 
+/**
+ * Start playing a sound resource. The logic here is that when the sound is
+ * finished we set the given flag to be true. This way the condition can be
+ * detected by the game. On the other hand, if the game wishes to start
+ * playing a new sound before the current one is finished, we also let it
+ * do that.
+ * @param resnum  the sound resource number
+ * @param flag    the flag that is wished to be set true when finished
+ */
 void SoundMgr::startSound(int resnum, int flag) {
-	AgiSoundEmuType type;
-
-	if (_vm->_game.sounds[resnum] != NULL && _vm->_game.sounds[resnum]->isPlaying())
-		return;
-
-	stopSound();
+	debugC(3, kDebugLevelSound, "startSound(resnum = %d, flag = %d)", resnum, flag);
 
 	if (_vm->_game.sounds[resnum] == NULL) // Is this needed at all?
 		return;
 
-	type = (AgiSoundEmuType)_vm->_game.sounds[resnum]->type();
+	stopSound();
 
+	AgiSoundEmuType type = (AgiSoundEmuType)_vm->_game.sounds[resnum]->type();
 	if (type != AGI_SOUND_SAMPLE && type != AGI_SOUND_MIDI && type != AGI_SOUND_4CHN)
 		return;
+	debugC(3, kDebugLevelSound, "    type = %d", type);
 
 	_vm->_game.sounds[resnum]->play();
 	_playingSound = resnum;
-
-	debugC(3, kDebugLevelSound, "startSound(resnum = %d, flag = %d) type = %d", resnum, flag, type);
-
 	_soundGen->play(resnum);
 
+	// Reset the flag
 	_endflag = flag;
 
-	// Nat Budin reports that the flag should be reset when sound starts
-	_vm->setflag(_endflag, false);
+	if (_vm->getVersion() < 0x2000) {
+		_vm->_game.vars[_endflag] = 0;
+	} else {
+		_vm->setflag(_endflag, false);
+	}
 }
 
 void SoundMgr::stopSound() {
 	debugC(3, kDebugLevelSound, "stopSound() --> %d", _playingSound);
 
-	_endflag = -1;
-
 	if (_playingSound != -1) {
 		if (_vm->_game.sounds[_playingSound]) // sanity checking
 			_vm->_game.sounds[_playingSound]->stop();
-
 		_soundGen->stop();
-
 		_playingSound = -1;
 	}
 
-	if (_endflag != -1)
-		_vm->setflag(_endflag, true);
+	// This is probably not needed most of the time, but there also should
+	// not be any harm doing it, so do it anyway.
+	if (_endflag != -1) {
+		if (_vm->getVersion() < 0x2000) {
+			_vm->_game.vars[_endflag] = 1;
+		} else {
+			_vm->setflag(_endflag, true);
+		}
+	}
+
+	_endflag = -1;
 }
 
 int SoundMgr::initSound() {
@@ -169,7 +187,7 @@ void SoundMgr::soundIsFinished() {
 	_endflag = -1;
 }
 
-SoundMgr::SoundMgr(AgiEngine *agi, Audio::Mixer *pMixer) {
+SoundMgr::SoundMgr(AgiBase *agi, Audio::Mixer *pMixer) {
 	_vm = agi;
 	_endflag = -1;
 	_playingSound = -1;

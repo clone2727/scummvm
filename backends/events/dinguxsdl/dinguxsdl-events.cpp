@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -53,7 +50,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 		}
 
 		event.type = Common::EVENT_MOUSEMOVE;
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == PAD_DOWN) {
@@ -66,7 +63,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 		}
 
 		event.type = Common::EVENT_MOUSEMOVE;
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == PAD_LEFT) {
@@ -79,7 +76,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 		}
 
 		event.type = Common::EVENT_MOUSEMOVE;
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == PAD_RIGHT) {
@@ -92,7 +89,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 		}
 
 		event.type = Common::EVENT_MOUSEMOVE;
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == BUT_Y) { // left mouse button
@@ -102,7 +99,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 			event.type = Common::EVENT_LBUTTONUP;
 		}
 
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == BUT_B) { // right mouse button
@@ -112,7 +109,7 @@ bool DINGUXSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 			event.type = Common::EVENT_RBUTTONUP;
 		}
 
-		fillMouseEvent(event, _km.x, _km.y);
+		processMouseEvent(event, _km.x, _km.y);
 
 		return true;
 	} else if (ev.key.keysym.sym == BUT_X) { // '.' skip dialogue

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SOUND_MIDIDRV_H
@@ -145,6 +142,7 @@ public:
 	enum DeviceStringType {
 		kDriverName,
 		kDriverId,
+		kDeviceName,
 		kDeviceId
 	};
 
@@ -158,6 +156,9 @@ public:
 
 	/** Find the music driver matching the given driver name/description. */
 	static DeviceHandle getDeviceHandle(const Common::String &identifier);
+
+	/** Check whether the device with the given handle is available. */
+	static bool checkDevice(DeviceHandle handle);
 
 	/** Get the music type matching the given device handle, or MT_AUTO if there is no match. */
 	static MusicType getMusicType(DeviceHandle handle);

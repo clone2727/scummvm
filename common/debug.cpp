@@ -17,24 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/debug.h"
 #include "common/debug-channels.h"
 #include "common/system.h"
 #include "common/textconsole.h"
+#include "common/algorithm.h"
 
 #include <stdarg.h>	// For va_list etc.
 
 // TODO: Move gDebugLevel into namespace Common.
 int gDebugLevel = -1;
 
-DECLARE_SINGLETON(Common::DebugManager);
-
 namespace Common {
+
+DECLARE_SINGLETON(DebugManager);
 
 namespace {
 
@@ -110,18 +108,13 @@ bool DebugManager::isDebugChannelEnabled(uint32 channel) {
 #ifndef DISABLE_TEXT_CONSOLE
 
 static void debugHelper(const char *s, va_list va, bool caret = true) {
-	char buf[STRINGBUFLEN];
+	Common::String buf = Common::String::vformat(s, va);
 
-	vsnprintf(buf, STRINGBUFLEN, s, va);
-	buf[STRINGBUFLEN-1] = '\0';
-
-	if (caret) {
-		buf[STRINGBUFLEN-2] = '\0';
-		strcat(buf, "\n");
-	}
+	if (caret)
+		buf += '\n';
 
 	if (g_system)
-		g_system->logMessage(LogMessageType::kDebug, buf);
+		g_system->logMessage(LogMessageType::kDebug, buf.c_str());
 	// TODO: Think of a good fallback in case we do not have
 	// any OSystem yet.
 }

@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/scummsys.h"
@@ -243,9 +240,7 @@ StaticTextWidget::StaticTextWidget(GuiObject *boss, const Common::String &name, 
 }
 
 void StaticTextWidget::setValue(int value) {
-	char buf[256];
-	sprintf(buf, "%d", value);
-	_label = buf;
+	_label = Common::String::format("%d", value);
 }
 
 void StaticTextWidget::setLabel(const Common::String &label) {
@@ -301,6 +296,10 @@ void ButtonWidget::handleMouseUp(int x, int y, int button, int clickCount) {
 
 void ButtonWidget::drawWidget() {
 	g_gui.theme()->drawButton(Common::Rect(_x, _y, _x+_w, _y+_h), _label, _state, getFlags());
+}
+
+void ButtonWidget::setLabel(const Common::String &label) {
+	StaticTextWidget::setLabel(cleanupHotkey(label));
 }
 
 #pragma mark -

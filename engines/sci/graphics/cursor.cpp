@@ -18,18 +18,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
 #include "common/events.h"
-#include "common/macresman.h"
 #include "common/memstream.h"
 #include "common/system.h"
 #include "common/util.h"
 #include "graphics/cursorman.h"
+#include "graphics/maccursor.h"
 
 #include "sci/sci.h"
 #include "sci/event.h"
@@ -255,10 +252,10 @@ void GfxCursor::setPosition(Common::Point pos) {
 	// Some games display a new menu, set mouse position somewhere within and
 	//  expect it to be in there. This is fine for a real mouse, but on wii using
 	//  wii-mote or touch interfaces this won't work. In fact on those platforms
-	//  the menus will close immediately because of that behaviour.
+	//  the menus will close immediately because of that behavior.
 	// We identify those cases and set a reaction-rect. If the mouse it outside
 	//  of that rect, we won't report the position back to the scripts.
-	//  As soon as the mouse was inside once, we will revert to normal behaviour
+	//  As soon as the mouse was inside once, we will revert to normal behavior
 	// Currently this code is enabled for all platforms, especially because we can't
 	//  differentiate between e.g. Windows used via mouse and Windows used via touchscreen
 	// The workaround won't hurt real-mouse platforms
@@ -473,49 +470,19 @@ void GfxCursor::kernelSetMacCursor(GuiResourceId viewNum, int loopNum, int celNu
 
 	assert(resource);
 
-	if (resource->size == 32 * 2 + 4) {
-		// Mac CURS cursor
-		// See http://developer.apple.com/legacy/mac/library/documentation/mac/QuickDraw/QuickDraw-402.html
-		// for more information.
-		byte *cursorBitmap = new byte[16 * 16];
-		byte *data = resource->data;
+	Common::MemoryReadStream resStream(resource->data, resource->size);
+	Graphics::MacCursor *macCursor = new Graphics::MacCursor();
 
-		// Get B&W data
-		for (byte i = 0; i < 32; i++) {
-			byte imageByte = *data++;
-			for (byte b = 0; b < 8; b++)
-				cursorBitmap[i * 8 + b] = (byte)((imageByte & (0x80 >> b)) > 0 ? 1 : 2);
-		}
-
-		// Apply mask data
-		for (byte i = 0; i < 32; i++) {
-			byte imageByte = *data++;
-			for (byte b = 0; b < 8; b++)
-				if ((imageByte & (0x80 >> b)) == 0)
-					cursorBitmap[i * 8 + b] = 0; // Doesn't matter, just is transparent
-		}
-
-		uint16 hotspotY = READ_BE_UINT16(data);
-		uint16 hotspotX = READ_BE_UINT16(data + 2);
-
-		static const byte cursorPalette[] = { 0x00, 0x00, 0x00, 0xff, 0xff, 0xff };
-
-		CursorMan.replaceCursor(cursorBitmap, 16, 16, hotspotX, hotspotY, 0);
-		CursorMan.replaceCursorPalette(cursorPalette, 1, 2);
-
-		delete[] cursorBitmap;
-	} else {
-		// Mac crsr cursor
-		byte *cursorBitmap, *palette;
-		int width, height, hotspotX, hotspotY, palSize, keycolor;
-		Common::MemoryReadStream resStream(resource->data, resource->size);
-		Common::MacResManager::convertCrsrCursor(&resStream, &cursorBitmap, width, height, hotspotX, hotspotY, keycolor, true, &palette, palSize);
-		CursorMan.replaceCursor(cursorBitmap, width, height, hotspotX, hotspotY, keycolor);
-		CursorMan.replaceCursorPalette(palette, 0, palSize);
-		delete[] cursorBitmap;
-		delete[] palette;
+	if (!macCursor->readFromStream(resStream)) {
+		warning("Failed to load Mac cursor %d", viewNum);
+		return;
 	}
 
+	CursorMan.replaceCursor(macCursor->getSurface(), macCursor->getWidth(), macCursor->getHeight(),
+			macCursor->getHotspotX(), macCursor->getHotspotY(), macCursor->getKeyColor());
+	CursorMan.replaceCursorPalette(macCursor->getPalette(), 0, 256);
+
+	delete macCursor;
 	kernelShow();
 }
 

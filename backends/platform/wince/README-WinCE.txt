@@ -1,15 +1,74 @@
 ScummVM Windows CE FAQ
-Last updated: $Date$
-Release version: 1.1.0
+Last updated: 2011-07-20
+Release version: x.x.x
 ------------------------------------------------------------------------
 
 New in this version
 -------------------
+x.x.x:
+- Changed default values for "high_sample_rate" & "FM_high_quality" to "true" as
+  most devices today are fast enough to handle this. It's still possible to set
+  this to "false" if you have a slower device.
+- Fix for TeenAgent & Hugo engines (both weren't running at all, crashed right
+  at the beginning)
+- Replaced the game mass-adding functionality with the functionality used on all
+  other platforms. It now shows progress while searching for games.
 
-1.1.1
+1.3.1:
+- Fix for Normal2xAspect scaler which was causing screen update issues in some
+  games.
+- Fix for Normal1xAspect scaler which caused problems in the bottom part of the
+  screen when toolbar was hidden.
+- Fix for freelook mode.
+- Fix for timer manager, caused timing issues in some games.
+- Activated runtime language detection for ScummVM gui.
+- Toolbar is now hidden when returning to the game list.
+- Double-tap right-click emulation is now turned off for SCI games by default.
+- Added a new option "no_doubletap_paneltoggle" for scummvm.ini to disable
+  toolbar toggling when double-tapping on the top part of the screen.
+- SDL library related fixes:
+  * Fix for screen/mouse-cursor rotation issues (fixes erratic touchscreen
+    behaviour)
+  * Fix for hardware keyboard on some devices (HTC Touch Pro, etc.)
+
+1.3.0:
+This is the first official Windows CE release since 1.1.1.
+
+The following new engines are now included (changes since last WinCE release):
+ - Draci Engine (Dragon History)
+ - Hugo Engine (Hugo Trilogy)
+ - Mohawk Engine (Myst, Riven, Living Book games & Where in Time is Carmen
+   Sandiego?)
+ - SCI Engine (Sierra SCI games, see main README for a list of supported games)
+ - Toon Engine (Toonstruck)
+
+Also, there are now 4 binaries in this distribution, a single executable
+which contains all engines (for devices with enough memory) and 3 smaller
+binaries which contain only some of the engines. The following lists all
+executables and the engines they contain:
+
+scummvm.exe:
+ - all supported engines
+scummvm1.exe:
+ - scumm, agi, cruise, draci, lure, queen, sky, sword1, tinsel, touche
+scummvm2.exe:
+ - agos, cine, drascula, gob, groovie, kyra, made, parallaction, saga,
+   teenagent, tucker
+scummvm3.exe:
+ - hugo, mohawk, sci, sword2, toon
+
+There are no other port specific changes.
+
+1.2.1:
+(Note: No official 1.2.1 release)
+
+1.2.0:
+(Note: No official 1.2.0 release)
+
+1.1.1:
 Fix to the Normal2xAspect scaler that was causing crashes.
 
-1.1.0
+1.1.0:
 The TeenAgent engine is now included, but there are no other port specific
 changes since 1.0.0.
 
@@ -311,14 +370,13 @@ Some parameters are specific to this port :
 Game specific sections (f.e. [monkey2]) - performance options
 
  *  high_sample_rate       bool     Desktop quality (22 kHz) sound output if
-                                    set.  The default is 11 kHz.
-                                    If you have a fast device, you can set this
-                                    to true to enjoy better sound effects and
-                                    music.
+                                    set.  This is the default.
+                                    If you have a slow device, you can set this
+                                    to false to prevent lags/delays in the game.
  *  FM_high_quality        bool     Desktop quality FM synthesis if set. Lower
-                                    quality otherwise. The default is low
+                                    quality otherwise. The default is high
                                     quality. You can change this if you have a
-                                    fast device.
+                                    slow device.
  *  sound_thread_priority  int      Set the priority of the sound thread (0, 1,
                                     2). Depending on the release, this is set
                                     to 1 internally (above normal).

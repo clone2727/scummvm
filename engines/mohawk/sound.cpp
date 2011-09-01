@@ -18,23 +18,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
-
-#include "mohawk/sound.h"
 
 #include "common/debug.h"
 #include "common/system.h"
 #include "common/util.h"
 #include "common/textconsole.h"
 
+#include "audio/midiparser.h"
 #include "audio/musicplugin.h"
 #include "audio/audiostream.h"
 #include "audio/decoders/mp3.h"
 #include "audio/decoders/raw.h"
 #include "audio/decoders/wave.h"
+
+#include "mohawk/sound.h"
 
 namespace Mohawk {
 
@@ -87,7 +85,7 @@ Audio::AudioStream *Sound::makeAudioStream(uint16 id, CueList *cueList) {
 		if (_vm->getFeatures() & GF_ME)
 			audStream = Audio::makeWAVStream(_vm->getResource(ID_MSND, convertMystID(id)), DisposeAfterUse::YES);
 		else
-			audStream = makeMohawkWaveStream(_vm->getResource(ID_MSND, id));
+			audStream = makeMohawkWaveStream(_vm->getResource(ID_MSND, id), cueList);
 		break;
 	case GType_ZOOMBINI:
 		audStream = makeMohawkWaveStream(_vm->getResource(ID_SND, id));
@@ -143,6 +141,19 @@ Audio::SoundHandle *Sound::replaceSoundMyst(uint16 id, byte volume, bool loop) {
 				&& _vm->_mixer->isSoundHandleActive(_handles[i].handle)
 				&& name.equals(_vm->getResourceName(ID_MSND, convertMystID(_handles[i].id))))
 			return &_handles[i].handle;
+
+	// The original engine also forces looping for those sounds
+	switch (id) {
+	case 2205:
+	case 2207:
+	case 5378:
+	case 7220:
+	case 9119: 	// Elevator engine sound in mechanical age is looping.
+	case 9120:
+	case 9327:
+		loop = true;
+		break;
+	}
 
 	stopSound();
 	return playSound(id, volume, loop);
@@ -619,9 +630,16 @@ Audio::SoundHandle *Sound::replaceBackgroundMyst(uint16 id, uint16 volume) {
 
 	Common::String name = _vm->getResourceName(ID_MSND, convertMystID(id));
 
+	// Only the first eight characters need to be the same to have a match
+	Common::String prefix;
+	if (name.size() >= 8)
+		prefix = Common::String(name.c_str(), name.c_str() + 8);
+	else
+		prefix = name;
+
 	// Check if sound is already playing
 	if (_mystBackgroundSound.type == kUsedHandle && _vm->_mixer->isSoundHandleActive(_mystBackgroundSound.handle)
-			&& name.equals(_vm->getResourceName(ID_MSND, convertMystID(_mystBackgroundSound.id))))
+			&& _vm->getResourceName(ID_MSND, convertMystID(_mystBackgroundSound.id)).hasPrefix(prefix))
 		return &_mystBackgroundSound.handle;
 
 	// Stop old background sound

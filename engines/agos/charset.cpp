@@ -18,13 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
-
-
+#include "common/endian.h"
 #include "common/system.h"
 
 #include "agos/agos.h"
@@ -658,4 +654,3 @@ void AGOSEngine::windowScroll(WindowBlock *window) {
 	_videoLockOut &= ~0x8000;
 }
 } // End of namespace AGOS
-

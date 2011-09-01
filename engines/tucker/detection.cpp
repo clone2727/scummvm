@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -105,31 +102,6 @@ static const ADGameDescription tuckerGameDescriptions[] = {
 	AD_TABLE_END_MARKER
 };
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)tuckerGameDescriptions,
-	// Size of that superset structure
-	sizeof(ADGameDescription),
-	// Number of bytes to compute MD5 sum for
-	512,
-	// List of all engine targets
-	tuckerGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"tucker",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game)
-	Common::GUIO_NONE,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 static const ADGameDescription tuckerDemoGameDescription = {
 	"tucker",
 	"Non-Interactive Demo",
@@ -142,11 +114,13 @@ static const ADGameDescription tuckerDemoGameDescription = {
 
 class TuckerMetaEngine : public AdvancedMetaEngine {
 public:
-	TuckerMetaEngine() : AdvancedMetaEngine(detectionParams) {
+	TuckerMetaEngine() : AdvancedMetaEngine(tuckerGameDescriptions, sizeof(ADGameDescription), tuckerGames) {
+		_md5Bytes = 512;
+		_singleid = "tucker";
 	}
 
 	virtual const char *getName() const {
-		return "Tucker Engine";
+		return "Tucker";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -171,7 +145,7 @@ public:
 		return desc != 0;
 	}
 
-	virtual const ADGameDescription *fallbackDetect(const Common::FSList &fslist) const {
+	virtual const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const {
 		for (Common::FSList::const_iterator d = fslist.begin(); d != fslist.end(); ++d) {
 			Common::FSList audiofslist;
 			if (d->isDirectory() && d->getName().equalsIgnoreCase("audio") && d->getChildren(audiofslist, Common::FSNode::kListFilesOnly)) {
@@ -204,8 +178,7 @@ public:
 		}
 		for (int slot = 0; slot <= Tucker::kLastSaveSlot; ++slot) {
 			if (slotsTable[slot]) {
-				char description[64];
-				snprintf(description, sizeof(description), "savegm.%02d", slot);
+				Common::String description = Common::String::format("savegm.%02d", slot);
 				saveList.push_back(SaveStateDescriptor(slot, description));
 			}
 		}

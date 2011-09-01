@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_IHNM
@@ -392,11 +389,10 @@ void Script::sfSetSpeechBox(SCRIPTFUNC_PARAMS) {
 
 void Script::sfDebugShowData(SCRIPTFUNC_PARAMS) {
 	int16 param = thread->pop();
-	char buf[50];
 
-	snprintf(buf, 50, "Reached breakpoint %d", param);
+	Common::String buf = Common::String::format("Reached breakpoint %d", param);
 
-	_vm->_interface->setStatusText(buf);
+	_vm->_interface->setStatusText(buf.c_str());
 }
 
 void Script::sfWaitFramesEsc(SCRIPTFUNC_PARAMS) {

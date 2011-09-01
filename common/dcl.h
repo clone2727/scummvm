@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /**
@@ -55,4 +52,3 @@ SeekableReadStream *decompressDCL(ReadStream *src, uint32 packedSize, uint32 unp
 } // End of namespace Common
 
 #endif
-

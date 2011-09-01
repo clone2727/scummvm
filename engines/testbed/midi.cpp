@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/archive.h"
@@ -145,12 +142,12 @@ MidiTestSuite::MidiTestSuite() {
 		// add some fallback test if filesystem loading failed
 		Testsuite::logPrintf("Warning! Midi: Sound data file music.mid not found\n");
 		_isMidiDataFound = false;
-		enable(false);
+		MidiTestSuite::enable(false);
 	}
 }
 
 void MidiTestSuite::enable(bool flag) {
-	Testsuite::enable(_isMidiDataFound & flag);
+	Testsuite::enable(_isMidiDataFound ? flag : false);
 }
 
 }

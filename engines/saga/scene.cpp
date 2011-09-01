@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Scene management module
@@ -454,7 +451,7 @@ void Scene::changeScene(int16 sceneNumber, int actorsEntrance, SceneTransitionTy
 
 	// This is used for latter ITE demos where all places on world map except
 	// Tent Faire are substituted with LBM picture and short description
-	if (_vm->getFeatures() & GF_SCENE_SUBSTITUTES) {
+	if (_vm->_hasITESceneSubstitutes) {
 		for (int i = 0; i < ARRAYSIZE(sceneSubstitutes); i++) {
 			if (sceneSubstitutes[i].sceneId == sceneNumber) {
 				Surface bbmBuffer;

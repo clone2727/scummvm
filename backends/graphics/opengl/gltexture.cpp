@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -111,7 +108,7 @@ void GLTexture::refresh() {
 void GLTexture::allocBuffer(GLuint w, GLuint h) {
 	_realWidth = w;
 	_realHeight = h;
-	
+
 	if (w <= _textureWidth && h <= _textureHeight && !_refresh)
 		// Already allocated a sufficiently large buffer
 		return;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "kyra/kyra_lok.h"
@@ -173,7 +170,7 @@ Common::Error KyraEngine_LoK::loadGameState(int slot) {
 		_screen->copyRegion(8, 8, 8, 8, 304, 212, 10, 0);
 	}
 
-	setDelayedCursorUpdate();
+	setHandItem(_itemInHand);
 
 	// Will-O-Wisp uses a different shape size than Brandon's usual
 	// shape, thus we need to setup the correct size depending on
@@ -320,4 +317,3 @@ Common::Error KyraEngine_LoK::saveGameStateIntern(int slot, const char *saveName
 	return Common::kNoError;
 }
 } // End of namespace Kyra
-

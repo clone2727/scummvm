@@ -17,12 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
-#define FORBIDDEN_SYMBOL_EXCEPTION_unistd_h
+#define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #include "dc.h"
 #include "backends/fs/abstract-fs.h"
@@ -127,7 +124,7 @@ bool RoninCDDirectoryNode::getChildren(AbstractFSList &myList, ListMode mode, bo
 			if (mode == Common::FSNode::kListFilesOnly)
 				continue;
 
-			myList.push_back(new RoninCDDirectoryNode(newPath+"/"));
+			myList.push_back(new RoninCDDirectoryNode(newPath));
 		} else {
 			// Honor the chosen mode
 			if (mode == Common::FSNode::kListDirectoriesOnly)
@@ -168,4 +165,3 @@ AbstractFSNode *OSystem_Dreamcast::makeFileNodePath(const Common::String &path) 
 	AbstractFSNode *node = RoninCDFileNode::makeFileNodePath(path);
 	return (node? node : new RoninCDNonexistingNode(path));
 }
-

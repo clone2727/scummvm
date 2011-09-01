@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TEENAGENT_ENGINE_H
@@ -50,7 +47,7 @@ class Scene;
 class MusicPlayer;
 class Console;
 
-class TeenAgentEngine: public Engine {
+class TeenAgentEngine : public Engine {
 public:
 	enum Action { kActionNone, kActionExamine, kActionUse };
 
@@ -59,7 +56,7 @@ public:
 
 	virtual Common::Error run();
 	virtual Common::Error loadGameState(int slot);
-	virtual Common::Error saveGameState(int slot, const char *desc);
+	virtual Common::Error saveGameState(int slot, const Common::String &desc);
 	virtual bool canLoadGameStateCurrently() { return true; }
 	virtual bool canSaveGameStateCurrently() { return !scene_busy; }
 	virtual bool hasFeature(EngineFeature f) const;
@@ -120,7 +117,7 @@ public:
 	void fadeOut();
 	void wait(uint16 frames);
 
-	Common::RandomSource random;
+	Common::RandomSource _rnd;
 
 	Scene *scene;
 	Inventory *inventory;

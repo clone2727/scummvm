@@ -19,9 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -568,7 +565,7 @@ void Gfx::showFloatingLabel(GfxObj *label) {
 		label->x = -1000;
 		label->y = -1000;
 		label->setFlags(kGfxObjVisible);
-	
+
 		_floatingLabel = label;
 		_labels.push_back(label);
 	}
@@ -676,7 +673,7 @@ void Gfx::showLabel(GfxObj *label, int16 x, int16 y) {
 
 	label->x = x;
 	label->y = y;
-	
+
 	_labels.push_back(label);
 }
 
@@ -698,7 +695,7 @@ void Gfx::unregisterLabel(GfxObj *label) {
 			_labels.remove_at(i);
 			break;
 		}
-	}	
+	}
 }
 
 

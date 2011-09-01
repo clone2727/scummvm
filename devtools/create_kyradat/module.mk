@@ -1,5 +1,3 @@
-# $URL$
-# $Id$
 
 MODULE := devtools/create_kyradat
 
@@ -15,6 +13,9 @@ MODULE_OBJS := \
 
 # Set the name of the executable
 TOOL_EXECUTABLE := create_kyradat
+
+# Link against common code (for scumm_stricmp)
+TOOL_DEPS := common/libcommon.a
 
 # Include common rules
 include $(srcdir)/rules.mk

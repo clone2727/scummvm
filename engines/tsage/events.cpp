@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/events.h"
@@ -34,15 +31,16 @@
 #include "tsage/tsage.h"
 #include "tsage/globals.h"
 
-namespace tSage {
+namespace TsAGE {
 
 EventsClass::EventsClass() {
 	_currentCursor = CURSOR_NONE;
-	hideCursor();
+	_lastCursor = CURSOR_NONE;
 	_frameNumber = 0;
 	_priorFrameTime = 0;
 	_prevDelayFrame = 0;
 	_saver->addListener(this);
+	_saver->addLoadNotifier(&EventsClass::loadNotifierProc);
 }
 
 bool EventsClass::pollEvent() {
@@ -51,6 +49,7 @@ bool EventsClass::pollEvent() {
 		_priorFrameTime = milli;
 		++_frameNumber;
 
+		// Update screen
 		g_system->updateScreen();
 	}
 
@@ -80,7 +79,7 @@ bool EventsClass::pollEvent() {
 
 void EventsClass::waitForPress(int eventMask) {
 	Event evt;
-	while (!_vm->getEventManager()->shouldQuit() && !getEvent(evt, eventMask))
+	while (!_vm->shouldQuit() && !getEvent(evt, eventMask))
 		g_system->delayMillis(10);
 }
 
@@ -88,7 +87,7 @@ void EventsClass::waitForPress(int eventMask) {
  * Standard event retrieval, which only returns keyboard and mouse clicks
  */
 bool EventsClass::getEvent(Event &evt, int eventMask) {
-	while (pollEvent() && !_vm->getEventManager()->shouldQuit()) {
+	while (pollEvent() && !_vm->shouldQuit()) {
 		evt.handled = false;
 		evt.eventType = EVENT_NONE;
 		evt.mousePos = _event.mouse;
@@ -140,17 +139,11 @@ bool EventsClass::getEvent(Event &evt, int eventMask) {
  * @cursorType Specified cursor number
  */
 void EventsClass::setCursor(CursorType cursorType) {
+	if (cursorType == _lastCursor)
+		return;
+
+	_lastCursor = cursorType;
 	_globals->clearFlag(122);
-
-	if ((_currentCursor == cursorType) && CursorMan.isVisible())
-		return;
-
-	if (cursorType == CURSOR_NONE) {
-		if (CursorMan.isVisible())
-			CursorMan.showMouse(false);
-		return;
-	}
-
 	CursorMan.showMouse(true);
 
 	const byte *cursor;
@@ -158,27 +151,43 @@ void EventsClass::setCursor(CursorType cursorType) {
 	uint size;
 
 	switch (cursorType) {
-	case CURSOR_CROSSHAIRS:
-		// Crosshairs cursor
-		cursor = _resourceManager->getSubResource(4, 1, 6, &size);
+	case CURSOR_NONE:
+		// No cursor
 		_globals->setFlag(122);
+
+		if ((_vm->getFeatures() & GF_DEMO) || (_vm->getGameID() == GType_BlueForce))  {
+			CursorMan.showMouse(false);
+			return;
+		}
+		cursor = _resourceManager->getSubResource(4, 1, 6, &size);
 		break;
 
 	case CURSOR_LOOK:
 		// Look cursor
-		cursor = _resourceManager->getSubResource(4, 1, 5, &size);
+		if (_vm->getGameID() == GType_BlueForce)
+			cursor = _resourceManager->getSubResource(1, 5, 3, &size);
+		else
+			cursor = _resourceManager->getSubResource(4, 1, 5, &size);
 		_currentCursor = CURSOR_LOOK;
 		break;
 
 	case CURSOR_USE:
 		// Use cursor
-		cursor = _resourceManager->getSubResource(4, 1, 4, &size);
+		if (_vm->getGameID() == GType_BlueForce) {
+			cursor = _resourceManager->getSubResource(1, 5, 2, &size);
+		} else {
+			cursor = _resourceManager->getSubResource(4, 1, 4, &size);
+		}
 		_currentCursor = CURSOR_USE;
 		break;
 
 	case CURSOR_TALK:
 		// Talk cursor
-		cursor = _resourceManager->getSubResource(4, 1, 3, &size);
+		if (_vm->getGameID() == GType_BlueForce) {
+			cursor = _resourceManager->getSubResource(1, 5, 4, &size);
+		} else {
+			cursor = _resourceManager->getSubResource(4, 1, 3, &size);
+		}
 		_currentCursor = CURSOR_TALK;
 		break;
 
@@ -191,9 +200,13 @@ void EventsClass::setCursor(CursorType cursorType) {
 	case CURSOR_WALK:
 	default:
 		// Walk cursor
-		cursor = CURSOR_WALK_DATA;
+		if (_vm->getGameID() == GType_BlueForce) {
+			cursor = _resourceManager->getSubResource(1, 5, 1, &size);
+		} else {
+			cursor = CURSOR_WALK_DATA;
+			delFlag = false;
+		}
 		_currentCursor = CURSOR_WALK;
-		delFlag = false;
 		break;
 	}
 
@@ -215,8 +228,8 @@ void EventsClass::pushCursor(CursorType cursorType) {
 	uint size;
 
 	switch (cursorType) {
-	case CURSOR_CROSSHAIRS:
-		// Crosshairs cursor
+	case CURSOR_NONE:
+		// No cursor
 		cursor = _resourceManager->getSubResource(4, 1, 6, &size);
 		break;
 
@@ -272,20 +285,33 @@ void EventsClass::setCursor(Graphics::Surface &cursor, int transColor, const Com
 	_currentCursor = cursorId;
 }
 
+void EventsClass::setCursor(GfxSurface &cursor) {
+	// TODO: Find proper parameters for this form in Blue Force
+	Graphics::Surface s = cursor.lockSurface();
+
+	const byte *cursorData = (const byte *)s.getBasePtr(0, 0);
+	CursorMan.replaceCursor(cursorData, cursor.getBounds().width(), cursor.getBounds().height(), 
+		cursor._centroid.x, cursor._centroid.y, cursor._transColor);
+
+	_lastCursor = CURSOR_NONE;
+}
+
 void EventsClass::setCursorFromFlag() {
-	setCursor(_globals->getFlag(122) ? CURSOR_CROSSHAIRS : _currentCursor);
+	setCursor(isCursorVisible() ? _currentCursor : CURSOR_NONE);
 }
 
 void EventsClass::showCursor() {
-	CursorMan.showMouse(true);
+	setCursor(_currentCursor);
 }
 
-void EventsClass::hideCursor() {
-	CursorMan.showMouse(false);
+CursorType EventsClass::hideCursor() {
+	CursorType oldCursor = _currentCursor;
+	setCursor(CURSOR_NONE);
+	return oldCursor;
 }
 
-bool EventsClass::isCursorVisible() const { 
-	return CursorMan.isVisible(); 
+bool EventsClass::isCursorVisible() const {
+	return !_globals->getFlag(122);
 }
 
 /**
@@ -308,4 +334,23 @@ void EventsClass::delay(int numFrames) {
 	_priorFrameTime = g_system->getMillis();
 }
 
-} // end of namespace tSage
+void EventsClass::listenerSynchronize(Serializer &s) {
+	s.syncAsUint32LE(_frameNumber);
+	s.syncAsUint32LE(_prevDelayFrame);
+
+	if (s.getVersion() >= 5) {
+		s.syncAsSint16LE(_currentCursor);
+		s.syncAsSint16LE(_lastCursor);
+	}
+}
+
+void EventsClass::loadNotifierProc(bool postFlag) {
+	if (postFlag) {
+		if (_globals->_events._lastCursor == CURSOR_NONE)
+			_globals->_events._lastCursor = _globals->_events._currentCursor;
+		else
+			_globals->_events._lastCursor = CURSOR_NONE;
+	}
+}
+
+} // end of namespace TsAGE

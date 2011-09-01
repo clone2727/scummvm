@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -58,7 +55,7 @@ int16 canUseOnObject = 0;
 
 void waitPlayerInput() {
 	uint16 button;
-	
+
 	do {
 		manageEvents();
 		getMouseData(mouseUpdateStatus, &button, &dummyU16, &dummyU16);
@@ -443,13 +440,12 @@ void CineEngine::makeSystemMenu() {
 
 					getMouseData(mouseUpdateStatus, (uint16 *)&mouseButton, (uint16 *)&mouseX, (uint16 *)&mouseY);
 					if (!makeMenuChoice(confirmMenu, 2, mouseX, mouseY + 8, 100)) {
-						char saveString[256], tmp[80];
-
-						snprintf(tmp, 80, "%s.dir", _targetName.c_str());
+						char saveString[256];
+						Common::String tmp = Common::String::format("%s.dir", _targetName.c_str());
 
 						Common::OutSaveFile *fHandle = _saveFileMan->openForSaving(tmp);
 						if (!fHandle) {
-							warning("Unable to open file %s for saving", tmp);
+							warning("Unable to open file %s for saving", tmp.c_str());
 							break;
 						}
 
@@ -692,8 +688,6 @@ int16 makeMenuChoice(const CommandeType commandList[], uint16 height, uint16 X, 
 	int16 di;
 	uint16 j;
 	int16 mouseX, mouseY;
-	int16 var_16;
-	int16 var_14;
 	int16 currentSelection, oldSelection;
 	int16 var_4;
 	SelectionMenu *menu;
@@ -734,9 +728,6 @@ int16 makeMenuChoice(const CommandeType commandList[], uint16 height, uint16 X, 
 
 	manageEvents();
 	getMouseData(mouseUpdateStatus, &button, (uint16 *)&mouseX, (uint16 *)&mouseY);
-
-	var_16 = mouseX;
-	var_14 = mouseY;
 
 	menuVar = 0;
 

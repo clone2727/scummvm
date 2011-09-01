@@ -18,14 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/file.h"
 #include "common/savefile.h"
-#include "common/system.h"
 #include "common/textconsole.h"
 #include "common/translation.h"
 
@@ -38,7 +34,7 @@
 namespace AGOS {
 
 int AGOSEngine::countSaveGames() {
-	Common::InSaveFile *f;
+	Common::InSaveFile *f = NULL;
 	Common::StringArray filenames;
 	uint i = 1;
 	char slot[4];
@@ -1023,9 +1019,7 @@ bool AGOSEngine::loadGame(const char *filename, bool restartMode) {
 
 	if (restartMode) {
 		// Load restart state
-		Common::File *file = new Common::File();
-		file->open(filename);
-		f = file;
+		f = _archives.open(filename);
 	} else {
 		f = _saveFileMan->openForLoading(filename);
 	}
@@ -1199,9 +1193,7 @@ bool AGOSEngine_Elvira2::loadGame(const char *filename, bool restartMode) {
 
 	if (restartMode) {
 		// Load restart state
-		Common::File *file = new Common::File();
-		file->open(filename);
-		f = file;
+		f = _archives.open(filename);
 	} else {
 		f = _saveFileMan->openForLoading(filename);
 	}

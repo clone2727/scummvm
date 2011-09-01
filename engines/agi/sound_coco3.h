@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_SOUND_COCO3_H
@@ -45,7 +42,7 @@ struct CoCoNote {
 
 class SoundGenCoCo3 : public SoundGen, public Audio::AudioStream {
 public:
-	SoundGenCoCo3(AgiEngine *vm, Audio::Mixer *pMixer);
+	SoundGenCoCo3(AgiBase *vm, Audio::Mixer *pMixer);
 	~SoundGenCoCo3();
 
 	void play(int resnum);

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/debug.h"
@@ -121,7 +118,11 @@ static byte *loadVOCFromStream(Common::ReadStream &stream, int &size, int &rate,
 			debug(9, "VOC Data Block: %d, %d, %d", rate, packing, len);
 			if (packing == 0) {
 				if (size) {
-					ret_sound = (byte *)realloc(ret_sound, size + len);
+					byte *tmp = (byte *)realloc(ret_sound, size + len);
+					if (!tmp)
+						error("Cannot reallocate memory for VOC Data Block");
+
+					ret_sound = tmp;
 				} else {
 					ret_sound = (byte *)malloc(len);
 				}

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/endian.h"
@@ -127,7 +124,7 @@ void Video_v6::drawYUV(Surface &destDesc, int16 x, int16 y,
 		Pixel dstRow = dst;
 
 		int nextChromaLine = (i < ((height - 1) & ~3) ) ? dataWidth : 0;
-	
+
 		for (int j = 0; j < width; j++, dstRow++) {
 
 			int nextChromaColumn = (j < ((width - 1) & ~3)) ? 1 : 0;

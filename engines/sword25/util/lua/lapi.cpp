@@ -26,9 +26,8 @@
 #include "lstring.h"
 #include "ltable.h"
 #include "ltm.h"
-#include "lundump.h"
 #include "lvm.h"
-
+#include "common/textconsole.h"
 
 
 const char lua_ident[] =
@@ -214,7 +213,7 @@ LUA_API void lua_replace (lua_State *L, int idx) {
   api_checkvalidindex(L, o);
   if (idx == LUA_ENVIRONINDEX) {
     Closure *func = curr_func(L);
-    api_check(L, ttistable(L->top - 1)); 
+    api_check(L, ttistable(L->top - 1));
     func->c.env = hvalue(L->top - 1);
     luaC_barrier(L, func, L->top - 1);
   }
@@ -774,7 +773,7 @@ LUA_API int lua_setfenv (lua_State *L, int idx) {
 
 #define checkresults(L,na,nr) \
      api_check(L, (nr) == LUA_MULTRET || (L->ci->top - L->top >= (nr) - (na)))
-	
+
 
 LUA_API void lua_call (lua_State *L, int nargs, int nresults) {
   StkId func;
@@ -876,17 +875,8 @@ LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data,
 
 
 LUA_API int lua_dump (lua_State *L, lua_Writer writer, void *data) {
-  int status;
-  TValue *o;
-  lua_lock(L);
-  api_checknelems(L, 1);
-  o = L->top - 1;
-  if (isLfunction(o))
-    status = luaU_dump(L, clvalue(o)->l.p, writer, data, 0);
-  else
-    status = 1;
-  lua_unlock(L);
-  return status;
+  error("lua_dump not supported: Handling of precompiled LUA scripts has been removed in ScummVM");
+  return 1;	// error
 }
 
 
@@ -1084,4 +1074,3 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
   lua_unlock(L);
   return name;
 }
-

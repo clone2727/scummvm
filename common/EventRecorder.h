@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_EVENTRECORDER_H
@@ -54,13 +51,17 @@ public:
 	void deinit();
 
 	/** Register random source so it can be serialized in game test purposes */
-	void registerRandomSource(RandomSource &rnd, const char *name);
+	void registerRandomSource(RandomSource &rnd, const String &name);
 
 	/** TODO: Add documentation, this is only used by the backend */
 	void processMillis(uint32 &millis);
 
+	/** TODO: Add documentation, this is only used by the backend */
+	bool processDelayMillis(uint &msecs);
+
 private:
 	bool notifyEvent(const Event &ev);
+	bool notifyPoll();
 	bool pollEvent(Event &ev);
 	bool allowMapping() const { return false; }
 
@@ -75,6 +76,7 @@ private:
 	volatile uint32 _recordCount;
 	volatile uint32 _lastRecordEvent;
 	volatile uint32 _recordTimeCount;
+	volatile uint32 _lastEventMillis;
 	WriteStream *_recordFile;
 	WriteStream *_recordTimeFile;
 	MutexRef _timeMutex;
@@ -106,4 +108,3 @@ private:
 } // End of namespace Common
 
 #endif
-

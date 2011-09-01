@@ -18,12 +18,10 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
-* $URL$
-* $Id$
-*
 */
 
 #include "common/debug.h"
+#include "common/rect.h"
 
 #include "toon/font.h"
 
@@ -83,7 +81,7 @@ void FontRenderer::renderText(int32 x, int32 y, Common::String origText, int32 m
 		x -= xx / 2;
 	}
 
-	_vm->addDirtyRect(x, y, x + xx + 2, y + yy);
+	_vm->addDirtyRect(x, y, x + xx, y + yy);
 
 	int32 curX = x;
 	int32 curY = y;
@@ -113,6 +111,7 @@ void FontRenderer::computeSize(Common::String origText, int32 *retX, int32 *retY
 	int32 lineHeight = 0;
 	int32 totalHeight = 0;
 	int32 totalWidth = 0;
+	int32 lastLineHeight = 0;
 
 	const byte *text = (const byte *)origText.c_str();
 	while (*text) {
@@ -125,17 +124,25 @@ void FontRenderer::computeSize(Common::String origText, int32 *retX, int32 *retY
 			totalHeight += lineHeight;
 			lineHeight = 0;
 			lineWidth = 0;
+			lastLineHeight = 0;
 		} else {
 			curChar = textToFont(curChar);
 			int32 charWidth = _currentFont->getFrameWidth(curChar) - 1;
 			int32 charHeight = _currentFont->getFrameHeight(curChar);
 			lineWidth += charWidth;
 			lineHeight = MAX(lineHeight, charHeight);
+
+			// The character may be offset, so the height doesn't
+			// really tell how far it will stick out. For now,
+			// assume we only need to take the lower bound into
+			// consideration.
+			Common::Rect charRect = _currentFont->getFrameRect(curChar);
+			lastLineHeight = MAX<int32>(lastLineHeight, charRect.bottom);
 		}
 		text++;
 	}
 
-	totalHeight += lineHeight;
+	totalHeight += lastLineHeight;
 	totalWidth = MAX(totalWidth, lineWidth);
 
 	*retX = totalWidth;

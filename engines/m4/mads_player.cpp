@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "m4/m4.h"
@@ -49,7 +46,7 @@ MadsPlayer::MadsPlayer() {
 	_unk4 = false;
 
 	_spritesChanged = true;
-	
+
 	_direction = 0;
 	_newDirection = 0;
 	_priorTimer = 0;
@@ -134,7 +131,7 @@ void MadsPlayer::update() {
 		// Figure out the depth for the sprite
 		int newDepth = 1;
 		int yp = MIN(_playerPos.y, (int16)155);
-	
+
 		for (int idx = 1; idx < 15; ++idx) {
 			if (_madsVm->scene()->getSceneResources()._depthBands[newDepth] >= yp)
 				newDepth = idx + 1;
@@ -202,7 +199,7 @@ void MadsPlayer::updateFrame() {
 			_unk2 = 0;
 		} else {
 			_unk2 = _actionList2[_actionIndex];
-			
+
 			if (_actionIndex > 0)
 				--_actionIndex;
 		}
@@ -240,7 +237,7 @@ void MadsPlayer::setupFrame() {
 		_frameCount = spriteSet.getCount();
 
 	_yScale = spriteSet._charInfo->_yScale;
-	
+
 	if ((_frameNum <= 0) || (_frameNum > _frameCount))
 		_frameNum = 1;
 	_forceRefresh = true;
@@ -339,7 +336,7 @@ void MadsPlayer::setDest(int destX, int destY, int facing) {
 	setTicksAmount();
 	_moving = true;
 	_destFacing = facing;
-	
+
 	_madsVm->scene()->getSceneResources().setRouteNode(_madsVm->scene()->getSceneResources()._nodes.size() - 2,
 		_playerPos, _madsVm->scene()->_depthSurface);
 	_madsVm->scene()->getSceneResources().setRouteNode(_madsVm->scene()->getSceneResources()._nodes.size() - 1,
@@ -451,7 +448,7 @@ void MadsPlayer::move() {
 	bool routeFlag = false;
 
 	if (_moving) {
-		int idx = _routeCount; 
+		int idx = _routeCount;
 		while (!_v844C0 && (_destPos.x == _playerPos.x) && (_destPos.y == _playerPos.y)) {
 			if (idx != 0) {
 				--idx;
@@ -653,7 +650,7 @@ int MadsPlayer::scanPath(M4Surface *depthSurface, const Common::Point &srcPos, c
 
 		srcP += xDirection;
 	}
-	
+
 	return 0;
 }
 
@@ -733,12 +730,12 @@ void MadsPlayer::startMovement() {
 
 	int majorChange = MAX(xDiff, yDiff);
 	_v84530  = (majorChange == 0) ? 0 : _hypotenuse / majorChange;
-	
+
 	if (_playerPos.x > _destPos.x)
 		_v8452C = MAX(_posChange.x, _posChange.y);
 	else
 		_v8452C = 0;
-	
+
 	_hypotenuse /= 100;
 	_v8452E = -_v84530;
 }

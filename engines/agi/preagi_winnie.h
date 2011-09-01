@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_PREAGI_WINNIE_H
@@ -284,19 +281,22 @@ struct WTP_SAVE_GAME {
 
 class PreAgiEngine;
 
-class Winnie {
+class WinnieEngine : public PreAgiEngine {
 public:
-	Winnie(PreAgiEngine *vm);
+	WinnieEngine(OSystem *syst, const AGIGameDescription *gameDesc);
+	~WinnieEngine();
 
 	void init();
-	void run();
+	Common::Error go();
 
 	void debugCurRoom();
 
-private:
-	PreAgiEngine *_vm;
+	GUI::Debugger *getDebugger() { return _console; }
 
-	WTP_SAVE_GAME _game;
+private:
+	WinnieConsole *_console;
+
+	WTP_SAVE_GAME _gameStateWinnie;
 	int _room;
 	int	_mist;
 	bool _doWind;
@@ -342,6 +342,8 @@ private:
 	void saveGame();
 	void loadGame();
 	void dropObjRnd();
+	void setTakeDrop(int[]);
+	void makeSel(int*, int[]);
 
 	void wind();
 	void mist();
@@ -356,5 +358,3 @@ private:
 }  // End of namespace Agi
 
 #endif
-
-

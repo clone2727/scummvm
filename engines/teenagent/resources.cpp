@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "teenagent/resources.h"
@@ -109,13 +106,20 @@ void Resources::loadOff(Graphics::Surface &surface, byte *palette, int id) {
 		error("invalid background %d", id);
 		return;
 	}
-	byte buf[64768];
-	off.read(id, buf, sizeof(buf));
+
+	const uint bufferSize = 64768;
+	byte *buf = (byte *)malloc(bufferSize);
+	if (!buf)
+		error("[Resources::loadOff] Cannot allocate buffer");
+
+	off.read(id, buf, bufferSize);
 
 	byte *src = buf;
 	byte *dst = (byte *)surface.pixels;
 	memcpy(dst, src, 64000);
 	memcpy(palette, buf + 64000, 768);
+
+	free(buf);
 }
 
 Common::SeekableReadStream *Resources::loadLan(uint32 id) const {

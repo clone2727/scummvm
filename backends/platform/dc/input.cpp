@@ -18,10 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
+
+#define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #define RONIN_TIMER_ACCESS
 
@@ -193,8 +192,8 @@ bool OSystem_Dreamcast::pollEvent(Common::Event &event)
 {
   unsigned int t = Timer();
 
-  if (_timer != NULL)
-    _timer->handler();
+  if (_timerManager != NULL)
+    ((DefaultTimerManager *)_timerManager)->handler();
 
   if (((int)(t-_devpoll))<0)
     return false;
@@ -250,4 +249,3 @@ bool OSystem_Dreamcast::pollEvent(Common::Event &event)
     return false;
   }
 }
-

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -63,7 +60,7 @@ Parser::~Parser() {
 uint16 Parser::getCmdDefaultVerbIdx(const uint16 index) const {
 	return _cmdList[index][0].verbIndex;
 }
-	
+
 /**
  * Read a cmd structure from Hugo.dat
  */
@@ -238,7 +235,7 @@ void Parser::charHandler() {
 			if (_cmdLineIndex >= kMaxLineSize) {
 				//MessageBeep(MB_ICONASTERISK);
 				warning("STUB: MessageBeep() - Command line too long");
-			} else if (isprint(c)) {
+			} else if (isprint(static_cast<unsigned char>(c))) {
 				_cmdLine[_cmdLineIndex++] = c;
 				_cmdLine[_cmdLineIndex] = '\0';
 			}
@@ -394,6 +391,8 @@ void Parser::command(const char *format, ...) {
 
 	va_list marker;
 	va_start(marker, format);
+//	TODO:
+//	_vm->_line = Common::String::vformat(format, marker);
 	vsprintf(_vm->_line, format, marker);
 	va_end(marker);
 

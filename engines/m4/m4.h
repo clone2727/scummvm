@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef M4_H
@@ -29,7 +26,6 @@
 #include "common/scummsys.h"
 #include "common/util.h"
 #include "common/random.h"
-#include "audio/mididrv.h"
 
 #include "engines/engine.h"
 
@@ -97,7 +93,7 @@ class Animation;
 enum M4GameType {
 	GType_Riddle = 1,
 	GType_Burger = 2,
-	GType_RexNebular = 3, 
+	GType_RexNebular = 3,
 	GType_DragonSphere = 4,
 	GType_Phantom = 5
 };
@@ -168,7 +164,7 @@ public:
 	ResourceManager *res() const { return _resourceManager; }
 	MidiPlayer *midi() { return _midi; }
 	Common::SaveFileManager *saveManager() { return _saveFileMan; }
-	void dumpFile(const char* filename, bool uncompress = false);
+	void dumpFile(const char *filename, bool uncompress);
 	void eventHandler();
 	bool delay(int duration, bool keyAborts = true, bool clickAborts = true);
 	void loadMenu(MenuType menuType, bool loadSaveFromHotkey = false,
@@ -226,7 +222,7 @@ public:
 	void startScene(int sceneNum) {
 		if (!_scene) {
 			_scene = new MadsScene(this);
-			((MadsScene *)_scene)->initialise();
+			((MadsScene *)_scene)->initialize();
 		}
 		_scene->show();
 		_scene->loadScene(101);

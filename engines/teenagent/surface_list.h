@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TEENAGENT_SURFACE_LIST_H__
@@ -36,7 +33,7 @@ public:
 
 	SurfaceList();
 	~SurfaceList();
-	void load(Common::SeekableReadStream *stream, Type type, int sub_hack = 0);
+	void load(Common::SeekableReadStream&, Type type, int sub_hack = 0);
 	void free();
 	void render(Graphics::Surface *surface, const Common::Rect & clip) const;
 
@@ -48,4 +45,3 @@ protected:
 }
 
 #endif
-

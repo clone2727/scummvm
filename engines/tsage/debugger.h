@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_DEBUGGER_H
@@ -29,7 +26,7 @@
 #include "common/scummsys.h"
 #include "gui/debugger.h"
 
-namespace tSage {
+namespace TsAGE {
 
 class Debugger : public GUI::Debugger {
 public:
@@ -45,10 +42,10 @@ protected:
 	bool Cmd_ClearFlag(int argc, const char **argv);
 	bool Cmd_ListObjects(int argc, const char **argv);
 	bool Cmd_MoveObject(int argc, const char **argv);
-
-	bool Cmd_Item(int argc, const char **argv);
+	bool Cmd_Hotspots(int argc, const char **argv);
+	bool Cmd_Sound(int argc, const char **argv);
 };
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

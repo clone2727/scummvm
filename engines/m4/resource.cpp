@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "m4/m4.h"
@@ -316,7 +313,7 @@ const char *MADSResourceManager::getResourceFilename(const char *resourceName) {
 /**
  * Forms a resource name based on the passed specifiers
  */
-const char *MADSResourceManager::getResourceName(char asciiCh, int prefix, ExtensionType extType, 
+const char *MADSResourceManager::getResourceName(char asciiCh, int prefix, ExtensionType extType,
 												 const char *suffix, int index) {
 	static char resourceName[100];
 

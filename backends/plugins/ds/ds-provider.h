@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #if defined(DYNAMIC_MODULES) && defined(__DS__)
@@ -38,4 +35,3 @@ public:
 #endif // BACKENDS_PLUGINS_DS_PROVIDER_H
 
 #endif // defined(DYNAMIC_MODULES) && defined(__DS__)
-

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef GOB_CONSOLE_H
@@ -41,6 +38,7 @@ private:
 	GobEngine *_vm;
 
 	bool cmd_varSize(int argc, const char **argv);
+	bool cmd_dumpVars(int argc, const char **argv);
 	bool cmd_var8(int argc, const char **argv);
 	bool cmd_var16(int argc, const char **argv);
 	bool cmd_var32(int argc, const char **argv);

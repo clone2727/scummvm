@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "cruise/cruise.h"
@@ -228,13 +225,10 @@ static void handleSaveLoad(bool saveFlag) {
 			Common::String result(dialog->getResultString());
 			if (result.empty()) {
 				// If the user was lazy and entered no save name, come up with a default name.
-				char buf[20];
-				snprintf(buf, 20, "Save %d", slot + 1);
-
-				_vm->saveGameState(slot, buf);
-			} else {
-				_vm->saveGameState(slot, result.c_str());
+				result = Common::String::format("Save %d", slot + 1);
 			}
+
+			_vm->saveGameState(slot, result);
 		}
 	}
 

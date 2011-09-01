@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "mohawk/cursors.h"
@@ -103,6 +100,9 @@ bool MystGameState::load(const Common::String &filename) {
 	syncGameState(s, size == 664);
 	delete loadFile;
 
+	// Switch us back to the intro stack, to the linking book
+	_vm->changeToStack(kIntroStack, 5, 0, 0);
+
 	// Set our default cursor
 	if (_globals.heldPage == 0 || _globals.heldPage > 13)
 		_vm->setMainCursor(kDefaultMystCursor);
@@ -112,9 +112,6 @@ bool MystGameState::load(const Common::String &filename) {
 		_vm->setMainCursor(kRedPageCursor);
 	else // if (globals.heldPage == 13)
 		_vm->setMainCursor(kWhitePageCursor);
-
-	// Switch us back to the intro stack, to the linking book
-	_vm->changeToStack(kIntroStack, 5, 0, 0);
 
 	return true;
 }
@@ -323,6 +320,10 @@ void MystGameState::deleteSave(const Common::String &saveName) {
 void MystGameState::addZipDest(uint16 stack, uint16 view) {
 	ZipDests *zipDests = 0;
 
+	// The demo has no zip dest storage
+	if (_vm->getFeatures() & GF_DEMO)
+		return;
+
 	// Select stack
 	switch (stack) {
 	case kChannelwoodStack:
@@ -363,6 +364,10 @@ void MystGameState::addZipDest(uint16 stack, uint16 view) {
 bool MystGameState::isReachableZipDest(uint16 stack, uint16 view) {
 	// Zip mode enabled
 	if (!_globals.zipMode)
+		return false;
+
+	// The demo has no zip dest storage
+	if (_vm->getFeatures() & GF_DEMO)
 		return false;
 
 	// Select stack

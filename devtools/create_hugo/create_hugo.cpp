@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  * This is a utility for storing all the hardcoded data of Hugo in a separate
  * data file, used by the game engine
  */
@@ -746,7 +743,7 @@ int main(int argc, char *argv[]) {
 	writeUint16BE(outFile, 0);
 	writeUint16BE(outFile, kALnewscr_2d);
 	writeUint16BE(outFile, 0);
-	
+
 	writeSByte(outFile, NUM_TUNES_1w);
 	writeSByte(outFile, SILENCE_1w);
 	writeSByte(outFile, TEST_SOUND_1w);

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -32,6 +29,7 @@
 #include "scumm/imuse/imuse.h"
 #include "scumm/imuse_digi/dimuse.h"
 #include "scumm/player_towns.h"
+#include "scumm/resource.h"
 #include "scumm/scumm.h"
 #include "scumm/sound.h"
 #include "scumm/util.h"
@@ -86,6 +84,8 @@ Sound::Sound(ScummEngine *parent, Audio::Mixer *mixer)
 	memset(_soundQue, 0, sizeof(_soundQue));
 	memset(_soundQue2, 0, sizeof(_soundQue2));
 	memset(_mouthSyncTimes, 0, sizeof(_mouthSyncTimes));
+
+	_musicType = MDT_NONE;
 }
 
 Sound::~Sound() {
@@ -314,7 +314,7 @@ void Sound::playSound(int soundID) {
 		sound = (byte *)malloc(size);
 		memcpy(sound, ptr + 6, size);
 		stream = Audio::makeRawStream(sound, size, rate, Audio::FLAG_UNSIGNED);
-		_mixer->playStream(Audio::Mixer::kSFXSoundType, NULL, stream, soundID);			
+		_mixer->playStream(Audio::Mixer::kSFXSoundType, NULL, stream, soundID);
 	}
 	else if (_vm->_game.platform != Common::kPlatformFMTowns && READ_BE_UINT32(ptr) == MKTAG('S','O','U','N')) {
 		if (_vm->_game.version != 3)
@@ -1018,7 +1018,7 @@ void Sound::startCDTimer() {
 	// appears.
 
 	_vm->getTimerManager()->removeTimerProc(&cd_timer_handler);
-	_vm->getTimerManager()->installTimerProc(&cd_timer_handler, 100700, _vm);
+	_vm->getTimerManager()->installTimerProc(&cd_timer_handler, 100700, _vm, "scummCDtimer");
 }
 
 void Sound::stopCDTimer() {
@@ -1066,7 +1066,7 @@ void Sound::saveLoadWithSerializer(Serializer *ser) {
 #pragma mark --- Sound resource handling ---
 #pragma mark -
 
-static void convertMac0Resource(ResourceManager *res, int idx, byte *src_ptr, int size);
+static void convertMac0Resource(ResourceManager *res, ResId idx, byte *src_ptr, int size);
 
 
 /*
@@ -1076,7 +1076,7 @@ static void convertMac0Resource(ResourceManager *res, int idx, byte *src_ptr, in
  * could stand a thorough cleanup!
  */
 
-int ScummEngine::readSoundResource(int idx) {
+int ScummEngine::readSoundResource(ResId idx) {
 	uint32 pos, total_size, size, tag, basetag, max_total_size;
 	int pri, best_pri;
 	uint32 best_size = 0, best_offs = 0;
@@ -1096,7 +1096,7 @@ int ScummEngine::readSoundResource(int idx) {
 	switch (basetag) {
 	case MKTAG('M','I','D','I'):
 	case MKTAG('i','M','U','S'):
-		if (_musicType != MDT_PCSPK && _musicType != MDT_PCJR) {
+		if (_sound->_musicType != MDT_PCSPK && _sound->_musicType != MDT_PCJR) {
 			_fileHandle->seek(-8, SEEK_CUR);
 			_fileHandle->read(_res->createResource(rtSound, idx, total_size + 8), total_size + 8);
 			return 1;
@@ -1120,7 +1120,7 @@ int ScummEngine::readSoundResource(int idx) {
 				break;
 			case MKTAG('A','D','L',' '):
 				pri = 1;
-				if (_musicType == MDT_ADLIB)
+				if (_sound->_musicType == MDT_ADLIB || _sound->_musicType == MDT_TOWNS)
 					pri = 10;
 				break;
 			case MKTAG('A','M','I',' '):
@@ -1139,16 +1139,33 @@ int ScummEngine::readSoundResource(int idx) {
 				break;
 			case MKTAG('S','P','K',' '):
 				pri = -1;
-//				if (_musicType == MDT_PCSPK || _musicType == MDT_PCJR)
-//					pri = 11;
+				if (_sound->_musicType == MDT_PCSPK || _sound->_musicType == MDT_PCJR)
+					pri = 11;
 				break;
 			}
 
-			if ((_musicType == MDT_PCSPK || _musicType == MDT_PCJR || _musicType == MDT_CMS) && pri != 11)
+			// We only allow SPK resources for PC Speaker and PCJr here
+			// since other resource would sound horribly with their output
+			// drivers.
+			if ((_sound->_musicType == MDT_PCSPK || _sound->_musicType == MDT_PCJR) && pri != 11)
+				pri = -1;
+
+			// We only allow ADL resources when AdLib or FM-Towns is used as
+			// primary audio output. This fixes some odd sounds when Indy and
+			// Sophia leave Atlantis with the submarine in Indy4. (Easy to
+			// check with bootparam 4061 in the CD version). It seems the game
+			// only contains a ROL resource for sound id 60. Formerly we tried
+			// to play that via the AdLib or FM-Towns audio driver resulting
+			// in strange noises. Now we behave like the original did.
+			// We make an exception for Macintosh, which uses priority 2 for
+			// its sound resources, and Amiga games, which feature only ROL
+			// resources, since we are a doing Midi -> AdLib conversion for
+			// these.
+			if ((_sound->_musicType == MDT_ADLIB || _sound->_musicType == MDT_TOWNS) && pri != 10
+				&& pri != 2 && _game.platform != Common::kPlatformAmiga)
 				pri = -1;
 
 			debugC(DEBUG_RESOURCE, "    tag: %s, total_size=%d, pri=%d", tag2str(tag), size, pri);
-
 
 			if (pri > best_pri) {
 				best_pri = pri;
@@ -1226,7 +1243,7 @@ int ScummEngine::readSoundResource(int idx) {
 
 		if (!dmuFile.open(buffer)) {
 			error("Can't open music file %s", buffer);
-			_res->roomoffs[rtSound][idx] = RES_INVALID_OFFSET;
+			_res->_types[rtSound][idx]._roomoffs = RES_INVALID_OFFSET;
 			return 0;
 		}
 		dmuFile.seek(4, SEEK_SET);
@@ -1250,7 +1267,7 @@ int ScummEngine::readSoundResource(int idx) {
 		}
 		error("Unrecognized base tag 0x%08x in sound %d", basetag, idx);
 	}
-	_res->roomoffs[rtSound][idx] = RES_INVALID_OFFSET;
+	_res->_types[rtSound][idx]._roomoffs = RES_INVALID_OFFSET;
 	return 0;
 }
 
@@ -1429,7 +1446,7 @@ static byte Mac0ToGMInstrument(uint32 type, int &transpose) {
 	}
 }
 
-static void convertMac0Resource(ResourceManager *res, int idx, byte *src_ptr, int size) {
+static void convertMac0Resource(ResourceManager *res, ResId idx, byte *src_ptr, int size) {
 	/*
 	From Markus Magnuson (superqult) we got this information:
 	Mac0
@@ -1620,7 +1637,7 @@ static void convertMac0Resource(ResourceManager *res, int idx, byte *src_ptr, in
 #endif
 }
 
-static void convertADResource(ResourceManager *res, const GameSettings& game, int idx, byte *src_ptr, int size) {
+static void convertADResource(ResourceManager *res, const GameSettings& game, ResId idx, byte *src_ptr, int size) {
 	// We will ignore the PPQN in the original resource, because
 	// it's invalid anyway. We use a constant PPQN of 480.
 	const int ppqn = 480;
@@ -1986,6 +2003,14 @@ static void convertADResource(ResourceManager *res, const GameSettings& game, in
 				break;
 
 			case 0x80:
+				// FIXME: This is incorrect. The original uses 0x80 for
+				// looping a single channel. We currently interpret it as stop
+				// thus we won't get looping for sound effects. It should
+				// always jump to the start of the channel.
+				//
+				// Since we convert the data to MIDI and we cannot only loop a
+				// single channel via MIDI fixing this will require some more
+				// thought.
 				track_time[ch] = -1;
 				src_ptr ++;
 				break;
@@ -2003,7 +2028,7 @@ static void convertADResource(ResourceManager *res, const GameSettings& game, in
 }
 
 
-int ScummEngine::readSoundResourceSmallHeader(int idx) {
+int ScummEngine::readSoundResourceSmallHeader(ResId idx) {
 	uint32 pos, total_size, size, tag;
 	uint32 ad_size = 0, ad_offs = 0;
 	uint32 ro_size = 0, ro_offs = 0;
@@ -2076,7 +2101,7 @@ int ScummEngine::readSoundResourceSmallHeader(int idx) {
 		}
 	}
 
-	if ((_musicType == MDT_PCSPK || _musicType == MDT_PCJR) && wa_offs != 0) {
+	if ((_sound->_musicType == MDT_PCSPK || _sound->_musicType == MDT_PCJR) && wa_offs != 0) {
 		if (_game.features & GF_OLD_BUNDLE) {
 			_fileHandle->seek(wa_offs, SEEK_SET);
 			_fileHandle->read(_res->createResource(rtSound, idx, wa_size), wa_size);
@@ -2085,17 +2110,36 @@ int ScummEngine::readSoundResourceSmallHeader(int idx) {
 			_fileHandle->read(_res->createResource(rtSound, idx, wa_size + 6), wa_size + 6);
 		}
 		return 1;
-	} else if (_musicType == MDT_CMS && ad_offs != 0) {
+	} else if (_sound->_musicType == MDT_CMS) {
 		if (_game.features & GF_OLD_BUNDLE) {
-			_fileHandle->seek(wa_offs + wa_size + 6, SEEK_SET);
-			byte musType = _fileHandle->readByte();
+			bool hasAdLibMusicTrack = false;
 
-			if (musType == 0x80) {
+			if (ad_offs) {
+				_fileHandle->seek(ad_offs + 4 + 2, SEEK_SET);
+				hasAdLibMusicTrack = (_fileHandle->readByte() == 0x80);
+			}
+
+			if (hasAdLibMusicTrack) {
 				_fileHandle->seek(ad_offs, SEEK_SET);
 				_fileHandle->read(_res->createResource(rtSound, idx, ad_size), ad_size);
 			} else {
 				_fileHandle->seek(wa_offs, SEEK_SET);
 				_fileHandle->read(_res->createResource(rtSound, idx, wa_size), wa_size);
+			}
+		} else {
+			bool hasAdLibMusicTrack = false;
+
+			if (ad_offs) {
+				_fileHandle->seek(ad_offs + 2, SEEK_SET);
+				hasAdLibMusicTrack = (_fileHandle->readByte() == 0x80);
+			}
+
+			if (hasAdLibMusicTrack) {
+				_fileHandle->seek(ad_offs - 4, SEEK_SET);
+				_fileHandle->read(_res->createResource(rtSound, idx, ad_size + 4), ad_size + 4);
+			} else {
+				_fileHandle->seek(wa_offs - 6, SEEK_SET);
+				_fileHandle->read(_res->createResource(rtSound, idx, wa_size + 6), wa_size + 6);
 			}
 		}
 	} else if (ad_offs != 0) {
@@ -2125,7 +2169,7 @@ int ScummEngine::readSoundResourceSmallHeader(int idx) {
 		_fileHandle->read(_res->createResource(rtSound, idx, ro_size - 4), ro_size - 4);
 		return 1;
 	}
-	_res->roomoffs[rtSound][idx] = RES_INVALID_OFFSET;
+	_res->_types[rtSound][idx]._roomoffs = RES_INVALID_OFFSET;
 	return 0;
 }
 

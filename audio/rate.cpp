@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -300,6 +297,9 @@ public:
 			_buffer = (st_sample_t *)malloc(osamp * 2);
 			_bufferSize = osamp;
 		}
+
+		if (!_buffer)
+			error("[CopyRateConverter::flow] Cannot allocate memory for temp buffer");
 
 		// Read up to 'osamp' samples into our temporary buffer
 		len = input.readBuffer(_buffer, osamp);

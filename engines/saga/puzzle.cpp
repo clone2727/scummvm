@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "saga/saga.h"
@@ -143,7 +140,7 @@ void Puzzle::initPieceInfo(int i, int16 curX, int16 curY, byte offX, byte offY, 
 
 void Puzzle::execute() {
 	_active = true;
-	_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this);
+	_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this, "sagaPuzzleHint");
 
 	initPieces();
 
@@ -411,12 +408,12 @@ void Puzzle::solicitHint() {
 	switch (_hintRqState) {
 	case kRQSpeaking:
 		if (_vm->_actor->isSpeaking()) {
-			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50 * 1000000, this);
+			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50 * 1000000, this, "sagaPuzzleHint");
 			break;
 		}
 
 		_hintRqState = _hintNextRqState;
-		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 100*1000000/3, this);
+		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 100*1000000/3, this, "sagaPuzzleHint");
 		break;
 
 	case kRQNoHint:
@@ -439,11 +436,11 @@ void Puzzle::solicitHint() {
 		//	Roll to see if Sakka scolds
 		if (_vm->_rnd.getRandomNumber(1)) {
 			_hintRqState = kRQSakkaDenies;
-			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 200*1000000, this);
+			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 200*1000000, this, "sagaPuzzleHint");
 		} else {
 			_hintRqState = kRQSpeaking;
 			_hintNextRqState = kRQHintRequested;
-			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50*1000000, this);
+			_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50*1000000, this, "sagaPuzzleHint");
 		}
 
 		break;
@@ -456,7 +453,7 @@ void Puzzle::solicitHint() {
 
 		_hintRqState = kRQSpeaking;
 		_hintNextRqState = kRQHintRequestedStage2;
-		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50*1000000, this);
+		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, 50*1000000, this, "sagaPuzzleHint");
 
 		_vm->_interface->converseClear();
 		_vm->_interface->converseAddText(optionsStr[_lang][kROAccept], 0, 1, 0, 0);
@@ -483,7 +480,7 @@ void Puzzle::solicitHint() {
 		_vm->_interface->converseAddText(optionsStr[_lang][kROLater], 0, 0, 0, 0);
 		_vm->_interface->converseDisplayText();
 
-		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this);
+		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this, "sagaPuzzleHint");
 
 		_hintRqState = kRQSkipEverything;
 		break;
@@ -507,7 +504,7 @@ void Puzzle::handleReply(int reply) {
 		_vm->_actor->abortSpeech();
 		_hintRqState = kRQNoHint;
 		_vm->getTimerManager()->removeTimerProc(&hintTimerCallback);
-		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime * 2, this);
+		_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime * 2, this, "sagaPuzzleHint");
 		clearHint();
 		break;
 	}
@@ -569,7 +566,7 @@ void Puzzle::giveHint() {
 	_vm->_interface->converseDisplayText();
 
 	_vm->getTimerManager()->removeTimerProc(&hintTimerCallback);
-	_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this);
+	_vm->getTimerManager()->installTimerProc(&hintTimerCallback, kPuzzleHintTime, this, "sagaPuzzleHint");
 }
 
 void Puzzle::clearHint() {

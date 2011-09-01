@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -74,7 +71,8 @@ MohawkEngine_Myst::MohawkEngine_Myst(OSystem *syst, const MohawkGameDescription 
 	// original, including bugs, missing bits etc. :)
 	_tweaksEnabled = true;
 
-	_currentCursor = _mainCursor = kDefaultMystCursor;
+	_currentCursor = 0;
+	_mainCursor = kDefaultMystCursor;
 	_showResourceRects = false;
 	_curCard = 0;
 	_needsUpdate = false;
@@ -258,7 +256,10 @@ Common::Error MohawkEngine_Myst::run() {
 	_loadDialog->setSaveMode(false);
 	_optionsDialog = new MystOptionsDialog(this);
 	_cursor = new MystCursorManager(this);
-	_rnd = new Common::RandomSource();
+	_rnd = new Common::RandomSource("myst");
+
+	// Cursor is visible by default
+	_cursor->showCursor();
 
 	// Load game from launcher/command line if requested
 	if (ConfMan.hasKey("save_slot") && canLoadGameStateCurrently()) {
@@ -280,16 +281,13 @@ Common::Error MohawkEngine_Myst::run() {
 	// Load Help System (Masterpiece Edition Only)
 	if (getFeatures() & GF_ME) {
 		MohawkArchive *mhk = new MohawkArchive();
-		if (!mhk->open("help.dat"))
+		if (!mhk->openFile("help.dat"))
 			error("Could not load help.dat");
 		_mhk.push_back(mhk);
 	}
 
 	// Test Load Function...
 	loadHelp(10000);
-
-	// Set the cursor
-	_cursor->setCursor(_currentCursor);
 
 	Common::Event event;
 	while (!shouldQuit()) {
@@ -343,7 +341,26 @@ Common::Error MohawkEngine_Myst::run() {
 						drawResourceRects();
 					break;
 				case Common::KEYCODE_F5:
+					_needsPageDrop = false;
+					_needsShowMap = false;
+					_needsShowDemoMenu = false;
+
 					runDialog(*_optionsDialog);
+
+					if (_needsPageDrop) {
+						dropPage();
+						_needsPageDrop = false;
+					}
+
+					if (_needsShowMap) {
+						_scriptParser->showMap();
+						_needsShowMap = false;
+					}
+
+					if (_needsShowDemoMenu) {
+						changeToStack(kDemoStack, 2002, 0, 0);
+						_needsShowDemoMenu = false;
+					}
 					break;
 				default:
 					break;
@@ -405,6 +422,11 @@ void MohawkEngine_Myst::changeToStack(uint16 stack, uint16 card, uint16 linkSrcS
 
 	_curStack = stack;
 
+	// Fill screen with black and empty cursor
+	_cursor->setCursor(0);
+	_system->fillScreen(_system->getScreenFormat().RGBToColor(0, 0, 0));
+	_system->updateScreen();
+
 	_sound->stopSound();
 	_sound->stopBackgroundMyst();
 	if (linkSrcSound)
@@ -425,6 +447,7 @@ void MohawkEngine_Myst::changeToStack(uint16 stack, uint16 card, uint16 linkSrcS
 		_scriptParser = new MystStacks::Credits(this);
 		break;
 	case kDemoStack:
+		_gameState->_globals.currentAge = 0;
 		_scriptParser = new MystStacks::Demo(this);
 		break;
 	case kDniStack:
@@ -453,6 +476,7 @@ void MohawkEngine_Myst::changeToStack(uint16 stack, uint16 card, uint16 linkSrcS
 		_scriptParser = new MystStacks::Selenitic(this);
 		break;
 	case kDemoSlidesStack:
+		_gameState->_globals.currentAge = 1;
 		_scriptParser = new MystStacks::Slides(this);
 		break;
 	case kStoneshipStack:
@@ -472,7 +496,7 @@ void MohawkEngine_Myst::changeToStack(uint16 stack, uint16 card, uint16 linkSrcS
 		_mhk[0] = new MohawkArchive();
 	}
 
-	if (!_mhk[0]->open(mystFiles[_curStack]))
+	if (!_mhk[0]->openFile(mystFiles[_curStack]))
 		error("Could not open %s", mystFiles[_curStack]);
 
 	if (getPlatform() == Common::kPlatformMacintosh)
@@ -553,7 +577,7 @@ uint16 MohawkEngine_Myst::getCardBackgroundId() {
 }
 
 void MohawkEngine_Myst::drawCardBackground() {
-	_gfx->copyImageToBackBuffer(getCardBackgroundId(), Common::Rect(0, 0, 544, 333));
+	_gfx->copyImageToBackBuffer(getCardBackgroundId(), Common::Rect(0, 0, 544, 332));
 }
 
 void MohawkEngine_Myst::changeToCard(uint16 card, bool updateScreen) {
@@ -629,19 +653,23 @@ void MohawkEngine_Myst::changeToCard(uint16 card, bool updateScreen) {
 	for (uint16 i = 0; i < _resources.size(); i++)
 		_resources[i]->handleCardChange();
 
-	// TODO: Handle Script Resources
-
-	// Make sure we have the right cursor showing
-	_dragResource = 0;
-	_hoverResource = 0;
-	_curResource = -1;
-	checkCurrentResource();
+	// The demo resets the cursor at each card change except when in the library
+	if (getFeatures() & GF_DEMO
+			&& _gameState->_globals.currentAge != 2) {
+		_cursor->setDefaultCursor();
+	}
 
 	// Make sure the screen is updated
 	if (updateScreen) {
 		_gfx->copyBackBufferToScreen(Common::Rect(544, 333));
 		_system->updateScreen();
 	}
+
+	// Make sure we have the right cursor showing
+	_dragResource = 0;
+	_hoverResource = 0;
+	_curResource = -1;
+	checkCurrentResource();
 
 	// Debug: Show resource rects
 	if (_showResourceRects)
@@ -1152,7 +1180,7 @@ Common::Error MohawkEngine_Myst::loadGameState(int slot) {
 	return Common::kUnknownError;
 }
 
-Common::Error MohawkEngine_Myst::saveGameState(int slot, const char *desc) {
+Common::Error MohawkEngine_Myst::saveGameState(int slot, const Common::String &desc) {
 	Common::StringArray saveList = _gameState->generateSaveGameList();
 
 	if ((uint)slot < saveList.size())
@@ -1179,6 +1207,44 @@ bool MohawkEngine_Myst::canSaveGameStateCurrently() {
 	}
 
 	return false;
+}
+
+void MohawkEngine_Myst::dropPage() {
+    uint16 page = _gameState->_globals.heldPage;
+	bool whitePage = page == 13;
+	bool bluePage = page - 1 < 6;
+    bool redPage = page - 7 < 6;
+
+    // Play drop page sound
+    _sound->replaceSoundMyst(800);
+
+    // Drop page
+    _gameState->_globals.heldPage = 0;
+
+    // Redraw page area
+    if (whitePage && _gameState->_globals.currentAge == 2) {
+    	redrawArea(41);
+    } else if (bluePage) {
+    	if (page == 6) {
+    		if (_gameState->_globals.currentAge == 2)
+    			redrawArea(24);
+    	} else {
+    		redrawArea(103);
+    	}
+    } else if (redPage) {
+    	if (page == 12) {
+    		if (_gameState->_globals.currentAge == 2)
+    			redrawArea(25);
+    	} else if (page == 10) {
+    		if (_gameState->_globals.currentAge == 1)
+    			redrawArea(35);
+    	} else {
+    		redrawArea(102);
+    	}
+    }
+
+    setMainCursor(kDefaultMystCursor);
+    checkCursorHints();
 }
 
 } // End of namespace Mohawk

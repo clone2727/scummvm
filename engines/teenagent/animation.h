@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TEENAGENT_ANIMATION_H
@@ -38,7 +35,7 @@ public:
 	enum Type {kTypeLan, kTypeVaria, kTypeInventory};
 
 	Animation();
-	void load(Common::SeekableReadStream *s, Type type = kTypeLan);
+	void load(Common::SeekableReadStream&, Type type = kTypeLan);
 	void free();
 
 	Surface *firstFrame();

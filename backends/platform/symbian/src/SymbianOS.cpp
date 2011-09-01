@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include <sdlapp.h> // for CSDLApp::GetExecutablePathCStr() @ Symbian::GetExecutablePath()
@@ -60,7 +57,7 @@ char *GetExecutablePath() {
 OSystem_SDL_Symbian::OSystem_SDL_Symbian()
 	:
 	_RFs(0) {
-	
+
 }
 
 void OSystem_SDL_Symbian::init() {
@@ -174,7 +171,7 @@ Common::String OSystem_SDL_Symbian::getDefaultConfigFileName() {
 }
 
 void OSystem_SDL_Symbian::setupIcon() {
-	// Don't for Symbian: it uses the EScummVM.aif file for the icon. 
+	// Don't for Symbian: it uses the EScummVM.aif file for the icon.
 }
 
 RFs& OSystem_SDL_Symbian::FsSession() {

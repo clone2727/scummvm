@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TEENAGENT_SURFACE_H
@@ -43,7 +40,7 @@ public:
 
 	Surface();
 	~Surface();
-	void load(Common::SeekableReadStream *stream, Type type);
+	void load(Common::SeekableReadStream&, Type type);
 	Common::Rect render(Graphics::Surface *surface, int dx = 0, int dy = 0, bool mirror = false, Common::Rect src_rect = Common::Rect(), uint zoom = 256) const;
 
 	bool empty() const { return pixels == NULL; }

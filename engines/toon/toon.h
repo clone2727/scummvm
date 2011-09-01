@@ -18,15 +18,11 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
-* $URL$
-* $Id$
-*
 */
 
 #ifndef TOON_TOON_H
 #define TOON_TOON_H
 
-#include "engines/advancedDetector.h"
 #include "engines/engine.h"
 #include "graphics/surface.h"
 #include "common/random.h"
@@ -46,6 +42,8 @@
 namespace Common {
 class MemoryWriteStreamDynamic;
 }
+
+struct ADGameDescription;
 
 #define TOON_DAT_VER_MAJ 0  // 1 byte
 #define TOON_DAT_VER_MIN 3  // 1 byte
@@ -206,7 +204,7 @@ public:
 	void viewInventoryItem(Common::String str, int32 lineId, int32 itemDest);
 	void storePalette();
 	void restorePalette();
-	const char *getSpecialConversationMusic(int32 locationId); 
+	const char *getSpecialConversationMusic(int32 locationId);
 	void playRoomMusic();
 	void waitForScriptStep();
 	void doMagnifierEffect();
@@ -321,8 +319,8 @@ public:
 		return _shouldQuit;
 	}
 
-	Common::Error saveGameState(int slot, const char *desc) {
-		
+	Common::Error saveGameState(int slot, const Common::String &desc) {
+
 		return (saveGame(slot, desc) ? Common::kWritingFailed : Common::kNoError);
 	}
 
@@ -383,7 +381,7 @@ protected:
 	Common::Array<Common::Rect> _oldDirtyRects;
 
 	bool _dirtyAll;
-	
+
 
 	AnimationInstance *_cursorAnimationInstance;
 	Animation *_cursorAnimation;

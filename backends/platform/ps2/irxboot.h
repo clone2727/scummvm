@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef __IRXBOOT_H__
@@ -87,4 +84,3 @@ struct IrxReference {
 int loadIrxModules(int device, const char *irxPath, IrxReference **modules);
 
 #endif // __IRXBOOT_H__
-

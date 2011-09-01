@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_ARCHIVE_H
@@ -146,7 +143,7 @@ class SearchSet : public Archive {
 	ArchiveNodeList::iterator find(const String &name);
 	ArchiveNodeList::const_iterator find(const String &name) const;
 
-	// Add an archive keeping the list sorted by ascending priorities.
+	// Add an archive keeping the list sorted by descending priority.
 	void insert(const Node& node);
 
 public:
@@ -257,7 +254,7 @@ public:
 	virtual void clear();
 
 private:
-	friend class Common::Singleton<SingletonBaseType>;
+	friend class Singleton<SingletonBaseType>;
 	SearchManager();
 };
 

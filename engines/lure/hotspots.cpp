@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lure/hotspots.h"
@@ -766,7 +763,7 @@ void Hotspot::showMessage(uint16 messageId, uint16 destCharacterId) {
 	MemoryBlock *data = res.messagesData();
 	Hotspot *hotspot;
 	uint8 *msgData = (uint8 *) data->data();
-	uint16 v2, idVal;
+	uint16 idVal;
 	messageId &= 0x7fff;
 
 	// Skip through header to find table for given character
@@ -784,7 +781,6 @@ void Hotspot::showMessage(uint16 messageId, uint16 destCharacterId) {
 
 	// Scan through secondary list
 	uint16 *v = (uint16 *) (msgData + READ_LE_UINT16(msgData + idx + sizeof(uint16)));
-	v2 = 0;
 	while ((idVal = READ_LE_UINT16(v)) != 0xffff) {
 		++v;
 		if (READ_LE_UINT16(v) == messageId) break;

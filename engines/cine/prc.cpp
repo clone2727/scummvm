@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -101,10 +98,10 @@ bool loadPrc(const char *pPrcName) {
 		char buffer[256];
 
 		for (s = 0; s < numScripts; s++) {
-			if (scriptTable[s]->_size) {
+			if (g_cine->_scriptTable[s]->_size) {
 				sprintf(buffer, "%s_%03d.txt", pPrcName, s);
 
-				decompileScript((const byte *)scriptTable[s]->getString(0), scriptTable[s]->_size, s);
+				decompileScript((const byte *)g_cine->_scriptTable[s]->getString(0), g_cine->_scriptTable[s]->_size, s);
 				dumpScript(buffer);
 			}
 		}

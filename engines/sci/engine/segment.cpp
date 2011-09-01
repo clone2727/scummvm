@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/endian.h"
@@ -258,7 +255,7 @@ SegmentRef ArrayTable::dereference(reg_t pointer) {
 	return ret;
 }
 
-void ArrayTable::freeAtAddress(SegManager *segMan, reg_t sub_addr) { 
+void ArrayTable::freeAtAddress(SegManager *segMan, reg_t sub_addr) {
 	_table[sub_addr.offset].destroy();
 	freeEntry(sub_addr.offset);
 }

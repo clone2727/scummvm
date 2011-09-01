@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Actor management module header file
@@ -324,7 +321,7 @@ public:
 		_screenDepth = in->readSint32LE();
 		_screenScale = in->readSint32LE();
 	}
-	
+
 	CommonObjectData() {
 		_index = 0;
 		_id = 0;
@@ -466,7 +463,7 @@ public:
 	void cmdActorWalkTo(int argc, const char **argv);
 
 	bool validActorId(uint16 id) {
-		return (id == ID_PROTAG) || ((id >= objectIndexToId(kGameObjectActor, 0)) && (id < objectIndexToId(kGameObjectActor, _actors.size()))); 
+		return (id == ID_PROTAG) || ((id >= objectIndexToId(kGameObjectActor, 0)) && (id < objectIndexToId(kGameObjectActor, _actors.size())));
 	}
 	int actorIdToIndex(uint16 id) { return (id == ID_PROTAG) ? 0 : objectIdToIndex(id); }
 	uint16 actorIndexToId(int index) { return (index == 0) ? ID_PROTAG : objectIndexToId(kGameObjectActor, index); }
@@ -653,7 +650,7 @@ private:
 public:
 #ifdef ACTOR_DEBUG
 #ifndef SAGA_DEBUG
-	you must also define SAGA_DEBUG
+	#error You must also define SAGA_DEBUG
 #endif
 //path debug - use with care
 	struct DebugPoint {

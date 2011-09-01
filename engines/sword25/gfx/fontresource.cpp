@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -88,7 +85,7 @@ bool FontResource::parserCallback_font(ParserNode *node) {
 		                 getFileName().c_str(), DEFAULT_GAPWIDTH);
 		_gapWidth = DEFAULT_GAPWIDTH;
 	}
-	
+
 	// Get a reference to the package manager
 	assert(_pKernel);
 	PackageManager *pPackage = _pKernel->getPackage();
@@ -118,23 +115,23 @@ bool FontResource::parserCallback_character(ParserNode *node) {
 	int charCode, top, left, right, bottom;
 
 	if (!parseIntegerKey(node->values["code"], 1, &charCode) || (charCode < 0) || (charCode >= 256)) {
-		return parserError("Illegal or missing code attribute in <character> tag in \"%s\".", getFileName().c_str());
+		return parserError("Illegal or missing code attribute in <character> tag in '" + getFileName() + "'.");
 	}
 
 	if (!parseIntegerKey(node->values["top"], 1, &top) || (top < 0)) {
-		return parserError("Illegal or missing top attribute in <character> tag in \"%s\".", getFileName().c_str());
+		return parserError("Illegal or missing top attribute in <character> tag in '" + getFileName() + "'.");
 	}
 	if (!parseIntegerKey(node->values["left"], 1, &left) || (left < 0)) {
-		return parserError("Illegal or missing left attribute in <character> tag in \"%s\".", getFileName().c_str());
+		return parserError("Illegal or missing left attribute in <character> tag in '" + getFileName() + "'.");
 	}
 	if (!parseIntegerKey(node->values["right"], 1, &right) || (right < 0)) {
-		return parserError("Illegal or missing right attribute in <character> tag in \"%s\".", getFileName().c_str());
+		return parserError("Illegal or missing right attribute in <character> tag in '" + getFileName() + "'.");
 	}
 	if (!parseIntegerKey(node->values["bottom"], 1, &bottom) || (bottom < 0)) {
-		return parserError("Illegal or missing bottom attribute in <character> tag in \"%s\".", getFileName().c_str());
+		return parserError("Illegal or missing bottom attribute in <character> tag in '" + getFileName() + "'.");
 	}
 
-	this->_characterRects[charCode] = Common::Rect(left, top, right, bottom);
+	_characterRects[charCode] = Common::Rect(left, top, right, bottom);
 	return true;
 }
 

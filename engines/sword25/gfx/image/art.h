@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -54,10 +51,13 @@ namespace Sword25 {
 #define art_expand(p, type, max) \
 			do { \
 				if(max) {\
-					p = art_renew(p, type, max <<= 1); \
+					type *tmp = art_renew(p, type, max <<= 1); \
+					if (!tmp) error("Cannot reallocate memory for art data"); \
+					p = tmp; \
 				} else { \
 					max = 1; \
 					p = art_new(type, 1); \
+					if (!p) error("Cannot allocate memory for art data"); \
 				} \
 			} while (0)
 

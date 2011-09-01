@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef PSP_GRAPHICS_H
@@ -174,12 +171,12 @@ protected:
 class GuRenderer {
 public:
 	// Constructors
-	GuRenderer() : _useGlobalScaler(false), _buffer(0), _palette(0), 
-					_blending(false), _alphaReverse(false), _colorTest(false), 
+	GuRenderer() : _useGlobalScaler(false), _buffer(0), _palette(0),
+					_blending(false), _alphaReverse(false), _colorTest(false),
 					_keyColor(0), _fullScreen(false), _stretch(false), _stretchX(1.0f), _stretchY(1.0f) {}
-	GuRenderer(Buffer *buffer, Palette *palette) : 
-					_useGlobalScaler(false), _buffer(buffer), _palette(palette), 
-					_blending(false), _alphaReverse(false), _colorTest(false), 
+	GuRenderer(Buffer *buffer, Palette *palette) :
+					_useGlobalScaler(false), _buffer(buffer), _palette(palette),
+					_blending(false), _alphaReverse(false), _colorTest(false),
 					_keyColor(0), _fullScreen(false), _stretch(false), _stretchX(1.0f), _stretchY(1.0f) {}
 	static void setDisplayManager(DisplayManager *dm) { _displayManager = dm; } // Called by the Display Manager
 

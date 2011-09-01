@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "agi/agi.h"
@@ -183,7 +180,7 @@ int AgiEngine::handleController(int key) {
 		if (!(getFeatures() & GF_AGIMOUSE)) {
 			// Handle mouse button events
 			if (key == BUTTON_LEFT) {
-				v->flags |= ADJ_EGO_XY;
+				v->flags |= fAdjEgoXY;
 				v->parm1 = WIN_TO_PIC_X(_mouse.x);
 				v->parm2 = WIN_TO_PIC_Y(_mouse.y);
 				return true;
@@ -191,7 +188,7 @@ int AgiEngine::handleController(int key) {
 		}
 
 		if (d || key == KEY_STATIONARY) {
-			v->flags &= ~ADJ_EGO_XY;
+			v->flags &= ~fAdjEgoXY;
 			v->direction = v->direction == d ? 0 : d;
 			return true;
 		}

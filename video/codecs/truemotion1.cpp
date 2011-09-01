@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Based on the TrueMotion 1 decoder by Alex Beregszaszi & Mike Melanson in FFmpeg
@@ -115,7 +112,7 @@ TrueMotion1Decoder::~TrueMotion1Decoder() {
 void TrueMotion1Decoder::selectDeltaTables(int deltaTableIndex) {
 	if (deltaTableIndex > 3)
 		return;
-   
+
 	for (byte i = 0; i < 8; i++) {
 		_ydt[i] = ydts[deltaTableIndex][i];
 		_cdt[i] = cdts[deltaTableIndex][i];

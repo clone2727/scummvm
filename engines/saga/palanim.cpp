@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Palette animation module
@@ -56,7 +53,7 @@ void PalAnim::loadPalAnim(const ByteArray &resourceData) {
 	debug(3, "PalAnim::loadPalAnim(): Loading %d PALANIM entries.", _entries.size());
 
 	for (Common::Array<PalanimEntry>::iterator i = _entries.begin(); i != _entries.end(); ++i) {
-		
+
 		i->cycle = 0;
 
 		i->colors.resize(readS.readUint16());
@@ -142,7 +139,7 @@ void PalAnim::cycleStep(int vectortime) {
 
 void PalAnim::clear() {
 	debug(3, "PalAnim::clear()");
-	
+
 	_entries.clear();
 }
 

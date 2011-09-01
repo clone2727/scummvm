@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/util.h"
@@ -204,7 +201,7 @@ void GfxAnimate::fill(byte &old_picNotValid) {
 		adjustInvalidCels(view, it);
 		processViewScaling(view, it);
 		setNsRect(view, it);
-		
+
 		//warning("%s view %d, loop %d, cel %d, signal %x", _s->_segMan->getObjectName(curObject), it->viewId, it->loopNo, it->celNo, it->signal);
 
 		// Calculate current priority according to y-coordinate
@@ -233,7 +230,7 @@ void GfxAnimate::adjustInvalidCels(GfxView *view, AnimateList::iterator it) {
 	//  this seems to be completely crazy code
 	//  sierra sci checked signed int16 to be above or equal the counts and reseted to 0 in those cases
 	//  later during view processing those are compared unsigned again and then set to maximum count - 1
-	//  Games rely on this behaviour. For example laura bow 1 has a knight standing around in room 37
+	//  Games rely on this behavior. For example laura bow 1 has a knight standing around in room 37
 	//   which has cel set to 3. This cel does not exist and the actual knight is 0
 	//   In kq5 on the other hand during the intro, when the trunk is opened, cel is set to some real
 	//   high number, which is negative when considered signed. This actually requires to get fixed to
@@ -662,7 +659,7 @@ void GfxAnimate::throttleSpeed() {
 		// No entries drawn -> no speed throttler triggering
 		break;
 	case 1: {
-		
+
 		// One entry drawn -> check if that entry was a speed benchmark view, if not enable speed throttler
 		AnimateEntry *onlyCast = &_lastCastData[0];
 		if ((onlyCast->viewId == 0) && (onlyCast->loopNo == 13) && (onlyCast->celNo == 0)) {

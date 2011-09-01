@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/rect.h"
@@ -185,7 +182,7 @@ void M4Sprite::loadMadsSprite(Common::SeekableReadStream* source) {
 				}
 			}
 		}
-		
+
 		// Check if we need to scan forward to find the end of the line
 		if (!newLine) {
 			do {

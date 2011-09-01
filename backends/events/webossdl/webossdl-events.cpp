@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef WEBOS
@@ -38,9 +35,6 @@
 
 // Inidicates if gesture area is pressed down or not.
 static bool gestureDown = false;
-
-// The timestamp when gesture area was pressed down.
-static int gestureDownTime = 0;
 
 // The timestamp when screen was pressed down.
 static int screenDownTime = 0;
@@ -95,6 +89,8 @@ void WebOSSdlEventSource::SDLModToOSystemKeyFlags(SDLMod mod,
 		event.kbd.flags |= Common::KBD_SHIFT;
 	if (mod & KMOD_CTRL)
 		event.kbd.flags |= Common::KBD_CTRL;
+
+	// Holding down the gesture area emulates the ALT key
 	if (gestureDown)
 		event.kbd.flags |= Common::KBD_ALT;
 }
@@ -111,8 +107,15 @@ bool WebOSSdlEventSource::handleKeyDown(SDL_Event &ev, Common::Event &event) {
 	// Handle gesture area tap.
 	if (ev.key.keysym.sym == SDLK_WORLD_71) {
 		gestureDown = true;
-		gestureDownTime = getMillis();
 		return true;
+	}
+
+	// Ensure that ALT key (Gesture down) is ignored when back or forward
+	// gesture is detected. This is needed for WebOS 1 which releases the
+	// gesture tap AFTER the backward gesture event and not BEFORE (Like
+	// WebOS 2).
+	if (ev.key.keysym.sym == 27 || ev.key.keysym.sym == 229) {
+	    gestureDown = false;
 	}
 
 	// Call original SDL key handler.
@@ -156,7 +159,7 @@ bool WebOSSdlEventSource::handleMouseButtonDown(SDL_Event &ev, Common::Event &ev
 		if (getMillis() - dragStartTime < 250) {
 			dragging = true;
 			event.type = Common::EVENT_LBUTTONDOWN;
-			fillMouseEvent(event, curX, curY);
+			processMouseEvent(event, curX, curY);
 		}
 	}
 	return true;
@@ -177,7 +180,7 @@ bool WebOSSdlEventSource::handleMouseButtonUp(SDL_Event &ev, Common::Event &even
 		if (dragging)
 		{
 			event.type = Common::EVENT_LBUTTONUP;
-			fillMouseEvent(event, curX, curY);
+			processMouseEvent(event, curX, curY);
 			dragging = false;
 			return true;
 		}
@@ -192,7 +195,7 @@ bool WebOSSdlEventSource::handleMouseButtonUp(SDL_Event &ev, Common::Event &even
 			// left mouse click.
 			if (duration < 500) {
 				event.type = Common::EVENT_LBUTTONUP;
-				fillMouseEvent(event, curX, curY);
+				processMouseEvent(event, curX, curY);
 				g_system->getEventManager()->pushEvent(event);
 				event.type = Common::EVENT_LBUTTONDOWN;
 				dragStartTime = getMillis();
@@ -202,7 +205,7 @@ bool WebOSSdlEventSource::handleMouseButtonUp(SDL_Event &ev, Common::Event &even
 			// right mouse click.
 			else if (duration < 1000) {
 				event.type = Common::EVENT_RBUTTONUP;
-				fillMouseEvent(event, curX, curY);
+				processMouseEvent(event, curX, curY);
 				g_system->getEventManager()->pushEvent(event);
 				event.type = Common::EVENT_RBUTTONDOWN;
 			}
@@ -211,7 +214,7 @@ bool WebOSSdlEventSource::handleMouseButtonUp(SDL_Event &ev, Common::Event &even
 			// middle mouse click.
 			else {
 				event.type = Common::EVENT_MBUTTONUP;
-				fillMouseEvent(event, curX, curY);
+				processMouseEvent(event, curX, curY);
 				g_system->getEventManager()->pushEvent(event);
 				event.type = Common::EVENT_MBUTTONDOWN;
 			}
@@ -237,7 +240,7 @@ bool WebOSSdlEventSource::handleMouseMotion(SDL_Event &ev, Common::Event &event)
 		dragDiffX += ev.motion.xrel;
 		dragDiffY += ev.motion.yrel;
 		event.type = Common::EVENT_MOUSEMOVE;
-		fillMouseEvent(event, curX, curY);
+		processMouseEvent(event, curX, curY);
 	}
 	return true;
 }

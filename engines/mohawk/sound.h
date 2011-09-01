@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MOHAWK_SOUND_H
@@ -30,13 +27,14 @@
 #include "common/str.h"
 
 #include "audio/audiostream.h"
-#include "audio/decoders/adpcm.h"
-#include "audio/mididrv.h"
-#include "audio/midiparser.h"
 #include "audio/mixer.h"
+#include "audio/decoders/adpcm.h"
 
 #include "mohawk/mohawk.h"
 #include "mohawk/resource.h"
+
+class MidiDriver;
+class MidiParser;
 
 namespace Mohawk {
 

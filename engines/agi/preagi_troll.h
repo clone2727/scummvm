@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_PREAGI_TROLL_H
@@ -160,16 +157,14 @@ struct Item {
 	char name[16];
 };
 
-class Troll {
+class TrollEngine : public PreAgiEngine {
 public:
-	Troll(PreAgiEngine *vm);
+	TrollEngine(OSystem *syst, const AGIGameDescription *gameDesc);
+	~TrollEngine();
 
-	void init();
-	void run();
+	Common::Error go();
 
 private:
-	PreAgiEngine *_vm;
-
 	int _roomPicture;
 	int _treasuresLeft;
 	int _currentRoom;
@@ -183,6 +178,7 @@ private:
 
 	byte *_gameData;
 
+	void init();
 	void intro();
 	void drawPic(int iPic, bool f3IsCont, bool clear, bool troll = false);
 	void drawTroll();
@@ -208,9 +204,7 @@ private:
 
 	void fillOffsets();
 
-private:
 	// These are come from game data
-
 	int _pictureOffsets[IDI_TRO_PICNUM];
 	int _roomPicStartIdx[IDI_TRO_NUM_NUMROOMS];
 	int _roomPicDeltas[IDI_TRO_NUM_NUMROOMS];

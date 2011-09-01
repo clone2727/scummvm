@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGI_PREAGI_MICKEY_H
@@ -679,23 +676,25 @@ struct MSA_GAME {
 
 class PreAgiEngine;
 
-class Mickey {
+class MickeyEngine : public PreAgiEngine {
 public:
-	Mickey(PreAgiEngine *vm);
-	~Mickey();
+	MickeyEngine(OSystem *syst, const AGIGameDescription *gameDesc);
+	~MickeyEngine();
 
 	void init();
-	void run();
+	Common::Error go();
 
 	void debugCurRoom();
 	void debugGotoRoom(int);
 	void drawPic(int);
 	void drawObj(ENUM_MSA_OBJECT, int, int);
 
-protected:
-	PreAgiEngine *_vm;
+	GUI::Debugger *getDebugger() { return _console; }
 
-	MSA_GAME _game;
+protected:
+	MickeyConsole *_console;
+
+	MSA_GAME _gameStateMickey;
 	bool _clickToMove;
 
 	int getDat(int);
@@ -744,14 +743,14 @@ protected:
 
 	bool planetIsAlreadyAssigned(int planet) {
 		for (int j = 0; j < IDI_MSA_MAX_PLANET; j++) {
-			if (_game.iPlanetXtal[j] == planet)
+			if (_gameStateMickey.iPlanetXtal[j] == planet)
 				return true;
 		}
 		return false;
 	}
 
 	bool mickeyHasItem(int item) {
-		if (_game.fItem[item]) {
+		if (_gameStateMickey.fItem[item]) {
 			printDatMessage(90);	// Mickey already has item
 			return true;
 		} else {

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "graphics/scaler/intern.h"
@@ -60,6 +57,22 @@ static inline void interpolate5Line(uint16 *dst, const uint16 *srcA, const uint1
 
 template<typename ColorMask, int scale>
 static inline void interpolate5Line(uint16 *dst, const uint16 *srcA, const uint16 *srcB, int width) {
+	if (scale == 1) {
+		while (width--) {
+			*dst++ = interpolate16_7_1<ColorMask>(*srcB++, *srcA++);
+		}
+	} else {
+		while (width--) {
+			*dst++ = interpolate16_5_3<ColorMask>(*srcB++, *srcA++);
+		}
+	}
+}
+#endif
+
+#if ASPECT_MODE == kFastAndVeryGoodAspectMode
+
+template<typename ColorMask, int scale>
+static inline void interpolate5Line(uint16 *dst, const uint16 *srcA, const uint16 *srcB, int width) {
 	// For efficiency reasons we blit two pixels at a time, so it is important
 	// that makeRectStretchable() guarantees that the width is even and that
 	// the rect starts on a well-aligned address. (Even where unaligned memory
@@ -72,26 +85,6 @@ static inline void interpolate5Line(uint16 *dst, const uint16 *srcA, const uint1
 	//assert(((int)srcA & 3) == 0);
 	//assert(((int)srcB & 3) == 0);
 	//assert((width & 1) == 0);
-
-	if (scale == 1) {
-		while (width--) {
-			*dst++ = interpolate16_7_1<ColorMask>(*srcB++, *srcA++);
-		}
-	} else {
-		while (width--) {
-			// TODO: We really would like to use interpolate16_5_3, but that
-			// does not exist (yet), so we use this trick instead.
-			uint16 tmp = *srcA++;
-			*dst++ = interpolate16_5_2_1<ColorMask>(*srcB++, tmp, tmp);
-		}
-	}
-}
-#endif
-
-#if ASPECT_MODE == kFastAndVeryGoodAspectMode
-
-template<typename ColorMask, int scale>
-static inline void interpolate5Line(uint16 *dst, const uint16 *srcA, const uint16 *srcB, int width) {
 
 	width /= 2;
 	const uint32 *sA = (const uint32 *)srcA;
@@ -208,7 +201,7 @@ int stretch200To240(uint8 *buf, uint32 pitch, int width, int height, int srcX, i
 template<typename ColorMask>
 void Normal1xAspectTemplate(const uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int width, int height) {
 
-	for (int y = 0; y < height; ++y) {
+	for (int y = 0; y < (height * 6 / 5); ++y) {
 
 #if ASPECT_MODE == kSuperFastAndUglyAspectMode
 		if ((y % 6) == 5)
@@ -299,4 +292,3 @@ void Normal2xAspect(const uint8  *srcPtr,
 }
 
 #endif	// USE_ARM_SCALER_ASM
-

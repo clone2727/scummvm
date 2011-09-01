@@ -18,17 +18,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "tsage/debugger.h"
 #include "tsage/globals.h"
 #include "tsage/graphics.h"
-#include "tsage/ringworld_logic.h"
+#include "tsage/ringworld/ringworld_logic.h"
 
-namespace tSage {
+namespace TsAGE {
 
 Debugger::Debugger() : GUI::Debugger() {
 	DCmd_Register("continue",		WRAP_METHOD(Debugger, Cmd_Exit));
@@ -40,8 +37,8 @@ Debugger::Debugger() : GUI::Debugger() {
 	DCmd_Register("clearflag",		WRAP_METHOD(Debugger, Cmd_ClearFlag));
 	DCmd_Register("listobjects",	WRAP_METHOD(Debugger, Cmd_ListObjects));
 	DCmd_Register("moveobject",		WRAP_METHOD(Debugger, Cmd_MoveObject));
-
-	DCmd_Register("item",			WRAP_METHOD(Debugger, Cmd_Item));
+	DCmd_Register("hotspots",		WRAP_METHOD(Debugger, Cmd_Hotspots));
+	DCmd_Register("sound",			WRAP_METHOD(Debugger, Cmd_Sound));
 }
 
 static int strToInt(const char *s) {
@@ -67,13 +64,13 @@ bool Debugger::Cmd_Scene(int argc, const char **argv) {
 	if (argc < 2) {
 		DebugPrintf("Usage: %s <scene number> [prior scene #]\n", argv[0]);
 		return true;
-	} else {
-		if (argc == 3)
-			_globals->_sceneManager._sceneNumber = strToInt(argv[2]);
-
-		_globals->_sceneManager.changeScene(strToInt(argv[1]));
-		return false;
 	}
+
+	if (argc == 3)
+		_globals->_sceneManager._sceneNumber = strToInt(argv[2]);
+
+	_globals->_sceneManager.changeScene(strToInt(argv[1]));
+	return false;
 }
 
 /**
@@ -226,7 +223,7 @@ bool Debugger::Cmd_ListObjects(int argc, const char **argv) {
 		DebugPrintf("Usage: %s\n", argv[0]);
 		return true;
 	}
-	
+
 	DebugPrintf("Available objects for this game are:\n");
 	DebugPrintf("0 - Stunner\n");
 	DebugPrintf("1 - Scanner\n");
@@ -381,19 +378,75 @@ bool Debugger::Cmd_MoveObject(int argc, const char **argv) {
 		RING_INVENTORY._jar._sceneNumber = sceneNum;
 		break;
 	default:
-		DebugPrintf("Invlid object Id %s\n", argv[1]);
+		DebugPrintf("Invalid object Id %s\n", argv[1]);
+		break;
 	}
 
 	return true;
 }
 
 /**
- * Give a specified item to the player
+ * Show any active hotspot areas in the scene
  */
-bool Debugger::Cmd_Item(int argc, const char **argv) {
-	RING_INVENTORY._stasisBox._sceneNumber = 1;
-	return true;
+bool Debugger::Cmd_Hotspots(int argc, const char **argv) {
+	int colIndex = 16;
+	const Rect &sceneBounds = _globals->_sceneManager._scene->_sceneBounds;
+
+	// Lock the background surface for access
+	Graphics::Surface destSurface = _globals->_sceneManager._scene->_backSurface.lockSurface();
+
+	// Iterate through the scene items
+	SynchronizedList<SceneItem *>::iterator i;
+	for (i = _globals->_sceneItems.reverse_begin(); i != _globals->_sceneItems.end(); --i, ++colIndex) {
+		SceneItem *o = *i;
+
+		// Draw the contents of the hotspot area
+		if (o->_sceneRegionId == 0) {
+			// Scene item doesn't use a region, so fill in the entire area
+			destSurface.fillRect(Rect(o->_bounds.left - sceneBounds.left, o->_bounds.top - sceneBounds.top,
+				o->_bounds.right - sceneBounds.left - 1, o->_bounds.bottom - sceneBounds.top - 1), colIndex);
+		} else {
+			// Scene uses a region, so get it and use it to fill out only the correct parts
+			SceneRegions::iterator ri = _globals->_sceneRegions.begin();
+			while ((ri != _globals->_sceneRegions.end()) && ((*ri)._regionId != o->_sceneRegionId))
+				++ri;
+
+			if (ri != _globals->_sceneRegions.end()) {
+				// Fill out the areas defined by the region
+				Region &r = *ri;
+
+				for (int y = r._bounds.top; y < r._bounds.bottom; ++y) {
+					LineSliceSet set = r.getLineSlices(y);
+
+					for (uint p = 0; p < set.items.size(); ++p)
+						destSurface.hLine(set.items[p].xs - sceneBounds.left, y - sceneBounds.top,
+							set.items[p].xe - sceneBounds.left - 1, colIndex);
+				}
+			}
+		}
+	}
+
+	// Release the surface
+	_globals->_sceneManager._scene->_backSurface.unlockSurface();
+
+	// Mark the scene as requiring a full redraw
+	_globals->_paneRefreshFlag[0] = 2;
+
+	return false;
 }
 
+/**
+ * Play the specified sound
+ */
+bool Debugger::Cmd_Sound(int argc, const char **argv) {
+	if (argc != 2) {
+		DebugPrintf("Usage: %s <sound number>\n", argv[0]);
+		return true;
+	}
 
-} // End of namespace tSage
+	int soundNum = strToInt(argv[1]);
+	_globals->_soundHandler.play(soundNum);
+	return false;
+}
+
+} // End of namespace TsAGE

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/textconsole.h"
@@ -215,7 +212,7 @@ int loadBackground(const char *name, int idx) {
 	// NOTE: the following is really meant to compare pointers and not the actual
 	// strings. See r48092 and r48094.
 	if (name != backgroundTable[idx].name) {
-		if (strlen(name) >= sizeof(backgroundTable[idx].name)) 
+		if (strlen(name) >= sizeof(backgroundTable[idx].name))
 			warning("background name length exceeded allowable maximum");
 
 		Common::strlcpy(backgroundTable[idx].name, name, sizeof(backgroundTable[idx].name));

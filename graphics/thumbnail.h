@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef GRAPHICS_THUMBNAIL_H
@@ -56,7 +53,7 @@ bool skipThumbnail(Common::SeekableReadStream &in);
  * The loaded thumbnail will be automatically converted to the
  * current overlay pixelformat.
  */
-bool loadThumbnail(Common::SeekableReadStream &in, Graphics::Surface &to);
+Graphics::Surface *loadThumbnail(Common::SeekableReadStream &in);
 
 /**
  * Saves a thumbnail to the given write stream.
@@ -72,4 +69,3 @@ bool saveThumbnail(Common::WriteStream &out, const Graphics::Surface &thumb);
 } // End of namespace Graphics
 
 #endif
-

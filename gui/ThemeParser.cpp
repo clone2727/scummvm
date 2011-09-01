@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "gui/ThemeEngine.h"
@@ -235,7 +232,7 @@ bool ThemeParser::parserCallback_bitmap(ParserNode *node) {
 	}
 
 	if (!_theme->addBitmap(node->values["filename"]))
-		return parserError("Error loading Bitmap file '%s'", node->values["filename"].c_str());
+		return parserError("Error loading Bitmap file '" + node->values["filename"] + "'");
 
 	return true;
 }
@@ -255,7 +252,7 @@ bool ThemeParser::parserCallback_text(ParserNode *node) {
 	TextColor textColorId = parseTextColorId(node->values["text_color"]);
 
 	if (!_theme->addTextData(id, textDataId, textColorId, alignH, alignV))
-		return parserError("Error adding Text Data for '%s'.", id.c_str());
+		return parserError("Error adding Text Data for '" + id + "'.");
 
 	return true;
 }
@@ -282,13 +279,13 @@ bool ThemeParser::parserCallback_color(ParserNode *node) {
 	Common::String name = node->values["name"];
 
 	if (_palette.contains(name))
-		return parserError("Color '%s' has already been defined.", name.c_str());
+		return parserError("Color '" + name + "' has already been defined.");
 
 	int red, green, blue;
 
 	if (parseIntegerKey(node->values["rgb"], 3, &red, &green, &blue) == false ||
 		red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255)
-		return parserError("Error parsing RGB values for palette color '%s'", name.c_str());\
+		return parserError("Error parsing RGB values for palette color '" + name + "'");
 
 	_palette[name].r = red;
 	_palette[name].g = green;
@@ -335,7 +332,7 @@ bool ThemeParser::parserCallback_drawstep(ParserNode *node) {
 	drawstep->drawingCall = getDrawingFunctionCallback(functionName);
 
 	if (drawstep->drawingCall == 0)
-		return parserError("%s is not a valid drawing function name", functionName.c_str());
+		return parserError(functionName + " is not a valid drawing function name");
 
 	if (!parseDrawStep(node, drawstep, true))
 		return false;
@@ -355,11 +352,8 @@ bool ThemeParser::parserCallback_drawdata(ParserNode *node) {
 	}
 
 	if (node->values.contains("cache")) {
-		if (node->values["cache"] == "true")
-			cached = true;
-		else if (node->values["cache"] == "false")
-			cached = false;
-		else return parserError("'Parsed' value must be either true or false.");
+		if (!Common::parseBool(node->values["cache"], cached))
+			return parserError("'Parsed' value must be either true or false.");
 	}
 
 	if (_theme->addDrawData(node->values["id"], cached) == false)
@@ -388,11 +382,11 @@ bool ThemeParser::parseDrawStep(ParserNode *stepNode, Graphics::DrawStep *drawst
 #define __PARSER_ASSIGN_INT(struct_name, key_name, force) \
 	if (stepNode->values.contains(key_name)) { \
 		if (!parseIntegerKey(stepNode->values[key_name], 1, &x)) \
-			return parserError("Error parsing key value for '%s'.", key_name); \
+			return parserError("Error parsing key value for '" + Common::String(key_name) + "'."); \
 		\
 		drawstep->struct_name = x; \
 	} else if (force) { \
-		return parserError("Missing necessary key '%s'.", key_name); \
+		return parserError("Missing necessary key '" + Common::String(key_name) + "'."); \
 	}
 
 /**
@@ -413,7 +407,7 @@ bool ThemeParser::parseDrawStep(ParserNode *stepNode, Graphics::DrawStep *drawst
 			blue = _palette[val].b; \
 		} else if (parseIntegerKey(val, 3, &red, &green, &blue) == false || \
 			red < 0 || red > 255 || green < 0 || green > 255 || blue < 0 || blue > 255) \
-			return parserError("Error parsing color struct '%s'", val.c_str());\
+			return parserError("Error parsing color struct '" + val + "'");\
 		\
 		drawstep->struct_name.r = red; \
 		drawstep->struct_name.g = green; \
@@ -469,7 +463,7 @@ bool ThemeParser::parseDrawStep(ParserNode *stepNode, Graphics::DrawStep *drawst
 				else if (val == "right")
 					drawstep->extraData = Graphics::VectorRenderer::kTriangleRight;
 				else
-					return parserError("'%s' is not a valid value for triangle orientation.", val.c_str());
+					return parserError("'" + val + "' is not a valid value for triangle orientation.");
 			}
 		}
 
@@ -548,7 +542,7 @@ bool ThemeParser::parseDrawStep(ParserNode *stepNode, Graphics::DrawStep *drawst
 		else if (val == "gradient")
 			drawstep->fillMode = Graphics::VectorRenderer::kFillGradient;
 		else
-			return parserError("'%s' is not a valid fill mode for a shape.", stepNode->values["fill"].c_str());
+			return parserError("'" + stepNode->values["fill"] + "' is not a valid fill mode for a shape.");
 	}
 
 #undef __PARSER_ASSIGN_INT
@@ -570,7 +564,7 @@ bool ThemeParser::parserCallback_def(ParserNode *node) {
 		value = _theme->getEvaluator()->getVar(node->values["value"]);
 
 	else if (!parseIntegerKey(node->values["value"], 1, &value))
-		return parserError("Invalid definition for '%s'.", var.c_str());
+		return parserError("Invalid definition for '" + var + "'.");
 
 	_theme->getEvaluator()->setVar(var, value);
 	return true;
@@ -588,7 +582,7 @@ bool ThemeParser::parserCallback_widget(ParserNode *node) {
 
 		var = "Globals." + node->values["name"] + ".";
 		if (!parseCommonLayoutProps(node, var))
-			return parserError("Error parsing Layout properties of '%s'.", var.c_str());
+			return parserError("Error parsing Layout properties of '" + var + "'.");
 
 	} else {
 		// FIXME: Shouldn't we distinguish the name/id and the label of a widget?
@@ -598,9 +592,7 @@ bool ThemeParser::parserCallback_widget(ParserNode *node) {
 		bool enabled = true;
 
 		if (node->values.contains("enabled")) {
-			if (node->values["enabled"] == "false")
-				enabled = false;
-			else if (node->values["enabled"] != "true")
+			if (!Common::parseBool(node->values["enabled"], enabled))
 				return parserError("Invalid value for Widget enabling (expecting true/false)");
 		}
 
@@ -609,7 +601,7 @@ bool ThemeParser::parserCallback_widget(ParserNode *node) {
 				width = _theme->getEvaluator()->getVar(node->values["width"]);
 
 			else if (!parseIntegerKey(node->values["width"], 1, &width))
-				return parserError("Corrupted width value in key for %s", var.c_str());
+				return parserError("Corrupted width value in key for " + var);
 		}
 
 		if (node->values.contains("height")) {
@@ -617,7 +609,7 @@ bool ThemeParser::parserCallback_widget(ParserNode *node) {
 				height = _theme->getEvaluator()->getVar(node->values["height"]);
 
 			else if (!parseIntegerKey(node->values["height"], 1, &height))
-				return parserError("Corrupted height value in key for %s", var.c_str());
+				return parserError("Corrupted height value in key for " + var);
 		}
 
 		Graphics::TextAlign alignH = Graphics::kTextAlignLeft;
@@ -644,9 +636,7 @@ bool ThemeParser::parserCallback_dialog(ParserNode *node) {
 	}
 
 	if (node->values.contains("enabled")) {
-		if (node->values["enabled"] == "false")
-			enabled = false;
-		else if (node->values["enabled"] != "true")
+		if (!Common::parseBool(node->values["enabled"], enabled))
 			return parserError("Invalid value for Dialog enabling (expecting true/false)");
 	}
 
@@ -680,16 +670,19 @@ bool ThemeParser::parserCallback_import(ParserNode *node) {
 
 bool ThemeParser::parserCallback_layout(ParserNode *node) {
 	int spacing = -1;
+	bool center = false;
 
 	if (node->values.contains("spacing")) {
 		if (!parseIntegerKey(node->values["spacing"], 1, &spacing))
 			return false;
 	}
 
+	Common::parseBool(node->values["center"], center);
+
 	if (node->values["type"] == "vertical")
-		_theme->getEvaluator()->addLayout(GUI::ThemeLayout::kLayoutVertical, spacing, node->values["center"] == "true");
+		_theme->getEvaluator()->addLayout(GUI::ThemeLayout::kLayoutVertical, spacing, center);
 	else if (node->values["type"] == "horizontal")
-		_theme->getEvaluator()->addLayout(GUI::ThemeLayout::kLayoutHorizontal, spacing, node->values["center"] == "true");
+		_theme->getEvaluator()->addLayout(GUI::ThemeLayout::kLayoutHorizontal, spacing, center);
 	else
 		return parserError("Invalid layout type. Only 'horizontal' and 'vertical' layouts allowed.");
 

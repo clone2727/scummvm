@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TESTBED_CONFIG_H
@@ -53,8 +50,8 @@ public:
 	~TestbedConfigManager() {}
 	void selectTestsuites();
 	void setConfigFile(const Common::String fName) { _configFileName = fName; }
-	Common::SeekableReadStream *getConfigReadStream();
-	Common::WriteStream *getConfigWriteStream();
+	Common::SeekableReadStream *getConfigReadStream() const;
+	Common::WriteStream *getConfigWriteStream() const;
 	void writeTestbedConfigToStream(Common::WriteStream *ws);
 	Testsuite *getTestsuiteByName(const Common::String &name);
 	bool stringToBool(const Common::String str) { return str.equalsIgnoreCase("true") ? true : false; }
@@ -122,7 +119,7 @@ public:
 	void addButton(uint w, uint h, const Common::String name, uint32 cmd, uint xOffset = 0, uint yPadding = 8);
 	void addButtonXY(uint x, uint y, uint w, uint h, const Common::String name, uint32 cmd);
 	void addText(uint w, uint h, const Common::String text, Graphics::TextAlign textAlign, uint xOffset, uint yPadding = 8);
-	void addList(uint x, uint y, uint w, uint h, Common::Array<Common::String> &strArray, GUI::ListWidget::ColorList *colors = 0, uint yPadding = 8);
+	void addList(uint x, uint y, uint w, uint h, const Common::Array<Common::String> &strArray, GUI::ListWidget::ColorList *colors = 0, uint yPadding = 8);
 protected:
 	Common::Array<GUI::ButtonWidget *> _buttonArray;
 	uint _xOffset;

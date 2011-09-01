@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef GOB_INIT_H
@@ -55,6 +52,14 @@ class Init_v1 : public Init {
 public:
 	Init_v1(GobEngine *vm);
 	~Init_v1();
+
+	void initVideo();
+};
+
+class Init_Geisha : public Init_v1 {
+public:
+	Init_Geisha(GobEngine *vm);
+	~Init_Geisha();
 
 	void initVideo();
 };

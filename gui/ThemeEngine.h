@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef GUI_THEME_ENGINE_H
@@ -542,7 +539,6 @@ protected:
 	const Graphics::Font *loadFontFromArchive(const Common::String &filename);
 	const Graphics::Font *loadCachedFontFromArchive(const Common::String &filename);
 	Common::String genCacheFilename(const Common::String &filename) const;
-	Common::String genLocalizedFontFilename(const Common::String &filename) const;
 
 	/**
 	 * Actual Dirty Screen handling function.

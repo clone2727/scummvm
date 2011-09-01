@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/array.h"
@@ -1163,9 +1160,7 @@ void Script::run(const GPL2Program &program, uint16 offset) {
 				}
 			}
 		} else {
-			debugC(1, kDraciBytecodeDebugLevel, "Unknown opcode %d, %d",
-			    num, subnum);
-			abort();
+			error("Unknown opcode %d, %d", num, subnum);
 		}
 
 		GPLHandler handler = cmd->_handler;

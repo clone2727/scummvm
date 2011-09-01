@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef GRAPHICS_SURFACE_H
@@ -192,7 +189,7 @@ struct Surface {
 
 /**
  * A deleter for Surface objects which can be used with SharedPtr.
- * 
+ *
  * This deleter assures Surface::free is called on deletion.
  */
 struct SharedPtrSurfaceDeleter {

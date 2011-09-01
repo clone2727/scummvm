@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef RING_RESOURCES_H
@@ -36,7 +33,7 @@
 #include "common/util.h"
 #include "graphics/surface.h"
 
-namespace tSage {
+namespace TsAGE {
 
 // Magic number used by original game to identify valid memory blocks
 const uint32 MEMORY_ENTRY_ID = 0xE11DA722;
@@ -178,6 +175,6 @@ public:
 };
 
 
-} // end of namespace tSage
+} // end of namespace TsAGE
 
 #endif
