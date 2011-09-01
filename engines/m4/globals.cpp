@@ -380,6 +380,15 @@ void MadsGlobals::loadMadsObjects() {
 	_vm->res()->toss("objects.dat");
 }
 
+int MadsGlobals::getObjectIndex(uint16 descId) {
+	for (uint i = 0; i < _madsObjects.size(); ++i) {
+		if (_madsObjects[i].get()->_descId == descId)
+			return i;
+	}
+
+	return -1;
+}
+
 int MadsGlobals::messageIndexOf(uint32 messageId) {
 	for (uint i = 0; i < _madsMessages.size(); ++i)
 	{
@@ -414,7 +423,7 @@ const char *MadsGlobals::loadMessage(uint index) {
 }
 
 /**
- * Adds the specified scene number to list of scenes previously visited 
+ * Adds the specified scene number to list of scenes previously visited
  */
 void MadsGlobals::addVisitedScene(int newSceneNumber) {
 	if (!isSceneVisited(newSceneNumber))
@@ -539,7 +548,7 @@ void MadsObject::load(Common::SeekableReadStream *stream) {
 }
 
 void MadsObject::setRoom(int roomNumber) {
-	
+
 }
 
 } // End of namespace M4

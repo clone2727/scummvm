@@ -30,7 +30,7 @@
 #include "scumm/charset.h"
 #include "scumm/imuse_digi/dimuse.h"
 #include "scumm/imuse/imuse.h"
-#include "player_towns.h"
+#include "scumm/player_towns.h"
 #include "scumm/he/intern_he.h"
 #include "scumm/object.h"
 #include "scumm/resource.h"
@@ -686,12 +686,7 @@ Graphics::Surface *ScummEngine::loadThumbnailFromSlot(const char *target, int sl
 
 	Graphics::Surface *thumb = 0;
 	if (Graphics::checkThumbnailHeader(*in)) {
-		thumb = new Graphics::Surface();
-		assert(thumb);
-		if (!Graphics::loadThumbnail(*in, *thumb)) {
-			delete thumb;
-			thumb = 0;
-		}
+		thumb = Graphics::loadThumbnail(*in);
 	}
 
 	delete in;
@@ -1316,10 +1311,10 @@ void ScummEngine::saveOrLoad(Serializer *s) {
 			MKEND()
 		};
 
-		s->saveLoadArrayOf(_textPalette, 48, sizeof(_textPalette[0]), sleUint8);		
+		s->saveLoadArrayOf(_textPalette, 48, sizeof(_textPalette[0]), sleUint8);
 		s->saveLoadArrayOf(_cyclRects, 10, sizeof(_cyclRects[0]), townsFields);
 		s->saveLoadArrayOf(&_curStringRect, 1, sizeof(_curStringRect), townsFields);
-		s->saveLoadArrayOf(_townsCharsetColorMap, 16, sizeof(_townsCharsetColorMap[0]), sleUint8);		
+		s->saveLoadArrayOf(_townsCharsetColorMap, 16, sizeof(_townsCharsetColorMap[0]), sleUint8);
 		s->saveLoadEntries(this, townsExtraEntries);
 	}
 #endif
@@ -1327,6 +1322,9 @@ void ScummEngine::saveOrLoad(Serializer *s) {
 	if (_shadowPaletteSize) {
 		s->saveLoadArrayOf(_shadowPalette, _shadowPaletteSize, 1, sleByte);
 		// _roomPalette didn't show up until V21 save games
+		// Note that we also save the room palette for Indy4 Amiga, since it
+		// is used as palette map there too, but we do so slightly a bit
+		// further down to group it with the other special palettes needed.
 		if (s->getVersion() >= VER(21) && _game.version < 5)
 			s->saveLoadArrayOf(_roomPalette, sizeof(_roomPalette), 1, sleByte);
 	}
@@ -1351,6 +1349,29 @@ void ScummEngine::saveOrLoad(Serializer *s) {
 	// _colorUsedByCycle was not saved before V60
 	if (s->isLoading() && s->getVersion() < VER(60)) {
 		memset(_colorUsedByCycle, 0, sizeof(_colorUsedByCycle));
+	}
+
+	// Indy4 Amiga specific palette tables were not saved before V85
+	if (_game.platform == Common::kPlatformAmiga && _game.id == GID_INDY4) {
+		if (s->getVersion() >= 85) {
+			s->saveLoadArrayOf(_roomPalette, 256, 1, sleByte);
+			s->saveLoadArrayOf(_verbPalette, 256, 1, sleByte);
+			s->saveLoadArrayOf(_amigaPalette, 3 * 64, 1, sleByte);
+
+			// Starting from version 86 we also save the first used color in
+			// the palette beyond the verb palette. For old versions we just
+			// look for it again, which hopefully won't cause any troubles.
+			if (s->getVersion() >= 86) {
+				s->saveLoadArrayOf(&_amigaFirstUsedColor, 1, 2, sleUint16);
+			} else {
+				amigaPaletteFindFirstUsedColor();
+			}
+		} else {
+			warning("Save with old Indiana Jones 4 Amiga palette handling detected");
+			// We need to restore the internal state of the Amiga palette for Indy4
+			// Amiga. This might lead to graphics glitches!
+			setAmigaPaletteFromPtr(_currentPalette);
+		}
 	}
 
 	//
@@ -1489,7 +1510,7 @@ void ScummEngine_v5::saveOrLoad(Serializer *s) {
 
 	// Reset cursors for old FM-Towns savegames saved with 256 color setting.
 	// Otherwise the cursor will be messed up when displayed in the new hi color setting.
-	if (_game.platform == Common::kPlatformFMTowns && _bytesPerPixelOutput == 2 && s->isLoading() && s->getVersion() < VER(82)) {
+	if (_game.platform == Common::kPlatformFMTowns && _outputPixelFormat.bytesPerPixel == 2 && s->isLoading() && s->getVersion() < VER(82)) {
 		if (_game.id == GID_LOOM) {
 			redefineBuiltinCursorFromChar(1, 1);
 			redefineBuiltinCursorHotspot(1, 0, 0);
@@ -1497,6 +1518,16 @@ void ScummEngine_v5::saveOrLoad(Serializer *s) {
 			resetCursors();
 		}
 	}
+
+	// Regenerate 16bit palette after loading.
+	// This avoids color issues when loading savegames that have been saved with a different ScummVM port
+	// that uses a different 16bit color mode than the ScummVM port which is currently used.
+#ifdef USE_RGB_COLOR
+	if (_game.platform == Common::kPlatformPCEngine && s->isLoading()) {
+		for (int i = 0; i < 256; ++i)
+			_16BitPalette[i] = get16BitColor(_currentPalette[i * 3 + 0], _currentPalette[i * 3 + 1], _currentPalette[i * 3 + 2]);
+	}
+#endif
 }
 
 #ifdef ENABLE_SCUMM_7_8

@@ -177,7 +177,7 @@ void MadsSceneLogic::initializeDataMap() {
 
 uint32 MadsSceneLogic::getDataValue(int dataId) {
 	switch (dataId) {
-	case 1: 
+	case 1:
 		return _madsVm->scene()->_abortTimersMode2;
 	case 2:
 		return _madsVm->scene()->_abortTimers;
@@ -199,6 +199,10 @@ uint32 MadsSceneLogic::getDataValue(int dataId) {
 		return getActiveAnimationBool();
 	case 11:
 		return getAnimationCurrentFrame();
+	case 12:
+		return _madsVm->scene()->_action._inProgress;
+	case 13:
+		return _madsVm->globals()->_difficultyLevel;
 	default:
 		// All other data variables get stored in the hash table
 		return _madsVm->globals()->_dataMap[dataId];
@@ -208,7 +212,7 @@ uint32 MadsSceneLogic::getDataValue(int dataId) {
 
 void MadsSceneLogic::setDataValue(int dataId, uint16 dataValue) {
 	switch (dataId) {
-	case 1: 
+	case 1:
 		_madsVm->scene()->_abortTimersMode2 = (AbortTimerMode)dataValue;
 		break;
 	case 2:
@@ -238,6 +242,12 @@ void MadsSceneLogic::setDataValue(int dataId, uint16 dataValue) {
 	case 10:
 	case 11:
 		error("Tried to set read only data field %d", dataId);
+		break;
+	case 12:
+		_madsVm->scene()->_action._inProgress = dataValue != 0;
+		break;
+	case 13:
+		_madsVm->globals()->_difficultyLevel = dataValue;
 		break;
 	default:
 		// All other data variables get stored in the hash table
@@ -297,7 +307,7 @@ uint16 MadsSceneLogic::startReversibleSpriteSequence(uint16 srcSpriteIdx, bool f
 	uint8 depth = _madsVm->_rails->getDepth(Common::Point(spriteFrame->x + (spriteFrame->width() / 2),
 		spriteFrame->y + (spriteFrame->height() / 2)));
 
-	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0, 
+	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0,
 		true, 100, depth - 1, 1, ANIMTYPE_REVERSIBLE, 0, 0);
 }
 
@@ -306,7 +316,7 @@ uint16 MadsSceneLogic::startCycledSpriteSequence(uint16 srcSpriteIdx, bool flipp
 	uint8 depth = _madsVm->_rails->getDepth(Common::Point(spriteFrame->x + (spriteFrame->width() / 2),
 		spriteFrame->y + (spriteFrame->height() / 2)));
 
-	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0, 
+	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0,
 		true, 100, depth - 1, 1, ANIMTYPE_CYCLED, 0, 0);
 }
 
@@ -315,7 +325,7 @@ uint16 MadsSceneLogic::startSpriteSequence3(uint16 srcSpriteIdx, bool flipped, i
 	uint8 depth = _madsVm->_rails->getDepth(Common::Point(spriteFrame->x + (spriteFrame->width() / 2),
 		spriteFrame->y + (spriteFrame->height() / 2)));
 
-	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0, 
+	return _madsVm->scene()->_sequenceList.add(srcSpriteIdx, flipped, 1, triggerCountdown, timeoutTicks, extraTicks, numTicks, 0, 0,
 		true, 100, depth - 1, -1, ANIMTYPE_CYCLED, 0, 0);
 }
 
@@ -335,11 +345,11 @@ void MadsSceneLogic::getPlayerSpritesPrefix() {
 		strcpy(_madsVm->_player._spritesPrefix, "RXSM");
 	else if (_madsVm->globals()->_nextSceneId == 112)
 		strcpy(_madsVm->_player._spritesPrefix, "");
-		
+
 	if (strcmp(oldName, _madsVm->_player._spritesPrefix) != 0)
 		_madsVm->_player._spritesChanged = true;
 
-	if ((_madsVm->globals()->_nextSceneId == 105) || 
+	if ((_madsVm->globals()->_nextSceneId == 105) ||
 		((_madsVm->globals()->_nextSceneId == 109) && (_madsVm->globals()->_globals[15] != 0))) {
 		// TODO: unknown flag setting
 		_madsVm->_player._spritesChanged = true;
@@ -420,7 +430,7 @@ void MadsSceneLogic::initializeScripts() {
 		if ((language != 1) || (_madsVm->getLanguage() != Common::EN_ANY))
 			continue;
 
-		// Found script block for the given game and language. 
+		// Found script block for the given game and language.
 		_scriptsSize = (i < (offsets.size() - 1)) ? offsets[i + 1] - offsets[i] : f.size() - offsets[i];
 		break;
 	}
@@ -433,7 +443,7 @@ void MadsSceneLogic::initializeScripts() {
 
 	// Load up the list of subroutines into a hash map
 	uint32 blockOffset = f.pos() - 3;
-	uint32 subsStart = 0;	
+	uint32 subsStart = 0;
 	for (;;) {
 		// Get next entry
 		Common::String subName;
@@ -593,12 +603,12 @@ void MadsSceneLogic::execute(uint32 subOffset) {
 		}
 
 		case OP_DSTORE:	{		// Stores data variable
-			param = getParam(scriptOffset, opcode); 
+			param = getParam(scriptOffset, opcode);
 			ScriptVar v = stack.pop();
 			setDataValue(param, v.isInt() ? v.get() : 0);
 			break;
 		}
-		
+
 		case OP_LOAD:			// loads local variable onto stack
 			param = getParam(scriptOffset, opcode);
 			stack.push(locals[param]);
@@ -621,7 +631,7 @@ void MadsSceneLogic::execute(uint32 subOffset) {
 
 		case OP_GSTORE:				// pops stack and stores in global variable
 			param = getParam(scriptOffset, opcode);
-			assert(param < TOTAL_NUM_VARIABLES);			
+			assert(param < TOTAL_NUM_VARIABLES);
 			_madsVm->globals()->_globals[param] = stack.pop().get();
 			break;
 
@@ -647,7 +657,7 @@ void MadsSceneLogic::execute(uint32 subOffset) {
 				// Condition satisfied - do the jump
 				scriptOffset = param;
 			break;
-					   
+
 		case OP_JMPTRUE:	// conditional jump
 			param = subOffset + getParam(scriptOffset, opcode);
 			if (stack.pop().get() != 0)
@@ -708,7 +718,7 @@ void MadsSceneLogic::execute(uint32 subOffset) {
 				case OP_OR:     param1 |= param2; break;
 				case OP_EOR:    param1 ^= param2; break;
 				}
-				
+
 				stack.push(ScriptVar(param1));
 			}
 			break;
@@ -774,7 +784,7 @@ uint32 MadsSceneLogic::getParam(uint32 &scriptOffset, int opcode) {
  */
 void MadsSceneLogic::getCallParameters(int numParams, Common::Stack<ScriptVar> &stack, ScriptVar *callParams) {
 	assert(numParams <= MAX_CALL_PARAMS);
-	for (int i = 0; i < numParams; ++i, ++callParams) 
+	for (int i = 0; i < numParams; ++i, ++callParams)
 		*callParams = stack.pop();
 }
 
@@ -881,7 +891,7 @@ void MadsSceneLogic::callSubroutine(int subIndex, Common::Stack<ScriptVar> &stac
 	case 14: {
 		// DynamicHotspots_add
 		EXTRACT_PARAMS(7);
-		int idx = _madsVm->scene()->_dynamicHotspots.add(p[0], p[1], p[2], 
+		int idx = _madsVm->scene()->_dynamicHotspots.add(p[0], p[1], p[2],
 			Common::Rect(p[6], p[5], p[6] + p[4], p[5] + p[3]));
 		stack.push(ScriptVar(idx));
 		break;
@@ -985,6 +995,37 @@ void MadsSceneLogic::callSubroutine(int subIndex, Common::Stack<ScriptVar> &stac
 		obj->setRoom(p[1]);
 		break;
 	}
+
+	case 27:  {
+		// object_get_id_from_desc
+		EXTRACT_PARAMS(1);
+		stack.push(_madsVm->globals()->getObjectIndex(p[0]));
+		break;
+	}
+
+	case 28: {
+		// object_get_folder
+		EXTRACT_PARAMS(1);
+		stack.push(_madsVm->globals()->getObjectFolder(p[0]));
+		break;
+	}
+
+	case 29:
+		// inventory_remove
+		EXTRACT_PARAMS(1);
+		_madsVm->scene()->getInterface()->addObjectToInventory(p[0]);
+		break;
+
+	case 30:
+		// image_inter_list_call
+		EXTRACT_PARAMS(1);
+		warning("TODO: image_inter_list_call");
+		break;
+
+	case 31:
+		// dialog_flags_show
+		warning("todo: dialog_flags_show");
+		break;
 
 	default:
 		error("Unknown subroutine %d called", subIndex);

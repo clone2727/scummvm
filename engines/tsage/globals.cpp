@@ -22,11 +22,11 @@
 
 #include "tsage/globals.h"
 #include "tsage/tsage.h"
-#include "tsage/blueforce_logic.h"
-#include "tsage/ringworld_demo.h"
-#include "tsage/ringworld_logic.h"
+#include "tsage/blue_force/blueforce_logic.h"
+#include "tsage/ringworld/ringworld_demo.h"
+#include "tsage/ringworld/ringworld_logic.h"
 
-namespace tSage {
+namespace TsAGE {
 
 Globals *_globals = NULL;
 ResourceManager *_resourceManager = NULL;
@@ -51,7 +51,7 @@ static SavedObject *classFactoryProc(const Common::String &className) {
 /*--------------------------------------------------------------------------*/
 
 Globals::Globals() : _dialogCenter(160, 140), _gfxManagerInstance(_screenSurface),
-		_randomSource("tsage"), _unkColor1(0), _unkColor2(255), _unkColor3(255) {
+		_randomSource("tsage"), _color1(0), _color2(255), _color3(255) {
 	reset();
 	_stripNum = 0;
 	_gfxEdgeAdjust = 3;
@@ -64,18 +64,26 @@ Globals::Globals() : _dialogCenter(160, 140), _gfxManagerInstance(_screenSurface
 		_fontColors.foreground = 6;
 		_dialogCenter.y = 80;
 		// Workaround in order to use later version of the engine
-		_unkColor1 = _gfxColors.foreground;
-		_unkColor2 = _gfxColors.foreground;
-		_unkColor3 = _gfxColors.foreground;
+		_color1 = _gfxColors.foreground;
+		_color2 = _gfxColors.foreground;
+		_color3 = _gfxColors.foreground;
+	} else if (_vm->getGameID() == GType_BlueForce) {
+		// Blue Force
+		_gfxFontNumber = 0;
+		_gfxColors.background = 89;
+		_gfxColors.foreground = 83;
+		_fontColors.background = 88;
+		_fontColors.foreground = 92;
+		_dialogCenter.y = 165;
 	} else if ((_vm->getGameID() == GType_Ringworld) &&  (_vm->getFeatures() & GF_CD)) {
 		_gfxFontNumber = 50;
 		_gfxColors.background = 53;
 		_gfxColors.foreground = 0;
 		_fontColors.background = 51;
 		_fontColors.foreground = 54;
-		_unkColor1 = 18;
-		_unkColor2 = 18;
-		_unkColor3 = 18;
+		_color1 = 18;
+		_color2 = 18;
+		_color3 = 18;
 	} else {
 		_gfxFontNumber = 50;
 		_gfxColors.background = 53;
@@ -83,9 +91,9 @@ Globals::Globals() : _dialogCenter(160, 140), _gfxManagerInstance(_screenSurface
 		_fontColors.background = 51;
 		_fontColors.foreground = 54;
 		// Workaround in order to use later version of the engine
-		_unkColor1 = _gfxColors.foreground;
-		_unkColor2 = _gfxColors.foreground;
-		_unkColor3 = _gfxColors.foreground;
+		_color1 = _gfxColors.foreground;
+		_color2 = _gfxColors.foreground;
+		_color3 = _gfxColors.foreground;
 	}
 	_screenSurface.setScreenSurface();
 	_gfxManagers.push_back(&_gfxManagerInstance);
@@ -94,8 +102,8 @@ Globals::Globals() : _dialogCenter(160, 140), _gfxManagerInstance(_screenSurface
 	_sceneObjects_queue.push_front(_sceneObjects);
 
 	_prevSceneOffset = Common::Point(-1, -1);
-	_sceneListeners.push_back(&_soundHandler);
-	_sceneListeners.push_back(&_sequenceManager._soundHandler);
+	_sounds.push_back(&_soundHandler);
+	_sounds.push_back(&_sequenceManager._soundHandler);
 
 	_scrollFollower = NULL;
 	_inventory = NULL;
@@ -103,23 +111,28 @@ Globals::Globals() : _dialogCenter(160, 140), _gfxManagerInstance(_screenSurface
 	switch (_vm->getGameID()) {
 	case GType_Ringworld:
 		if (!(_vm->getFeatures() & GF_DEMO)) {
-			_inventory = new RingworldInvObjectList();
-			_game = new RingworldGame();
+			_inventory = new Ringworld::RingworldInvObjectList();
+			_game = new Ringworld::RingworldGame();
 		} else {
-			_game = new RingworldDemoGame();
+			_game = new Ringworld::RingworldDemoGame();
 		}
+		_sceneHandler = new SceneHandler();
 		break;
 
 	case GType_BlueForce:
-		_game = new BlueForceGame();
+		_game = new BlueForce::BlueForceGame();
+		_inventory = new BlueForce::BlueForceInvObjectList();
+		_sceneHandler = new BlueForce::SceneHandlerExt();
 		break;
 	}
 }
 
 Globals::~Globals() {
-	_globals = NULL;
+	_scenePalette.clearListeners();
 	delete _inventory;
+	delete _sceneHandler;
 	delete _game;
+	_globals = NULL;
 }
 
 void Globals::reset() {
@@ -140,15 +153,15 @@ void Globals::synchronize(Serializer &s) {
 	s.syncAsSint32LE(_gfxColors.foreground);
 	s.syncAsSint32LE(_fontColors.background);
 	s.syncAsSint32LE(_fontColors.foreground);
-	
+
 	if (s.getVersion() >= 4) {
-		s.syncAsByte(_unkColor1);
-		s.syncAsByte(_unkColor2);
-		s.syncAsByte(_unkColor3);
+		s.syncAsByte(_color1);
+		s.syncAsByte(_color2);
+		s.syncAsByte(_color3);
 	}
 
 	s.syncAsSint16LE(_dialogCenter.x); s.syncAsSint16LE(_dialogCenter.y);
-	_sceneListeners.synchronize(s);
+	_sounds.synchronize(s);
 	for (int i = 0; i < 256; ++i)
 		s.syncAsByte(_flags[i]);
 
@@ -158,4 +171,41 @@ void Globals::synchronize(Serializer &s) {
 	s.syncAsSint32LE(_stripNum);
 }
 
-} // end of namespace tSage
+void Globals::dispatchSound(ASound *obj) {
+	obj->dispatch();
+}
+
+void Globals::dispatchSounds() {
+	Common::for_each(_sounds.begin(), _sounds.end(), Globals::dispatchSound);
+}
+
+/*--------------------------------------------------------------------------*/
+
+namespace BlueForce {
+
+BlueForceGlobals::BlueForceGlobals(): Globals() {
+	_interfaceY = 0;
+	_v51C44 = 1;
+	_dayNumber = 1;
+	_v4CEA4 = 0;
+	_v4CEA8 = 0;
+	_v4CEB8 = 0;
+	_v4CEBA = 0;
+	_driveFromScene = 0;
+	_driveToScene = 0;
+	_v4CF9E = 0;
+	_v4E238 = 0;
+	_v501FC = 0;
+	_v51C42 = 0;
+	_bookmark = bNone;
+	_mapLocationId = 1;
+}
+
+void BlueForceGlobals::synchronize(Serializer &s) {
+	Globals::synchronize(s);
+	error("Sync variables");
+}
+
+} // end of namespace BlueForce
+
+} // end of namespace TsAGE

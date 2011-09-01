@@ -104,7 +104,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("rtzcd.red", "cd8b62ece4677c438688c1de3f5379b9"),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -121,7 +121,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("rtzcd.dat", "a1db8c97a78dae10f91d356f16ad07b8", 536064),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -138,7 +138,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("rtzcd.red", "c4e2430e6b6c6ff1562a80fb4a9df24c", 276177),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -156,7 +156,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("rtzcd.dat", "9d740378da2d16e83d0d0efff01bf83a"),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -173,7 +173,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("rtzcd.red", "946997d8b0aa6cb4e848bad02a1fc3d2", 276584),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -191,7 +191,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("rtzcd.dat", "9d740378da2d16e83d0d0efff01bf83a", 525824),
 			Common::DE_DEU,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -209,7 +209,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("rtzcd.red", "946997d8b0aa6cb4e848bad02a1fc3d2", 355442),
 			Common::DE_DEU,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -227,7 +227,7 @@ static const MadeGameDescription gameDescriptions[] = {
  			AD_ENTRY1s("rtzcd.dat", "5b86035aed0277f96e3d173542b5364a", 523776),
  			Common::IT_ITA,
  			Common::kPlatformPC,
- 			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
  		},
  		GID_RTZ,
@@ -245,7 +245,7 @@ static const MadeGameDescription gameDescriptions[] = {
  			AD_ENTRY1s("rtzcd.red", "946997d8b0aa6cb4e848bad02a1fc3d2", 354971),
  			Common::IT_ITA,
  			Common::kPlatformPC,
- 			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
  		},
  		GID_RTZ,
@@ -263,7 +263,7 @@ static const MadeGameDescription gameDescriptions[] = {
  			AD_ENTRY1s("rtzcd.dat", "bde8251a8e34e87c54e3f93147d56c9e", 523776),
  			Common::FR_FRA,
  			Common::kPlatformPC,
- 			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
  		},
  		GID_RTZ,
@@ -281,7 +281,7 @@ static const MadeGameDescription gameDescriptions[] = {
  			AD_ENTRY1s("rtzcd.red", "946997d8b0aa6cb4e848bad02a1fc3d2", 354614),
  			Common::FR_FRA,
  			Common::kPlatformPC,
- 			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
  		},
  		GID_RTZ,
@@ -333,7 +333,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("rtzcd.dat", "c4fccf67ad247f09b94c3c808b138576"),
 			Common::JA_JPN,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -351,7 +351,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("rtzcd.dat", "e949a6a42d82daabfa7d4dc0a87a9843"),
 			Common::JA_JPN,
 			Common::kPlatformFMTowns,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -369,7 +369,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("rtzcd.dat", "0c0117e98530c736a141c2aad6834dc5"),
 			Common::JA_JPN,
 			Common::kPlatformPC98,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_RTZ,
@@ -438,7 +438,7 @@ static const MadeGameDescription gameDescriptions[] = {
 			AD_ENTRY1("manhole.dat", "cb21e31ed35c963208343bc995225b73"),
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NOSPEECH
 		},
 		GID_MANHOLE,
@@ -577,34 +577,11 @@ static MadeGameDescription g_fallbackDesc = {
 
 } // End of namespace Made
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)Made::gameDescriptions,
-	// Size of that superset structure
-	sizeof(Made::MadeGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	madeGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"made",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NONE,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 class MadeMetaEngine : public AdvancedMetaEngine {
 public:
-	MadeMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	MadeMetaEngine() : AdvancedMetaEngine(Made::gameDescriptions, sizeof(Made::MadeGameDescription), madeGames) {
+		_singleid = "made";
+	}
 
 	virtual const char *getName() const {
 		return "MADE";
@@ -617,7 +594,7 @@ public:
 	virtual bool hasFeature(MetaEngineFeature f) const;
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
 
-	const ADGameDescription *fallbackDetect(const Common::FSList &fslist) const;
+	const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const;
 
 };
 
@@ -639,7 +616,7 @@ bool MadeMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGame
 	return gd != 0;
 }
 
-const ADGameDescription *MadeMetaEngine::fallbackDetect(const Common::FSList &fslist) const {
+const ADGameDescription *MadeMetaEngine::fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const {
 	// Set the default values for the fallback descriptor's ADGameDescription part.
 	Made::g_fallbackDesc.desc.language = Common::UNK_LANG;
 	Made::g_fallbackDesc.desc.platform = Common::kPlatformPC;

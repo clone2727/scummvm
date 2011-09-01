@@ -209,7 +209,7 @@ const byte ecoquest2SignatureEcorderTutorial[] = {
 
 const uint16 ecoquest2PatchEcorderTutorial[] = {
 	0x31, 0x23,        // bnt [next state] (save 1 byte)
-	// The parameter count below should be 7, but we're out of bytes 
+	// The parameter count below should be 7, but we're out of bytes
 	// to patch! A workaround has been added because of this
 	0x78,              // push1 (parameter count)
 	//0x39, 0x07,        // pushi 07 (parameter count)
@@ -221,7 +221,7 @@ const uint16 ecoquest2PatchEcorderTutorial[] = {
 	0x78,              // push1 (visual screen)
 	0x39, 0x17,        // pushi 17 (color)
 	0x43, 0x6c, 0x0e,  // call kGraph
-	// The parameter count below should be 5, but we're out of bytes 
+	// The parameter count below should be 5, but we're out of bytes
 	// to patch! A workaround has been added because of this
 	0x78,              // push1 (parameter count)
 	//0x39, 0x05,        // pushi 05 (parameter count)
@@ -697,7 +697,7 @@ const SciScriptSignature laurabow2Signatures[] = {
 
 // ===========================================================================
 // Mother Goose SCI1/SCI1.1
-// MG::replay somewhat calculates the savedgame-id used when saving again	
+// MG::replay somewhat calculates the savedgame-id used when saving again
 //  this doesn't work right and we remove the code completely.
 //  We set the savedgame-id directly right after restoring in kRestoreGame.
 const byte mothergoose256SignatureReplay[] = {
@@ -855,26 +855,8 @@ const uint16 qfg3PatchImportDialog[] = {
 	PATCH_END
 };
 
-// Script 23 in QFG3 has a typo/bug which makes it loop endlessly and
-// read garbage. Fixes bug #3040722.
-const byte qfg3DialogCrash[] = {
-	5,
-	0x34, 0xe7, 0x03,  // ldi 3e7 (999)
-	0x22,              // lt?
-	0x33,              // jmp [back] ---> BUG! Infinite loop
-	0
-};
-
-const uint16 qfg3PatchDialogCrash[] = {
-	0x34, 0xe7, 0x03,  // ldi 3e7 (999)
-	0x22,              // lt?
-	0x31,              // bnt [back]
-	PATCH_END
-};
-
 //    script, description,                                      magic DWORD,                                  adjust
 const SciScriptSignature qfg3Signatures[] = {
-	{     23, "dialog crash",                                   1, PATCH_MAGICDWORD(0xe7, 0x03, 0x22, 0x33),  -1,           qfg3DialogCrash,          qfg3PatchDialogCrash },
 	{    944, "import dialog continuous calls",                 1, PATCH_MAGICDWORD(0x2a, 0x31, 0x0b, 0x7a),  -1, qfg3SignatureImportDialog,         qfg3PatchImportDialog },
 	SCI_SIGNATUREENTRY_TERMINATOR
 };
@@ -1034,7 +1016,7 @@ const uint16 sq1vgaPatchEgoShowsCard[] = {
 
 //    script, description,                                      magic DWORD,                                  adjust
 const SciScriptSignature sq1vgaSignatures[] = {
-	{   58, "Sarien armory droid zapping ego first time", 1, PATCH_MAGICDWORD( 0x72, 0x88, 0x15, 0x36 ), -70,  
+	{   58, "Sarien armory droid zapping ego first time", 1, PATCH_MAGICDWORD( 0x72, 0x88, 0x15, 0x36 ), -70,
 		sq1vgaSignatureEgoShowsCard, sq1vgaPatchEgoShowsCard },
 
 	SCI_SIGNATUREENTRY_TERMINATOR};
@@ -1087,7 +1069,7 @@ void Script::applyPatch(const uint16 *patch, byte *scriptData, const uint32 scri
 		}
 		patch++;
 		patchWord = *patch;
-	}	
+	}
 }
 
 // will return -1 if no match was found, otherwise an offset to the start of the signature match

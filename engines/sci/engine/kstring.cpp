@@ -42,6 +42,14 @@ reg_t kStrCat(EngineState *s, int argc, reg_t *argv) {
 	Common::String s1 = s->_segMan->getString(argv[0]);
 	Common::String s2 = s->_segMan->getString(argv[1]);
 
+	// The Japanese version of PQ2 splits the two strings here
+	// (check bug #3396887).
+	if (g_sci->getGameId() == GID_PQ2 &&
+		g_sci->getLanguage() == Common::JA_JPN) {
+		s1 = g_sci->strSplit(s1.c_str(), NULL);
+		s2 = g_sci->strSplit(s2.c_str(), NULL);
+	}
+
 	s1 += s2;
 	s->_segMan->strcpy(argv[0], s1.c_str());
 	return argv[0];
@@ -238,14 +246,14 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 
 			/* int writelength; -- unused atm */
 
-			if (xfer && (isdigit(xfer) || xfer == '-' || xfer == '=')) {
+			if (xfer && (isdigit(static_cast<unsigned char>(xfer)) || xfer == '-' || xfer == '=')) {
 				char *destp;
 
 				if (xfer == '0')
 					fillchar = '0';
 				else if (xfer == '=')
 					align = ALIGN_CENTER;
-				else if (isdigit(xfer) || (xfer == '-'))
+				else if (isdigit(static_cast<unsigned char>(xfer)) || (xfer == '-'))
 					source--; // Go to start of length argument
 
 				str_leng = strtol(source, &destp, 10);
@@ -336,8 +344,9 @@ reg_t kFormat(EngineState *s, int argc, reg_t *argv) {
 				if (align >= 0)
 					while (str_leng-- > 1)
 						*target++ = ' '; /* Format into the text */
-
-				*target++ = arguments[paramindex++];
+				char argchar = arguments[paramindex++];
+				if (argchar)
+					*target++ = argchar;
 				mode = 0;
 			}
 			break;
@@ -427,7 +436,7 @@ reg_t kGetFarText(EngineState *s, int argc, reg_t *argv) {
 	}
 
 	seeker = (char *)textres->data;
-	
+
 	// The second parameter (counter) determines the number of the string
 	// inside the text resource.
 	while (counter--) {
@@ -715,7 +724,7 @@ reg_t kString(EngineState *s, int argc, reg_t *argv) {
 		// triggers an assert when doing string2[i + index2].
 		for (uint16 i = 0; i < count; i++)
 			string1->setValue(i + index1, string2[i + index2]);
-	
+
 		return strAddress;
 	}
 	case 7: { // Cmp
@@ -730,6 +739,10 @@ reg_t kString(EngineState *s, int argc, reg_t *argv) {
 	case 8: { // Dup
 		const char *rawString = 0;
 		uint32 size = 0;
+		reg_t stringHandle;
+		// We allocate the new string first because if the StringTable needs to
+		// grow, our rawString pointer will be invalidated
+		SciString *dupString = s->_segMan->allocateString(&stringHandle);
 
 		if (argv[1].segment == s->_segMan->getStringSegmentId()) {
 			SciString *string = s->_segMan->lookupString(argv[1]);
@@ -741,8 +754,6 @@ reg_t kString(EngineState *s, int argc, reg_t *argv) {
 			size = string.size() + 1;
 		}
 
-		reg_t stringHandle;
-		SciString *dupString = s->_segMan->allocateString(&stringHandle);
 		dupString->setSize(size);
 
 		for (uint32 i = 0; i < size; i++)
@@ -781,14 +792,14 @@ reg_t kString(EngineState *s, int argc, reg_t *argv) {
 		return NULL_REG;
 	case 15: { // upper
 		Common::String string = s->_segMan->getString(argv[1]);
-		
+
 		string.toUppercase();
 		s->_segMan->strcpy(argv[1], string.c_str());
 		return NULL_REG;
 	}
 	case 16: { // lower
 		Common::String string = s->_segMan->getString(argv[1]);
-		
+
 		string.toLowercase();
 		s->_segMan->strcpy(argv[1], string.c_str());
 		return NULL_REG;

@@ -31,8 +31,9 @@
 #include "tsage/scenes.h"
 #include "tsage/staticres.h"
 #include "tsage/globals.h"
+#include "tsage/sound.h"
 
-namespace tSage {
+namespace TsAGE {
 
 // The engine uses ScumMVM screen buffering, so all logic is hardcoded to use pane buffer 0
 #define CURRENT_PANENUM 0
@@ -52,6 +53,13 @@ InvObject::InvObject(int sceneNumber, int rlbNum, int cursorNum, CursorType curs
 	_bounds = s.getBounds();
 
 	DEALLOCATE(imgData);
+}
+
+InvObject::InvObject(int visage, int strip, int frame, int sceneNumber) {
+	_visage = visage;
+	_strip = strip;
+	_frame = frame;
+	_sceneNumber = sceneNumber;
 }
 
 void InvObject::setCursor() {
@@ -521,24 +529,30 @@ void PlayerMover::pathfind(Common::Point *routeList, Common::Point srcPos, Commo
 			break;
 		}
 
-		int var6;
-		proc1(routeRegions, srcRegion, destRegion, var6);
+		bool tempVar; // This is used only as internal state for the function.
+		calculateRestOfRoute(routeRegions, srcRegion, destRegion, tempVar);
 
+		// Empty route?
 		if (!routeRegions[0]) {
 			regionIndexes.push_back(destRegion);
 			continue;
 		}
 
-		_globals->_walkRegions._field18[0]._pt1 = srcPos;
-		_globals->_walkRegions._field18[0]._pt2 = srcPos;
-		_globals->_walkRegions._field18[1]._pt1 = destPos;
-		_globals->_walkRegions._field18[1]._pt2 = destPos;
+		// field 0 holds the start, and field 1 holds the destination
+		WRField18 &currSrcField = _globals->_walkRegions._field18[0];
+		WRField18 &currDestField = _globals->_walkRegions._field18[1];
+
+		currSrcField._pt1 = srcPos;
+		currSrcField._pt2 = srcPos;
+		currDestField._pt1 = destPos;
+		currDestField._pt2 = destPos;
 
 		int tempList[REGION_LIST_SIZE];
 		tempList[0] = 0;
 		int endIndex = 0;
 		int idx = 1;
 
+		// Find the indexes for each entry in the found route.
 		do {
 			int breakEntry = routeRegions[idx];
 			int breakEntry2 = routeRegions[idx + 1];
@@ -556,49 +570,52 @@ void PlayerMover::pathfind(Common::Point *routeList, Common::Point srcPos, Commo
 
 		tempList[idx] = 1;
 		for (int listIndex = 1; listIndex <= endIndex; ++listIndex) {
-			int var10 = tempList[listIndex];
-			int var12 = tempList[listIndex + 1];
+			int thisIdx = tempList[listIndex];
+			int nextIdx = tempList[listIndex + 1];
 
-			if (sub_F8E5(_globals->_walkRegions._field18[0]._pt1, _globals->_walkRegions._field18[var12]._pt1,
-					_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[var10]._pt2) &&
-				sub_F8E5(_globals->_walkRegions._field18[0]._pt1, _globals->_walkRegions._field18[var12]._pt2,
-					_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[var10]._pt2))
+			WRField18 &thisField = _globals->_walkRegions._field18[thisIdx];
+			WRField18 &nextField = _globals->_walkRegions._field18[nextIdx];
+
+			if (sub_F8E5_calculatePoint(currSrcField._pt1, nextField._pt1,
+					thisField._pt1, thisField._pt2) &&
+				sub_F8E5_calculatePoint(currSrcField._pt1, nextField._pt2,
+					thisField._pt1, thisField._pt2))
 				continue;
 
 			Common::Point tempPt;
-			if (sub_F8E5(_globals->_walkRegions._field18[0]._pt1, _globals->_walkRegions._field18[1]._pt1,
-					_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[var10]._pt2, &tempPt)) {
+			if (sub_F8E5_calculatePoint(currSrcField._pt1, currDestField._pt1,
+					thisField._pt1, thisField._pt2, &tempPt)) {
 				// Add point to the route list
-				_globals->_walkRegions._field18[0]._pt1 = tempPt;
+				currSrcField._pt1 = tempPt;
 				*routeList++ = tempPt;
 			} else {
-				int v16 =
-					(findDistance(_globals->_walkRegions._field18[0]._pt1, _globals->_walkRegions._field18[var10]._pt1) << 1) +
-					(findDistance(_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[1]._pt1) << 1) +
-					findDistance(_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[var12]._pt1) +
-					findDistance(_globals->_walkRegions._field18[var10]._pt1, _globals->_walkRegions._field18[var12]._pt2);
+				int dist1 =
+					(findDistance(currSrcField._pt1, thisField._pt1) << 1) +
+					(findDistance(thisField._pt1, currDestField._pt1) << 1) +
+					findDistance(thisField._pt1, nextField._pt1) +
+					findDistance(thisField._pt1, nextField._pt2);
 
-				int v1A =
-					(findDistance(_globals->_walkRegions._field18[0]._pt1, _globals->_walkRegions._field18[var10]._pt2) << 1) +
-					(findDistance(_globals->_walkRegions._field18[var10]._pt2, _globals->_walkRegions._field18[1]._pt2) << 1) +
-					findDistance(_globals->_walkRegions._field18[var10]._pt2, _globals->_walkRegions._field18[var12]._pt1) +
-					findDistance(_globals->_walkRegions._field18[var10]._pt2, _globals->_walkRegions._field18[var12]._pt2);
+				int dist2 =
+					(findDistance(currSrcField._pt1, thisField._pt2) << 1) +
+					(findDistance(thisField._pt2, currDestField._pt2) << 1) +
+					findDistance(thisField._pt2, nextField._pt1) +
+					findDistance(thisField._pt2, nextField._pt2);
 
-				if (v16 < v1A) {
-					checkMovement2(_globals->_walkRegions._field18[var10]._pt1,
-						_globals->_walkRegions._field18[var10]._pt2, 1, objPos);
+				// Do 1 step of movement, storing the new position in objPos.
+				if (dist1 < dist2) {
+					doStepsOfNpcMovement(thisField._pt1, thisField._pt2, 1, objPos);
 				} else {
-					checkMovement2(_globals->_walkRegions._field18[var10]._pt2,
-						_globals->_walkRegions._field18[var10]._pt1, 1, objPos);
+					doStepsOfNpcMovement(thisField._pt2, thisField._pt1, 1, objPos);
 				}
 
-				_globals->_walkRegions._field18[0]._pt1 = objPos;
+				// Update the current position.
+				currSrcField._pt1 = objPos;
 				*routeList++ = objPos;
 			}
 		}
 
 		// Add in the route entry
-		*routeList++ = _globals->_walkRegions._field18[1]._pt1;
+		*routeList++ = currDestField._pt1;
 	}
 
 	// Mark the end of the path
@@ -746,7 +763,7 @@ int PlayerMover::checkMover(Common::Point &srcPos, const Common::Point &destPos)
 	return regionIndex;
 }
 
-void PlayerMover::checkMovement2(const Common::Point &srcPos, const Common::Point &destPos, int numSteps, Common::Point &ptOut) {
+void PlayerMover::doStepsOfNpcMovement(const Common::Point &srcPos, const Common::Point &destPos, int numSteps, Common::Point &ptOut) {
 	Common::Point objPos = _sceneObject->_position;
 	_sceneObject->_position = srcPos;
 	uint32 regionBitList = _sceneObject->_regionBitList;
@@ -771,9 +788,10 @@ void PlayerMover::checkMovement2(const Common::Point &srcPos, const Common::Poin
 	_sceneObject->_mover = this;
 }
 
-int PlayerMover::proc1(int *routeList, int srcRegion, int destRegion, int &v) {
+int PlayerMover::calculateRestOfRoute(int *routeList, int srcRegion, int destRegion, bool &foundRoute) {
+	// Make a copy of the provided route. The first entry is the size.
 	int tempList[REGION_LIST_SIZE + 1];
-	v = 0;
+	foundRoute = false;
 	for (int idx = 0; idx <= *routeList; ++idx)
 		tempList[idx] = routeList[idx];
 
@@ -791,24 +809,28 @@ int PlayerMover::proc1(int *routeList, int srcRegion, int destRegion, int &v) {
 	WalkRegion &srcWalkRegion = _globals->_walkRegions[srcRegion];
 	int distance;
 	if (!routeList[0]) {
-		// No route
+		// The route is empty (new route).
 		distance = 0;
 	} else {
+		// Find the distance from the last region in the route.
 		WalkRegion &region = _globals->_walkRegions[routeList[*routeList]];
 		distance = findDistance(srcWalkRegion._pt, region._pt);
 	}
 
+	// Add the srcRegion to the end of the route.
 	tempList[++*tempList] = srcRegion;
-	int newIndex = *tempList;
+	int ourListSize = *tempList;
 
 	if (srcRegion == destRegion) {
-		v = 1;
-		for (int idx = newIndex; idx <= *tempList; ++idx) {
+		// We made a route to the destination; copy that route and return.
+		foundRoute = true;
+		for (int idx = ourListSize; idx <= *tempList; ++idx) {
 			routeList[idx] = tempList[idx];
 			++*routeList;
 		}
 		return distance;
 	} else {
+		// Find the first connected region leading to our destination.
 		int foundIndex = 0;
 		int idx = 0;
 		int currDest;
@@ -821,27 +843,32 @@ int PlayerMover::proc1(int *routeList, int srcRegion, int destRegion, int &v) {
 			++idx;
 		}
 
-		int resultOffset = 31990;
-		while (((currDest = _globals->_walkRegions._idxList[srcWalkRegion._idxListIndex + foundIndex]) != 0) && (v == 0)) {
-			int newDistance = proc1(tempList, currDest, destRegion, v);
+		// Check every connected region until we find a route to the destination (or we have no more to check).
+		int bestDistance = 31990;
+		while (((currDest = _globals->_walkRegions._idxList[srcWalkRegion._idxListIndex + foundIndex]) != 0) && (!foundRoute)) {
+			int newDistance = calculateRestOfRoute(tempList, currDest, destRegion, foundRoute);
 
-			if ((newDistance <= resultOffset) || v) {
-				routeList[0] = newIndex - 1;
+			if ((newDistance <= bestDistance) || foundRoute) {
+				// We found a shorter possible route, or one leading to the destination.
 
-				for (int i = newIndex; i <= tempList[0]; ++i) {
+				// Overwrite the route with this new one.
+				routeList[0] = ourListSize - 1;
+
+				for (int i = ourListSize; i <= tempList[0]; ++i) {
 					routeList[i] = tempList[i];
 					++routeList[0];
 				}
 
-				resultOffset = newDistance;
+				bestDistance = newDistance;
 			}
 
-			tempList[0] = newIndex;
+			// Truncate our local list to the size it was before the call.
+			tempList[0] = ourListSize;
 			++foundIndex;
 		}
 
-		v = 0;
-		return resultOffset + distance;
+		foundRoute = false;
+		return bestDistance + distance;
 	}
 }
 
@@ -855,71 +882,62 @@ int PlayerMover::findDistance(const Common::Point &pt1, const Common::Point &pt2
 	return (int)sqrt(xx + yy);
 }
 
-bool PlayerMover::sub_F8E5(const Common::Point &pt1, const Common::Point &pt2, const Common::Point &pt3,
+bool PlayerMover::sub_F8E5_calculatePoint(const Common::Point &pt1, const Common::Point &pt2, const Common::Point &pt3,
 						  const Common::Point &pt4, Common::Point *ptOut) {
-	double diff1 = pt2.x - pt1.x;
-	double diff2 = pt2.y - pt1.y;
-	double diff3 = pt4.x - pt3.x;
-	double diff4 = pt4.y - pt3.y;
-	double var10 = 0.0, var8 = 0.0;
-	double var18 = 0.0, var20 = 0.0;
+	double diffX1 = pt2.x - pt1.x;
+	double diffY1 = pt2.y - pt1.y;
+	double diffX2 = pt4.x - pt3.x;
+	double diffY2 = pt4.y - pt3.y;
+	double ratio1 = 0.0, ratio2 = 0.0;
+	double adjustedY1 = 0.0, adjustedY2 = 0.0;
 
-	if (diff1 != 0.0) {
-		var8 = diff2 / diff1;
-		var18 = pt1.y - (pt1.x * var8);
+	// Calculate the ratios between the X and Y points.
+	if (diffX1 != 0.0) {
+		ratio1 = diffY1 / diffX1;
+		adjustedY1 = pt1.y - (pt1.x * ratio1);
 	}
-	if (diff3 != 0.0) {
-		var10 = diff4 / diff3;
-		var20 = pt3.y - (pt3.x * var10);
+	if (diffX2 != 0.0) {
+		ratio2 = diffY2 / diffX2;
+		adjustedY2 = pt3.y - (pt3.x * ratio2);
 	}
 
-	if (var8 == var10)
+	if (ratio1 == ratio2)
 		return false;
 
-	double var48, var50;
-	if (diff1 == 0) {
-		if (diff3 == 0)
+	double xPos, yPos;
+	if (diffX1 == 0) {
+		if (diffX2 == 0)
 			return false;
 
-		var48 = pt1.x;
-		var50 = var10 * var48 + var20;
+		xPos = pt1.x;
+		yPos = ratio2 * xPos + adjustedY2;
 	} else {
-		var48 = (diff3 == 0) ? pt3.x : (var20 - var18) / (var8 - var10);
-		var50 = var8 * var48 + var18;
+		xPos = (diffX2 == 0) ? pt3.x : (adjustedY2 - adjustedY1) / (ratio1 - ratio2);
+		yPos = ratio1 * xPos + adjustedY1;
 	}
 
-	bool var52 = false, var56 = false, var54 = false, var58 = false;
-	Common::Point tempPt((int)(var48 + 0.5), (int)(var50 + 0.5));
+	// This is our candidate point, which we must check for validity.
+	Common::Point tempPt((int)(xPos + 0.5), (int)(yPos + 0.5));
 
-	if ((tempPt.x >= pt3.x) && (tempPt.x <= pt4.x))
-		var56 = true;
-	else if ((tempPt.x >= pt4.x) && (tempPt.x <= pt3.x))
-		var56 = true;
-	if (var56) {
-		if ((tempPt.y >= pt3.y) && (tempPt.y <= pt4.y))
-			var58 = true;
-		else if ((tempPt.y >= pt4.y) && (tempPt.y <= pt3.y))
-			var58 = true;
-	}
+	// Is tempPt inside the second bounds?
+	if (!((tempPt.x >= pt3.x) && (tempPt.x <= pt4.x)))
+		if (!((tempPt.x >= pt4.x) && (tempPt.x <= pt3.x)))
+			return false;
+	if (!((tempPt.y >= pt3.y) && (tempPt.y <= pt4.y)))
+		if (!((tempPt.y >= pt4.y) && (tempPt.y <= pt3.y)))
+			return false;
 
-	if ((tempPt.x >= pt1.x) && (tempPt.x <= pt2.x))
-		var52 = true;
-	else if ((tempPt.x >= pt2.x) && (tempPt.x <= pt1.x))
-		var52 = true;
-	if (var52) {
-		if ((tempPt.y >= pt1.y) && (tempPt.y <= pt2.y))
-			var54 = true;
-		else if ((tempPt.y >= pt2.y) && (tempPt.y <= pt1.y))
-			var54 = true;
-	}
+	// Is tempPt inside the first bounds?
+	if (!((tempPt.x >= pt1.x) && (tempPt.x <= pt2.x)))
+		if (!((tempPt.x >= pt2.x) && (tempPt.x <= pt1.x)))
+			return false;
+	if (!((tempPt.y >= pt1.y) && (tempPt.y <= pt2.y)))
+		if (!((tempPt.y >= pt2.y) && (tempPt.y <= pt1.y)))
+			return false;
 
-	if (var52 && var54 && var56 && var58) {
-		if (ptOut)
-			*ptOut = tempPt;
-		return true;
-	}
-
-	return false;
+	if (ptOut)
+		*ptOut = tempPt;
+	return true;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1150,6 +1168,20 @@ void PaletteFader::remove() {
 		action->signal();
 }
 
+void PaletteFader::setPalette(ScenePalette *palette, int step) {
+	if (step < 0) {
+		// Reverse step means moving from dest palette to source, so swap the two palettes
+		byte tempPal[256 * 3];
+		Common::copy(&palette->_palette[0], &palette->_palette[256 * 3], &tempPal[0]);
+		Common::copy(&this->_palette[0], &this->_palette[256 * 3], &palette->_palette[0]);
+		Common::copy(&tempPal[0], &tempPal[256 * 3], &this->_palette[0]);
+
+		step = -step;
+	}
+
+	PaletteModifierCached::setPalette(palette, step);
+}
+
 /*--------------------------------------------------------------------------*/
 
 ScenePalette::ScenePalette() {
@@ -1210,6 +1242,15 @@ void ScenePalette::refresh() {
  */
 void ScenePalette::setPalette(int index, int count) {
 	g_system->getPaletteManager()->setPalette((const byte *)&_palette[index * 3], index, count);
+}
+
+/**
+ * Set a palette entry
+ */
+void ScenePalette::setEntry(int index, uint r, uint g, uint b) {
+	_palette[index * 3] = r;
+	_palette[index * 3 + 1] = g;
+	_palette[index * 3 + 2] = b;
 }
 
 /**
@@ -1303,7 +1344,7 @@ PaletteRotation *ScenePalette::addRotation(int start, int end, int rotationMode,
 	return obj;
 }
 
-PaletteFader *ScenePalette::addFader(const byte *arrBufferRGB, int palSize, int percent, Action *action) {
+PaletteFader *ScenePalette::addFader(const byte *arrBufferRGB, int palSize, int step, Action *action) {
 	PaletteFader *fader = new PaletteFader();
 	fader->_action = action;
 	for (int i = 0; i < 256 * 3; i += 3) {
@@ -1315,7 +1356,7 @@ PaletteFader *ScenePalette::addFader(const byte *arrBufferRGB, int palSize, int 
 			arrBufferRGB += 3;
 	}
 
-	fader->setPalette(this, percent);
+	fader->setPalette(this, step);
 	_globals->_scenePalette._listeners.push_back(fader);
 	return fader;
 }
@@ -1422,7 +1463,11 @@ bool SceneItem::contains(const Common::Point &pt) {
 }
 
 void SceneItem::display(int resNum, int lineNum, ...) {
-	Common::String msg = !resNum ? Common::String() : _resourceManager->getMessage(resNum, lineNum);
+	Common::String msg = (!resNum || (resNum == -1)) ? Common::String() : 
+		_resourceManager->getMessage(resNum, lineNum);
+
+	if ((_vm->getGameID() == GType_BlueForce) && BF_GLOBALS._uiElements._active)
+		BF_GLOBALS._uiElements.hide();
 
 	if (_globals->_sceneObjects->contains(&_globals->_sceneText)) {
 		_globals->_sceneText.remove();
@@ -1434,11 +1479,14 @@ void SceneItem::display(int resNum, int lineNum, ...) {
 	Rect textRect;
 	int maxWidth = 120;
 	bool keepOnscreen = false;
-	bool centerText = true;
+	bool centerText = _vm->getGameID() == GType_Ringworld;
 
-	if (resNum) {
+	if (resNum != 0) {
 		va_list va;
 		va_start(va, lineNum);
+
+		if (resNum == -1)
+			msg = Common::String(va_arg(va, const char *));
 
 		int mode;
 		do {
@@ -1541,7 +1589,7 @@ void SceneItem::display(int resNum, int lineNum, ...) {
 		Event event;
 
 		// Keep event on-screen until a mouse or keypress
-		while (!_vm->getEventManager()->shouldQuit() && !_globals->_events.getEvent(event,
+		while (!_vm->shouldQuit() && !_globals->_events.getEvent(event,
 				EVENT_BUTTON_DOWN | EVENT_KEYPRESS)) {
 			g_system->updateScreen();
 			g_system->delayMillis(10);
@@ -1549,6 +1597,31 @@ void SceneItem::display(int resNum, int lineNum, ...) {
 
 		_globals->_sceneText.remove();
 	}
+
+	if ((_vm->getGameID() == GType_BlueForce) && BF_GLOBALS._uiElements._active)
+		BF_GLOBALS._uiElements.show();
+}
+
+void SceneItem::display2(int resNum, int lineNum) {
+	if (_vm->getGameID() == GType_BlueForce)
+		display(resNum, lineNum, SET_WIDTH, 312, 
+			SET_X, 4 + GLOBALS._sceneManager._scene->_sceneBounds.left, 
+			SET_Y, GLOBALS._sceneManager._scene->_sceneBounds.top + BF_INTERFACE_Y + 2,
+			SET_FONT, 4, SET_BG_COLOR, 1, SET_FG_COLOR, 19, SET_EXT_BGCOLOR, 9,
+			SET_EXT_FGCOLOR, 13, LIST_END);
+	else
+		display(resNum, lineNum, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+}
+
+void SceneItem::display(const Common::String &msg) {
+	assert(_vm->getGameID() == GType_BlueForce);
+
+	display(-1, -1, msg.c_str(),
+		SET_WIDTH, 312, 
+		SET_X, 4 + GLOBALS._sceneManager._scene->_sceneBounds.left, 
+		SET_Y, GLOBALS._sceneManager._scene->_sceneBounds.top + BF_INTERFACE_Y + 2,
+		SET_FONT, 4, SET_BG_COLOR, 1, SET_FG_COLOR, 19, SET_EXT_BGCOLOR, 9,
+		SET_EXT_FGCOLOR, 13, LIST_END);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1556,23 +1629,40 @@ void SceneItem::display(int resNum, int lineNum, ...) {
 void SceneHotspot::doAction(int action) {
 	switch ((int)action) {
 	case CURSOR_LOOK:
-		display(1, 0, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+		if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display(LOOK_SCENE_HOTSPOT);
+		else
+			display(1, 0, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		break;
 	case CURSOR_USE:
-		display(1, 5, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+		if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display(USE_SCENE_HOTSPOT);
+		else
+			display(1, 5, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		break;
 	case CURSOR_TALK:
-		display(1, 15, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+		if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display(TALK_SCENE_HOTSPOT);
+		else
+			display(1, 15, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		break;
 	case CURSOR_WALK:
 		break;
 	default:
-		display(2, action, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+		if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display(DEFAULT_SCENE_HOTSPOT);
+		else
+			display(2, action, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		break;
 	}
 }
 
 /*--------------------------------------------------------------------------*/
+
+NamedHotspot::NamedHotspot() : SceneHotspot() {
+	_resNum = 0;
+	_lookLineNum = _useLineNum = _talkLineNum = -1;
+}
 
 void NamedHotspot::doAction(int action) {
 	switch (action) {
@@ -1582,14 +1672,26 @@ void NamedHotspot::doAction(int action) {
 	case CURSOR_LOOK:
 		if (_lookLineNum == -1)
 			SceneHotspot::doAction(action);
+		else if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display2(_resNum, _lookLineNum);
 		else
-			SceneItem::display(_resnum, _lookLineNum, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+			SceneItem::display(_resNum, _lookLineNum, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
 		break;
 	case CURSOR_USE:
 		if (_useLineNum == -1)
 			SceneHotspot::doAction(action);
+		else if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display2(_resNum, _useLineNum);
 		else
-			SceneItem::display(_resnum, _useLineNum, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+			SceneItem::display(_resNum, _useLineNum, SET_Y, 20, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
+		break;
+	case CURSOR_TALK:
+		if (_talkLineNum == -1)
+			SceneHotspot::doAction(action);
+		else if (_vm->getGameID() == GType_BlueForce)
+			SceneItem::display2(_resNum, _talkLineNum);
+		else
+			SceneItem::display2(_resNum, _talkLineNum);
 		break;
 	default:
 		SceneHotspot::doAction(action);
@@ -1599,17 +1701,52 @@ void NamedHotspot::doAction(int action) {
 
 void NamedHotspot::setup(int ys, int xs, int ye, int xe, const int resnum, const int lookLineNum, const int useLineNum) {
 	setBounds(ys, xe, ye, xs);
-	_resnum = resnum;
+	_resNum = resnum;
 	_lookLineNum = lookLineNum;
 	_useLineNum = useLineNum;
+	_talkLineNum = -1;
 	_globals->_sceneItems.addItems(this, NULL);
+}
+
+void NamedHotspot::setup(const Rect &bounds, int resNum, int lookLineNum, int talkLineNum, int useLineNum, int mode, SceneItem *item) {
+	setBounds(bounds);
+	_resNum = resNum;
+	_lookLineNum = lookLineNum;
+	_talkLineNum = talkLineNum;
+	_useLineNum = useLineNum;
+
+	switch (mode) {
+	case 2:
+		_globals->_sceneItems.push_front(this);
+		break;
+	case 4:
+		_globals->_sceneItems.addBefore(item, this);
+		break;
+	case 5:
+		_globals->_sceneItems.addAfter(item, this);
+		break;
+	default:
+		_globals->_sceneItems.push_back(this);
+		break;
+	}
+}
+
+void NamedHotspot::setup(int sceneRegionId, int resNum, int lookLineNum, int talkLineNum, int useLineNum, int mode) {
+	_sceneRegionId = sceneRegionId;
+	_resNum = resNum;
+	_lookLineNum = lookLineNum;
+	_talkLineNum = talkLineNum;
+	_useLineNum = useLineNum;
 }
 
 void NamedHotspot::synchronize(Serializer &s) {
 	SceneHotspot::synchronize(s);
-	s.syncAsSint16LE(_resnum);
+	s.syncAsSint16LE(_resNum);
 	s.syncAsSint16LE(_lookLineNum);
 	s.syncAsSint16LE(_useLineNum);
+
+	if (_vm->getGameID() == GType_BlueForce)
+		s.syncAsSint16LE(_talkLineNum);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1630,6 +1767,11 @@ void SceneObjectWrapper::remove() {
 }
 
 void SceneObjectWrapper::dispatch() {
+	if (_vm->getGameID() == GType_Ringworld)
+		check();
+}
+
+void SceneObjectWrapper::check() {
 	_visageImages.setVisage(_sceneObject->_visage);
 	int frameCount = _visageImages.getFrameCount();
 	int angle = _sceneObject->_angle;
@@ -1688,9 +1830,12 @@ SceneObject::SceneObject() : SceneHotspot() {
 	_sceneRegionId = 0;
 	_percent = 100;
 	_flags |= OBJFLAG_PANES;
+	_priority = 0;
 
 	_frameChange = 0;
 	_visage = 0;
+	_strip = 0;
+	_frame = 0;
 }
 
 SceneObject::SceneObject(const SceneObject &so) : SceneHotspot() {
@@ -1977,6 +2122,7 @@ void SceneObject::animate(AnimateMode animMode, ...) {
 		break;
 
 	case ANIM_MODE_8:
+	case ANIM_MODE_9:
 		_field68 = va_arg(va, int);
 		_endAction = va_arg(va, Action *);
 		_frameChange = 1;
@@ -2163,7 +2309,25 @@ void SceneObject::dispatch() {
 			} else {
 				setFrame(changeFrame());
 			}
+			break;
 
+		case ANIM_MODE_9:
+			if (_frame == _endFrame) {
+				if (_frameChange != -1) {
+					_frameChange = -1;
+					_strip = ((_strip - 1) ^ 1) + 1;
+					_endFrame = 1;
+				} else if ((_field68 == 0) || (--_field68 != 0)) {
+					_frameChange = 1;
+					_endFrame = getFrameCount();
+
+					setFrame(changeFrame());
+				} else {
+					animEnded();
+				}
+			} else {
+				setFrame(changeFrame());
+			}
 			break;
 
 		default:
@@ -2190,10 +2354,6 @@ void SceneObject::calcAngle(const Common::Point &pt) {
 void SceneObject::removeObject() {
 	_globals->_sceneItems.remove(this);
 	_globals->_sceneObjects->remove(this);
-
-	if (_visage) {
-		_visage = 0;
-	}
 
 	if (_objectWrapper) {
 		_objectWrapper->remove();
@@ -2252,6 +2412,18 @@ void SceneObject::updateScreen() {
 	}
 }
 
+void SceneObject::updateAngle(SceneObject *sceneObj) {
+	checkAngle(sceneObj);
+	if (_objectWrapper)
+		_objectWrapper->check();
+}
+
+void SceneObject::changeAngle(int angle) {
+	_angle = angle;
+	if (_objectWrapper)
+		_objectWrapper->check();
+}
+
 void SceneObject::setup(int visage, int stripFrameNum, int frameNum, int posX, int posY, int priority) {
 	postInit();
 	setVisage(visage);
@@ -2259,6 +2431,16 @@ void SceneObject::setup(int visage, int stripFrameNum, int frameNum, int posX, i
 	setFrame(frameNum);
 	setPosition(Common::Point(posX, posY), 0);
 	fixPriority(priority);
+}
+
+/*--------------------------------------------------------------------------*/
+
+void AltSceneObject::postInit(SceneObjectList *OwnerList) {
+	SceneObject::postInit(&_globals->_sceneManager._altSceneObjects);
+}
+
+void AltSceneObject::draw() {
+	SceneObject::draw();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -2574,8 +2756,8 @@ void SceneText::synchronize(Serializer &s) {
 /*--------------------------------------------------------------------------*/
 
 Visage::Visage() {
-	_resNum = 0;
-	_rlbNum = 0;
+	_resNum = -1;
+	_rlbNum = -1;
 	_data = NULL;
 }
 
@@ -2602,7 +2784,27 @@ void Visage::setVisage(int resNum, int rlbNum) {
 		_resNum = resNum;
 		_rlbNum = rlbNum;
 		DEALLOCATE(_data);
-		_data = _resourceManager->getResource(RES_VISAGE, resNum, rlbNum);
+
+		if (_vm->getGameID() == GType_Ringworld) {
+			// In Ringworld, we immediately get the data
+			_data = _resourceManager->getResource(RES_VISAGE, resNum, rlbNum);
+		} else {
+			// Blue Force has an extra indirection via a visage index file
+			byte *indexData = _resourceManager->getResource(RES_VISAGE, resNum, 9999);
+			if (rlbNum == 0)
+				rlbNum = 1;
+
+			// Get the flags/rlbNum to use
+			uint32 flags = READ_LE_UINT32(indexData + (rlbNum - 1) * 4 + 2);
+
+			if (flags & 0xC0000000) {
+				// TODO: See whether rest of flags dword is needed
+				rlbNum = (int)(flags & 0xff);
+			}
+
+			_data = _resourceManager->getResource(RES_VISAGE, resNum, rlbNum);
+		}
+
 		assert(_data);
 	}
 }
@@ -2651,11 +2853,16 @@ void Player::disableControl() {
 	_canWalk = false;
 	_uiEnabled = false;
 	_globals->_events.setCursor(CURSOR_NONE);
+	_enabled = false;
+
+	if ((_vm->getGameID() == GType_BlueForce) && BF_GLOBALS._uiElements._active)
+		BF_GLOBALS._uiElements.hide();
 }
 
 void Player::enableControl() {
 	_canWalk = true;
 	_uiEnabled = true;
+	_enabled = true;
 	_globals->_events.setCursor(CURSOR_WALK);
 
 	switch (_globals->_events.getCursor()) {
@@ -2669,6 +2876,9 @@ void Player::enableControl() {
 		_globals->_events.setCursor(CURSOR_WALK);
 		break;
 	}
+
+	if ((_vm->getGameID() == GType_BlueForce) && BF_GLOBALS._uiElements._active)
+		BF_GLOBALS._uiElements.show();
 }
 
 void Player::process(Event &event) {
@@ -2691,6 +2901,9 @@ void Player::synchronize(Serializer &s) {
 	s.syncAsByte(_canWalk);
 	s.syncAsByte(_uiEnabled);
 	s.syncAsSint16LE(_field8C);
+
+	if (_vm->getGameID() == GType_BlueForce)
+		s.syncAsByte(_enabled);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -2858,8 +3071,6 @@ void Region::draw() {
 }
 
 void Region::uniteLine(int yp, LineSliceSet &sliceSet) {
-	// TODO: More properly implement like the original
-
 	// First expand the bounds as necessary to fit in the row
 	if (_ySlices.empty()) {
 		_bounds = Rect(sliceSet.items[0].xs, yp, sliceSet.items[sliceSet.items.size() - 1].xe, yp + 1);
@@ -2951,55 +3162,6 @@ int SceneRegions::indexOf(const Common::Point &pt) {
 
 /*--------------------------------------------------------------------------*/
 
-SoundHandler::SoundHandler() {
-	_action = NULL;
-	_field280 = -1;
-	if (_globals)
-		_globals->_sceneListeners.push_back(this);
-}
-
-SoundHandler::~SoundHandler() {
-	if (_globals)
-		_globals->_sceneListeners.remove(this);
-}
-
-void SoundHandler::dispatch() {
-	EventHandler::dispatch();
-	int v = _sound.proc12();
-
-	if (v != -1) {
-		_field280 = v;
-		_sound.proc2(-1);
-
-		if (_action)
-			_action->signal();
-	}
-
-	if (_field280 != -1) {
-		// FIXME: Hardcoded to only flag a sound ended if an action has been set
-		if (_action) {
-//		if (!_sound.proc3()) {
-			_field280 = -1;
-			if (_action) {
-				_action->signal();
-				_action = NULL;
-			}
-		}
-	}
-}
-
-void SoundHandler::startSound(int soundNum, Action *action, int volume) {
-	_action = action;
-	_field280 = 0;
-	setVolume(volume);
-	_sound.startSound(soundNum);
-
-	warning("TODO: SoundHandler::startSound");
-}
-
-
-/*--------------------------------------------------------------------------*/
-
 void SceneItemList::addItems(SceneItem *first, ...) {
 	va_list va;
 	va_start(va, first);
@@ -3062,13 +3224,12 @@ void WalkRegion::loadProcessList(byte *dataP, int dataSize, int &dataIndex, int 
 		int yp = READ_LE_UINT16(dataP + idx * 4 + 2);
 		if (yp != y1) {
 			/*
-			 * Commented out: doesn't seem to be used
+			 * Commented out: v doesn't seem to be used
 			int v;
 			if (idx == (dataSize - 1))
 				v = READ_LE_UINT16(dataP + 2);
 			else
 				v = process1(idx, dataP, dataSize);
-			warning("TODO: v not used? - %d", v);
 			*/
 			process2(dataIndex, x1, y1, xp, yp);
 			++dataIndex;
@@ -3467,11 +3628,16 @@ void GameHandler::synchronize(Serializer &s) {
 SceneHandler::SceneHandler() {
 	_saveGameSlot = -1;
 	_loadGameSlot = -1;
+	_prevFrameNumber = 0;
 }
 
 void SceneHandler::registerHandler() {
 	postInit();
 	_globals->_game->addHandler(this);
+}
+
+uint32 SceneHandler::getFrameDifference() {
+	return GLOBALS._events.getFrameNumber() - _prevFrameNumber;
 }
 
 void SceneHandler::postInit(SceneObjectList *OwnerList) {
@@ -3480,8 +3646,9 @@ void SceneHandler::postInit(SceneObjectList *OwnerList) {
 	_globals->_scenePalette.loadPalette(0);
 	_globals->_scenePalette.refresh();
 
-	// TODO: Bunch of other scene related setup goes here
 	_globals->_soundManager.postInit();
+	_globals->_soundManager.buildDriverList(true);
+	_globals->_soundManager.installConfigDrivers();
 
 	_globals->_game->start();
 }
@@ -3498,9 +3665,7 @@ void SceneHandler::process(Event &event) {
 	// Check for displaying right-click dialog
 	if ((event.eventType == EVENT_BUTTON_DOWN) && (event.btnState == BTNSHIFT_RIGHT) &&
 			_globals->_player._uiEnabled) {
-		RightClickDialog *dlg = new RightClickDialog();
-		dlg->execute();
-		delete dlg;
+		_globals->_game->rightClick();
 
 		event.handled = true;
 		return;
@@ -3537,7 +3702,7 @@ void SceneHandler::process(Event &event) {
 
 			if (i != _globals->_sceneItems.end()) {
 				// Pass the action to the item
-				(*i)->doAction(_globals->_events.getCursor());
+				(*i)->startAction(_globals->_events.getCursor());
 				event.handled = _globals->_events.getCursor() != CURSOR_WALK;
 
 				if (_globals->_player._uiEnabled && _globals->_player._canWalk &&
@@ -3584,12 +3749,22 @@ void SceneHandler::dispatch() {
 	if (_globals->_sceneManager._scene)
 		_globals->_sceneManager._scene->dispatch();
 
-	//TODO: Figure out purpose of the given list
-	//_globals->_regions.forEach(SceneHandler::handleListener);
+	// Not actually used
+	//_eventListeners.forEach(SceneHandler::handleListener);
 
+	// Handle pending events
 	Event event;
-	while (_globals->_events.getEvent(event))
+	if (_globals->_events.getEvent(event)) {
+		// Process pending events
+		do {
+			process(event);
+		} while (_globals->_events.getEvent(event));
+	} else if (_vm->getGameID() == GType_BlueForce) {
+		// For Blue Force, 'none' events need to be generated in the absence of any
+		event.eventType = EVENT_NONE;
+		event.mousePos = _globals->_events._mousePos;
 		process(event);
+	}
 
 	// Handle drawing the contents of the scene
 	if (_globals->_sceneManager._scene)
@@ -3610,7 +3785,6 @@ void SceneHandler::dispatchObject(EventHandler *obj) {
 }
 
 void SceneHandler::saveListener(Serializer &ser) {
-	warning("TODO: SceneHandler::saveListener");
 }
 
-} // End of namespace tSage
+} // End of namespace TsAGE

@@ -28,6 +28,7 @@
 
 #include "common/config-manager.h"
 #include "engines/advancedDetector.h"
+#include "engines/obsolete.h"
 #include "common/system.h"
 #include "graphics/thumbnail.h"
 
@@ -66,9 +67,6 @@ int SagaEngine::getGameId() const { return _gameDescription->gameId; }
 uint32 SagaEngine::getFeatures() const {
 	uint32 result = _gameDescription->features;
 
-	if (_gf_wyrmkeep)
-		result |= GF_WYRMKEEP;
-
 	return result;
 }
 
@@ -91,7 +89,7 @@ static const PlainGameDescriptor sagaGames[] = {
 	{0, 0}
 };
 
-static const ADObsoleteGameID obsoleteGameIDsTable[] = {
+static const Engines::ObsoleteGameID obsoleteGameIDsTable[] = {
 	{"ite", "saga", Common::kPlatformUnknown},
 	{"ihnm", "saga", Common::kPlatformUnknown},
 	{"dino", "saga", Common::kPlatformUnknown},
@@ -101,34 +99,15 @@ static const ADObsoleteGameID obsoleteGameIDsTable[] = {
 
 #include "saga/detection_tables.h"
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)Saga::gameDescriptions,
-	// Size of that superset structure
-	sizeof(Saga::SAGAGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	sagaGames,
-	// Structure for autoupgrading obsolete targets
-	obsoleteGameIDsTable,
-	// Name of single gameid (optional)
-	"saga",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NONE,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 class SagaMetaEngine : public AdvancedMetaEngine {
 public:
-	SagaMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	SagaMetaEngine() : AdvancedMetaEngine(Saga::gameDescriptions, sizeof(Saga::SAGAGameDescription), sagaGames) {
+		_singleid = "saga";
+	}
+
+	virtual GameDescriptor findGame(const char *gameid) const {
+		return Engines::findGameID(gameid, _gameids, obsoleteGameIDsTable);
+	}
 
 	virtual const char *getName() const {
 		return "SAGA ["
@@ -157,7 +136,13 @@ public:
 	}
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
+
+	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const {
+		Engines::upgradeTargetIfNecessary(obsoleteGameIDsTable);
+		return AdvancedMetaEngine::createInstance(syst, engine);
+	}
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
+
 	virtual SaveStateList listSaves(const char *target) const;
 	virtual int getMaximumSaveSlot() const;
 	virtual void removeSaveState(const char *target, int slot) const;
@@ -271,13 +256,7 @@ SaveStateDescriptor SagaMetaEngine::querySaveMetaInfos(const char *target, int s
 		desc.setWriteProtectedFlag(false);
 
 		if (version >= 6) {
-			Graphics::Surface *thumbnail = new Graphics::Surface();
-			assert(thumbnail);
-			if (!Graphics::loadThumbnail(*in, *thumbnail)) {
-				delete thumbnail;
-				thumbnail = 0;
-			}
-
+			Graphics::Surface *const thumbnail = Graphics::loadThumbnail(*in);
 			desc.setThumbnail(thumbnail);
 
 			uint32 saveDate = in->readUint32BE();

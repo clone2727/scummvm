@@ -60,14 +60,13 @@
 #include "backends/fs/ps2/ps2-fs-factory.h"
 #include "backends/plugins/ps2/ps2-provider.h"
 
-#include "backends/saves/default/default-saves.h"
 #include "backends/timer/default/default-timer.h"
 
 #include "audio/mixer_intern.h"
 
 #include "engines/engine.h"
 
-#include "graphics/font.h"
+#include "graphics/fonts/bdf.h"
 #include "graphics/surface.h"
 
 #include "icon.h"
@@ -97,7 +96,7 @@ OSystem_PS2 *g_systemPs2;
 #define FOREVER 2147483647
 
 namespace Graphics {
-	extern const NewFont g_sysfont;
+	extern const BdfFont g_sysfont;
 };
 
 PS2Device detectBootPath(const char *elfPath, char *bootPath);
@@ -348,14 +347,14 @@ OSystem_PS2::OSystem_PS2(const char *elfPath) {
 
 void OSystem_PS2::init(void) {
 	sioprintf("Timer...\n");
-	_scummTimerManager = new DefaultTimerManager();
+	_timerManager = new DefaultTimerManager();
 	_scummMixer = new Audio::MixerImpl(this, 48000);
 	_scummMixer->setReady(true);
 
 	initTimer();
 
 	sioprintf("Starting SavefileManager\n");
-	_saveManager = new Ps2SaveFileManager(this, _screen);
+	_savefileManager = new Ps2SaveFileManager(this, _screen);
 
 	sioprintf("Initializing ps2Input\n");
 	_input = new Ps2Input(this, _useMouse, _useKbd);
@@ -430,7 +429,7 @@ void OSystem_PS2::initTimer(void) {
 void OSystem_PS2::timerThreadCallback(void) {
 	while (!_systemQuit) {
 		WaitSema(g_TimerThreadSema);
-		_scummTimerManager->handler();
+		((DefaultTimerManager *)_timerManager)->handler();
 	}
 	ExitThread();
 }
@@ -600,16 +599,8 @@ void OSystem_PS2::delayMillis(uint msecs) {
 	}
 }
 
-Common::TimerManager *OSystem_PS2::getTimerManager() {
-	return _scummTimerManager;
-}
-
 Audio::Mixer *OSystem_PS2::getMixer() {
 	return _scummMixer;
-}
-
-Common::SaveFileManager *OSystem_PS2::getSavefileManager(void) {
-	return _saveManager;
 }
 
 FilesystemFactory *OSystem_PS2::getFilesystemFactory() {
@@ -770,7 +761,7 @@ void OSystem_PS2::msgPrintf(int millis, const char *format, ...) {
 
 void OSystem_PS2::powerOffCallback(void) {
 	sioprintf("powerOffCallback\n");
-	// _saveManager->quit(); // romeo
+	// _savefileManager->quit(); // romeo
 	if (_useHdd) {
 		sioprintf("umount\n");
 		fio.umount("pfs0:");
@@ -810,7 +801,7 @@ void OSystem_PS2::quit(void) {
 		DisableIntc(INT_TIMER0);
 		RemoveIntcHandler(INT_TIMER0, _intrId);
 
-		// _saveManager->quit(); // romeo
+		// _savefileManager->quit(); // romeo
 		_screen->quit();
 
 		padEnd(); // stop pad library
@@ -980,17 +971,10 @@ void OSystem_PS2::makeConfigPath() {
 }
 
 Common::String OSystem_PS2::getDefaultConfigFileName() {
-	return _configFile
+	return _configFile;
 }
 
 void OSystem_PS2::logMessage(LogMessageType::Type type, const char *message) {
-	FILE *output = 0;
-
-	if (type == LogMessageType::kInfo || type == LogMessageType::kDebug)
-		output = stdout;
-	else
-		output = stderr;
-
-	ps2_fputs(message, output);
-	ps2_fflush(output);
+	printf("%s", message);
+	sioprintf("%s", message);
 }

@@ -33,6 +33,7 @@
 #include "graphics/imagedec.h"
 #include "graphics/surface.h"
 #include "graphics/VectorRenderer.h"
+#include "graphics/fonts/bdf.h"
 
 #include "gui/widget.h"
 #include "gui/ThemeEngine.h"
@@ -561,7 +562,7 @@ bool ThemeEngine::addFont(TextData textId, const Common::String &file) {
 	if (file == "default") {
 		_texts[textId]->_fontPtr = _font;
 	} else {
-		Common::String localized = genLocalizedFontFilename(file);
+		Common::String localized = FontMan.genLocalizedFontFilename(file);
 		// Try built-in fonts
 		_texts[textId]->_fontPtr = FontMan.getFontByName(localized);
 
@@ -1394,7 +1395,7 @@ const Graphics::Font *ThemeEngine::loadFontFromArchive(const Common::String &fil
 	if (_themeArchive)
 		stream = _themeArchive->createReadStreamForMember(filename);
 	if (stream) {
-		font = Graphics::NewFont::loadFont(*stream);
+		font = Graphics::BdfFont::loadFont(*stream);
 		delete stream;
 	}
 
@@ -1408,7 +1409,7 @@ const Graphics::Font *ThemeEngine::loadCachedFontFromArchive(const Common::Strin
 	if (_themeArchive)
 		stream = _themeArchive->createReadStreamForMember(filename);
 	if (stream) {
-		font = Graphics::NewFont::loadFromCache(*stream);
+		font = Graphics::BdfFont::loadFromCache(*stream);
 		delete stream;
 	}
 
@@ -1422,7 +1423,7 @@ const Graphics::Font *ThemeEngine::loadFont(const Common::String &filename) {
 
 	if (!cacheFilename.empty()) {
 		if (fontFile.open(cacheFilename)) {
-			font = Graphics::NewFont::loadFromCache(fontFile);
+			font = Graphics::BdfFont::loadFromCache(fontFile);
 		}
 
 		if (font)
@@ -1434,7 +1435,7 @@ const Graphics::Font *ThemeEngine::loadFont(const Common::String &filename) {
 
 	// normal open
 	if (fontFile.open(filename)) {
-		font = Graphics::NewFont::loadFont(fontFile);
+		font = Graphics::BdfFont::loadFont(fontFile);
 	}
 
 	if (!font) {
@@ -1443,7 +1444,7 @@ const Graphics::Font *ThemeEngine::loadFont(const Common::String &filename) {
 
 	if (font) {
 		if (!cacheFilename.empty()) {
-			if (!Graphics::NewFont::cacheFontData(*(const Graphics::NewFont *)font, cacheFilename)) {
+			if (!Graphics::BdfFont::cacheFontData(*(const Graphics::BdfFont *)font, cacheFilename)) {
 				warning("Couldn't create cache file for font '%s'", filename.c_str());
 			}
 		}
@@ -1466,32 +1467,6 @@ Common::String ThemeEngine::genCacheFilename(const Common::String &filename) con
 	}
 
 	return Common::String();
-}
-
-Common::String ThemeEngine::genLocalizedFontFilename(const Common::String &filename) const {
-#ifndef USE_TRANSLATION
-	return filename;
-#else
-	// We will transform the font filename in the following way:
-	//   name.bdf
-	//  will become:
-	//   name-charset.bdf
-	// Note that name should not contain any dot here!
-
-	// In the first step we look for the dot. In case there is none we will
-	// return the normal filename.
-	Common::String::const_iterator dot = Common::find(filename.begin(), filename.end(), '.');
-	if (dot == filename.end())
-		return filename;
-
-	// Put the translated font filename string back together.
-	Common::String result(filename.begin(), dot);
-	result += '-';
-	result += TransMan.getCurrentCharset();
-	result += dot;
-
-	return result;
-#endif
 }
 
 

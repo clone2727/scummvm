@@ -662,12 +662,9 @@ private:
 	static const char *_languageExtension[];
 	static const int _languageExtensionSize;
 
-	char *appendLanguage(char *buf, int lang, int bufSize);
-
 	int loadLanguageFile(const char *file, uint8 *&buffer);
 };
 
 } // End of namespace Kyra
 
 #endif
-

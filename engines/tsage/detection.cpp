@@ -30,7 +30,7 @@
 
 #include "tsage/tsage.h"
 
-namespace tSage {
+namespace TsAGE {
 
 struct tSageGameDescription {
 	ADGameDescription desc;
@@ -55,36 +55,27 @@ Common::String TSageEngine::getPrimaryFilename() const {
 	return Common::String(_gameDescription->desc.filesDescriptions[0].fileName);
 }
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 static const PlainGameDescriptor tSageGameTitles[] = {
 	{ "tsage", "Unknown Tsunami TSAGE-based Game" },
-	{ "ring", "Ringworld: Revenge of the Patriarch" },
+	{ "ringworld", "Ringworld: Revenge of the Patriarch" },
 	{ "blueforce", "Blue Force" },
 	{ 0, 0 }
 };
 
 #include "engines/tsage/detection_tables.h"
 
-static const ADParams detectionParams = {
-	(const byte *)tSage::gameDescriptions,
-	sizeof(tSage::tSageGameDescription),
-	0,
-	tSageGameTitles,
-	0,
-	"tsage",
-	NULL,
-	0,
-	Common::GUIO_NONE,
-	0,
-	NULL
+enum {
+	MAX_SAVES = 100
 };
-
-#define MAX_SAVES 100
 
 class TSageMetaEngine : public AdvancedMetaEngine {
 public:
-	TSageMetaEngine() : AdvancedMetaEngine(detectionParams) {
+	TSageMetaEngine() : AdvancedMetaEngine(TsAGE::gameDescriptions, sizeof(TsAGE::tSageGameDescription), tSageGameTitles) {
+		_md5Bytes = 5000;
+		_singleid = "tsage";
+		_guioptions = Common::GUIO_NOSPEECH;
 	}
 
 	virtual const char *getName() const {
@@ -112,7 +103,7 @@ public:
 
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const {
 		if (desc) {
-			*engine = new tSage::TSageEngine(syst, (const tSage::tSageGameDescription *)desc);
+			*engine = new TsAGE::TSageEngine(syst, (const TsAGE::tSageGameDescription *)desc);
 		}
 		return desc != 0;
 	}
@@ -127,7 +118,7 @@ public:
 
 		Common::StringArray filenames = g_system->getSavefileManager()->listSavefiles(pattern);
 		sort(filenames.begin(), filenames.end());
-		tSage::tSageSavegameHeader header;
+		TsAGE::tSageSavegameHeader header;
 
 		SaveStateList saveList;
 		for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); ++file) {
@@ -138,7 +129,7 @@ public:
 				Common::InSaveFile *in = g_system->getSavefileManager()->openForLoading(*file);
 
 				if (in) {
-					if (tSage::Saver::readSavegameHeader(in, header)) {
+					if (TsAGE::Saver::readSavegameHeader(in, header)) {
 						saveList.push_back(SaveStateDescriptor(slot, header.saveName));
 						delete header.thumbnail;
 					}
@@ -165,8 +156,8 @@ public:
 			generateGameStateFileName(target, slot));
 		assert(f);
 
-		tSage::tSageSavegameHeader header;
-		tSage::Saver::readSavegameHeader(f, header);
+		TsAGE::tSageSavegameHeader header;
+		TsAGE::Saver::readSavegameHeader(f, header);
 		delete f;
 
 		// Create the return descriptor

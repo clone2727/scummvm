@@ -52,13 +52,15 @@ public:
 	void initBackend();
 
 	// Overloaded from SDL backend
+	void init();
 	void quit();
+	virtual Common::String getSystemLanguage() const;
+
 	// Overloaded from OSystem
 	void engineInit();
 	void getTimeAndDate(TimeDate &t) const;
 
 	virtual Common::String getDefaultConfigFileName();
-	virtual FilesystemFactory *getFilesystemFactory();
 
 	void swap_sound_master();
 
@@ -73,8 +75,6 @@ public:
 protected:
 	void initSDL();
 	Audio::MixerImpl *_mixer;
-	DefaultTimerManager *_timer;
-	FilesystemFactory *_fsFactory;
 
 private:
 	void check_mappings();

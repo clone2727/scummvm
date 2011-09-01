@@ -131,46 +131,65 @@ void AgiEngine::processEvents() {
 			switch (key = event.kbd.keycode) {
 			case Common::KEYCODE_LEFT:
 			case Common::KEYCODE_KP4:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP4)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_LEFT;
 				break;
 			case Common::KEYCODE_RIGHT:
 			case Common::KEYCODE_KP6:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP6)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_RIGHT;
 				break;
 			case Common::KEYCODE_UP:
 			case Common::KEYCODE_KP8:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP8)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_UP;
 				break;
 			case Common::KEYCODE_DOWN:
 			case Common::KEYCODE_KP2:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP2)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_DOWN;
 				break;
 			case Common::KEYCODE_PAGEUP:
 			case Common::KEYCODE_KP9:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP9)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_UP_RIGHT;
 				break;
 			case Common::KEYCODE_PAGEDOWN:
 			case Common::KEYCODE_KP3:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP3)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_DOWN_RIGHT;
 				break;
 			case Common::KEYCODE_HOME:
 			case Common::KEYCODE_KP7:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP7)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_UP_LEFT;
 				break;
 			case Common::KEYCODE_END:
 			case Common::KEYCODE_KP1:
-				if (_allowSynthetic || !event.synthetic)
+				if (_predictiveDialogRunning && key == Common::KEYCODE_KP1)
+					key = event.kbd.ascii;
+				else if (_allowSynthetic || !event.synthetic)
 					key = KEY_DOWN_LEFT;
 				break;
 			case Common::KEYCODE_KP5:
-				key = KEY_STATIONARY;
+				if (_predictiveDialogRunning)
+					key = event.kbd.ascii;
+				else
+					key = KEY_STATIONARY;
 				break;
 			case Common::KEYCODE_PLUS:
 				key = '+';
@@ -485,6 +504,7 @@ AgiBase::AgiBase(OSystem *syst, const AGIGameDescription *gameDesc) : Engine(sys
 	_noSaveLoadAllowed = false;
 
 	_rnd = new Common::RandomSource("agi");
+	_sound = 0;
 
 	initFeatures();
 	initVersion();
@@ -492,6 +512,11 @@ AgiBase::AgiBase(OSystem *syst, const AGIGameDescription *gameDesc) : Engine(sys
 
 AgiBase::~AgiBase() {
 	delete _rnd;
+
+	if (_sound) {
+		_sound->deinitSound();
+		delete _sound;
+	}
 }
 
 AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBase(syst, gameDesc) {
@@ -516,6 +541,8 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 	memset(&_game, 0, sizeof(struct AgiGame));
 	memset(&_debug, 0, sizeof(struct AgiDebug));
 	memset(&_mouse, 0, sizeof(struct Mouse));
+
+	_game._vm = this;
 
 	_game.clockEnabled = false;
 	_game.state = STATE_INIT;
@@ -552,7 +579,7 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 		_game.controllerOccured[i] = false;
 
 	setupOpcodes();
-	_curLogic = NULL;
+	_game._curLogic = NULL;
 	_timerHack = 0;
 }
 
@@ -661,8 +688,6 @@ AgiEngine::~AgiEngine() {
 
 	agiDeinit();
 	delete _loader;
-	_sound->deinitSound();
-	delete _sound;
 	_gfx->deinitVideo();
 	delete _sprites;
 	delete _picture;

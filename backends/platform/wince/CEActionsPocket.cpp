@@ -137,6 +137,7 @@ void CEActionsPocket::initInstanceGame() {
 	bool is_tinsel = (gameid == "tinsel");
 	bool is_cruise = (gameid == "cruise");
 	bool is_made = (gameid == "made");
+	bool is_sci = (gameid == "sci");
 
 	GUI_Actions::initInstanceGame();
 
@@ -214,12 +215,14 @@ void CEActionsPocket::initInstanceGame() {
 		_key_action[POCKET_ACTION_MULTI].setKey(Common::ASCII_F1, SDLK_F1); // bargon : F1 to start
 	else if (gameid == "atlantis")
 		_key_action[POCKET_ACTION_MULTI].setKey(0, SDLK_KP0); // fate of atlantis : Ins to sucker-punch
+	else if (is_simon)
+		_key_action[POCKET_ACTION_MULTI].setKey(Common::ASCII_F10, SDLK_F10); // F10
 	else
 		_key_action[POCKET_ACTION_MULTI].setKey('V', SDLK_v, KMOD_SHIFT); // FT cheat : shift-V
 	// Key bind method
 	_action_enabled[POCKET_ACTION_BINDKEYS] = true;
 	// Disable double-tap right-click for convenience
-	if (is_tinsel || is_cruise)
+	if (is_tinsel || is_cruise || is_sci)
 		if (!ConfMan.hasKey("no_doubletap_rightclick")) {
 			ConfMan.setBool("no_doubletap_rightclick", true);
 			ConfMan.flushToDisk();
@@ -233,15 +236,15 @@ CEActionsPocket::~CEActionsPocket() {
 bool CEActionsPocket::perform(GUI::ActionType action, bool pushed) {
 	static bool keydialogrunning = false, quitdialog = false;
 
+	_graphicsMan = ((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager());
+
 	if (!pushed) {
 		switch (action) {
 		case POCKET_ACTION_RIGHTCLICK:
-			//_CESystem->add_right_click(false);
-			((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->add_right_click(false);
+			_graphicsMan->add_right_click(false);
 			return true;
 		case POCKET_ACTION_LEFTCLICK:
-			//_CESystem->add_left_click(false);
-			((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->add_left_click(false);
+			_graphicsMan->add_left_click(false);
 			return true;
 		case POCKET_ACTION_PAUSE:
 		case POCKET_ACTION_SAVE:
@@ -249,7 +252,6 @@ bool CEActionsPocket::perform(GUI::ActionType action, bool pushed) {
 		case POCKET_ACTION_MULTI:
 			EventsBuffer::simulateKey(&_key_action[action], false);
 			return true;
-
 		}
 		return false;
 	}
@@ -268,58 +270,55 @@ bool CEActionsPocket::perform(GUI::ActionType action, bool pushed) {
 			else
 				_key_action[action].setKey(SDLK_s);
 		}
+		if (action == POCKET_ACTION_SKIP && ConfMan.get("gameid") == "agi") {
+			// In several AGI games (for example SQ2) it is needed to press F10 to exit from
+			// a screen. But we still want be able to skip normally with the skip button.
+			// Because of this, we inject a F10 keystroke here (this works and doesn't seem
+			// to have side-effects)
+			_key_action[action].setKey(Common::ASCII_F10, SDLK_F10); // F10
+			EventsBuffer::simulateKey(&_key_action[action], true);
+			_key_action[action].setKey(KEY_ALL_SKIP);
+		}
 		EventsBuffer::simulateKey(&_key_action[action], true);
 		return true;
 	case POCKET_ACTION_KEYBOARD:
-		//_CESystem->swap_panel();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->swap_panel();
+		_graphicsMan->swap_panel();
 		return true;
 	case POCKET_ACTION_HIDE:
-		//_CESystem->swap_panel_visibility();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->swap_panel_visibility();
+		_graphicsMan->swap_panel_visibility();
 		return true;
 	case POCKET_ACTION_SOUND:
 		_CESystem->swap_sound_master();
 		return true;
 	case POCKET_ACTION_RIGHTCLICK:
-		//_CESystem->add_right_click(true);
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->add_right_click(true);
+		_graphicsMan->add_right_click(true);
 		return true;
 	case POCKET_ACTION_CURSOR:
-		//_CESystem->swap_mouse_visibility();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->swap_mouse_visibility();
+		_graphicsMan->swap_mouse_visibility();
 		return true;
 	case POCKET_ACTION_FREELOOK:
-		//_CESystem->swap_freeLook();
-		((WINCESdlEventSource *)((OSystem_SDL *)g_system)->getEventManager())->swap_freeLook();
+		_graphicsMan->swap_freeLook();
 		return true;
 	case POCKET_ACTION_ZOOM_UP:
-		//_CESystem->swap_zoom_up();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->swap_zoom_up();
+		_graphicsMan->swap_zoom_up();
 		return true;
 	case POCKET_ACTION_ZOOM_DOWN:
-		//_CESystem->swap_zoom_down();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->swap_zoom_down();
+		_graphicsMan->swap_zoom_down();
 		return true;
 	case POCKET_ACTION_LEFTCLICK:
-		//_CESystem->add_left_click(true);
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->add_left_click(true);
+		_graphicsMan->add_left_click(true);
 		return true;
 	case POCKET_ACTION_UP:
-		//_CESystem->move_cursor_up();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->move_cursor_up();
+		_graphicsMan->move_cursor_up();
 		return true;
 	case POCKET_ACTION_DOWN:
-		//_CESystem->move_cursor_down();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->move_cursor_down();
+		_graphicsMan->move_cursor_down();
 		return true;
 	case POCKET_ACTION_LEFT:
-		//_CESystem->move_cursor_left();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->move_cursor_left();
+		_graphicsMan->move_cursor_left();
 		return true;
 	case POCKET_ACTION_RIGHT:
-		//_CESystem->move_cursor_right();
-		((WINCESdlGraphicsManager *)((OSystem_SDL *)g_system)->getGraphicsManager())->move_cursor_right();
+		_graphicsMan->move_cursor_right();
 		return true;
 	case POCKET_ACTION_QUIT:
 		if (!quitdialog) {

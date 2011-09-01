@@ -65,7 +65,7 @@ static const int16 waveformMac[WAVEFORM_SIZE] = {
 	-175, -172, -165, -159, -137, -114, -67, -19
 };
 
-SoundGenSarien::SoundGenSarien(AgiEngine *vm, Audio::Mixer *pMixer) : SoundGen(vm, pMixer), _chn() {
+SoundGenSarien::SoundGenSarien(AgiBase *vm, Audio::Mixer *pMixer) : SoundGen(vm, pMixer), _chn() {
 	_sndBuffer = (int16 *)calloc(2, BUFFER_SIZE);
 
 	memset(_sndBuffer, 0, BUFFER_SIZE << 1);
@@ -105,7 +105,7 @@ SoundGenSarien::~SoundGenSarien() {
 
 int SoundGenSarien::readBuffer(int16 *buffer, const int numSamples) {
 	fillAudio(buffer, numSamples / 2);
-	
+
 	return numSamples;
 }
 
@@ -124,7 +124,7 @@ void SoundGenSarien::play(int resnum) {
 	for (int i = 0; i < NUM_CHANNELS; i++) {
 		_chn[i].type = type;
 		_chn[i].flags = AGI_SOUND_LOOP;
-				
+
 		if (_env) {
 			_chn[i].flags |= AGI_SOUND_ENVELOPE;
 			_chn[i].adsr = AGI_SOUND_ENV_ATTACK;

@@ -30,7 +30,7 @@
 #include "graphics/surface.h"
 #include "tsage/globals.h"
 
-namespace tSage {
+namespace TsAGE {
 
 /**
  * Creates a new graphics surface with the specified area of another surface
@@ -326,7 +326,7 @@ void GfxSurface::synchronize(Serializer &s) {
 			s.syncAsSint16LE(zero);
 		}
 	} else {
-		int w, h;
+		int w = 0, h = 0;
 		s.syncAsSint16LE(w);
 		s.syncAsSint16LE(h);
 
@@ -408,7 +408,7 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
 
 	// Write for a  mouse or keypress
 	Event event;
-	while (!_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !_vm->getEventManager()->shouldQuit())
+	while (!_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !_vm->shouldQuit())
 		;
 
 	// Restore the display area
@@ -626,9 +626,9 @@ void GfxElement::setDefaults() {
 	_fontNumber = _globals->_gfxFontNumber;
 	_colors = _globals->_gfxColors;
 	_fontColors = _globals->_fontColors;
-	_unkColor1 = _globals->_unkColor1;
-	_unkColor2 = _globals->_unkColor2;
-	_unkColor3 = _globals->_unkColor3;
+	_color1 = _globals->_color1;
+	_color2 = _globals->_color2;
+	_color3 = _globals->_color3;
 }
 
 /**
@@ -718,7 +718,7 @@ bool GfxElement::focusedEvent(Event &event) {
 	int xOffset = mousePos.x - _globals->_events._mousePos.x;
 	int yOffset = mousePos.y - _globals->_events._mousePos.y;
 
-	while (event.eventType != EVENT_BUTTON_UP && !_vm->getEventManager()->shouldQuit()) {
+	while (event.eventType != EVENT_BUTTON_UP && !_vm->shouldQuit()) {
 		g_system->delayMillis(10);
 
 		if (_bounds.contains(mousePos)) {
@@ -824,9 +824,9 @@ void GfxMessage::draw() {
 	gfxManager.setFillFlag(false);
 	gfxManager._font.setFontNumber(_fontNumber);
 
-	gfxManager._font._colors.foreground = this->_unkColor1;
-	gfxManager._font._colors2.background = this->_unkColor2;
-	gfxManager._font._colors2.foreground = this->_unkColor3;
+	gfxManager._font._colors.foreground = this->_color1;
+	gfxManager._font._colors2.background = this->_color2;
+	gfxManager._font._colors2.foreground = this->_color3;
 
 	// Display the text
 	gfxManager._font.writeLines(_message.c_str(), _bounds, _textAlign);
@@ -846,7 +846,7 @@ void GfxButton::setDefaults() {
 	gfxManager._font.getStringBounds(_message.c_str(), tempRect, 240);
 	tempRect.right = ((tempRect.right + 15) / 16) * 16;
 
-	// Set the button bounds 
+	// Set the button bounds
 	tempRect.collapse(-_globals->_gfxEdgeAdjust, -_globals->_gfxEdgeAdjust);
 	if (_vm->getFeatures() & GF_CD)
 		--tempRect.top;
@@ -866,10 +866,10 @@ void GfxButton::draw() {
 	// Set the font and color
 	gfxManager._font.setFontNumber(_fontNumber);
 
-	// 
-	gfxManager._font._colors.foreground = this->_unkColor1;
-	gfxManager._font._colors2.background = this->_unkColor2;
-	gfxManager._font._colors2.foreground = this->_unkColor3;
+	//
+	gfxManager._font._colors.foreground = this->_color1;
+	gfxManager._font._colors2.background = this->_color2;
+	gfxManager._font._colors2.foreground = this->_color3;
 
 	// Display the button's text
 	Rect tempRect(_bounds);
@@ -895,7 +895,7 @@ bool GfxButton::process(Event &event) {
 
 	case EVENT_KEYPRESS:
 		if (!event.handled && (event.kbd.keycode == _keycode)) {
-			// TODO: Ensure momentary click operation displays
+			// Highlight the button momentarily
 			highlight();
 			g_system->delayMillis(20);
 			highlight();
@@ -1029,7 +1029,7 @@ GfxButton *GfxDialog::execute(GfxButton *defaultButton) {
 	GfxButton *selectedButton = NULL;
 
 	bool breakFlag = false;
-	while (!_vm->getEventManager()->shouldQuit() && !breakFlag) {
+	while (!_vm->shouldQuit() && !breakFlag) {
 		Event event;
 		while (_globals->_events.getEvent(event) && !breakFlag) {
 			// Adjust mouse positions to be relative within the dialog
@@ -1069,12 +1069,23 @@ GfxButton *GfxDialog::execute(GfxButton *defaultButton) {
 }
 
 void GfxDialog::setPalette() {
-	_globals->_scenePalette.loadPalette(0);
-	_globals->_scenePalette.setPalette(0, 1);
-	_globals->_scenePalette.setPalette(_globals->_scenePalette._colors.foreground, 1);
-	_globals->_scenePalette.setPalette(_globals->_fontColors.background, 1);
-	_globals->_scenePalette.setPalette(_globals->_fontColors.foreground, 1);
-	_globals->_scenePalette.setPalette(255, 1);
+	if (_vm->getGameID() == GType_BlueForce) {
+		_globals->_scenePalette.loadPalette(2);
+		_globals->_scenePalette.setPalette(0, 1);
+		_globals->_scenePalette.setPalette(_globals->_gfxColors.background, 1);
+		_globals->_scenePalette.setPalette(_globals->_gfxColors.foreground, 1);
+		_globals->_scenePalette.setPalette(_globals->_fontColors.background, 1);
+		_globals->_scenePalette.setPalette(_globals->_fontColors.foreground, 1);
+		_globals->_scenePalette.setEntry(255, 0xff, 0xff, 0xff);
+		_globals->_scenePalette.setPalette(255, 1);	
+	} else {
+		_globals->_scenePalette.loadPalette(0);
+		_globals->_scenePalette.setPalette(0, 1);
+		_globals->_scenePalette.setPalette(_globals->_scenePalette._colors.foreground, 1);
+		_globals->_scenePalette.setPalette(_globals->_fontColors.background, 1);
+		_globals->_scenePalette.setPalette(_globals->_fontColors.foreground, 1);
+		_globals->_scenePalette.setPalette(255, 1);
+	}
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1512,4 +1523,4 @@ GfxFontBackup::~GfxFontBackup() {
 }
 
 
-} // End of namespace tSage
+} // End of namespace TsAGE

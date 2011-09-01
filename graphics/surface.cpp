@@ -56,8 +56,10 @@ void Surface::create(uint16 width, uint16 height, const PixelFormat &f) {
 	format = f;
 	pitch = w * format.bytesPerPixel;
 
-	pixels = calloc(width * height, format.bytesPerPixel);
-	assert(pixels);
+	if (width && height) {
+		pixels = calloc(width * height, format.bytesPerPixel);
+		assert(pixels);
+	}
 }
 
 void Surface::free() {
@@ -127,7 +129,7 @@ void Surface::vLine(int x, int y, int y2, uint32 color) {
 			*ptr = (uint16)color;
 			ptr += pitch / 2;
 		}
-	
+
 	} else if (format.bytesPerPixel == 4) {
 		uint32 *ptr = (uint32 *)getBasePtr(x, y);
 		while (y++ <= y2) {

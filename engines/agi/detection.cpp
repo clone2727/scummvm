@@ -28,6 +28,7 @@
 #include "engines/advancedDetector.h"
 #include "common/config-manager.h"
 #include "common/file.h"
+#include "common/md5.h"
 #include "common/savefile.h"
 #include "common/textconsole.h"
 #include "graphics/thumbnail.h"
@@ -35,6 +36,9 @@
 
 #include "agi/agi.h"
 #include "agi/preagi.h"
+#include "agi/preagi_mickey.h"
+#include "agi/preagi_troll.h"
+#include "agi/preagi_winnie.h"
 #include "agi/wagparser.h"
 
 
@@ -93,6 +97,14 @@ void AgiBase::initVersion() {
 	_gameVersion = _gameDescription->version;
 }
 
+const char *AgiBase::getDiskName(uint16 id) {
+	for (int i = 0; _gameDescription->desc.filesDescriptions[i].fileName != NULL; i++)
+		if (_gameDescription->desc.filesDescriptions[i].fileType == id)
+			return _gameDescription->desc.filesDescriptions[i].fileName;
+
+	return "";
+}
+
 }
 
 static const PlainGameDescriptor agiGames[] = {
@@ -129,31 +141,6 @@ static const PlainGameDescriptor agiGames[] = {
 
 #include "agi/detection_tables.h"
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)Agi::gameDescriptions,
-	// Size of that superset structure
-	sizeof(Agi::AGIGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	agiGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"agi",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NOSPEECH,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 using namespace Agi;
 
 class AgiMetaEngine : public AdvancedMetaEngine {
@@ -161,7 +148,10 @@ class AgiMetaEngine : public AdvancedMetaEngine {
 	mutable Common::String	_extra;
 
 public:
-	AgiMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	AgiMetaEngine() : AdvancedMetaEngine(Agi::gameDescriptions, sizeof(Agi::AGIGameDescription), agiGames) {
+		_singleid = "agi";
+		_guioptions = Common::GUIO_NOSPEECH;
+	}
 
 	virtual const char *getName() const {
 		return "AGI preAGI + v2 + v3";
@@ -177,7 +167,7 @@ public:
 	virtual void removeSaveState(const char *target, int slot) const;
 	SaveStateDescriptor querySaveMetaInfos(const char *target, int slot) const;
 
-	const ADGameDescription *fallbackDetect(const Common::FSList &fslist) const;
+	const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const;
 };
 
 bool AgiMetaEngine::hasFeature(MetaEngineFeature f) const {
@@ -204,8 +194,19 @@ bool AgiMetaEngine::createInstance(OSystem *syst, Engine **engine, const ADGameD
 
 	switch (gd->gameType) {
 	case Agi::GType_PreAGI:
-		*engine = new Agi::PreAgiEngine(syst, gd);
+		switch (gd->gameID) {
+		case GID_MICKEY:
+			*engine = new Agi::MickeyEngine(syst, gd);
+			break;
+		case GID_TROLL:
+			*engine = new Agi::TrollEngine(syst, gd);
+			break;
+		case GID_WINNIE:
+			*engine = new Agi::WinnieEngine(syst, gd);
+			break;
+		}
 		break;
+	case Agi::GType_V1:
 	case Agi::GType_V2:
 	case Agi::GType_V3:
 		*engine = new Agi::AgiEngine(syst, gd);
@@ -280,12 +281,7 @@ SaveStateDescriptor AgiMetaEngine::querySaveMetaInfos(const char *target, int sl
 
 		char saveVersion = in->readByte();
 		if (saveVersion >= 4) {
-			Graphics::Surface *thumbnail = new Graphics::Surface();
-			assert(thumbnail);
-			if (!Graphics::loadThumbnail(*in, *thumbnail)) {
-				delete thumbnail;
-				thumbnail = 0;
-			}
+			Graphics::Surface *const thumbnail = Graphics::loadThumbnail(*in);
 
 			desc.setThumbnail(thumbnail);
 
@@ -315,7 +311,7 @@ SaveStateDescriptor AgiMetaEngine::querySaveMetaInfos(const char *target, int sl
 	return SaveStateDescriptor();
 }
 
-const ADGameDescription *AgiMetaEngine::fallbackDetect(const Common::FSList &fslist) const {
+const ADGameDescription *AgiMetaEngine::fallbackDetect(const FileMap &allFilesXXX, const Common::FSList &fslist) const {
 	typedef Common::HashMap<Common::String, int32> IntMap;
 	IntMap allFiles;
 	bool matchedUsingFilenames = false;
@@ -495,7 +491,7 @@ bool AgiBase::canLoadGameStateCurrently() {
 bool AgiBase::canSaveGameStateCurrently() {
 	if (getGameID() == GID_BC) // Technically in Black Cauldron we may save anytime
 		return true;
-	
+
 	return (!(getGameType() == GType_PreAGI) && getflag(fMenusWork) && !_noSaveLoadAllowed && _game.inputEnabled);
 }
 
@@ -504,7 +500,9 @@ int AgiEngine::agiDetectGame() {
 
 	assert(_gameDescription != NULL);
 
-	if (getVersion() <= 0x2999) {
+	if (getVersion() <= 0x2001) {
+		_loader = new AgiLoader_v1(this);
+	} else if (getVersion() <= 0x2999) {
 		_loader = new AgiLoader_v2(this);
 	} else {
 		_loader = new AgiLoader_v3(this);

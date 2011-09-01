@@ -29,7 +29,7 @@
 #include "graphics/surface.h"
 #include "tsage/saveload.h"
 
-namespace tSage {
+namespace TsAGE {
 
 enum EventType {EVENT_NONE = 0, EVENT_BUTTON_DOWN = 1, EVENT_BUTTON_UP = 2, EVENT_KEYPRESS = 4,
 	EVENT_MOUSE_MOVE = 8};
@@ -37,6 +37,7 @@ enum EventType {EVENT_NONE = 0, EVENT_BUTTON_DOWN = 1, EVENT_BUTTON_UP = 2, EVEN
 enum ButtonShiftFlags {BTNSHIFT_LEFT = 0, BTNSHIFT_RIGHT = 3, BTNSHIFT_MIDDLE = 4};
 
 // Intrinisc game delay between execution frames. This runs at 60Hz
+#define GAME_FRAME_RATE 60
 #define GAME_FRAME_TIME (1000 / 60)
 
 class GfxManager;
@@ -66,6 +67,8 @@ enum CursorType {
 	CURSOR_NONE = -1, CURSOR_CROSSHAIRS = -2, CURSOR_ARROW = -3
 };
 
+class GfxSurface;
+
 class EventsClass : public SaveListener {
 private:
 	Common::Event _event;
@@ -83,10 +86,11 @@ public:
 	void pushCursor(CursorType cursorType);
 	void popCursor();
 	void setCursor(Graphics::Surface &cursor, int transColor, const Common::Point &hotspot, CursorType cursorId);
+	void setCursor(GfxSurface &cursor);
 	void setCursorFromFlag();
 	CursorType getCursor() const { return _currentCursor; }
 	void showCursor();
-	void hideCursor();
+	CursorType hideCursor();
 	bool isCursorVisible() const;
 
 	bool pollEvent();
@@ -99,8 +103,9 @@ public:
 	void delay(int numFrames);
 
 	virtual void listenerSynchronize(Serializer &s);
+	static void loadNotifierProc(bool postFlag);
 };
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

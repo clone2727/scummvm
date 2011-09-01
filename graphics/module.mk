@@ -6,10 +6,10 @@ MODULE_OBJS := \
 	dither.o \
 	font.o \
 	fontman.o \
+	fonts/bdf.o \
 	fonts/consolefont.o \
 	fonts/newfont_big.o \
 	fonts/newfont.o \
-	fonts/scummfont.o \
 	fonts/winfont.o \
 	iff.o \
 	imagedec.o \

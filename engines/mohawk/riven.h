@@ -67,6 +67,13 @@ enum {
 	StackNames = 5
 };
 
+enum RivenTransitionSpeed {
+	kRivenTransitionSpeedNone = 5000,
+	kRivenTransitionSpeedFastest = 5001,
+	kRivenTransitionSpeedNormal = 5002,
+	kRivenTransitionSpeedBest = 5003
+};
+
 // Rects for the inventory object positions (initialized in
 // MohawkEngine_Riven's constructor).
 extern Common::Rect *g_atrusJournalRect1;
@@ -131,6 +138,8 @@ public:
 
 	typedef void (*TimerProc)(MohawkEngine_Riven *vm);
 
+	void doVideoTimer(VideoHandle handle, bool force);
+
 private:
 	MohawkArchive *_extrasFile; // We need a separate handle for the extra data
 	RivenConsole *_console;
@@ -162,6 +171,7 @@ private:
 	// Miscellaneous
 	bool _gameOver;
 	bool _ignoreNextMouseUp;
+	void checkSunnerAlertClick();
 
 public:
 	// Stack/card/script funtions

@@ -24,7 +24,7 @@
 
 namespace Testbed {
 
-Common::String MiscTests::getHumanReadableFormat(TimeDate &td) {
+Common::String MiscTests::getHumanReadableFormat(const TimeDate &td) {
 	return Common::String::format("%d:%d:%d on %d/%d/%d (dd/mm/yyyy)", td.tm_hour, td.tm_min, td.tm_sec, td.tm_mday, td.tm_mon + 1, td.tm_year + 1900);
 }
 
@@ -110,7 +110,7 @@ TestExitStatus MiscTests::testDateTime() {
 
 TestExitStatus MiscTests::testTimers() {
 	int valToModify = 0;
-	if (g_system->getTimerManager()->installTimerProc(timerCallback, 100000, &valToModify)) {
+	if (g_system->getTimerManager()->installTimerProc(timerCallback, 100000, &valToModify, "testbedTimer")) {
 		g_system->delayMillis(150);
 		g_system->getTimerManager()->removeTimerProc(timerCallback);
 
@@ -133,7 +133,7 @@ TestExitStatus MiscTests::testMutexes() {
 
 	SharedVars sv = {1, 1, true, g_system->createMutex()};
 
-	if (g_system->getTimerManager()->installTimerProc(criticalSection, 100000, &sv)) {
+	if (g_system->getTimerManager()->installTimerProc(criticalSection, 100000, &sv, "testbedMutex")) {
 		g_system->delayMillis(150);
 	}
 

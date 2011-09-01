@@ -1,14 +1,25 @@
 ScummVM Team
 ************
-  Project Leaders
-  ---------------
-     Max Horn
+  Project Leader
+  --------------
      Eugene Sandulenko
+
+  PR Office
+  ---------
+     Arnaud Boutonne       - Public Relations Officer, Project Administrator
+     Eugene Sandulenko     - Project Leader
+
+  Core Team
+  ---------
+     Willem Jan Palenstijn
+     Eugene Sandulenko
+     Johannes Schickel
 
   Retired Project Leaders
   -----------------------
      James Brown
      Vincent Hamm          - ScummVM co-founder, Original Cruise/CinE author
+     Max Horn
      Ludvig Strigeus       - Original ScummVM and SimonVM author
 
   Engine Teams
@@ -18,8 +29,8 @@ ScummVM Team
        James Brown           - (retired)
        Jonathan Gray         - (retired)
        Vincent Hamm          - (retired)
-       Max Horn
-       Travis Howell         - (retired)
+       Max Horn              - (retired)
+       Travis Howell
        Pawel Kolodziejski    - Codecs, iMUSE, Smush, etc.
        Gregory Montoir
        Eugene Sandulenko     - FT INSANE, MM NES, MM C64, game detection,
@@ -28,7 +39,7 @@ ScummVM Team
 
     HE:
        Jonathan Gray         - (retired)
-       Travis Howell         - (retired)
+       Travis Howell
        Gregory Montoir
        Eugene Sandulenko
 
@@ -37,7 +48,7 @@ ScummVM Team
        Matthew Hoops
        Filippos Karapetis
        Pawel Kolodziejski
-       Walter van Niftrik
+       Walter van Niftrik    - (retired)
        Kari Salminen
        Eugene Sandulenko
        David Symonds         - (retired)
@@ -45,7 +56,7 @@ ScummVM Team
     AGOS:
        Torbjorn Andersson
        Paul Gilbert
-       Travis Howell         - (retired)
+       Travis Howell
        Oliver Kiehl          - (retired)
        Ludvig Strigeus       - (retired)
 
@@ -67,6 +78,11 @@ ScummVM Team
     Drascula:
        Filippos Karapetis
        Pawel Kolodziejski
+
+    DreamWeb:
+       Vladimir Menshakov
+       Torbjorn Andersson
+       Bertrand Augereau
 
     Gob:
        Torbjorn Andersson
@@ -134,10 +150,10 @@ ScummVM Team
     SCI:
        Greg Frieger
        Paul Gilbert
-       Max Horn
+       Max Horn              - (retired)
        Filippos Karapetis
        Martin Kiewitz
-       Walter van Niftrik
+       Walter van Niftrik    - (retired)
        Willem Jan Palenstijn
        Jordi Vilalta Prat
        Lars Skovlund
@@ -160,7 +176,7 @@ ScummVM Team
     Sword25:
        Eugene Sandulenko
        Filippos Karapetis
-       Max Horn
+       Max Horn              - (retired)
        Paul Gilbert
        Torbjorn Andersson
 
@@ -173,7 +189,7 @@ ScummVM Team
        Fabio Battaglia       - PSX version support
        Paul Gilbert
        Sven Hesse
-       Max Horn
+       Max Horn              - (retired)
        Filippos Karapetis
        Joost Peters
 
@@ -196,6 +212,9 @@ ScummVM Team
        Andre Heider
        Angus Lees
 
+    BADA:
+       Chris Warren-Smith
+
     Dreamcast:
        Marcus Comstedt
 
@@ -216,6 +235,7 @@ ScummVM Team
 
     Nintendo DS:
        Neil Millstone
+       Bertrand Augereau     - HQ software scaler
 
     OpenPandora:
        John Willis
@@ -223,7 +243,7 @@ ScummVM Team
     PocketPC / WinCE:
        Nicolas Bacca         - (retired)
        Ismail Khatib
-       Kostas Nakos         - (retired)
+       Kostas Nakos          - (retired)
 
     PlayStation 2:
        Robert Goeffringmann  - (retired)
@@ -234,7 +254,7 @@ ScummVM Team
        Yotam Barnoy
 
     SDL (Win/Linux/OS X/etc.):
-       Max Horn
+       Max Horn              - (retired)
        Eugene Sandulenko     - Asm routines, GFX layers
 
     SymbianOS:
@@ -251,7 +271,7 @@ ScummVM Team
   ----------------
     Infrastructure:
        Max Horn              - Backend & Engine APIs, file API, sound mixer,
-                               audiostreams, data structures, etc.
+                               audiostreams, data structures, etc. (retired)
        Eugene Sandulenko
        Johannes Schickel
 
@@ -281,7 +301,6 @@ ScummVM Team
      James Brown           - IRC Logs maintainer
      Thierry Crozat        - Wiki maintainer
      Andre Heider          - Buildbot maintainer
-     Max Horn              - Forum, IRC channel and Mailing list maintainer
      Joost Peters          - Doxygen Project Documentation maintainer
      Jordi Vilalta Prat    - Wiki maintainer
      Eugene Sandulenko     - Forum, IRC channel, Screen Shots and Mailing
@@ -335,7 +354,7 @@ Other contributions
        Willem Jan Palenstijn
 
     Mac OS X:
-       Max Horn
+       Max Horn              - (retired)
        Oystein Eftevaag
 
     Mandriva:
@@ -358,7 +377,7 @@ Other contributions
        Markus Strangl
 
     Win32:
-       Travis Howell         - (retired)
+       Travis Howell
 
     Win64:
        Chris Gray            - (retired)
@@ -449,7 +468,7 @@ Other contributions
      Tim Phillips          - Initial MI1 CD music support
      Quietust              - Sound support for Amiga SCUMM V2/V3 games, MM
                              NES support
-     segra                 - Improved support for Apple II/C64 versions of MM
+     Robert Crossfield     - Improved support for Apple II/C64 versions of MM
      Andreas Roever        - Broken Sword I & II MPEG2 cutscene support
      Edward Rudd           - Fixes for playing MP3 versions of MI1/Loom audio
      Daniel Schepler       - Final MI1 CD music support, initial Ogg Vorbis

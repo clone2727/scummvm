@@ -25,8 +25,9 @@
 
 #include "tsage/core.h"
 #include "tsage/dialogs.h"
+#include "tsage/sound.h"
 
-namespace tSage {
+namespace TsAGE {
 
 class StripCallback : public Action {
 public:
@@ -38,19 +39,21 @@ private:
 	void setup();
 	uint16 getNextValue();
 	void setMessage(int resNum, int lineNum, int color, const Common::Point &pt, int width);
+	void setMessage(int resNum, int lineNum, int fontNum, int color1, int color2, int color3,
+		const Common::Point &pt, int width);
 	SequenceManager *globalManager();
 public:
 	SceneText _sceneText;
 	int _resNum;
 	uint _sequenceOffset;
 	bool _keepActive;
-	int _field24;
+	int _fontNum;
 	int _field26;
 	Common::Array<byte> _sequenceData;
 	int _objectIndex;
 	SceneObject *_sceneObject;
 	SceneObject *_objectList[6];
-	SoundHandler _soundHandler;
+	ASound _soundHandler;
 public:
 	SequenceManager();
 
@@ -221,6 +224,6 @@ public:
 	void addSpeaker(Speaker *speaker);
 };
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

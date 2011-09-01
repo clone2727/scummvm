@@ -135,7 +135,7 @@ static int eatSystemEvents() {
 }
 
 static void drawProgress(float progress) {
-	const Graphics::Font &font(*FontMan.getFontByUsage(Graphics::FontManager::kOSDFont));
+	const Graphics::Font &font(*FontMan.getFontByUsage(Graphics::FontManager::kGUIFont));
 	Graphics::Surface *screen = g_system->lockScreen();
 
 	assert(screen);
@@ -174,7 +174,7 @@ static void drawProgress(float progress) {
 }
 
 static void drawMessage(int offset, const Common::String &text) {
-	const Graphics::Font &font(*FontMan.getFontByUsage(Graphics::FontManager::kOSDFont));
+	const Graphics::Font &font(*FontMan.getFontByUsage(Graphics::FontManager::kGUIFont));
 	Graphics::Surface *screen = g_system->lockScreen();
 
 	assert(screen);
@@ -486,7 +486,7 @@ void MidiDriver_ThreadedMT32::setTimerCallback(void *timer_param, TimerManager::
 			_vm->_timer->removeTimerProc(_timer_proc);
 		_timer_proc = timer_proc;
 		if (timer_proc)
-			_vm->_timer->installTimerProc(timer_proc, getBaseTempo(), timer_param);
+			_vm->_timer->installTimerProc(timer_proc, getBaseTempo(), timer_param, "MT32tempo");
 	}
 }
 
@@ -561,11 +561,11 @@ MusicDevices MT32EmuMusicPlugin::getDevices() const {
 bool MT32EmuMusicPlugin::checkDevice(MidiDriver::DeviceHandle) const {
 	if (!((Common::File::exists("MT32_CONTROL.ROM") && Common::File::exists("MT32_PCM.ROM")) ||
 		(Common::File::exists("CM32L_CONTROL.ROM") && Common::File::exists("CM32L_PCM.ROM")))) {
-			warning("The MT-32 emulator requires the following 2 files (not bundled with ScummVM:\n either 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM', or 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM'");
+			warning("The MT-32 emulator requires one of the two following file sets (not bundled with ScummVM):\n Either 'MT32_CONTROL.ROM' and 'MT32_PCM.ROM' or 'CM32L_CONTROL.ROM' and 'CM32L_PCM.ROM'");
 			return false;
 	}
-	
-	return true;	
+
+	return true;
 }
 
 Common::Error MT32EmuMusicPlugin::createInstance(MidiDriver **mididriver, MidiDriver::DeviceHandle) const {

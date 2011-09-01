@@ -31,6 +31,11 @@ DEFINES += -DENABLE_CINE=$(ENABLE_CINE)
 MODULES += engines/cine
 endif
 
+ifdef ENABLE_COMPOSER
+DEFINES += -DENABLE_COMPOSER=$(ENABLE_COMPOSER)
+MODULES += engines/composer
+endif
+
 ifdef ENABLE_CRUISE
 DEFINES += -DENABLE_CRUISE=$(ENABLE_CRUISE)
 MODULES += engines/cruise
@@ -44,6 +49,11 @@ endif
 ifdef ENABLE_DRASCULA
 DEFINES += -DENABLE_DRASCULA=$(ENABLE_DRASCULA)
 MODULES += engines/drascula
+endif
+
+ifdef ENABLE_DREAMWEB
+DEFINES += -DENABLE_DREAMWEB=$(ENABLE_DREAMWEB)
+MODULES += engines/dreamweb
 endif
 
 ifdef ENABLE_GOB
@@ -197,4 +207,3 @@ ifdef ENABLE_TUCKER
 DEFINES += -DENABLE_TUCKER=$(ENABLE_TUCKER)
 MODULES += engines/tucker
 endif
-

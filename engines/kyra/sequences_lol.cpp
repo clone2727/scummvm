@@ -202,7 +202,7 @@ void LoLEngine::setupPrologueData(bool load) {
 void LoLEngine::showIntro() {
 	_tim = new TIMInterpreter(this, _screen, _system);
 	assert(_tim);
-	
+
 	if (_flags.platform == Common::kPlatformPC98)
 		showStarcraftLogo();
 
@@ -306,9 +306,8 @@ int LoLEngine::chooseCharacter() {
 
 			Screen::FontId old = _screen->setFont(Screen::FID_SJIS_FNT);
 			for (int j = 0; j < 3; ++j) {
-				char buffer[3];
-				snprintf(buffer, sizeof(buffer), "%2d", _charPreviews[i].attrib[j]);
-				_screen->printText(buffer, _charPosXPC98[i] + 16, 176 + j * 8, 0x81, 0x00);
+				Common::String attribString = Common::String::format("%2d", _charPreviews[i].attrib[j]);
+				_screen->printText(attribString.c_str(), _charPosXPC98[i] + 16, 176 + j * 8, 0x81, 0x00);
 			}
 			_screen->setFont(old);
 		}
@@ -317,8 +316,9 @@ int LoLEngine::chooseCharacter() {
 		_screen->printText(_tim->getCTableEntry(53), 72, 184, 0x81, 0x00);
 		_screen->printText(_tim->getCTableEntry(55), 72, 192, 0x81, 0x00);
 	} else {
+		const char *const *previewNames = (_flags.lang == Common::RU_RUS && !_flags.isTalkie) ? _charPreviewNamesRussianFloppy : _charPreviewNamesDefault;
 		for (int i = 0; i < 4; ++i) {
-			_screen->fprintStringIntro("%s", _charPreviews[i].x + 16, _charPreviews[i].y + 36, 0xC0, 0x00, 0x9C, 0x120, _charPreviews[i].name);
+			_screen->fprintStringIntro("%s", _charPreviews[i].x + 16, _charPreviews[i].y + 36, 0xC0, 0x00, 0x9C, 0x120, previewNames[i]);
 			_screen->fprintStringIntro("%d", _charPreviews[i].x + 21, _charPreviews[i].y + 48, 0x98, 0x00, 0x9C, 0x220, _charPreviews[i].attrib[0]);
 			_screen->fprintStringIntro("%d", _charPreviews[i].x + 21, _charPreviews[i].y + 56, 0x98, 0x00, 0x9C, 0x220, _charPreviews[i].attrib[1]);
 			_screen->fprintStringIntro("%d", _charPreviews[i].x + 21, _charPreviews[i].y + 64, 0x98, 0x00, 0x9C, 0x220, _charPreviews[i].attrib[2]);
@@ -1116,7 +1116,7 @@ void LoLEngine::showOutro(int character, bool maxDifficulty) {
 		showCredits();
 
 	_eventList.clear();
-	
+
 	if (!shouldQuit()) {
 		switch (character) {
 		case 0:
@@ -1519,4 +1519,3 @@ void LoLEngine::loadOutroShapes(int file, uint8 **storage) {
 } // End of namespace Kyra
 
 #endif // ENABLE_LOL
-

@@ -30,7 +30,7 @@
 #include "tsage/resources.h"
 #include "tsage/globals.h"
 
-namespace tSage {
+namespace TsAGE {
 
 TSageEngine *_vm = NULL;
 
@@ -68,32 +68,41 @@ void TSageEngine::initialize() {
 	if (_vm->getFeatures() & GF_DEMO) {
 		// Add the single library file associated with the demo
 		_resourceManager->addLib(getPrimaryFilename());
+		_globals = new Globals();
+
 	} else if (_vm->getGameID() == GType_Ringworld) {
 		_resourceManager->addLib("RING.RLB");
 		_resourceManager->addLib("TSAGE.RLB");
+		_globals = new Globals();
+
 	} else if (_vm->getGameID() == GType_BlueForce) {
 		_resourceManager->addLib("BLUE.RLB");
 		if (_vm->getFeatures() & GF_FLOPPY) {
 			_resourceManager->addLib("FILES.RLB");
 			_resourceManager->addLib("TSAGE.RLB");
 		}
+		_globals = new BlueForce::BlueForceGlobals();
 	}
 
-	_globals = new Globals();
 	_globals->gfxManager().setDefaults();
+
+	// Setup sound settings
+	syncSoundSettings();
 }
 
 void TSageEngine::deinitialize() {
 	delete _globals;
 	delete _resourceManager;
 	delete _saver;
+	_resourceManager = NULL;
+	_saver = NULL;
 }
 
 Common::Error TSageEngine::run() {
 	// Basic initialisation
 	initialize();
 
-	_globals->_sceneHandler.registerHandler();
+	_globals->_sceneHandler->registerHandler();
 	_globals->_game->execute();
 
 	deinitialize();
@@ -136,4 +145,14 @@ Common::String TSageEngine::generateSaveName(int slot) {
 	return Common::String::format("%s.%03d", _targetName.c_str(), slot);
 }
 
-} // End of namespace tSage
+void TSageEngine::syncSoundSettings() {
+	Engine::syncSoundSettings();
+
+	_globals->_soundManager.syncSounds();
+}
+
+bool TSageEngine::shouldQuit() {
+	return getEventManager()->shouldQuit() || getEventManager()->shouldRTL();
+}
+
+} // End of namespace TsAGE

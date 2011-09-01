@@ -94,11 +94,25 @@ public:
 	void setVolume(const byte volume);
 
 	/**
+	 * Gets the channel's own volume.
+	 *
+	 * @return volume
+	 */
+	byte getVolume();
+
+	/**
 	 * Sets the channel's balance setting.
 	 *
 	 * @param balance new balance
 	 */
 	void setBalance(const int8 balance);
+
+	/**
+	 * Gets the channel's balance setting.
+	 *
+	 * @return balance
+	 */
+	int8 getBalance();
 
 	/**
 	 * Notifies the channel that the global sound type
@@ -149,9 +163,8 @@ private:
 	uint32 _pauseStartTime;
 	uint32 _pauseTime;
 
-	DisposeAfterUse::Flag _autofreeStream;
 	RateConverter *_converter;
-	AudioStream *_stream;
+	Common::DisposablePtr<AudioStream> _stream;
 };
 
 #pragma mark -
@@ -342,6 +355,14 @@ void MixerImpl::setChannelVolume(SoundHandle handle, byte volume) {
 	_channels[index]->setVolume(volume);
 }
 
+byte MixerImpl::getChannelVolume(SoundHandle handle) {
+	const int index = handle._val % NUM_CHANNELS;
+	if (!_channels[index] || _channels[index]->getHandle()._val != handle._val)
+		return 0;
+
+	return _channels[index]->getVolume();
+}
+
 void MixerImpl::setChannelBalance(SoundHandle handle, int8 balance) {
 	Common::StackLock lock(_mutex);
 
@@ -350,6 +371,14 @@ void MixerImpl::setChannelBalance(SoundHandle handle, int8 balance) {
 		return;
 
 	_channels[index]->setBalance(balance);
+}
+
+int8 MixerImpl::getChannelBalance(SoundHandle handle) {
+	const int index = handle._val % NUM_CHANNELS;
+	if (!_channels[index] || _channels[index]->getHandle()._val != handle._val)
+		return 0;
+
+	return _channels[index]->getBalance();
 }
 
 uint32 MixerImpl::getSoundElapsedTime(SoundHandle handle) {
@@ -462,8 +491,8 @@ Channel::Channel(Mixer *mixer, Mixer::SoundType type, AudioStream *stream,
                  DisposeAfterUse::Flag autofreeStream, bool reverseStereo, int id, bool permanent)
     : _type(type), _mixer(mixer), _id(id), _permanent(permanent), _volume(Mixer::kMaxChannelVolume),
       _balance(0), _pauseLevel(0), _samplesConsumed(0), _samplesDecoded(0), _mixerTimeStamp(0),
-      _pauseStartTime(0), _pauseTime(0), _autofreeStream(autofreeStream), _converter(0),
-      _stream(stream) {
+      _pauseStartTime(0), _pauseTime(0), _converter(0),
+      _stream(stream, autofreeStream) {
 	assert(mixer);
 	assert(stream);
 
@@ -473,8 +502,6 @@ Channel::Channel(Mixer *mixer, Mixer::SoundType type, AudioStream *stream,
 
 Channel::~Channel() {
 	delete _converter;
-	if (_autofreeStream == DisposeAfterUse::YES)
-		delete _stream;
 }
 
 void Channel::setVolume(const byte volume) {
@@ -482,9 +509,17 @@ void Channel::setVolume(const byte volume) {
 	updateChannelVolumes();
 }
 
+byte Channel::getVolume() {
+	return _volume;
+}
+
 void Channel::setBalance(const int8 balance) {
 	_balance = balance;
 	updateChannelVolumes();
+}
+
+int8 Channel::getBalance() {
+	return _balance;
 }
 
 void Channel::updateChannelVolumes() {
