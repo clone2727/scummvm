@@ -44,6 +44,7 @@
 #include "made/sound.h"
 #include "made/music.h"
 #include "made/redreader.h"
+#include "made/psx_inf.h"
 
 // Video formats
 #include "made/pmv_decoder.h"
@@ -300,6 +301,14 @@ Common::Error MadeEngine::run() {
 		if (getPlatform() == Common::kPlatformPSX) {
 			_dat->open("psj_rtz.dat");
 			_res->open("psj_rtz.prj");
+
+			// We also need to open three archives for audio/video
+			Common::Archive *psxDisk1Videos = new PSXStreamINF("disk1/disk1", false);
+			Common::Archive *psxDisk2Videos = new PSXStreamINF("disk2/disk2", false);
+			Common::Archive *psxAudio = new PSXStreamINF("zorkx", true);
+			SearchMan.add("disk1/disk1", psxDisk1Videos);
+			SearchMan.add("disk2/disk2", psxDisk2Videos);
+			SearchMan.add("zorkx", psxAudio);
 		} else if (getFeatures() & GF_DEMO) {
 			_dat->open("demo.dat");
 			_res->open("demo.prj");
@@ -356,7 +365,7 @@ bool MadeEngine::playMovie(const Common::String &fileName) {
 		// Saturn version uses Sega FILM
 		decoder = new Video::SegaFILMDecoder();
 	} else if (getPlatform() == Common::kPlatformPSX) {
-		// TODO: PlayStation streams
+		// TODO: PlayStation streams (all @10fps)
 	} else {
 		// DOS, Mac, PC-98, FM Towns use PMV/MMV
 		// TODO: MPEG-2 DOS and MPEG-2 Mac

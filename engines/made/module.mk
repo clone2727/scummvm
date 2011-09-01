@@ -8,6 +8,7 @@ MODULE_OBJS := \
 	made.o \
 	music.o \
 	pmv_decoder.o \
+	psx_inf.o \
 	redreader.o \
 	resource.o \
 	screen.o \
