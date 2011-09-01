@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/util.h"
@@ -606,10 +603,7 @@ bool Resources::dumpResource(const Resource &resource, uint16 id,
 
 	Common::String fileName = _fileBase;
 
-	char idStr[7];
-
-	snprintf(idStr, 7, "_%05d", id);
-	fileName += idStr;
+	fileName += Common::String::format("_%05d", id);
 	fileName += ".";
 	fileName += ext;
 

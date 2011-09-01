@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "sci/sci.h"
@@ -30,12 +27,6 @@
 
 namespace Sci {
 
-
-enum {
-	DEFAULT_SCRIPTS = 32,
-	DEFAULT_OBJECTS = 8,			///< default number of objects per script
-	DEFAULT_OBJECTS_INCREMENT = 4	///< Number of additional objects to instantiate if we're running out of them
-};
 
 SegManager::SegManager(ResourceManager *resMan) {
 	_heap.push_back(0);
@@ -1010,9 +1001,9 @@ int SegManager::instantiateScript(int scriptNum) {
 
 	scr->init(scriptNum, _resMan);
 	scr->load(_resMan);
-	scr->initialiseLocals(this);
-	scr->initialiseClasses(this);
-	scr->initialiseObjects(this, segmentId);
+	scr->initializeLocals(this);
+	scr->initializeClasses(this);
+	scr->initializeObjects(this, segmentId);
 
 	return segmentId;
 }
@@ -1023,7 +1014,7 @@ void SegManager::uninstantiateScript(int script_nr) {
 
 	if (!scr || scr->isMarkedAsDeleted()) {   // Is it already unloaded?
 		//warning("unloading script 0x%x requested although not loaded", script_nr);
-		// This is perfectly valid SCI behaviour
+		// This is perfectly valid SCI behavior
 		return;
 	}
 

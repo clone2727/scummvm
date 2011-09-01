@@ -19,9 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_PLUGINS_MIPS_LOADER_H
@@ -61,4 +58,3 @@ public:
 #endif /* defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER) && defined(MIPS_TARGET) */
 
 #endif /* BACKENDS_PLUGINS_MIPS_LOADER_H */
-

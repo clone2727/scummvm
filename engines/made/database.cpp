@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -109,7 +106,7 @@ void Object::setVectorItem(int16 index, int16 value) {
 	}
 }
 
-void Object::dump(const char *filename) {
+void Object::dump(const Common::String &filename) {
 	/*
 	FILE *o = fopen(filename, "wb");
 	fwrite(_objData, _objSize, 1, o);
@@ -376,9 +373,7 @@ int16 GameDatabase::setObjectProperty(int16 objectIndex, int16 propertyId, int16
 
 void GameDatabase::dumpObject(int16 index) {
 	Object *obj = getObject(index);
-	char fn[512];
-	sprintf(fn, "obj%04X.0", index);
-	obj->dump(fn);
+	obj->dump(Common::String::format("obj%04X.0", index));
 }
 
 
@@ -516,7 +511,7 @@ int16 GameDatabaseV2::loadgame(const char *filename, int16 version) {
 		_objects[i]->load(*in);
 	}
 	delete in;
-	
+
 	_objectPropertyCache.clear();	// make sure to clear cache
 	return result;
 }
@@ -647,7 +642,7 @@ void GameDatabaseV3::load(Common::SeekableReadStream &sourceS) {
 void GameDatabaseV3::reloadFromStream(Common::SeekableReadStream &sourceS) {
 	sourceS.seek(_gameStateOffs);
 	sourceS.read(_gameState, _gameStateSize);
-	
+
 	_objectPropertyCache.clear();	// make sure to clear cache
 }
 
@@ -739,9 +734,9 @@ int16 GameDatabaseV3::loadgame(const char *filename, int16 version) {
 	in->skip(64); // skip savegame description
 	in->read(_gameState, _gameStateSize);
 	delete in;
-	
+
 	_objectPropertyCache.clear();	// make sure to clear cache
-	
+
 	return 0;
 }
 

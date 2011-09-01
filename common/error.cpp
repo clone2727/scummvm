@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/error.h"
@@ -70,8 +67,8 @@ static String errorToString(ErrorCode errorCode) {
 	case kEnginePluginNotSupportSaves:
 		return _s("Engine plugin does not support save states");
 
-	case kArgumentNotProcessed:
-		return _s("Command line argument not processed");
+	case kUserCanceled:
+		return _s("User canceled");
 
 	case kUnknownError:
 	default:

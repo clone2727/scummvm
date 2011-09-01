@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_LOL
@@ -260,7 +257,7 @@ Common::Error LoLEngine::loadGameState(int slot) {
 	int t = _credits;
 	_credits = 0;
 	giveCredits(t, 0);
-	setDelayedCursorUpdate();
+	setHandItem(_itemInHand);
 	loadLevel(_currentLevel);
 	gui_drawPlayField();
 	timerSpecialCharacterUpdate(0);
@@ -475,4 +472,3 @@ Graphics::Surface *LoLEngine::generateSaveThumbnail() const {
 } // End of namespace Kyra
 
 #endif // ENABLE_LOL
-

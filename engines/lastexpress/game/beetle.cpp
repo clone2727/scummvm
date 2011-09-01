@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/game/beetle.h"
@@ -134,7 +131,7 @@ bool Beetle::isLoaded() const {
 
 bool Beetle::catchBeetle() {
 	if (!_data)
-		error("Beetle::catchBeetle: sequences have not been loaded!");
+		error("[Beetle::catchBeetle] Sequences have not been loaded");
 
 	if (getInventory()->getSelectedItem() == kItemMatchBox
 	 && getInventory()->hasItem(kItemMatch)
@@ -151,14 +148,14 @@ bool Beetle::catchBeetle() {
 
 bool Beetle::isCatchable() const {
 	if (!_data)
-		error("Beetle::isCatchable: sequences have not been loaded!");
+		error("[Beetle::isCatchable] Sequences have not been loaded");
 
 	return (_data->indexes[_data->offset] >= 30);
 }
 
 void Beetle::update() {
 	if (!_data)
-		error("Beetle::update: sequences have not been loaded!");
+		error("[Beetle::update] Sequences have not been loaded");
 
 	if (!_data->isLoaded)
 		return;
@@ -197,7 +194,7 @@ void Beetle::update() {
 
 void Beetle::drawUpdate() {
 	if (!_data)
-		error("Beetle::drawUpdate: sequences have not been loaded!");
+		error("[Beetle::drawUpdate] Sequences have not been loaded");
 
 	if (_data->frame != NULL) {
 		getScenes()->setCoordinates(_data->frame);
@@ -369,7 +366,7 @@ void Beetle::drawUpdate() {
 
 void Beetle::move() {
 	if (!_data)
-		error("Beetle::move: sequences have not been loaded!");
+		error("[Beetle::move] Sequences have not been loaded");
 
 	if (_data->indexes[_data->offset] >= 24 && _data->indexes[_data->offset] <= 29)
 		return;
@@ -447,7 +444,7 @@ update_data:
 // Update the beetle sequence to show the correct frames in the correct place
 void Beetle::updateFrame(SequenceFrame *frame) const {
 	if (!_data)
-		error("Beetle::updateSequence: sequences have not been loaded!");
+		error("[Beetle::updateFrame] Sequences have not been loaded");
 
 	if (!frame)
 		return;
@@ -462,7 +459,7 @@ void Beetle::updateFrame(SequenceFrame *frame) const {
 
 void Beetle::updateData(uint32 index) {
 	if (!_data)
-		error("Beetle::updateData: sequences have not been loaded!");
+		error("[Beetle::updateData] Sequences have not been loaded");
 
 	if (!_data->isLoaded)
 		return;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_EVENTS_SDL_WINCE_H
@@ -46,9 +43,7 @@ public:
 	// Overloaded from SDL backend (toolbar handling)
 	bool pollEvent(Common::Event &event);
 	// Overloaded from SDL backend (mouse and new scaler handling)
-	void fillMouseEvent(Common::Event &event, int x, int y);
-
-	void swap_freeLook();
+	void processMouseEvent(Common::Event &event, int x, int y);
 
 protected:
 
@@ -64,8 +59,6 @@ private:
 
 	bool _closeClick;           // flag when taps are spatially close together
 	bool _rbutton;              // double tap -> right button simulation
-	bool _freeLook;             // freeLook mode (do not send mouse button events)
-
 };
 
 #endif

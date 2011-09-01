@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "base/plugins.h"
@@ -246,7 +243,7 @@ static const DrasculaGameDescription gameDescriptions[] = {
 			GUIO_NONE
 		},
 	},
-	
+
 	{
 		// Drascula French version (ScummVM repacked files)
 		{
@@ -269,37 +266,15 @@ static const DrasculaGameDescription gameDescriptions[] = {
 
 } // End of namespace Drascula
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)Drascula::gameDescriptions,
-	// Size of that superset structure
-	sizeof(Drascula::DrasculaGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	drasculaGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"drascula",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 class DrasculaMetaEngine : public AdvancedMetaEngine {
 public:
-	DrasculaMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	DrasculaMetaEngine() : AdvancedMetaEngine(Drascula::gameDescriptions, sizeof(Drascula::DrasculaGameDescription), drasculaGames) {
+		_singleid = "drascula";
+		_guioptions = Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD;
+	}
 
 	virtual const char *getName() const {
-		return "Drascula Engine";
+		return "Drascula";
 	}
 
 	virtual const char *getOriginalCopyright() const {

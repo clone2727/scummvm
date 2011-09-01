@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef RIVEN_SCRIPTS_H
@@ -144,8 +141,10 @@ public:
 		uint16 id;
 	};
 
+	uint16 getStoredMovieOpcodeID() { return _storedMovieOpcode.id; }
+	uint32 getStoredMovieOpcodeTime() { return _storedMovieOpcode.time; }
 	void setStoredMovieOpcode(const StoredMovieOpcode &op);
-	void runStoredMovieOpcode(uint16 id);
+	void runStoredMovieOpcode();
 	void clearStoredMovieOpcode();
 
 private:

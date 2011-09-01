@@ -5,6 +5,10 @@
 */
 
 
+// FIXME: rand and srand should be replaced by a RandomSource
+#define FORBIDDEN_SYMBOL_EXCEPTION_rand
+#define FORBIDDEN_SYMBOL_EXCEPTION_srand
+
 #include <stdlib.h>
 // MSVC does not define M_PI, M_SQRT2 and other math defines by default.
 // _USE_MATH_DEFINES must be defined in order to have these defined, thus
@@ -270,4 +274,3 @@ LUALIB_API int luaopen_math (lua_State *L) {
 #endif
   return 1;
 }
-

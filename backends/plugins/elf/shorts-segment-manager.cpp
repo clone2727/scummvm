@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -36,7 +33,9 @@ extern char __plugin_hole_start;	// Indicates start of hole in program file for 
 extern char __plugin_hole_end;		// Indicates end of hole in program file
 extern char _gp[];					// Value of gp register
 
+namespace Common {
 DECLARE_SINGLETON(ShortSegmentManager);	// For singleton
+}
 
 ShortSegmentManager::ShortSegmentManager() {
 	_shortsStart = &__plugin_hole_start ;	//shorts segment begins at the plugin hole we made when linking
@@ -86,5 +85,3 @@ void ShortSegmentManager::deleteSegment(ShortSegmentManager::Segment *seg) {
 }
 
 #endif // defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER) && defined(MIPS_TARGET)
-
-

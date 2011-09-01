@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/endian.h"
@@ -47,8 +44,8 @@ void Draw_v1::initScreen() {
 	_backSurface  = _vm->_video->initSurfDesc(320, 200);
 	_frontSurface = _vm->_global->_primarySurfDesc;
 
-	_cursorSprites = _vm->_video->initSurfDesc(32, 16, 2);
-	_scummvmCursor = _vm->_video->initSurfDesc(16, 16, SCUMMVM_CURSOR);
+	_cursorSprites = _vm->_video->initSurfDesc(_cursorWidth * 2, _cursorHeight, 2);
+	_scummvmCursor = _vm->_video->initSurfDesc(_cursorWidth    , _cursorHeight, SCUMMVM_CURSOR);
 }
 
 void Draw_v1::closeScreen() {

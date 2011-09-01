@@ -18,11 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
+#include "common/ptr.h"
 #include "common/stream.h"
 #include "common/memstream.h"
 #include "common/substream.h"
@@ -242,6 +240,13 @@ bool SeekableSubReadStream::seek(int32 offset, int whence) {
 	return ret;
 }
 
+uint32 SafeSubReadStream::read(void *dataPtr, uint32 dataSize) {
+	// Make sure the parent stream is at the right position
+	seek(0, SEEK_CUR);
+
+	return SeekableSubReadStream::read(dataPtr, dataSize);
+}
+
 
 #pragma mark -
 
@@ -254,8 +259,7 @@ namespace {
  */
 class BufferedReadStream : virtual public ReadStream {
 protected:
-	ReadStream *_parentStream;
-	DisposeAfterUse::Flag _disposeParentStream;
+	DisposablePtr<ReadStream> _parentStream;
 	byte *_buf;
 	uint32 _pos;
 	bool _eos; // end of stream
@@ -274,8 +278,7 @@ public:
 };
 
 BufferedReadStream::BufferedReadStream(ReadStream *parentStream, uint32 bufSize, DisposeAfterUse::Flag disposeParentStream)
-	: _parentStream(parentStream),
-	_disposeParentStream(disposeParentStream),
+	: _parentStream(parentStream, disposeParentStream),
 	_pos(0),
 	_eos(false),
 	_bufSize(0),
@@ -287,8 +290,6 @@ BufferedReadStream::BufferedReadStream(ReadStream *parentStream, uint32 bufSize,
 }
 
 BufferedReadStream::~BufferedReadStream() {
-	if (_disposeParentStream)
-		delete _parentStream;
 	delete[] _buf;
 }
 

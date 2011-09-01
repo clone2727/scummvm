@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Game detection information and MD5s
@@ -224,7 +221,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			GUIO_NOSPEECH
 		},
 		GID_ITE,
-		GF_WYRMKEEP | GF_SCENE_SUBSTITUTES | GF_MONO_MUSIC | GF_LE_VOICES,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITEWINDEMO_GameFonts),
@@ -250,7 +247,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			GUIO_NOSPEECH
 		},
 		GID_ITE,
-		GF_WYRMKEEP | GF_LE_VOICES,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITEWINDEMO_GameFonts),
@@ -276,7 +273,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			GUIO_NONE
 		},
 		GID_ITE,
-		GF_WYRMKEEP | GF_SCENE_SUBSTITUTES,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITEWINDEMO_GameFonts),
@@ -302,7 +299,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			GUIO_NONE
 		},
 		GID_ITE,
-		GF_WYRMKEEP | GF_8BIT_UNSIGNED_PCM,
+		GF_8BIT_UNSIGNED_PCM,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITEWINDEMO_GameFonts),
@@ -331,7 +328,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformMacintosh,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
@@ -355,11 +352,11 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformMacintosh,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
-		GF_WYRMKEEP,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITEWINDEMO_GameFonts),
@@ -387,11 +384,11 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformUnknown,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
-		GF_WYRMKEEP,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITE_GameFonts),
@@ -417,11 +414,11 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::IT_ITA,
 			Common::kPlatformUnknown,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
-		GF_WYRMKEEP,
+		0,
 		ITE_DEFAULT_SCENE,
 		&ITE_Resources,
 		ARRAYSIZE(ITE_GameFonts),
@@ -441,7 +438,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
@@ -465,7 +462,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::IT_ITA,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
@@ -489,7 +486,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
@@ -514,7 +511,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::DE_DEU,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_CD,
 			GUIO_NONE
 		},
 		GID_ITE,
@@ -824,7 +821,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_UNSTABLE,
 			GUIO_NONE
 		},
 		GID_DINO,
@@ -854,7 +851,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 			},
 			Common::EN_ANY,
 			Common::kPlatformPC,
-			ADGF_NO_FLAGS,
+			ADGF_UNSTABLE,
 			GUIO_NONE
 		},
 		GID_FTA2,

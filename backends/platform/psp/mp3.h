@@ -18,14 +18,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SOUND_MP3_PSP_H
 #define SOUND_MP3_PSP_H
 
+#include "common/ptr.h"
 #include "common/types.h"
 #include "common/scummsys.h"
 
@@ -51,8 +49,7 @@ protected:
 	byte _codecInBuffer[3072] __attribute__((aligned(64))); // the codec always needs alignment
 	unsigned long _codecParams[65]__attribute__((aligned(64)));		// TODO: change to struct
 
-	Common::SeekableReadStream *_inStream;
-	DisposeAfterUse::Flag _disposeAfterUse;
+	Common::DisposablePtr<Common::SeekableReadStream> _inStream;
 
 	uint32 _pcmLength;		// how many pcm samples we have for this type of file (x2 this for stereo)
 

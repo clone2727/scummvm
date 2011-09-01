@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "agi/agi.h"
@@ -193,7 +190,7 @@ bool AgiEngine::predictiveDialog() {
 
 	bool needRefresh = true;
 
-	for (;;) {
+	while (!shouldQuit()) {
 		if (needRefresh) {
 			for (int i = 0; buttons[i]; i++) {
 				int color1 = colors[i * 2];
@@ -576,8 +573,10 @@ bool AgiEngine::matchWord() {
 			hi = line - 1;
 		else if (cmpVal < 0)
 			lo = line + 1;
-		else
+		else {
 			hi = line;
+			break;
+		}
 	}
 
 	_currentWord.clear();

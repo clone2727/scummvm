@@ -18,9 +18,6 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
-* $URL$
-* $Id$
-*
 */
 
 #include "common/debug.h"
@@ -599,7 +596,8 @@ int32 Character::getId() {
 void Character::save(Common::WriteStream *stream) {
 	debugC(1, kDebugCharacter, "save(stream)");
 
-	stream->writeSint32LE(_flags);
+	// we have to save visibility too, put in flags to not invalidate old savegames.
+	stream->writeSint32LE(_flags | ((_visible == false) ? 0x100 : 0));
 	stream->writeSint32LE(_x);
 	stream->writeSint32LE(_y);
 	stream->writeSint32LE(_z);
@@ -635,6 +633,12 @@ void Character::load(Common::ReadStream *stream) {
 
 	if (_sceneAnimationId > -1) {
 		setAnimationInstance(_vm->getSceneAnimation(_sceneAnimationId)->_animInstance);
+	}
+
+	// "not visible" flag.
+	if (_flags & 0x100) {
+		_flags &= ~0x100;
+		setVisible(false);	
 	}
 }
 
@@ -1105,4 +1109,3 @@ void Character::updateIdle() {
 	}
 }
 } // End of namespace Toon
-

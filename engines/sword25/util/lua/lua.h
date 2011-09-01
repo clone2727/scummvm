@@ -9,6 +9,8 @@
 #ifndef lua_h
 #define lua_h
 
+#include "common/scummsys.h"
+
 #include <stdarg.h>
 #include <stddef.h>
 
@@ -245,7 +247,7 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 
 
 
-/* 
+/*
 ** ===============================================================
 ** some useful macros
 ** ===============================================================

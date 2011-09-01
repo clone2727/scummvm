@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "cdtypes.h"
@@ -265,4 +262,3 @@ int cd_dclose(iop_file_t *handle) {
 	hd->size = hd->lba = 0;
 	return 0;
 }
-

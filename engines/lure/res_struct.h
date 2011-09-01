@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef LURE_RESSTRUCT_H
@@ -473,7 +470,7 @@ public:
 	bool isEmpty() const { return _actions.begin() == _actions.end(); }
 	void clear() { _actions.clear(); }
 	CurrentActionEntry &top() { return **_actions.begin(); }
-	CurrentActionEntry &bottom() { 
+	CurrentActionEntry &bottom() {
 		ActionsList::iterator i = _actions.end();
 		--i;
 		return **i;

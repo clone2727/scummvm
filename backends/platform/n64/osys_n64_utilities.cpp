@@ -18,12 +18,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "osys_n64.h"
+#include "backends/timer/default/default-timer.h"
 
 void checkTimers(void) {
 	OSystem_N64 *osys = (OSystem_N64 *)g_system;
@@ -117,4 +115,3 @@ int timer_handler(int t) {
 	tm->handler();
 	return t;
 }
-

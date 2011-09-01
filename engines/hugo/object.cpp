@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -160,7 +157,7 @@ void ObjectHandler::useObject(int16 objId) {
 			if (inventObjId == use->objId) {
 				// Look for secondary object, if found use matching verb
 				bool foundFl = false;
-				
+
 				for (target_t *target = use->targets; target->nounIndex != 0; target++)
 					if (target->nounIndex == obj->nounIndex) {
 						foundFl = true;
@@ -428,7 +425,7 @@ void ObjectHandler::loadObjectUses(Common::ReadStream &in) {
 		}
 
 		for (int i = 0; i < numElem; i++) {
-			if (varnt == _vm->_gameVariant) 
+			if (varnt == _vm->_gameVariant)
 				readUse(in, _uses[i]);
 			else {
 				readUse(in, tmpUse);

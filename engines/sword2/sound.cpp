@@ -20,9 +20,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 // ---------------------------------------------------------------------------
@@ -50,7 +47,7 @@
 #include "sword2/sound.h"
 
 #include "audio/decoders/wave.h"
-#include "audio/decoders/vag.h"
+#include "audio/decoders/xa.h"
 
 #define Debug_Printf _vm->_debugger->DebugPrintf
 
@@ -237,7 +234,7 @@ void Sound::playMovieSound(int32 res, int type) {
 		Audio::RewindableAudioStream *input = 0;
 
 		if (Sword2Engine::isPsx()) {
-			input = Audio::makeVagStream(stream);
+			input = Audio::makeXAStream(stream, 11025);
 		} else {
 			input = Audio::makeWAVStream(stream, DisposeAfterUse::YES);
 		}
@@ -364,7 +361,7 @@ int32 Sound::playFx(Audio::SoundHandle *handle, byte *data, uint32 len, uint8 vo
 	Audio::RewindableAudioStream *input = 0;
 
 	if (Sword2Engine::isPsx())
-		input = Audio::makeVagStream(stream);
+		input = Audio::makeXAStream(stream, 11025);
 	else
 		input = Audio::makeWAVStream(stream, DisposeAfterUse::YES);
 

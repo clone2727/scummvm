@@ -18,14 +18,12 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
 
 #include "agos/agos.h"
+#include "agos/midi.h"
 
 #include "common/textconsole.h"
 
@@ -345,11 +343,11 @@ void AGOSEngine_Simon2::os2_playTune() {
 	// effectively preloaded so there's no latency when
 	// starting playback).
 
-	_midi.setLoop(loop != 0);
+	_midi->setLoop(loop != 0);
 	if (_lastMusicPlayed != music)
 		_nextMusicToPlay = music;
 	else
-		_midi.startTrack(track);
+		_midi->startTrack(track);
 }
 
 void AGOSEngine_Simon2::os2_screenTextPObj() {

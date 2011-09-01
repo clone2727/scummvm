@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef CINE_H
@@ -129,7 +126,7 @@ public:
 	int modifyGameSpeed(int speedChange);
 	int getTimerDelay() const;
 	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const char *desc);
+	Common::Error saveGameState(int slot, const Common::String &desc);
 	bool canLoadGameStateCurrently();
 	bool canSaveGameStateCurrently();
 
@@ -151,7 +148,7 @@ private:
 	void resetEngine();
 	bool loadPlainSaveFW(Common::SeekableReadStream &in, CineSaveGameFormat saveGameFormat);
 	bool loadTempSaveOS(Common::SeekableReadStream &in);
-	bool makeLoad(char *saveName);
+	bool makeLoad(const Common::String &saveName);
 	void makeSaveFW(Common::OutSaveFile &out);
 	void makeSaveOS(Common::OutSaveFile &out);
 	void makeSave(char *saveFileName);

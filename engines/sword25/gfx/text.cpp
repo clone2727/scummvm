@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -64,7 +61,7 @@ Text::Text(InputPersistenceBlock &reader, RenderObjectPtr<RenderObject> parentPt
 		// Temporarily set fields prior to unpersisting actual values
 		_modulationColor(0xffffffff),
 		_autoWrap(false),
-		_autoWrapThreshold(AUTO_WRAP_THRESHOLD_DEFAULT) {	
+		_autoWrapThreshold(AUTO_WRAP_THRESHOLD_DEFAULT) {
 
 	// Unpersist the fields
 	_initSuccess = unpersist(reader);

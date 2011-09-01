@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -38,6 +35,7 @@
 #include "scumm/he/intern_he.h"
 #include "scumm/he/logic_he.h"
 #endif
+#include "scumm/resource.h"
 #include "scumm/scumm_v0.h"
 #include "scumm/scumm_v6.h"
 #include "scumm/scumm_v8.h"
@@ -119,7 +117,7 @@ void ScummEngine::parseEvent(Common::Event event) {
 			if (_saveLoadSlot == 0)
 				_saveLoadSlot = 10;
 
-			sprintf(_saveLoadName, "Quicksave %d", _saveLoadSlot);
+			_saveLoadDescription = Common::String::format("Quicksave %d", _saveLoadSlot);
 			_saveLoadFlag = (event.kbd.hasFlags(Common::KBD_ALT)) ? 1 : 2;
 			_saveTemporaryState = false;
 		} else if (event.kbd.hasFlags(Common::KBD_CTRL) && event.kbd.keycode == Common::KEYCODE_f) {
@@ -183,7 +181,7 @@ void ScummEngine::parseEvent(Common::Event event) {
 		_mouse.y = event.mouse.y;
 
 		if (_renderMode == Common::kRenderHercA || _renderMode == Common::kRenderHercG) {
-			_mouse.x -= (Common::kHercW - _screenWidth * 2) / 2;
+			_mouse.x -= (kHercWidth - _screenWidth * 2) / 2;
 			_mouse.x >>= 1;
 			_mouse.y = _mouse.y * 4 / 7;
 		} else if (_useCJKMode && _textSurfaceMultiplier == 2) {
@@ -305,14 +303,14 @@ void ScummEngine::processInput() {
 	if ((_leftBtnPressed & msClicked) && (_rightBtnPressed & msClicked) && _game.version >= 4) {
 		// Pressing both mouse buttons is treated as if you pressed
 		// the cutscene exit key (ESC) in V4+ games. That mimicks
-		// the behaviour of the original engine where pressing both
+		// the behavior of the original engine where pressing both
 		// mouse buttons also skips the current cutscene.
 		_mouseAndKeyboardStat = 0;
 		lastKeyHit = Common::KeyState(Common::KEYCODE_ESCAPE);
 	} else if ((_rightBtnPressed & msClicked) && (_game.version <= 3 && _game.id != GID_LOOM)) {
 		// Pressing right mouse button is treated as if you pressed
 		// the cutscene exit key (ESC) in V0-V3 games. That mimicks
-		// the behaviour of the original engine where pressing right
+		// the behavior of the original engine where pressing right
 		// mouse button also skips the current cutscene.
 		_mouseAndKeyboardStat = 0;
 		lastKeyHit = Common::KeyState(Common::KEYCODE_ESCAPE);
@@ -326,7 +324,17 @@ void ScummEngine::processInput() {
 		VAR(VAR_LEFTBTN_HOLD) = (_leftBtnPressed & msDown) != 0;
 		VAR(VAR_RIGHTBTN_HOLD) = (_rightBtnPressed & msDown) != 0;
 
-		if (_game.version >= 7) {
+		if (_game.heversion >= 72) {
+			// HE72 introduced a flag for whether or not this is a click
+			// or the player is continuing to hold the button down.
+			// 0x80 signifies that the button is continuing to be held down
+			// Backyard Soccer needs this in order to function
+			if (VAR(VAR_LEFTBTN_HOLD) && !(_leftBtnPressed & msClicked))
+				VAR(VAR_LEFTBTN_HOLD) |= 0x80;
+
+			if (VAR(VAR_RIGHTBTN_HOLD) && !(_rightBtnPressed & msClicked))
+				VAR(VAR_RIGHTBTN_HOLD) |= 0x80;
+		} else if (_game.version >= 7) {
 			VAR(VAR_LEFTBTN_DOWN) = (_leftBtnPressed & msClicked) != 0;
 			VAR(VAR_RIGHTBTN_DOWN) = (_rightBtnPressed & msClicked) != 0;
 		}

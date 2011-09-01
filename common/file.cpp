@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/archive.h"
@@ -75,7 +72,7 @@ bool File::open(const FSNode &node) {
 	return open(stream, node.getPath());
 }
 
-bool File::open(SeekableReadStream *stream, const Common::String &name) {
+bool File::open(SeekableReadStream *stream, const String &name) {
 	assert(!_handle);
 
 	if (stream) {

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "draci/draci.h"
@@ -61,13 +58,9 @@ bool readSavegameHeader(Common::InSaveFile *in, DraciSavegameHeader &header) {
 	header.playtime = in->readUint32LE();
 
 	// Get the thumbnail
-	header.thumbnail = new Graphics::Surface();
-	if (!Graphics::loadThumbnail(*in, *header.thumbnail)) {
-		header.thumbnail->free();
-		delete header.thumbnail;
-		header.thumbnail = NULL;
+	header.thumbnail = Graphics::loadThumbnail(*in);
+	if (!header.thumbnail)
 		return false;
-	}
 
 	return true;
 }
@@ -89,7 +82,7 @@ void writeSavegameHeader(Common::OutSaveFile *out, const DraciSavegameHeader &he
 }
 
 Common::Error saveSavegameData(int saveGameIdx, const Common::String &saveName, DraciEngine &vm) {
-	const char *filename = vm.getSavegameFile(saveGameIdx);
+	Common::String filename = vm.getSavegameFile(saveGameIdx);
 	Common::SaveFileManager *saveMan = g_system->getSavefileManager();
 	Common::OutSaveFile *f = saveMan->openForSaving(filename);
 	if (f == NULL)

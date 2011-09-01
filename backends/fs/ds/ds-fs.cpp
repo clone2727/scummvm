@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides for FILE as that is used in FLAC headers
@@ -605,34 +602,10 @@ size_t std_fread(void *ptr, size_t size, size_t numItems, FILE *handle) {
 }
 
 size_t std_fwrite(const void *ptr, size_t size, size_t numItems, FILE *handle) {
-	if ((handle == stdin))
-		return 0;
-
-	if ((handle == stderr) || (handle == stdout)) {
-#ifndef DISABLE_TEXT_CONSOLE
-		nocashMessage((char *) ptr);
-//		consolePrintf((char *) ptr);
-#endif
-		return size;
-	}
-
 	//consolePrintf("fwrite size=%d\n", size * numItems);
 
 	if (DS::isGBAMPAvailable()) {
 		FAT_fwrite(ptr, size, numItems, (FAT_FILE *) handle);
-		return numItems;
-
-		int length = size * numItems;
-		int pos = 0;
-
-		while (pos < length) {
-			int amount = length > 512? 512: length;
-
-			FAT_fwrite(((char *) (ptr)) + pos, 1, amount, (FAT_FILE *) handle);
-			length -= amount;
-			pos += amount;
-		}
-
 		return numItems;
 	}
 

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -354,7 +351,7 @@ void Parallaction_ns::changeLocation() {
 		// prevent music changes during the introduction
 		_soundManI->playLocationMusic(location);
 	}
-	
+
 	_input->stopHovering();
 	// this is still needed to remove the floatingLabel
 	_gfx->freeLabels();
@@ -474,7 +471,7 @@ void Parallaction_ns::changeCharacter(const char *name) {
 			// prevent music changes during the introduction
 			_soundManI->playCharacterMusic(_char.getBaseName());
 		}
-			
+
 		// The original engine used to reload 'common' only on loadgames. We are reloading here since 'common'
 		// contains character specific stuff. This causes crashes like bug #1816899, because parseLocation tries
 		// to reload scripts but the data archive selected is occasionally wrong. This has been solved by having

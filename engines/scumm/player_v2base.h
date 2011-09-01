@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCUMM_PLAYER_V2BASE_H
@@ -89,9 +86,9 @@ public:
 		return numSamples;
 	}
 */
-	bool isStereo() const { return true; }
-	bool endOfData() const { return false; }
-	int getRate() const { return _sampleRate; }
+	virtual bool isStereo() const { return true; }
+	virtual bool endOfData() const { return false; }
+	virtual int getRate() const { return _sampleRate; }
 
 protected:
 	enum {

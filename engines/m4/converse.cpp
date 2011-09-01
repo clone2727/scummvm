@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/array.h"
@@ -612,7 +609,7 @@ void Converse::loadConversation(const char *convName) {
 			// ----------------------------------------------------------------------------
 			// Entry action chunks
 			case CHUNK_CASN:	// Conditional assign
-			case CHUNK_ASGN:	// Assign
+			case CHUNK_ASGN: {	// Assign
 				curAction = new EntryAction();
 				if (debugFlag) debugCN(kDebugConversations, "ASGN chunk\n");
 				curAction->actionType = kAssignValue;
@@ -628,9 +625,11 @@ void Converse::loadConversation(const char *convName) {
 				}
 
 				curAction->targetOffset = convS->readUint32LE();
-				assert(convS->readUint32LE() == kOpAssign);
+				int op = convS->readUint32LE();
+				assert(op == kOpAssign);
 				curAction->value = convS->readUint32LE();
 				break;
+			}
 			case CHUNK_CCGO:	// Conditional go to entry
 			case CHUNK_CHDE:	// Conditional hide entry
 			case CHUNK_CUHD:	// Conditional unhide entry

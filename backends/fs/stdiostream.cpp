@@ -18,10 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
+
+#if !defined(DISABLE_STDIO_FILESTREAM)
 
 // Disable symbol overrides so that we can use FILE, fopen etc.
 #define FORBIDDEN_SYMBOL_ALLOW_ALL
@@ -103,3 +102,5 @@ StdioStream *StdioStream::makeFromPath(const Common::String &path, bool writeMod
 		return new StdioStream(handle);
 	return 0;
 }
+
+#endif

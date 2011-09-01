@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef ELF_MEMORY_MANAGER_H
@@ -33,17 +30,17 @@
 #include "common/singleton.h"
 #include "common/list.h"
 #include "common/mutex.h"
- 
+
 /**
- * A 'foolproof' way to prevent memory fragmentation. This class is used to 
- * serve as a permanent allocation to prevent the process of loading and 
+ * A 'foolproof' way to prevent memory fragmentation. This class is used to
+ * serve as a permanent allocation to prevent the process of loading and
  * unloading plugins from causing heavy fragmentation.
  **/
- 
+
 #define ELFMemMan		ELFMemoryManager::instance()
- 
+
 class ELFMemoryManager : public Common::Singleton<ELFMemoryManager> {
-public:	
+public:
 	void trackPlugin(bool value);
 	void trackAlloc(uint32 align, uint32 size);
 
@@ -52,7 +49,7 @@ public:
 	void *pluginAllocate(uint32 size);
 	void *pluginAllocate(uint32 align, uint32 size);
 	void pluginDeallocate(void *ptr);
-	
+
 private:
    friend class Common::Singleton<ELFMemoryManager>;
 
@@ -61,7 +58,7 @@ private:
 
 	void *allocateOnHeap(uint32 align, uint32 size);
 	void deallocateFromHeap(void *ptr);
-	
+
 	struct Allocation {
 		byte *start;
 		uint32 size;
@@ -73,17 +70,17 @@ private:
 	void *_heap;
 	uint32 _heapAlign;			// alignment of the heap
 	uint32 _heapSize;			// size of the heap
-	
+
 	// tracking allocations
 	bool _trackAllocs;		// whether we are currently tracking
-	uint32 _measuredSize; 
-	uint32 _measuredAlign;	
-	
+	uint32 _measuredSize;
+	uint32 _measuredAlign;
+
 	// real allocations
 	Common::List<Allocation> _allocList;
 	uint32 _bytesAllocated;
 };
- 
+
 #endif /* defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER) */
 
 #endif /* ELF_MEMORY_MANAGER_H */

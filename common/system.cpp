@@ -18,39 +18,86 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
-// Disable symbol overrides so that we can use system headers.
-// FIXME: Necessary for the PS2 port, should get rid of this eventually.
-#define FORBIDDEN_SYMBOL_ALLOW_ALL
+#define FORBIDDEN_SYMBOL_EXCEPTION_exit
 
 #include "common/system.h"
+#include "common/events.h"
+#include "common/fs.h"
+#include "common/savefile.h"
 #include "common/str.h"
+#include "common/taskbar.h"
+#include "common/updates.h"
+#include "common/textconsole.h"
 
-#ifdef __PLAYSTATION2__
-	// for those replaced fopen/fread/etc functions
-	#include "backends/platform/ps2/fileio.h"
-
-	#define fputs(str, file)	ps2_fputs(str, file)
-	#define fflush(a)			ps2_fflush(a)
-#endif
-
-#ifdef __DS__
-	#include "backends/fs/ds/ds-fs.h"
-
-	#define fputs(str, file)	DS::std_fwrite(str, strlen(str), 1, file)
-	#define fflush(file)		DS::std_fflush(file)
-#endif
+#include "backends/audiocd/default/default-audiocd.h"
+#include "backends/fs/fs-factory.h"
+#include "backends/timer/default/default-timer.h"
 
 OSystem *g_system = 0;
 
 OSystem::OSystem() {
+	_audiocdManager = 0;
+	_eventManager = 0;
+	_timerManager = 0;
+	_savefileManager = 0;
+#if defined(USE_TASKBAR)
+	_taskbarManager = 0;
+#endif
+#if defined(USE_UPDATES)
+	_updateManager = 0;
+#endif
+	_fsFactory = 0;
 }
 
 OSystem::~OSystem() {
+	delete _audiocdManager;
+	_audiocdManager = 0;
+
+	delete _eventManager;
+	_eventManager = 0;
+
+	delete _timerManager;
+	_timerManager = 0;
+
+#if defined(USE_TASKBAR)
+	delete _taskbarManager;
+	_taskbarManager = 0;
+#endif
+
+#if defined(USE_UPDATES)
+	delete _updateManager;
+	_updateManager = 0;
+#endif
+
+	delete _savefileManager;
+	_savefileManager = 0;
+
+	delete _fsFactory;
+	_fsFactory = 0;
+}
+
+void OSystem::initBackend() {
+	// Verify all managers has been set
+	if (!_audiocdManager)
+		error("Backend failed to instantiate audio CD manager");
+	if (!_eventManager)
+		error("Backend failed to instantiate event manager");
+	if (!_timerManager)
+		error("Backend failed to instantiate timer manager");
+
+	// TODO: We currently don't check _savefileManager, because at least
+	// on the Nintendo DS, it is possible that none is set. That should
+	// probably be treated as "saving is not possible". Or else the NDS
+	// port needs to be changed to always set a _savefileManager
+// 	if (!_savefileManager)
+// 		error("Backend failed to instantiate savefile manager");
+
+	// TODO: We currently don't check _fsFactory because not all ports
+	// set it.
+// 	if (!_fsFactory)
+// 		error("Backend failed to instantiate fs factory");
 }
 
 bool OSystem::setGraphicsMode(const char *name) {
@@ -79,16 +126,27 @@ void OSystem::fatalError() {
 	exit(1);
 }
 
-void OSystem::logMessage(LogMessageType::Type type, const char *message) {
-	FILE *output = 0;
+FilesystemFactory *OSystem::getFilesystemFactory() {
+	assert(_fsFactory);
+	return _fsFactory;
+}
 
-	if (type == LogMessageType::kDebug)
-		output = stdout;
-	else
-		output = stderr;
+Common::SeekableReadStream *OSystem::createConfigReadStream() {
+	Common::FSNode file(getDefaultConfigFileName());
+	return file.createReadStream();
+}
 
-	fputs(message, output);
-	fflush(output);
+Common::WriteStream *OSystem::createConfigWriteStream() {
+#ifdef __DC__
+	return 0;
+#else
+	Common::FSNode file(getDefaultConfigFileName());
+	return file.createWriteStream();
+#endif
+}
+
+Common::String OSystem::getDefaultConfigFileName() {
+	return "scummvm.ini";
 }
 
 Common::String OSystem::getSystemLanguage() const {

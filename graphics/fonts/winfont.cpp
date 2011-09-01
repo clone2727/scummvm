@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/file.h"
@@ -84,7 +81,7 @@ bool WinFont::loadFromFON(const Common::String &fileName, const WinFontDirEntry 
 		return true;
 
 	// Then try loading via the PE code
-	return loadFromPE(fileName, dirEntry);	
+	return loadFromPE(fileName, dirEntry);
 }
 
 bool WinFont::loadFromNE(const Common::String &fileName, const WinFontDirEntry &dirEntry) {
@@ -101,7 +98,7 @@ bool WinFont::loadFromNE(const Common::String &fileName, const WinFontDirEntry &
 	}
 
 	uint32 fontId = getFontIndex(*fontDirectory, dirEntry);
-	
+
 	delete fontDirectory;
 
 	// Couldn't match the face name
@@ -123,37 +120,43 @@ bool WinFont::loadFromNE(const Common::String &fileName, const WinFontDirEntry &
 }
 
 bool WinFont::loadFromPE(const Common::String &fileName, const WinFontDirEntry &dirEntry) {
-	Common::PEResources exe;
+	Common::PEResources *exe = new Common::PEResources();
 
-	if (!exe.loadFromEXE(fileName))
+	if (!exe->loadFromEXE(fileName)) {
+		delete exe;
 		return false;
+	}
 
 	// Let's pull out the font directory
-	Common::SeekableReadStream *fontDirectory = exe.getResource(Common::kPEFontDir, Common::String("FONTDIR"));
+	Common::SeekableReadStream *fontDirectory = exe->getResource(Common::kPEFontDir, Common::String("FONTDIR"));
 	if (!fontDirectory) {
 		warning("No font directory in '%s'", fileName.c_str());
+		delete exe;
 		return false;
 	}
 
 	uint32 fontId = getFontIndex(*fontDirectory, dirEntry);
-	
+
 	delete fontDirectory;
 
 	// Couldn't match the face name
 	if (fontId == 0xffffffff) {
 		warning("Could not find face '%s' in '%s'", dirEntry.faceName.c_str(), fileName.c_str());
+		delete exe;
 		return false;
 	}
 
 	// Actually go get our font now...
-	Common::SeekableReadStream *fontStream = exe.getResource(Common::kPEFont, fontId);
+	Common::SeekableReadStream *fontStream = exe->getResource(Common::kPEFont, fontId);
 	if (!fontStream) {
 		warning("Could not find font %d in %s", fontId, fileName.c_str());
+		delete exe;
 		return false;
 	}
 
 	bool ok = loadFromFNT(*fontStream);
 	delete fontStream;
+	delete exe;
 	return ok;
 }
 

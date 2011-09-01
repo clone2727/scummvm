@@ -18,13 +18,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // FIXME: Avoid using printf
 #define FORBIDDEN_SYMBOL_EXCEPTION_printf
+
+#define FORBIDDEN_SYMBOL_EXCEPTION_exit
+
+#include <limits.h>
 
 #include "engines/metaengine.h"
 #include "base/commandLine.h"
@@ -53,7 +54,7 @@ static const char USAGE_STRING[] =
 ;
 
 // DONT FIXME: DO NOT ORDER ALPHABETICALLY, THIS IS ORDERED BY IMPORTANCE/CATEGORY! :)
-#if defined(__SYMBIAN32__) || defined(__GP32__) || defined(ANDROID)
+#if defined(__SYMBIAN32__) || defined(__GP32__) || defined(ANDROID) || defined(__DS__)
 static const char HELP_STRING[] = "NoUsageString"; // save more data segment space
 #else
 static const char HELP_STRING[] =
@@ -64,6 +65,9 @@ static const char HELP_STRING[] =
 	"  -z, --list-games         Display list of supported games and exit\n"
 	"  -t, --list-targets       Display list of configured targets and exit\n"
 	"  --list-saves=TARGET      Display a list of savegames for the game (TARGET) specified\n"
+#if defined (WIN32) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
+	"  --console                Enable the console window (default:enabled)\n"
+#endif
 	"\n"
 	"  -c, --config=CONFIG      Use alternate configuration file\n"
 	"  -p, --path=PATH          Path to where the game is installed\n"
@@ -147,7 +151,7 @@ static void usage(const char *s, ...) {
 	vsnprintf(buf, STRINGBUFLEN, s, va);
 	va_end(va);
 
-#if !(defined(__GP32__) || defined (__SYMBIAN32__))
+#if !(defined(__GP32__) || defined (__SYMBIAN32__) || defined(__DS__))
 	printf(USAGE_STRING, s_appName, buf, s_appName, s_appName);
 #endif
 	exit(1);
@@ -180,12 +184,14 @@ void registerDefaults() {
 	ConfMan.registerDefault("native_mt32", false);
 	ConfMan.registerDefault("enable_gs", false);
 	ConfMan.registerDefault("midi_gain", 100);
-//	ConfMan.registerDefault("music_driver", ???);
 
+	ConfMan.registerDefault("music_driver", "auto");
 	ConfMan.registerDefault("mt32_device", "null");
 	ConfMan.registerDefault("gm_device", "null");
 
 	ConfMan.registerDefault("cdrom", 0);
+
+	ConfMan.registerDefault("enable_unsupported_game_warning", true);
 
 	// Game specific
 	ConfMan.registerDefault("path", "");
@@ -228,13 +234,6 @@ void registerDefaults() {
 	ConfMan.registerDefault("record_temp_file_name", "record.tmp");
 	ConfMan.registerDefault("record_time_file_name", "record.time");
 
-#if 0
-	// NEW CODE TO HIDE CONSOLE FOR WIN32
-#ifdef WIN32
-	// console hiding for win32
-	ConfMan.registerDefault("show_console", false);
-#endif
-#endif
 }
 
 //
@@ -263,17 +262,19 @@ void registerDefaults() {
 	if (!option) usage("Option '%s' requires an argument", argv[isLongCmd ? i : i-1]);
 
 // Use this for options which have a required integer value
+// (we don't check ERANGE because WinCE doesn't support errno, so we're stuck just rejecting LONG_MAX/LONG_MIN..)
 #define DO_OPTION_INT(shortCmd, longCmd) \
 	DO_OPTION(shortCmd, longCmd) \
-	char *endptr = 0; \
-	strtol(option, &endptr, 0); \
-	if (endptr == NULL || *endptr != 0) usage("--%s: Invalid number '%s'", longCmd, option);
+	char *endptr; \
+	long int retval = strtol(option, &endptr, 0); \
+	if (*endptr != '\0' || retval == LONG_MAX || retval == LONG_MIN) \
+		usage("--%s: Invalid number '%s'", longCmd, option);
 
 // Use this for boolean options; this distinguishes between "-x" and "-X",
 // resp. between "--some-option" and "--no-some-option".
 #define DO_OPTION_BOOL(shortCmd, longCmd) \
 	if (isLongCmd ? (!strcmp(s+2, longCmd) || !strcmp(s+2, "no-"longCmd)) : (tolower(s[1]) == shortCmd)) { \
-		bool boolValue = (islower(s[1]) != 0); \
+		bool boolValue = (islower(static_cast<unsigned char>(s[1])) != 0); \
 		s += 2; \
 		if (isLongCmd) { \
 			boolValue = !strcmp(s, longCmd); \
@@ -549,13 +550,10 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			END_OPTION
 #endif
 
-#if 0
-	// NEW CODE TO HIDE CONSOLE FOR WIN32
-#ifdef WIN32
-			// console hiding for win32
-			DO_LONG_OPTION_BOOL("show-console")
+#if defined (WIN32) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
+			// Optional console window on Windows (default: enabled)
+			DO_LONG_OPTION_BOOL("console")
 			END_OPTION
-#endif
 #endif
 
 unknownOption:
@@ -664,7 +662,7 @@ static Common::Error listSaves(const char *target) {
 				   "  ---- ------------------------------------------------------\n");
 
 			for (SaveStateList::const_iterator x = saveList.begin(); x != saveList.end(); ++x) {
-				printf("  %-4s %s\n", x->save_slot().c_str(), x->description().c_str());
+				printf("  %-4d %s\n", x->getSaveSlot(), x->getDescription().c_str());
 				// TODO: Could also iterate over the full hashmap, printing all key-value pairs
 			}
 		} else {
@@ -888,7 +886,8 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 #endif // DISABLE_COMMAND_LINE
 
 
-Common::Error processSettings(Common::String &command, Common::StringMap &settings) {
+bool processSettings(Common::String &command, Common::StringMap &settings, Common::Error &err) {
+	err = Common::kNoError;
 
 #ifndef DISABLE_COMMAND_LINE
 
@@ -897,33 +896,34 @@ Common::Error processSettings(Common::String &command, Common::StringMap &settin
 	// have been loaded.
 	if (command == "list-targets") {
 		listTargets();
-		return Common::kNoError;
+		return true;
 	} else if (command == "list-games") {
 		listGames();
-		return Common::kNoError;
+		return true;
 	} else if (command == "list-saves") {
-		return listSaves(settings["list-saves"].c_str());
+		err = listSaves(settings["list-saves"].c_str());
+		return true;
 	} else if (command == "list-themes") {
 		listThemes();
-		return Common::kNoError;
+		return true;
 	} else if (command == "version") {
 		printf("%s\n", gScummVMFullVersion);
 		printf("Features compiled in: %s\n", gScummVMFeatures);
-		return Common::kNoError;
+		return true;
 	} else if (command == "help") {
 		printf(HELP_STRING, s_appName);
-		return Common::kNoError;
+		return true;
 	}
 #ifdef DETECTOR_TESTING_HACK
 	else if (command == "test-detector") {
 		runDetectorTest();
-		return Common::kNoError;
+		return true;
 	}
 #endif
 #ifdef UPGRADE_ALL_TARGETS_HACK
 	else if (command == "upgrade-targets") {
 		upgradeTargets();
-		return Common::kNoError;
+		return true;
 	}
 #endif
 
@@ -961,26 +961,6 @@ Common::Error processSettings(Common::String &command, Common::StringMap &settin
 	}
 
 
-	// The user can override the savepath with the SCUMMVM_SAVEPATH
-	// environment variable. This is weaker than a --savepath on the
-	// command line, but overrides the default savepath, hence it is
-	// handled here, just before the command line gets parsed.
-#if !defined(_WIN32_WCE) && !defined(__GP32__) && !defined(ANDROID)
-	if (!settings.contains("savepath")) {
-		const char *dir = getenv("SCUMMVM_SAVEPATH");
-		if (dir && *dir && strlen(dir) < MAXPATHLEN) {
-			Common::FSNode saveDir(dir);
-			if (!saveDir.exists()) {
-				warning("Non-existent SCUMMVM_SAVEPATH save path. It will be ignored");
-			} else if (!saveDir.isWritable()) {
-				warning("Non-writable SCUMMVM_SAVEPATH save path. It will be ignored");
-			} else {
-				settings["savepath"] = dir;
-			}
-		}
-	}
-#endif
-
 	// Finally, store the command line settings into the config manager.
 	for (Common::StringMap::const_iterator x = settings.begin(); x != settings.end(); ++x) {
 		Common::String key(x->_key);
@@ -995,7 +975,7 @@ Common::Error processSettings(Common::String &command, Common::StringMap &settin
 		ConfMan.set(key, value, Common::ConfigManager::kTransientDomain);
 	}
 
-	return Common::kArgumentNotProcessed;
+	return false;
 }
 
 } // End of namespace Base

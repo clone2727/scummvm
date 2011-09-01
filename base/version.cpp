@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -63,6 +60,11 @@ const char *gScummVMBuildDate = __DATE__ " " __TIME__;
 const char *gScummVMVersionDate = SCUMMVM_VERSION " (" __DATE__ " " __TIME__ ")";
 const char *gScummVMFullVersion = "ScummVM " SCUMMVM_VERSION " (" __DATE__ " " __TIME__ ")";
 const char *gScummVMFeatures = ""
+#ifdef TAINTED_BUILD
+	// TAINTED means the build contains engines/subengines not enabled by default
+	"TAINTED "
+#endif
+
 #ifdef USE_TREMOR
 #ifdef USE_TREMOLO
 	// libTremolo is used on WinCE for better ogg performance
@@ -115,5 +117,8 @@ const char *gScummVMFeatures = ""
 #ifdef USE_THEORADEC
 	"Theora "
 #endif
-	;
 
+#ifdef USE_FAAD
+	"AAC "
+#endif
+	;

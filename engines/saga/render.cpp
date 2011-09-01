@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Main rendering loop
@@ -53,7 +50,7 @@ Render::Render(SagaEngine *vm, OSystem *system) {
 
 #ifdef SAGA_DEBUG
 	// Initialize FPS timer callback
-	_vm->getTimerManager()->installTimerProc(&fpsTimerCallback, 1000000, this);
+	_vm->getTimerManager()->installTimerProc(&fpsTimerCallback, 1000000, this, "sagaFPS");
 #endif
 
 	_backGroundSurface.create(_vm->getDisplayInfo().width, _vm->getDisplayInfo().height, Graphics::PixelFormat::createFormatCLUT8());

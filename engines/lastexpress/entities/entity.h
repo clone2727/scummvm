@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef LASTEXPRESS_ENTITY_H
@@ -28,7 +25,7 @@
 
 #include "lastexpress/shared.h"
 
-#include "lastexpress/game/sound.h"
+#include "lastexpress/sound/sound.h"
 
 #include "lastexpress/helpers.h"
 
@@ -88,7 +85,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersIIII::update: invalid index (was: %d)", index);
+				error("[EntityParametersIIII::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 1: param2 = 1; break;
@@ -137,7 +134,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersSIII::update: invalid index (was: %d)", index);
+				error("[EntityParametersSIII::update] Invalid index (was: %d)", index);
 
 			case 3: param4 = 1; break;
 			case 4: param5 = 1; break;
@@ -177,7 +174,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersSIIS::update: invalid index (was: %d)", index);
+				error("[EntityParametersSIIS::update] Invalid index (was: %d)", index);
 
 			case 3: param4 = 1; break;
 			case 4: param5 = 1; break;
@@ -212,7 +209,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersISSI::update: invalid index (was: %d)", index);
+				error("[EntityParametersISSI::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 7: param8 = 1; break;
@@ -251,7 +248,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersISII::update: invalid index (was: %d)", index);
+				error("[EntityParametersISII::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 4: param5 = 1; break;
@@ -291,7 +288,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersSSII::update: invalid index (was: %d)", index);
+				error("[EntityParametersSSII::update] Invalid index (was: %d)", index);
 
 			case 6: param7 = 1; break;
 			case 7: param8 = 1; break;
@@ -322,7 +319,7 @@ public:
 		}
 
 		void update(uint32) {
-			error("EntityParametersSSS::update: cannot update this type of parameters");
+			error("[EntityParametersSSS::update] Cannot update this type of parameters");
 		}
 
 		void saveLoadWithSerializer(Common::Serializer &s) {
@@ -352,7 +349,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersIISS::update: invalid index (was: %d)", index);
+				error("[EntityParametersIISS::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 1: param2 = 1; break;
@@ -391,7 +388,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersIISI::update: invalid index (was: %d)", index);
+				error("[EntityParametersIISI::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 1: param2 = 1; break;
@@ -435,7 +432,7 @@ public:
 		void update(uint32 index) {
 			switch (index) {
 			default:
-				error("EntityParametersIIIS::update: invalid index (was: %d)", index);
+				error("[EntityParametersIIIS::update] Invalid index (was: %d)", index);
 
 			case 0: param1 = 1; break;
 			case 1: param2 = 1; break;
@@ -689,7 +686,7 @@ protected:
 	 * @param resetItem true to reset item.
 	 * @param flag      sound flag
 	 */
-	void playSound(const SavePoint &savepoint, bool resetItem = false, SoundManager::FlagType flag = SoundManager::kFlagInvalid);
+	void playSound(const SavePoint &savepoint, bool resetItem = false, SoundFlag flag = kFlagInvalid);
 
 	/**
 	 * Draws the entity

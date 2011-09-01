@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "sci/sci.h"
@@ -215,7 +212,7 @@ void writeSelector(SegManager *segMan, reg_t object, Selector selectorId, reg_t 
 		*address.getPointer(segMan) = value;
 }
 
-void invokeSelector(EngineState *s, reg_t object, int selectorId, 
+void invokeSelector(EngineState *s, reg_t object, int selectorId,
 	int k_argc, StackPtr k_argp, int argc, const reg_t *argv) {
 	int i;
 	int framesize = 2 + 1 * argc;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -213,7 +210,7 @@ private:
 	AnimationDescription *getAnimationDescription() const;
 
 	/**
-	  * Initializes a new animation resource from an XML file. 
+	  * Initializes a new animation resource from an XML file.
 	  */
 	void initializeAnimationResource(const Common::String &fileName);
 };

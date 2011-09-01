@@ -6,14 +6,15 @@ MODULE_OBJS := \
 	dither.o \
 	font.o \
 	fontman.o \
+	fonts/bdf.o \
 	fonts/consolefont.o \
 	fonts/newfont_big.o \
 	fonts/newfont.o \
-	fonts/scummfont.o \
 	fonts/winfont.o \
 	iff.o \
 	imagedec.o \
 	jpeg.o \
+	maccursor.o \
 	pict.o \
 	png.o \
 	primitives.o \
@@ -24,7 +25,8 @@ MODULE_OBJS := \
 	thumbnail.o \
 	VectorRenderer.o \
 	VectorRendererSpec.o \
-	wincursor.o
+	wincursor.o \
+	yuv_to_rgb.o
 
 ifdef USE_SCALERS
 MODULE_OBJS += \

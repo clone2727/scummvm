@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_ENGINE_SELECTOR_H
@@ -47,7 +44,7 @@ struct SelectorCache {
 	Selector underBits; ///< Used by the graphics subroutines to store backupped BG pic data
 	Selector nsTop, nsLeft, nsBottom, nsRight; ///< View boundaries ('now seen')
 	Selector lsTop, lsLeft, lsBottom, lsRight; ///< Used by Animate() subfunctions and scroll list controls
-	Selector signal; ///< Used by Animate() to control a view's behaviour
+	Selector signal; ///< Used by Animate() to control a view's behavior
 	Selector illegalBits; ///< Used by CanBeHere
 	Selector brTop, brLeft, brBottom, brRight; ///< Bounding Rectangle
 	// name, key, time
@@ -188,7 +185,7 @@ void writeSelector(SegManager *segMan, reg_t object, Selector selectorId, reg_t 
 /**
  * Invokes a selector from an object.
  */
-void invokeSelector(EngineState *s, reg_t object, int selectorId, 
+void invokeSelector(EngineState *s, reg_t object, int selectorId,
 	int k_argc, StackPtr k_argp, int argc = 0, const reg_t *argv = 0);
 
 } // End of namespace Sci

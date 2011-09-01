@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/textconsole.h"
@@ -220,7 +217,7 @@ const char *INTERFACE_SERIES = "999intr";
 
 #define SPR(x) _sprites->getFrame(x)
 
-M4InterfaceView::M4InterfaceView(MadsM4Engine *vm): 
+M4InterfaceView::M4InterfaceView(MadsM4Engine *vm):
 		GameInterfaceView(vm, Common::Rect(0, vm->_screen->height() - INTERFACE_HEIGHT,
 				vm->_screen->width(), vm->_screen->height())),
 		_statusText(GUITextField(this, Common::Rect(200, 1, 450, 21))),

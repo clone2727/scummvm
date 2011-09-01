@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #if defined(__ANDROID__)
@@ -182,7 +179,7 @@ void OSystem_Android::initSurface() {
 
 	JNI::initSurface();
 
-	// Initialise OpenGLES context.
+	// Initialize OpenGLES context.
 	GLESTexture::initGLExtensions();
 
 	if (_game_texture)
@@ -804,12 +801,10 @@ void OSystem_Android::setCursorPalette(const byte *colors,
 	_use_mouse_palette = true;
 }
 
-void OSystem_Android::disableCursorPalette(bool disable) {
-	ENTER("%d", disable);
-
+void OSystem_Android::disableCursorPalette() {
 	// when disabling the cursor palette, and we're running a clut8 game,
 	// it expects the game palette to be used for the cursor
-	if (disable && _game_texture->hasPalette()) {
+	if (_game_texture->hasPalette()) {
 		const byte *src = _game_texture->palette_const();
 		byte *dst = _mouse_texture_palette->palette();
 
@@ -828,9 +823,6 @@ void OSystem_Android::disableCursorPalette(bool disable) {
 		byte *p = _mouse_texture_palette->palette() + _mouse_keycolor * 2;
 		WRITE_UINT16(p, READ_UINT16(p) & ~1);
 	}
-
-	_use_mouse_palette = !disable;
 }
 
 #endif
-

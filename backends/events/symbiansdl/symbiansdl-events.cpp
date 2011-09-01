@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -66,7 +63,7 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 					_km.y_down_count = 0;
 				}
 				event.type = Common::EVENT_MOUSEMOVE;
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
@@ -79,7 +76,7 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 					_km.y_down_count = 0;
 				}
 				event.type = Common::EVENT_MOUSEMOVE;
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
@@ -92,7 +89,7 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 					_km.x_down_count = 0;
 				}
 				event.type = Common::EVENT_MOUSEMOVE;
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
@@ -105,19 +102,19 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 					_km.x_down_count = 0;
 				}
 				event.type = Common::EVENT_MOUSEMOVE;
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
 			case GUI::ACTION_LEFTCLICK:
 				event.type = (ev.type == SDL_KEYDOWN ? Common::EVENT_LBUTTONDOWN : Common::EVENT_LBUTTONUP);
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
 			case GUI::ACTION_RIGHTCLICK:
 				event.type = (ev.type == SDL_KEYDOWN ? Common::EVENT_RBUTTONDOWN : Common::EVENT_RBUTTONUP);
-				fillMouseEvent(event, _km.x, _km.y);
+				processMouseEvent(event, _km.x, _km.y);
 
 				return true;
 
@@ -135,7 +132,7 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 						if (_currentZone >= TOTAL_ZONES)
 							_currentZone = 0;
 						event.type = Common::EVENT_MOUSEMOVE;
-						fillMouseEvent(event, _mouseXZone[_currentZone], _mouseYZone[_currentZone]);
+						processMouseEvent(event, _mouseXZone[_currentZone], _mouseYZone[_currentZone]);
 						SDL_WarpMouse(event.mouse.x, event.mouse.y);
 				}
 
@@ -198,4 +195,3 @@ bool SymbianSdlEventSource::remapKey(SDL_Event &ev, Common::Event &event) {
 }
 
 #endif
-

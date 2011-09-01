@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -63,7 +60,7 @@ byte _palette[SIZE_PAL_ARRAY] = {
 	V2,  V2,  V2                                    // BRIGHTWHITE
 };
 #else
-// Original paletter found in original exe. 
+// Original paletter found in original exe.
 // Currently disabled, because the result is quite ugly!
 // Color table of nearest standard 16 colors in system static palette
 #define C1 191                                      // Low intensity value

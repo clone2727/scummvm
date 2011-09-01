@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides for FILE
@@ -55,7 +52,7 @@ Common::OutSaveFile *GBAMPSaveFileManager::openForSaving(const Common::String &f
 	fileSpec += filename;
 
 //	consolePrintf("Opening the file: %s\n", fileSpec.c_str());
-	
+
 	Common::WriteStream *stream = DS::DSFileStream::makeFromPath(fileSpec, true);
 	// Use a write buffer
 	stream = Common::wrapBufferedWriteStream(stream, SAVE_BUFFER_SIZE);
@@ -69,7 +66,7 @@ Common::InSaveFile *GBAMPSaveFileManager::openForLoading(const Common::String &f
 	fileSpec += filename;
 
 //	consolePrintf("Opening the file: %s\n", fileSpec.c_str());
-	
+
 	return DS::DSFileStream::makeFromPath(fileSpec, false);
 }
 

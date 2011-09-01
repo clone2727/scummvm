@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_SOUNDCMD_H
@@ -116,6 +113,7 @@ private:
 	void processInitSound(reg_t obj);
 	void processDisposeSound(reg_t obj);
 	void processUpdateCues(reg_t obj);
+	int getSoundResourceId(reg_t obj);
 };
 
 } // End of namespace Sci

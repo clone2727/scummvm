@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/util.h"
@@ -426,7 +423,9 @@ reg_t GfxMenu::kernelSelect(reg_t eventObject, bool pauseSound) {
 		default:
 			while (itemIterator != itemEnd) {
 				itemEntry = *itemIterator;
-				if ((itemEntry->keyPress == keyPress) && (itemEntry->keyModifier == keyModifier))
+				if (itemEntry->keyPress == keyPress &&
+					itemEntry->keyModifier == keyModifier &&
+					itemEntry->enabled)
 					break;
 				itemIterator++;
 			}

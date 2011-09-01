@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/endian.h"
@@ -113,8 +110,8 @@ void SlotFileIndexed::buildIndex(byte *buffer, SavePartInfo &info,
 	if (setLongest) {
 		uint32 slot0Len;
 		for (slot0Len = strlen((const char *) bufferStart); slot0Len < longest; slot0Len++)
-			buffer[slot0Len] = ' ';
-		buffer[slot0Len] = '\0';
+			bufferStart[slot0Len] = ' ';
+		bufferStart[slot0Len] = '\0';
 	}
 }
 
@@ -157,8 +154,7 @@ Common::String SlotFileIndexed::build(int slot) const {
 	if ((slot < 0) || (((uint32) slot) >= _slotCount))
 		return Common::String();
 
-	char buf[4];
-	snprintf(buf, sizeof(buf), "%02d", slot);
+	Common::String buf = Common::String::format("%02d", slot);
 
 	return _base + "." + _ext + buf;
 }

@@ -18,20 +18,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/savefile.h"
+#include "common/mutex.h"
 #include "graphics/palette.h"
 #include "graphics/scaler.h"
 #include "graphics/thumbnail.h"
 #include "tsage/globals.h"
 #include "tsage/saveload.h"
+#include "tsage/sound.h"
 #include "tsage/tsage.h"
 
-namespace tSage {
+namespace TsAGE {
 
 Saver *_saver;
 
@@ -53,7 +52,7 @@ Saver::Saver() {
 Saver::~Saver() {
 	// Internal validation that no saved object is still present
 	int totalLost = 0;
-	for (SynchronisedList<SavedObject *>::iterator i = _saver->_objList.begin(); i != _saver->_objList.end(); ++i) {
+	for (SynchronizedList<SavedObject *>::iterator i = _saver->_objList.begin(); i != _saver->_objList.end(); ++i) {
 		SavedObject *so = *i;
 		if (so)
 			++totalLost;
@@ -65,16 +64,14 @@ Saver::~Saver() {
 
 /*--------------------------------------------------------------------------*/
 
-void Serialiser::syncPointer(SavedObject **ptr, Common::Serializer::Version minVersion,
+void Serializer::syncPointer(SavedObject **ptr, Common::Serializer::Version minVersion,
 		Common::Serializer::Version maxVersion) {
-	int idx;
+	int idx = 0;
 	assert(ptr);
 
 	if (isSaving()) {
 		// Get the object index for the given pointer and write it out
-		if (!*ptr) {
-			idx = 0;
-		} else {
+		if (*ptr) {
 			idx = _saver->blockIndexOf(*ptr);
 			assert(idx > 0);
 		}
@@ -89,7 +86,7 @@ void Serialiser::syncPointer(SavedObject **ptr, Common::Serializer::Version minV
 	}
 }
 
-void Serialiser::validate(const Common::String &s, Common::Serializer::Version minVersion,
+void Serializer::validate(const Common::String &s, Common::Serializer::Version minVersion,
 		Common::Serializer::Version maxVersion) {
 	Common::String tempStr = s;
 	syncString(tempStr, minVersion, maxVersion);
@@ -98,7 +95,7 @@ void Serialiser::validate(const Common::String &s, Common::Serializer::Version m
 		error("Savegame is corrupt");
 }
 
-void Serialiser::validate(int v, Common::Serializer::Version minVersion,
+void Serializer::validate(int v, Common::Serializer::Version minVersion,
 		Common::Serializer::Version maxVersion) {
 	int tempVal = v;
 	syncAsUint32LE(tempVal, minVersion, maxVersion);
@@ -106,10 +103,24 @@ void Serialiser::validate(int v, Common::Serializer::Version minVersion,
 		error("Savegame is corrupt");
 }
 
+#define DOUBLE_PRECISION 1000000000
+
+void Serializer::syncAsDouble(double &v) {
+	int32 num = (int32)(v);
+	uint32 fraction = (uint32)((v - (int32)v) * DOUBLE_PRECISION);
+
+	syncAsSint32LE(num);
+	syncAsUint32LE(fraction);
+
+	if (isLoading())
+		v = num + (double)fraction / DOUBLE_PRECISION;
+}
+
 /*--------------------------------------------------------------------------*/
 
 Common::Error Saver::save(int slot, const Common::String &saveName) {
 	assert(!getMacroRestoreFlag());
+	Common::StackLock slock1(_globals->_soundManager._serverDisabledMutex);
 
 	// Signal any objects registered for notification
 	_saveNotifiers.notify(false);
@@ -118,9 +129,10 @@ Common::Error Saver::save(int slot, const Common::String &saveName) {
 	_macroSaveFlag = true;
 	_saveSlot = slot;
 
-	// Set up the serialiser
+	// Set up the serializer
 	Common::OutSaveFile *saveFile = g_system->getSavefileManager()->openForSaving(_vm->generateSaveName(slot));
-	Serialiser serialiser(NULL, saveFile);
+	Serializer serializer(NULL, saveFile);
+	serializer.setSaveVersion(TSAGE_SAVEGAME_VERSION);
 
 	// Write out the savegame header
 	tSageSavegameHeader header;
@@ -129,14 +141,14 @@ Common::Error Saver::save(int slot, const Common::String &saveName) {
 	writeSavegameHeader(saveFile, header);
 
 	// Save out objects that need to come at the start of the savegame
-	for (SynchronisedList<SaveListener *>::iterator i = _listeners.begin(); i != _listeners.end(); ++i) {
-		(*i)->listenerSynchronise(serialiser);
+	for (SynchronizedList<SaveListener *>::iterator i = _listeners.begin(); i != _listeners.end(); ++i) {
+		(*i)->listenerSynchronize(serializer);
 	}
 
 	// Save each registered SaveObject descendant object into the savegame file
-	for (SynchronisedList<SavedObject *>::iterator i = _objList.begin(); i != _objList.end(); ++i) {
-		serialiser.validate((*i)->getClassName());
-		(*i)->synchronise(serialiser);
+	for (SynchronizedList<SavedObject *>::iterator i = _objList.begin(); i != _objList.end(); ++i) {
+		serializer.validate((*i)->getClassName());
+		(*i)->synchronize(serializer);
 	}
 
 	// Save file complete
@@ -153,6 +165,7 @@ Common::Error Saver::save(int slot, const Common::String &saveName) {
 
 Common::Error Saver::restore(int slot) {
 	assert(!getMacroRestoreFlag());
+	Common::StackLock slock1(_globals->_soundManager._serverDisabledMutex);
 
 	// Signal any objects registered for notification
 	_loadNotifiers.notify(false);
@@ -162,24 +175,26 @@ Common::Error Saver::restore(int slot) {
 	_saveSlot = slot;
 	_unresolvedPtrs.clear();
 
-	// Set up the serialiser
+	// Set up the serializer
 	Common::InSaveFile *saveFile = g_system->getSavefileManager()->openForLoading(_vm->generateSaveName(slot));
-	Serialiser serialiser(saveFile, NULL);
+	Serializer serializer(saveFile, NULL);
 
 	// Read in the savegame header
 	tSageSavegameHeader header;
 	readSavegameHeader(saveFile, header);
 	delete header.thumbnail;
 
+	serializer.setSaveVersion(header.version);
+
 	// Load in data for objects that need to come at the start of the savegame
 	for (Common::List<SaveListener *>::iterator i = _listeners.begin(); i != _listeners.end(); ++i) {
-		(*i)->listenerSynchronise(serialiser);
+		(*i)->listenerSynchronize(serializer);
 	}
 
 	// Loop through each registered object to load in the data
-	for (SynchronisedList<SavedObject *>::iterator i = _objList.begin(); i != _objList.end(); ++i) {
-		serialiser.validate((*i)->getClassName());
-		(*i)->synchronise(serialiser);
+	for (SynchronizedList<SavedObject *>::iterator i = _objList.begin(); i != _objList.end(); ++i) {
+		serializer.validate((*i)->getClassName());
+		(*i)->synchronize(serializer);
 	}
 
 	// Loop through the remaining data of the file, instantiating new objects.
@@ -187,17 +202,17 @@ Common::Error Saver::restore(int slot) {
 	// of instantiating a saved object registers it with the saver, and will then be resolved to whatever
 	// object originally had a pointer to it as part of the post-processing step
 	Common::String className;
-	serialiser.syncString(className);
+	serializer.syncString(className);
 	while (className != "END") {
 		SavedObject *savedObject;
 		if (!_factoryPtr || ((savedObject = _factoryPtr(className)) == NULL))
 			error("Unknown class name '%s' encountered trying to restore savegame", className.c_str());
 
 		// Populate the contents of the object
-		savedObject->synchronise(serialiser);
+		savedObject->synchronize(serializer);
 
 		// Move to next object
-		serialiser.syncString(className);
+		serializer.syncString(className);
 	}
 
 	// Post-process any unresolved pointers to get the correct pointer
@@ -207,7 +222,7 @@ Common::Error Saver::restore(int slot) {
 
 	// Final post-restore notifications
 	_macroRestoreFlag = false;
-	_loadNotifiers.notify(false);
+	_loadNotifiers.notify(true);
 
 	return Common::kNoError;
 }
@@ -225,7 +240,7 @@ bool Saver::readSavegameHeader(Common::InSaveFile *in, tSageSavegameHeader &head
 		return false;
 
 	header.version = in->readByte();
-	if (header.version != TSAGE_SAVEGAME_VERSION)
+	if (header.version > TSAGE_SAVEGAME_VERSION)
 		return false;
 
 	// Read in the string
@@ -234,12 +249,9 @@ bool Saver::readSavegameHeader(Common::InSaveFile *in, tSageSavegameHeader &head
 	while ((ch = (char)in->readByte()) != '\0') header.saveName += ch;
 
 	// Get the thumbnail
-	header.thumbnail = new Graphics::Surface();
-	if (!Graphics::loadThumbnail(*in, *header.thumbnail)) {
-		delete header.thumbnail;
-		header.thumbnail = NULL;
+	header.thumbnail = Graphics::loadThumbnail(*in);
+	if (!header.thumbnail)
 		return false;
-	}
 
 	// Read in save date/time
 	header.saveYear = in->readSint16LE();
@@ -376,7 +388,7 @@ void Saver::resolveLoadPointers() {
 
 	// Outer loop through the main object list
 	int objIndex = 1;
-	for (SynchronisedList<SavedObject *>::iterator iObj = _objList.begin(); iObj != _objList.end(); ++iObj, ++objIndex) {
+	for (SynchronizedList<SavedObject *>::iterator iObj = _objList.begin(); iObj != _objList.end(); ++iObj, ++objIndex) {
 		Common::List<SavedObjectRef>::iterator iPtr;
 		SavedObject *pObj = *iObj;
 
@@ -398,4 +410,4 @@ void Saver::resolveLoadPointers() {
 		error("Could not resolve savegame block pointers");
 }
 
-} // End of namespace tSage
+} // End of namespace TsAGE

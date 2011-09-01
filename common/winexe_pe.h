@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_WINEXE_PE_H
@@ -110,7 +107,7 @@ private:
 		uint32 offset;
 		uint32 size;
 	};
-	
+
 	typedef HashMap<WinResourceID, Resource, WinResourceID_Hash, WinResourceID_EqualTo> LangMap;
 	typedef HashMap<WinResourceID,  LangMap, WinResourceID_Hash, WinResourceID_EqualTo> NameMap;
 	typedef HashMap<WinResourceID,  NameMap, WinResourceID_Hash, WinResourceID_EqualTo> TypeMap;

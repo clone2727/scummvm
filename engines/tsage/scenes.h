@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_SCENES_H
@@ -32,7 +29,7 @@
 #include "tsage/core.h"
 #include "tsage/saveload.h"
 
-namespace tSage {
+namespace TsAGE {
 
 class Scene : public StripCallback {
 private:
@@ -59,7 +56,7 @@ public:
 	virtual ~Scene();
 
 	virtual Common::String getClassName() { return "Scene"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void stripCallback(int v) {}
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
 	virtual void process(Event &event);
@@ -74,7 +71,9 @@ public:
 
 class SceneManager : public GameHandler, public SaveListener {
 private:
-	void disposeRegions() { warning("TODO: disposeRegions()"); }
+	void disposeRegions() { 
+		// No need to do anything, since regions will be freed automatically when the scene is	
+	}
 	Scene *getNewScene();
 public:
 	Scene *_scene;
@@ -93,7 +92,7 @@ public:
 	SceneManager();
 	virtual ~SceneManager();
 
-	virtual void listenerSynchronise(Serialiser &s);
+	virtual void listenerSynchronize(Serializer &s);
 	void setNewScene(int sceneNumber);
 	void checkScene();
 	void sceneChange();
@@ -111,6 +110,31 @@ public:
 	static void loadNotifier(bool postFlag);
 };
 
-} // End of namespace tSage
+class Game {
+protected:
+	SynchronizedList<GameHandler *> _handlers;
+
+	static bool notLockedFn(GameHandler *g);
+	virtual void handleSaveLoad(bool saveFlag, int &saveSlot, Common::String &saveName) {}
+public:
+	virtual ~Game() {}
+
+	void addHandler(GameHandler *entry) { _handlers.push_back(entry); }
+	void removeHandler(GameHandler *entry) { _handlers.remove(entry); }
+
+	void execute();
+	virtual void start() = 0;
+	virtual void restart() {}
+	virtual void restartGame() {}
+	virtual void saveGame() {}
+	virtual void restoreGame() {}
+	virtual void quitGame() {}
+	virtual void endGame(int resNum, int lineNum) {}
+	virtual Scene *createScene(int sceneNumber) = 0;
+	virtual void processEvent(Event &event) {}
+	virtual void rightClick() {}
+};
+
+} // End of namespace TsAGE
 
 #endif

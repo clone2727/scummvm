@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef KYRA_KYRA_MR_H
@@ -665,12 +662,9 @@ private:
 	static const char *_languageExtension[];
 	static const int _languageExtensionSize;
 
-	char *appendLanguage(char *buf, int lang, int bufSize);
-
 	int loadLanguageFile(const char *file, uint8 *&buffer);
 };
 
 } // End of namespace Kyra
 
 #endif
-

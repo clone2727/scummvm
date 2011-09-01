@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MOHAWK_RIVEN_H
@@ -68,6 +65,13 @@ enum {
 	ExternalCommandNames = 3,
 	VariableNames = 4,
 	StackNames = 5
+};
+
+enum RivenTransitionSpeed {
+	kRivenTransitionSpeedNone = 5000,
+	kRivenTransitionSpeedFastest = 5001,
+	kRivenTransitionSpeedNormal = 5002,
+	kRivenTransitionSpeedBest = 5003
 };
 
 // Rects for the inventory object positions (initialized in
@@ -129,10 +133,12 @@ public:
 	bool canLoadGameStateCurrently() { return true; }
 	bool canSaveGameStateCurrently() { return true; }
 	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const char *desc);
+	Common::Error saveGameState(int slot, const Common::String &desc);
 	bool hasFeature(EngineFeature f) const;
 
 	typedef void (*TimerProc)(MohawkEngine_Riven *vm);
+
+	void doVideoTimer(VideoHandle handle, bool force);
 
 private:
 	MohawkArchive *_extrasFile; // We need a separate handle for the extra data
@@ -165,6 +171,7 @@ private:
 	// Miscellaneous
 	bool _gameOver;
 	bool _ignoreNextMouseUp;
+	void checkSunnerAlertClick();
 
 public:
 	// Stack/card/script funtions

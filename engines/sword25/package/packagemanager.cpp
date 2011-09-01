@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -160,7 +157,7 @@ byte *PackageManager::getFile(const Common::String &fileName, uint *fileSizePtr)
 
 		byte *buffer = new byte[file->size()];
 		file->read(buffer, file->size());
-		
+
 		delete file;
 		return buffer;
 	}

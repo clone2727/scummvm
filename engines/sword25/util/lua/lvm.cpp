@@ -125,7 +125,7 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
       callTMres(L, val, tm, t, key);
       return;
     }
-    t = tm;  /* else repeat with `tm' */ 
+    t = tm;  /* else repeat with `tm' */
   }
   luaG_runerror(L, "loop in gettable");
 }
@@ -152,7 +152,7 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
       callTM(L, tm, t, key, val);
       return;
     }
-    t = tm;  /* else repeat with `tm' */ 
+    t = tm;  /* else repeat with `tm' */
   }
   luaG_runerror(L, "loop in settable");
 }
@@ -202,7 +202,7 @@ static int l_strcmp (const TString *ls, const TString *rs) {
   const char *r = getstr(rs);
   size_t lr = rs->tsv.len;
   for (;;) {
-    int temp = strcoll(l, r);
+    int temp = strcmp(l, r);
     if (temp != 0) return temp;
     else {  /* strings are equal up to a `\0' */
       size_t len = strlen(l);  /* index of first `\0' in both strings */
@@ -760,4 +760,3 @@ void luaV_execute (lua_State *L, int nexeccalls) {
     }
   }
 }
-

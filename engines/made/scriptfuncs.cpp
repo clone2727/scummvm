@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/util.h"
@@ -505,28 +502,28 @@ int16 ScriptFunctions::sfDrawText(int16 argc, int16 *argv) {
 	}
 
 	if (text) {
-		char finalText[1024];
+		Common::String finalText;
 		switch (argc) {
 		case 1:
-			snprintf(finalText, 1024, "%s", text);
+			finalText = text;
 			break;
 		case 2:
-			snprintf(finalText, 1024, text, argv[0]);
+			finalText = Common::String::format(text, argv[0]);
 			break;
 		case 3:
-			snprintf(finalText, 1024, text, argv[1], argv[0]);
+			finalText = Common::String::format(text, argv[1], argv[0]);
 			break;
 		case 4:
-			snprintf(finalText, 1024, text, argv[2], argv[1], argv[0]);
+			finalText = Common::String::format(text, argv[2], argv[1], argv[0]);
 			break;
 		case 5:
-			snprintf(finalText, 1024, text, argv[3], argv[2], argv[1], argv[0]);
+			finalText = Common::String::format(text, argv[3], argv[2], argv[1], argv[0]);
 			break;
 		default:
-			finalText[0] = '\0';
+			// Leave it empty
 			break;
 		}
-		_vm->_screen->printText(finalText);
+		_vm->_screen->printText(finalText.c_str());
 	}
 
 	return 0;

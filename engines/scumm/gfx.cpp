@@ -17,9 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -221,6 +218,10 @@ Gdi::Gdi(ScummEngine *vm) : _vm(vm) {
 Gdi::~Gdi() {
 }
 
+GdiHE::GdiHE(ScummEngine *vm) : Gdi(vm), _tmskPtr(0) {
+}
+
+
 GdiNES::GdiNES(ScummEngine *vm) : Gdi(vm) {
 	memset(&_NES, 0, sizeof(_NES));
 }
@@ -250,7 +251,7 @@ GdiV2::~GdiV2() {
 }
 
 #ifdef USE_RGB_COLOR
-Gdi16Bit::Gdi16Bit(ScummEngine *vm) : Gdi(vm) {
+GdiHE16bit::GdiHE16bit(ScummEngine *vm) : GdiHE(vm) {
 }
 #endif
 
@@ -582,7 +583,7 @@ void ScummEngine::updateDirtyScreen(VirtScreenNumber slot) {
 			vs->tdirty[i] = vs->h;
 			vs->bdirty[i] = 0;
 			if (i != (_gdi->_numStrips - 1) && vs->bdirty[i + 1] == bottom && vs->tdirty[i + 1] == top) {
-				// Simple optimizations: if two or more neighbouring strips
+				// Simple optimizations: if two or more neighboring strips
 				// form one bigger rectangle, coalesce them.
 				w += 8;
 				continue;
@@ -651,16 +652,13 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 		assert(0 == (width & 3));
 
 		// Compose the text over the game graphics
-#ifdef USE_ARM_GFX_ASM
-		asmDrawStripToScreen(height, width, text, src, _compositeBuf, vs->pitch, width, _textSurface.pitch);
-#else
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 		if (_game.platform == Common::kPlatformFMTowns) {
 			towns_drawStripToScreen(vs, x, y, x, top, width, height);
-			return;	
+			return;
 		} else
-#endif	
-		if (_bytesPerPixelOutput == 2) {
+#endif
+		if (_outputPixelFormat.bytesPerPixel == 2) {
 			const byte *srcPtr = (const byte *)src;
 			const byte *textPtr = (byte *)_textSurface.getBasePtr(x * m, y * m);
 			byte *dstPtr = _compositeBuf;
@@ -681,7 +679,11 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 				srcPtr += vsPitch;
 				textPtr += _textSurface.pitch - width * m;
 			}
-		} else {
+		}
+#ifdef USE_ARM_GFX_ASM
+		asmDrawStripToScreen(height, width, text, src, _compositeBuf, vs->pitch, width, _textSurface.pitch);
+#else
+		else {
 			// We blit four pixels at a time, for improved performance.
 			const uint32 *src32 = (const uint32 *)src;
 			uint32 *dst32 = (uint32 *)_compositeBuf;
@@ -720,11 +722,11 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 		if (_renderMode == Common::kRenderHercA || _renderMode == Common::kRenderHercG) {
 			ditherHerc(_compositeBuf, _herculesBuf, width, &x, &y, &width, &height);
 
-			src = _herculesBuf + x + y * Common::kHercW;
-			pitch = Common::kHercW;
+			src = _herculesBuf + x + y * kHercWidth;
+			pitch = kHercWidth;
 
 			// center image on the screen
-			x += (Common::kHercW - _screenWidth * 2) / 2;	// (720 - 320*2)/2 = 40
+			x += (kHercWidth - _screenWidth * 2) / 2;	// (720 - 320*2)/2 = 40
 		} else if (_useCJKMode && m == 2) {
 			pitch *= m;
 			x *= m;
@@ -817,10 +819,10 @@ void ditherHerc(byte *src, byte *hercbuf, int srcPitch, int *x, int *y, int *wid
 	int dsty = yo*2 - yo/4;
 
 	for (int y1 = 0; y1 < heighto;) {
-		assert(dsty < Common::kHercH);
+		assert(dsty < kHercHeight);
 
 		srcptr = src + y1 * srcPitch;
-		dstptr = hercbuf + dsty * Common::kHercW + xo * 2;
+		dstptr = hercbuf + dsty * kHercWidth + xo * 2;
 
 		const int idx1 = (dsty % 7) % 2;
 		for (int x1 = 0; x1 < widtho; x1++) {
@@ -1022,7 +1024,17 @@ void ScummEngine::restoreBackground(Common::Rect rect, byte backColor) {
 
 	if (rect.left > vs->w)
 		return;
-	
+
+	// Indy4 Amiga always uses the room or verb palette map to match colors to
+	// the currently setup palette, thus we need to select it over here too.
+	// Done like the original interpreter.
+	if (_game.platform == Common::kPlatformAmiga && _game.id == GID_INDY4) {
+		if (vs->number == kVerbVirtScreen)
+			backColor = _verbPalette[backColor];
+		else
+			backColor = _roomPalette[backColor];
+	}
+
 	// Convert 'rect' to local (virtual screen) coordinates
 	rect.top -= vs->topline;
 	rect.bottom -= vs->topline;
@@ -1066,7 +1078,7 @@ void ScummEngine::restoreBackground(Common::Rect rect, byte backColor) {
 			fill(mask, _textSurface.pitch, backColor, width * _textSurfaceMultiplier, height * _textSurfaceMultiplier, _textSurface.format.bytesPerPixel);
 		}
 #endif
-			
+
 		if (_game.features & GF_16BIT_COLOR)
 			fill(screenBuf, vs->pitch, _16BitPalette[backColor], width, height, vs->format.bytesPerPixel);
 		else
@@ -1126,7 +1138,7 @@ void ScummEngine::clearTextSurface() {
 	fill((byte*)_textSurface.pixels,  _textSurface.pitch,
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 		_game.platform == Common::kPlatformFMTowns ? 0 :
-#endif		
+#endif
 		CHARSET_MASK_TRANSPARENCY,  _textSurface.w, _textSurface.h, _textSurface.format.bytesPerPixel);
 }
 
@@ -1232,6 +1244,16 @@ void ScummEngine::drawBox(int x, int y, int x2, int y2, int color) {
 
 	if ((vs = findVirtScreen(y)) == NULL)
 		return;
+
+	// Indy4 Amiga always uses the room or verb palette map to match colors to
+	// the currently setup palette, thus we need to select it over here too.
+	// Done like the original interpreter.
+	if (_game.platform == Common::kPlatformAmiga && _game.id == GID_INDY4) {
+		if (vs->number == kVerbVirtScreen)
+			color = _verbPalette[color];
+		else
+			color = _roomPalette[color];
+	}
 
 	if (x > x2)
 		SWAP(x, x2);
@@ -1343,12 +1365,12 @@ void ScummEngine::drawBox(int x, int y, int x2, int y2, int color) {
 				color = ((color & 0x0f) << 4) | (color & 0x0f);
 				byte *mask = (byte *)_textSurface.getBasePtr(x * _textSurfaceMultiplier, (y - _screenTop + vs->topline) * _textSurfaceMultiplier);
 				fill(mask, _textSurface.pitch, color, width * _textSurfaceMultiplier, height * _textSurfaceMultiplier, _textSurface.format.bytesPerPixel);
-				
+
 				if (_game.id == GID_MONKEY2 || _game.id == GID_INDY4 || ((_game.id == GID_INDY3 || _game.id == GID_ZAK) && vs->number != kTextVirtScreen) || (_game.id == GID_LOOM && vs->number == kMainVirtScreen))
 					return;
 			}
 #endif
-			
+
 			fill(backbuff, vs->pitch, color, width, height, vs->format.bytesPerPixel);
 		}
 	}
@@ -1501,6 +1523,15 @@ void Gdi::prepareDrawBitmap(const byte *ptr, VirtScreen *vs,
 					const int x, const int y, const int width, const int height,
 	                int stripnr, int numstrip) {
 	// Do nothing by default
+}
+
+void GdiHE::prepareDrawBitmap(const byte *ptr, VirtScreen *vs,
+					const int x, const int y, const int width, const int height,
+	                int stripnr, int numstrip) {
+	if (_vm->_game.heversion >= 72) {
+		_tmskPtr = _vm->findResource(MKTAG('T','M','S','K'), ptr);
+	} else
+		_tmskPtr = 0;
 }
 
 void GdiV1::prepareDrawBitmap(const byte *ptr, VirtScreen *vs,
@@ -1748,11 +1779,6 @@ void Gdi::drawBitmap(const byte *ptr, VirtScreen *vs, int x, const int y, const 
 
 	numzbuf = getZPlanes(ptr, zplane_list, false);
 
-	const byte *tmsk_ptr = NULL;
-	if (_vm->_game.heversion >= 72) {
-		tmsk_ptr = _vm->findResource(MKTAG('T','M','S','K'), ptr);
-	}
-
 	if (y + height > vs->h) {
 		warning("Gdi::drawBitmap, strip drawn to %d below window bottom %d", y + height, vs->h);
 	}
@@ -1815,7 +1841,7 @@ void Gdi::drawBitmap(const byte *ptr, VirtScreen *vs, int x, const int y, const 
 				clear8Col(frontBuf, vs->pitch, height, vs->format.bytesPerPixel);
 		}
 
-		decodeMask(x, y, width, height, stripnr, numzbuf, zplane_list, transpStrip, flag, tmsk_ptr);
+		decodeMask(x, y, width, height, stripnr, numzbuf, zplane_list, transpStrip, flag);
 
 #if 0
 		// HACK: blit mask(s) onto normal screen. Useful to debug masking
@@ -1866,6 +1892,16 @@ bool Gdi::drawStrip(byte *dstPtr, VirtScreen *vs, int x, int y, const int width,
 	}
 	assertRange(0, offset, smapLen-1, "screen strip");
 
+	// Indy4 Amiga always uses the room or verb palette map to match colors to
+	// the currently setup palette, thus we need to select it over here too.
+	// Done like the original interpreter.
+	if (_vm->_game.platform == Common::kPlatformAmiga && _vm->_game.id == GID_INDY4) {
+		if (vs->number == kVerbVirtScreen)
+			_roomPalette = _vm->_verbPalette;
+		else
+			_roomPalette = _vm->_roomPalette;
+	}
+
 	return decompressBitmap(dstPtr, vs->pitch, smap_ptr + offset, height);
 }
 
@@ -1904,7 +1940,7 @@ bool GdiV2::drawStrip(byte *dstPtr, VirtScreen *vs, int x, int y, const int widt
 
 void Gdi::decodeMask(int x, int y, const int width, const int height,
 	                int stripnr, int numzbuf, const byte *zplane_list[9],
-	                bool transpStrip, byte flag, const byte *tmsk_ptr) {
+	                bool transpStrip, byte flag) {
 	int i;
 	byte *mask_ptr;
 	const byte *z_plane_ptr;
@@ -1960,10 +1996,7 @@ void Gdi::decodeMask(int x, int y, const int width, const int height,
 			if (offs) {
 				z_plane_ptr = zplane_list[i] + offs;
 
-				if (tmsk_ptr) {
-					const byte *tmsk = tmsk_ptr + READ_LE_UINT16(tmsk_ptr + stripnr * 2 + 8);
-					decompressTMSK(mask_ptr, tmsk, z_plane_ptr, height);
-				} else if (transpStrip && (flag & dbAllowMaskOr)) {
+				if (transpStrip && (flag & dbAllowMaskOr)) {
 					decompressMaskImgOr(mask_ptr, z_plane_ptr, height);
 				} else {
 					decompressMaskImg(mask_ptr, z_plane_ptr, height);
@@ -1978,9 +2011,46 @@ void Gdi::decodeMask(int x, int y, const int width, const int height,
 	}
 }
 
+void GdiHE::decodeMask(int x, int y, const int width, const int height,
+	                int stripnr, int numzbuf, const byte *zplane_list[9],
+	                bool transpStrip, byte flag) {
+	int i;
+	byte *mask_ptr;
+	const byte *z_plane_ptr;
+
+	for (i = 1; i < numzbuf; i++) {
+		uint32 offs;
+
+		if (!zplane_list[i])
+			continue;
+
+		offs = READ_LE_UINT16(zplane_list[i] + stripnr * 2 + 8);
+
+		mask_ptr = getMaskBuffer(x, y, i);
+
+		if (offs) {
+			z_plane_ptr = zplane_list[i] + offs;
+
+			if (_tmskPtr) {
+				const byte *tmsk = _tmskPtr + READ_LE_UINT16(_tmskPtr + stripnr * 2 + 8);
+				decompressTMSK(mask_ptr, tmsk, z_plane_ptr, height);
+			} else if (transpStrip && (flag & dbAllowMaskOr)) {
+				decompressMaskImgOr(mask_ptr, z_plane_ptr, height);
+			} else {
+				decompressMaskImg(mask_ptr, z_plane_ptr, height);
+			}
+
+		} else {
+			if (!(transpStrip && (flag & dbAllowMaskOr)))
+				for (int h = 0; h < height; h++)
+					mask_ptr[h * _numStrips] = 0;
+		}
+	}
+}
+
 void GdiNES::decodeMask(int x, int y, const int width, const int height,
 	                int stripnr, int numzbuf, const byte *zplane_list[9],
-	                bool transpStrip, byte flag, const byte *tmsk_ptr) {
+	                bool transpStrip, byte flag) {
 	byte *mask_ptr = getMaskBuffer(x, y, 1);
 	drawStripNESMask(mask_ptr, stripnr, y, height);
 }
@@ -1988,7 +2058,7 @@ void GdiNES::decodeMask(int x, int y, const int width, const int height,
 #ifdef USE_RGB_COLOR
 void GdiPCEngine::decodeMask(int x, int y, const int width, const int height,
 	                int stripnr, int numzbuf, const byte *zplane_list[9],
-	                bool transpStrip, byte flag, const byte *tmsk_ptr) {
+	                bool transpStrip, byte flag) {
 	byte *mask_ptr = getMaskBuffer(x, y, 1);
 	drawStripPCEngineMask(mask_ptr, stripnr, y, height);
 }
@@ -1996,14 +2066,14 @@ void GdiPCEngine::decodeMask(int x, int y, const int width, const int height,
 
 void GdiV1::decodeMask(int x, int y, const int width, const int height,
 	                int stripnr, int numzbuf, const byte *zplane_list[9],
-	                bool transpStrip, byte flag, const byte *tmsk_ptr) {
+	                bool transpStrip, byte flag) {
 	byte *mask_ptr = getMaskBuffer(x, y, 1);
 	drawStripC64Mask(mask_ptr, stripnr, width, height);
 }
 
 void GdiV2::decodeMask(int x, int y, const int width, const int height,
 	                int stripnr, int numzbuf, const byte *zplane_list[9],
-	                bool transpStrip, byte flag, const byte *tmsk_ptr) {
+	                bool transpStrip, byte flag) {
 	// Do nothing here for V2 games - zplane was already handled.
 }
 
@@ -2371,7 +2441,7 @@ void Gdi::decompressMaskImg(byte *dst, const byte *src, int height) const {
 	}
 }
 
-void Gdi::decompressTMSK(byte *dst, const byte *tmsk, const byte *src, int height) const {
+void GdiHE::decompressTMSK(byte *dst, const byte *tmsk, const byte *src, int height) const {
 	byte srcbits = 0;
 	byte srcFlag = 0;
 	byte maskFlag = 0;
@@ -3634,7 +3704,7 @@ void Gdi::unkDecode11(byte *dst, int dstPitch, const byte *src, int height) cons
 #undef READ_BIT_256
 
 #ifdef USE_RGB_COLOR
-void Gdi16Bit::writeRoomColor(byte *dst, byte color) const {
+void GdiHE16bit::writeRoomColor(byte *dst, byte color) const {
 	WRITE_UINT16(dst, READ_LE_UINT16(_vm->_hePalettes + 2048 + color * 2));
 }
 #endif
@@ -3970,7 +4040,7 @@ void ScummEngine::scrollEffect(int dir) {
 		y = 1 + step;
 		while (y < vs->h) {
 			moveScreen(0, -step, vs->h);
-#ifndef DISABLE_TOWNS_DUAL_LAYER_MODE	
+#ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 			if (_townsScreen) {
 				towns_drawStripToScreen(vs, 0, vs->topline + vs->h - step, 0, y - step, vs->w, step);
 			} else
@@ -3983,7 +4053,7 @@ void ScummEngine::scrollEffect(int dir) {
 					vs->w * m, step * m);
 				_system->updateScreen();
 			}
-			
+
 			waitForTimer(delay);
 			y += step;
 		}
@@ -4006,7 +4076,7 @@ void ScummEngine::scrollEffect(int dir) {
 					vs->w * m, step * m);
 				_system->updateScreen();
 			}
-			
+
 			waitForTimer(delay);
 			y += step;
 		}
@@ -4053,7 +4123,7 @@ void ScummEngine::scrollEffect(int dir) {
 					0, 0,
 					step, vs->h);
 				_system->updateScreen();
-			}	
+			}
 
 			waitForTimer(delay);
 			x += step;
@@ -4071,4 +4141,3 @@ void ScummEngine::unkScreenEffect6() {
 }
 
 } // End of namespace Scumm
-

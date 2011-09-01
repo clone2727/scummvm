@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -29,6 +26,7 @@
 
 #include "common/system.h"
 #include "common/config-manager.h"
+#include "common/translation.h"
 #include "backends/events/default/default-events.h"
 #include "backends/keymapper/keymapper.h"
 #include "backends/keymapper/remap-dialog.h"
@@ -221,7 +219,7 @@ bool DefaultEventManager::pollEvent(Common::Event &event) {
 			if (ConfMan.getBool("confirm_exit")) {
 				if (g_engine)
 					g_engine->pauseEngine(true);
-				GUI::MessageDialog alert("Do you really want to return to the Launcher?", "Launcher", "Cancel");
+				GUI::MessageDialog alert(_("Do you really want to return to the Launcher?"), _("Launcher"), _("Cancel"));
 				result = _shouldRTL = (alert.runModal() == GUI::kMessageOK);
 				if (g_engine)
 					g_engine->pauseEngine(false);
@@ -243,7 +241,7 @@ bool DefaultEventManager::pollEvent(Common::Event &event) {
 				_confirmExitDialogActive = true;
 				if (g_engine)
 					g_engine->pauseEngine(true);
-				GUI::MessageDialog alert("Do you really want to quit?", "Quit", "Cancel");
+				GUI::MessageDialog alert(_("Do you really want to quit?"), _("Quit"), _("Cancel"));
 				result = _shouldQuit = (alert.runModal() == GUI::kMessageOK);
 				if (g_engine)
 					g_engine->pauseEngine(false);

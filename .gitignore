@@ -19,10 +19,16 @@ lib*.a
 /MT32_CONTROL.ROM
 /MT32_PCM.ROM
 /ScummVM.app
+/scummvm-ps3.pkg
 /*.ipk
 /.project
 /.cproject
 /.settings
+/.autotools
+/Icon.*
+
+/build
+/staging
 
 /backends/platform/dc/gui
 /backends/platform/dc/graphics
@@ -69,12 +75,19 @@ lib*.a
 /dists/codeblocks/*.layout
 /dists/codeblocks/scummvm*
 
+#Ignore XCode user data and build files
+xcuserdata
+project.xcworkspace
 /dists/iphone/build
-/dists/iphone/scummvm.xcodeproj/*.mode1v3
-/dists/iphone/scummvm.xcodeproj/*.pbxuser
+/dists/iphone/scummvm.xcodeproj
+/dists/iphone/create_project
+/dists/macosx/build
+/dists/macosx/scummvm.xcodeproj
+/dists/macosx/create_project
 
 /dists/msvc*/[Dd]ebug*/
 /dists/msvc*/[Rr]elease*/
+/dists/msvc*/[Aa]nalysis*/
 /dists/msvc*/*.lib
 /dists/msvc*/*.SAV
 /dists/msvc*/*.dat
@@ -145,3 +158,9 @@ ipch/
 #Ignore default Visual Studio build folders
 [Dd]ebug/
 [Rr]elease/
+
+#Ignore Qt Creator project files
+ScummVM.config
+ScummVM.creator
+ScummVM.files
+ScummVM.includes

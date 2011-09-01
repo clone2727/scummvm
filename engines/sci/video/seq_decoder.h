@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_VIDEO_SEQ_DECODER_H
@@ -61,7 +58,7 @@ public:
 	Graphics::PixelFormat getPixelFormat() const { return Graphics::PixelFormat::createFormatCLUT8(); }
 	const byte *getPalette() { _dirtyPalette = false; return _palette; }
 	bool hasDirtyPalette() const { return _dirtyPalette; }
-  
+
 protected:
 	Common::Rational getFrameRate() const { assert(_frameDelay); return Common::Rational(60, _frameDelay); }
 

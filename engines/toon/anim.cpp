@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/debug.h"
@@ -272,6 +269,18 @@ void Animation::drawFrameWithMaskAndScale(Graphics::Surface &surface, int32 fram
 void Animation::applyPalette(int32 offset, int32 srcOffset, int32 numEntries) {
 	debugC(1, kDebugAnim, "applyPalette(%d, %d, %d)", offset, srcOffset, numEntries);
 	_vm->setPaletteEntries(_palette + srcOffset, offset, numEntries);
+}
+
+Common::Rect Animation::getFrameRect(int32 frame) {
+	debugC(4, kDebugAnim, "getFrameRect(%d)", frame);
+	if ((frame < 0) || (frame >= _numFrames)) {
+		return Common::Rect();
+	}
+
+	if (_frames[frame]._ref != -1)
+		frame = _frames[frame]._ref;
+
+	return Common::Rect(_frames[frame]._x1, _frames[frame]._y1, _frames[frame]._x2, _frames[frame]._y2);
 }
 
 int32 Animation::getFrameWidth(int32 frame) {

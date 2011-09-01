@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "mohawk/cursors.h"
@@ -400,7 +397,7 @@ uint16 Myst::getVar(uint16 var) {
 		else
 			return 0;
 	case 25: // Fireplace Red Page Present
-		if (_globals.ending != 4) 
+		if (_globals.ending != 4)
 			return !(_globals.redPagesInBook & 32) && (_globals.heldPage != 12);
 		else
 			return 0;
@@ -862,7 +859,6 @@ void Myst::o_fireplaceToggleButton(uint16 op, uint16 var, uint16 argc, uint16 *a
 		for (uint i = 4795; i >= 4779; i--) {
 			_vm->_gfx->copyImageToScreen(i, _invokingResource->getRect());
 			_vm->_system->updateScreen();
-			_vm->_system->delayMillis(1);
 		}
 		_fireplaceLines[var - 17] &= ~bitmask;
 	} else {
@@ -870,7 +866,6 @@ void Myst::o_fireplaceToggleButton(uint16 op, uint16 var, uint16 argc, uint16 *a
 		for (uint i = 4779; i <= 4795; i++) {
 			_vm->_gfx->copyImageToScreen(i, _invokingResource->getRect());
 			_vm->_system->updateScreen();
-			_vm->_system->delayMillis(1);
 		}
 		_fireplaceLines[var - 17] |= bitmask;
 	}
@@ -1355,8 +1350,10 @@ void Myst::o_generatorButtonPressed(uint16 op, uint16 var, uint16 argc, uint16 *
 
 		if (_state.generatorVoltage)
 			_vm->_sound->replaceSoundMyst(8297);
-		else
+		else {
 			_vm->_sound->replaceSoundMyst(9297);
+			_vm->_sound->stopBackgroundMyst();
+		}
 	} else {
 		if (_generatorVoltage)
 			_vm->_sound->replaceSoundMyst(6297);
@@ -2844,11 +2841,17 @@ void Myst::clockGearForwardOneStep(uint16 gear) {
 }
 
 void Myst::clockWeightDownOneStep() {
+	// The Myst ME version of this video is encoded faster than the original
+	// The weight goes on the floor one step too early. Original ME engine also has this behavior.
+	bool updateVideo = !(_vm->getFeatures() & GF_ME) || _clockWeightPosition < (2214 - 246);
+
 	// Set video bounds
-	_clockWeightVideo = _vm->_video->playMovie(_vm->wrapMovieFilename("cl1wlfch", kMystStack) , 124, 0);
-	_vm->_video->setVideoBounds(_clockWeightVideo,
-			Audio::Timestamp(0, _clockWeightPosition, 600),
-			Audio::Timestamp(0, _clockWeightPosition + 246, 600));
+	if (updateVideo) {
+		_clockWeightVideo = _vm->_video->playMovie(_vm->wrapMovieFilename("cl1wlfch", kMystStack) , 124, 0);
+		_vm->_video->setVideoBounds(_clockWeightVideo,
+				Audio::Timestamp(0, _clockWeightPosition, 600),
+				Audio::Timestamp(0, _clockWeightPosition + 246, 600));
+	}
 
 	// Increment value by one step
 	_clockWeightPosition += 246;
@@ -3268,7 +3271,7 @@ void Myst::generatorControlRoom_run(void) {
 	if (_generatorVoltage == _state.generatorVoltage) {
 		generatorRedrawRocket();
 	} else {
-		// Animate generator gauge		
+		// Animate generator gauge
 		if (_generatorVoltage > _state.generatorVoltage)
 			_generatorVoltage--;
 		else

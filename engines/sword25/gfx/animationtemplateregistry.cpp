@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -37,7 +34,9 @@
 #include "sword25/gfx/animationtemplateregistry.h"
 #include "sword25/gfx/animationtemplate.h"
 
+namespace Common {
 DECLARE_SINGLETON(Sword25::AnimationTemplateRegistry);
+}
 
 namespace Sword25 {
 

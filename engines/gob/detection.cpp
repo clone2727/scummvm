@@ -18,13 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "base/plugins.h"
 #include "engines/advancedDetector.h"
+#include "engines/obsolete.h"
 
 #include "gob/gob.h"
 
@@ -81,7 +79,7 @@ static const PlainGameDescriptor gobGames[] = {
 	{0, 0}
 };
 
-static const ADObsoleteGameID obsoleteGameIDsTable[] = {
+static const Engines::ObsoleteGameID obsoleteGameIDsTable[] = {
 	{"gob1", "gob", kPlatformUnknown},
 	{"gob2", "gob", kPlatformUnknown},
 	{0, 0, kPlatformUnknown}
@@ -89,37 +87,23 @@ static const ADObsoleteGameID obsoleteGameIDsTable[] = {
 
 #include "gob/detection_tables.h"
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)Gob::gameDescriptions,
-	// Size of that superset structure
-	sizeof(Gob::GOBGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	gobGames,
-	// Structure for autoupgrading obsolete targets
-	obsoleteGameIDsTable,
-	// Name of single gameid (optional)
-	"gob",
-	// List of files for file-based fallback detection (optional)
-	Gob::fileBased,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NOLAUNCHLOAD,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 class GobMetaEngine : public AdvancedMetaEngine {
 public:
-	GobMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	GobMetaEngine() : AdvancedMetaEngine(Gob::gameDescriptions, sizeof(Gob::GOBGameDescription), gobGames) {
+		_singleid = "gob";
+		_guioptions = Common::GUIO_NOLAUNCHLOAD;
+	}
+
+	virtual GameDescriptor findGame(const char *gameid) const {
+		return Engines::findGameID(gameid, _gameids, obsoleteGameIDsTable);
+	}
+
+	virtual const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const {
+		return detectGameFilebased(allFiles, Gob::fileBased);
+	}
 
 	virtual const char *getName() const {
-		return "Gob Engine";
+		return "Gob";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -127,6 +111,11 @@ public:
 	}
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
+
+	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const {
+		Engines::upgradeTargetIfNecessary(obsoleteGameIDsTable);
+		return AdvancedMetaEngine::createInstance(syst, engine);
+	}
 	virtual bool createInstance(OSystem *syst, Engine **engine, const ADGameDescription *desc) const;
 };
 

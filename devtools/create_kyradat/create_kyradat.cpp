@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Disable symbol overrides so that we can use system headers.
@@ -48,7 +45,7 @@
 #include <map>
 
 enum {
-	kKyraDatVersion = 73
+	kKyraDatVersion = 78
 };
 
 const ExtractFilename extractFilenames[] = {
@@ -122,6 +119,7 @@ const ExtractFilename extractFilenames[] = {
 
 	// AUDIO filename table
 	{ k1AudioTracks, kTypeStringList, false },
+	{ k1AudioTracks2, kTypeStringList, false },
 	{ k1AudioTracksIntro, kTypeStringList, false },
 
 	// AMULET anim
@@ -222,7 +220,7 @@ const ExtractFilename extractFilenames[] = {
 	// Ingame
 	{ kLolIngamePakFiles, kTypeStringList, false },
 
-	{ kLolCharacterDefs, kLolTypeCharData, false },
+	{ kLolCharacterDefs, kLolTypeCharData, true },
 	{ kLolIngameSfxFiles, k2TypeSfxList, false },
 	{ kLolIngameSfxIndex, kTypeRawData, false },
 	{ kLolMusicTrackMap, kTypeRawData, false },
@@ -333,7 +331,7 @@ const TypeTable gameTable[] = {
 };
 
 byte getGameID(int game) {
-	return std::find(gameTable, gameTable + ARRAYSIZE(gameTable) - 1, game)->value;
+	return std::find(gameTable, ARRAYEND(gameTable) - 1, game)->value;
 }
 
 const TypeTable languageTable[] = {
@@ -344,11 +342,12 @@ const TypeTable languageTable[] = {
 	{ ES_ESP, 4 },
 	{ IT_ITA, 5 },
 	{ JA_JPN, 6 },
+	{ RU_RUS, 7 },
 	{ -1, -1 }
 };
 
 byte getLanguageID(int lang) {
-	return std::find(languageTable, languageTable + ARRAYSIZE(languageTable) - 1, lang)->value;
+	return std::find(languageTable, ARRAYEND(languageTable) - 1, lang)->value;
 }
 
 const TypeTable platformTable[] = {
@@ -361,7 +360,7 @@ const TypeTable platformTable[] = {
 };
 
 byte getPlatformID(int platform) {
-	return std::find(platformTable, platformTable + ARRAYSIZE(platformTable) - 1, platform)->value;
+	return std::find(platformTable, ARRAYEND(platformTable) - 1, platform)->value;
 }
 
 const TypeTable specialTable[] = {
@@ -369,11 +368,12 @@ const TypeTable specialTable[] = {
 	{ kTalkieVersion, 1 },
 	{ kDemoVersion, 2 },
 	{ kTalkieDemoVersion, 3 },
+	{ kOldFloppy, 4 },
 	{ -1, -1 }
 };
 
 byte getSpecialID(int special) {
-	return std::find(specialTable, specialTable + ARRAYSIZE(specialTable) - 1, special)->value;
+	return std::find(specialTable, ARRAYEND(specialTable) - 1, special)->value;
 }
 
 // filename processing
@@ -770,6 +770,8 @@ const char *getIdString(const int id) {
 		return "k1CharacterImageFilenames";
 	case k1AudioTracks:
 		return "k1AudioTracks";
+	case k1AudioTracks2:
+		return "k1AudioTracks2";
 	case k1AudioTracksIntro:
 		return "k1AudioTracksIntro";
 	case k1ItemNames:
@@ -1436,4 +1438,3 @@ bool getExtractionData(const Game *g, Search &search, ExtractMap &map) {
 
 	return result;
 }
-

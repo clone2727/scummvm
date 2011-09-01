@@ -18,13 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/debug-channels.h"
-#include "common/EventRecorder.h"
 
 #include "backends/audiocd/audiocd.h"
 #include "base/plugins.h"
@@ -113,7 +109,7 @@ void PauseDialog::handleKeyDown(Common::KeyState state) {
 }
 
 
-GobEngine::GobEngine(OSystem *syst) : Engine(syst) {
+GobEngine::GobEngine(OSystem *syst) : Engine(syst), _rnd("gob") {
 	_sound     = 0; _mult     = 0; _game    = 0;
 	_global    = 0; _dataIO   = 0; _goblin  = 0;
 	_vidPlayer = 0; _init     = 0; _inter   = 0;
@@ -148,8 +144,6 @@ GobEngine::GobEngine(OSystem *syst) : Engine(syst) {
 	DebugMan.addDebugChannel(kDebugVideo, "Video", "IMD/VMD video debug level");
 	DebugMan.addDebugChannel(kDebugHotspots, "Hotspots", "Hotspots debug level");
 	DebugMan.addDebugChannel(kDebugDemo, "Demo", "Demo script debug level");
-
-	g_eventRec.registerRandomSource(_rnd, "gob");
 }
 
 GobEngine::~GobEngine() {
@@ -408,7 +402,6 @@ bool GobEngine::initGameParts() {
 	_game      = new Game(this);
 
 	switch (_gameType) {
-	case kGameTypeGeisha:
 	case kGameTypeGob1:
 		_init     = new Init_v1(this);
 		_video    = new Video_v1(this);
@@ -418,6 +411,18 @@ bool GobEngine::initGameParts() {
 		_map      = new Map_v1(this);
 		_goblin   = new Goblin_v1(this);
 		_scenery  = new Scenery_v1(this);
+		break;
+
+	case kGameTypeGeisha:
+		_init     = new Init_Geisha(this);
+		_video    = new Video_v1(this);
+		_inter    = new Inter_Geisha(this);
+		_mult     = new Mult_v1(this);
+		_draw     = new Draw_v1(this);
+		_map      = new Map_v1(this);
+		_goblin   = new Goblin_v1(this);
+		_scenery  = new Scenery_v1(this);
+		_saveLoad = new SaveLoad_Geisha(this, _targetName.c_str());
 		break;
 
 	case kGameTypeFascination:

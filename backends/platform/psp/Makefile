@@ -1,6 +1,4 @@
 # SCUMMVM-PSP MakeFile
-# $URL$
-# $Id$
 
 
 #Use only this section to modify how the makefile behaves ------------
@@ -203,4 +201,3 @@ SCEkxploit: $(TARGET).elf $(PSP_EBOOT_SFO)
 	$(PACK_PBP) "%__SCE__$(TARGET)/$(PSP_EBOOT)" $(PSP_EBOOT_SFO) $(PSP_EBOOT_ICON)  \
 		$(PSP_EBOOT_ICON1) $(PSP_EBOOT_PIC0) $(PSP_EBOOT_PIC1)  \
 		$(PSP_EBOOT_SND0) NULL $(PSP_EBOOT_PSAR)
-

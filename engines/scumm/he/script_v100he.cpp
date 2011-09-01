@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_HE
@@ -545,7 +542,7 @@ void ScummEngine_v100he::o100_arrayOps() {
 	int dim1end, dim1start, dim2end, dim2start;
 	int id, len, b, c, list[128];
 	int offs, tmp, tmp2;
-	uint tmp3;
+	uint tmp3, type;
 
 	byte subOp = fetchScriptByte();
 	int array = fetchScriptWord();
@@ -628,11 +625,10 @@ void ScummEngine_v100he::o100_arrayOps() {
 		}
 		break;
 	case 132:
-		debug(0, "o100_arrayOps: case 132");
-		// TODO: Used by Moonbase Commander
+		// TODO: Used by room 2 script 2180 in Moonbase Commander
 		fetchScriptWord();
 		fetchScriptWord();
-		pop();
+		type = pop();
 		pop();
 		pop();
 		pop();
@@ -649,6 +645,21 @@ void ScummEngine_v100he::o100_arrayOps() {
 		if (id == 0) {
 			defineArray(array, kDwordArray, dim2start, dim2end, dim1start, dim1end);
 		}
+		switch (type) {
+		case 1:
+			break;
+		case 2:
+			break;
+		case 3:
+			break;
+		case 4:
+			break;
+		case 5:
+			break;
+		default:
+			error("o100_arrayOps: case 132 unknown type %d)", type);
+		}
+		debug(0, "o100_arrayOps: case 132 type %d", type);
 		break;
 	case 133:
 		b = pop();
@@ -2353,10 +2364,10 @@ void ScummEngine_v100he::o100_debugInput() {
 
 void ScummEngine_v100he::o100_isResourceLoaded() {
 	// Reports percentage of resource loaded by queue
-	int type;
+	ResType type;
 
 	byte subOp = fetchScriptByte();
-	/* int idx = */ pop();
+	int idx = pop();
 
 	switch (subOp) {
 	case 25:
@@ -2377,13 +2388,15 @@ void ScummEngine_v100he::o100_isResourceLoaded() {
 	default:
 		error("o100_isResourceLoaded: default case %d", subOp);
 	}
+	debug(7, "o100_isResourceLoaded(%d,%d)", type, idx);
 
 	push(100);
 }
 
 void ScummEngine_v100he::o100_getResourceSize() {
 	const byte *ptr;
-	int size, type;
+	int size;
+	ResType type;
 
 	int resid = pop();
 	byte subOp = fetchScriptByte();
@@ -2402,7 +2415,7 @@ void ScummEngine_v100he::o100_getResourceSize() {
 		type = rtScript;
 		break;
 	case 72:
-		push (getSoundResourceSize(resid));
+		push(getSoundResourceSize(resid));
 		return;
 	default:
 		error("o100_getResourceSize: default type %d", subOp);
@@ -2934,7 +2947,7 @@ void ScummEngine_v100he::o100_getVideoData() {
 		break;
 	case 73:
 		pop();
-		push(_moviePlay->endOfVideo() ? -1 : (_moviePlay->getCurFrame() + 1));
+		push(_moviePlay->getCurFrame());
 		break;
 	case 84:
 		pop();

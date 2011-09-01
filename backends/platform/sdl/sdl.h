@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef PLATFORM_SDL_H
@@ -33,7 +30,7 @@
 #include "backends/events/sdl/sdl-events.h"
 #include "backends/log/log.h"
 
-/** 
+/**
  * Base OSystem class for all SDL ports.
  */
 class OSystem_SDL : public ModularBackend {
@@ -41,7 +38,7 @@ public:
 	OSystem_SDL();
 	virtual ~OSystem_SDL();
 
-	/** 
+	/**
 	 * Pre-initialize backend. It should be called after
 	 * instantiating the backend. Early needed managers are
 	 * created here.
@@ -57,6 +54,10 @@ public:
 
 	// Override functions from ModularBackend and OSystem
 	virtual void initBackend();
+#if defined(USE_TASKBAR)
+	virtual void engineInit();
+	virtual void engineDone();
+#endif
 	virtual Common::HardwareKeySet *getHardwareKeySet();
 	virtual void quit();
 	virtual void fatalError();
@@ -68,18 +69,10 @@ public:
 
 	virtual void setWindowCaption(const char *caption);
 	virtual void addSysArchivesToSearchSet(Common::SearchSet &s, int priority = 0);
-	virtual Common::SeekableReadStream *createConfigReadStream();
-	virtual Common::WriteStream *createConfigWriteStream();
 	virtual uint32 getMillis();
 	virtual void delayMillis(uint msecs);
 	virtual void getTimeAndDate(TimeDate &td) const;
 	virtual Audio::Mixer *getMixer();
-
-	// HACK: Special SDL events types
-	enum SdlEvent {
-		kSdlEventExpose = 100,
-		kSdlEventResize = 101
-	};
 
 protected:
 	bool _inited;
@@ -96,6 +89,8 @@ protected:
 	 */
 	SdlEventSource *_eventSource;
 
+	virtual Common::EventSource *getDefaultEventSource() { return _eventSource; }
+
 	/**
 	 * Initialze the SDL library.
 	 */
@@ -105,12 +100,6 @@ protected:
 	 * Setup the window icon.
 	 */
 	virtual void setupIcon();
-
-	/**
-	 * Get the file path where the user configuration
-	 * of ScummVM will be saved.
-	 */
-	virtual Common::String getDefaultConfigFileName();
 
 	// Logging
 	virtual Common::WriteStream *createLogFile() { return 0; }

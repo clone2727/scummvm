@@ -8,24 +8,29 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "backends/base-backend.h"
+
+#ifndef DISABLE_DEFAULT_EVENT_MANAGER
 #include "backends/events/default/default-events.h"
+#endif
+
+#ifndef DISABLE_DEFAULT_AUDIOCD_MANAGER
 #include "backends/audiocd/default/default-audiocd.h"
+#endif
+
+
 #include "gui/message.h"
 
 void BaseBackend::displayMessageOnOSD(const char *msg) {
@@ -34,16 +39,20 @@ void BaseBackend::displayMessageOnOSD(const char *msg) {
 	dialog.runModal();
 }
 
+void BaseBackend::initBackend() {
+	// Init Event manager
+#ifndef DISABLE_DEFAULT_EVENT_MANAGER
+	if (!_eventManager)
+		_eventManager = new DefaultEventManager(getDefaultEventSource());
+#endif
 
-static Common::EventManager *s_eventManager = 0;
+	// Init audio CD manager
+#ifndef DISABLE_DEFAULT_AUDIOCD_MANAGER
+	if (!_audiocdManager)
+		_audiocdManager = new DefaultAudioCDManager();
+#endif
 
-Common::EventManager *BaseBackend::getEventManager() {
-	// FIXME/TODO: Eventually this method should be turned into an abstract one,
-	// to force backends to implement this conciously (even if they
-	// end up returning the default event manager anyway).
-	if (!s_eventManager)
-		s_eventManager = new DefaultEventManager(this);
-	return s_eventManager;
+	OSystem::initBackend();
 }
 
 void BaseBackend::fillScreen(uint32 col) {
@@ -51,54 +60,4 @@ void BaseBackend::fillScreen(uint32 col) {
 	if (screen && screen->pixels)
 		memset(screen->pixels, col, screen->h * screen->pitch);
 	unlockScreen();
-}
-
-
-/*
- FIXME: Maybe we should push the default config file loading/saving code below
- out to all the backends?
-*/
-
-
-#if defined(UNIX)
-#if defined(SAMSUNGTV)
-#define DEFAULT_CONFIG_FILE "/dtv/usb/sda1/.scummvmrc"
-#else
-#define DEFAULT_CONFIG_FILE ".scummvmrc"
-#endif
-#endif
-
-#if !defined(UNIX)
-#define DEFAULT_CONFIG_FILE "scummvm.ini"
-#endif
-
-BaseBackend::BaseBackend() {
-	_audiocdManager = 0;
-}
-
-BaseBackend::~BaseBackend() {
-	delete _audiocdManager;
-}
-
-Common::SeekableReadStream *BaseBackend::createConfigReadStream() {
-	Common::FSNode file(DEFAULT_CONFIG_FILE);
-	return file.createReadStream();
-}
-
-Common::WriteStream *BaseBackend::createConfigWriteStream() {
-#ifdef __DC__
-	return 0;
-#else
-	Common::FSNode file(DEFAULT_CONFIG_FILE);
-	return file.createWriteStream();
-#endif
-}
-
-AudioCDManager *BaseBackend::getAudioCDManager() {
-	if (!_audiocdManager)
-		_audiocdManager = new DefaultAudioCDManager();
-	return _audiocdManager;
-}
-
-void BaseBackend::resetGraphicsScale() {
 }

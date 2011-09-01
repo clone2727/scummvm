@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef GUI_WIDGET_H
@@ -188,6 +185,8 @@ public:
 
 	void setCmd(uint32 cmd)				{ _cmd = cmd; }
 	uint32 getCmd() const				{ return _cmd; }
+
+	void setLabel(const Common::String &label);
 
 	void handleMouseUp(int x, int y, int button, int clickCount);
 	void handleMouseEntered(int button)	{ setFlags(WIDGET_HILITED); draw(); }

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Background animation management module
@@ -172,7 +169,7 @@ int Anim::playCutaway(int cut, bool fade) {
 		ByteArray resourceData;
 		_vm->_resource->loadResource(context, _cutawayList[cut].animResourceId, resourceData);
 		load(MAX_ANIMATIONS + cutawaySlot, resourceData);
-		
+
 
 		setCycles(MAX_ANIMATIONS + cutawaySlot, _cutawayList[cut].cycles);
 		setFrameTime(MAX_ANIMATIONS + cutawaySlot, 1000 / _cutawayList[cut].frameRate);
@@ -417,7 +414,7 @@ void Anim::load(uint16 animId, const ByteArray &resourceData) {
 	}
 
 	anim->resourceData.resize(resourceData.size() - dataOffset);
-	
+
 	memcpy(anim->resourceData.getBuffer(), resourceData.getBuffer() + dataOffset, anim->resourceData.size());
 	// Cache frame offsets
 

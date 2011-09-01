@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include <time.h>
@@ -37,7 +34,9 @@
 
 
 // Class PspRtc ---------------------------------------------------------------
+namespace Common {
 DECLARE_SINGLETON(PspRtc);
+}
 
 void PspRtc::init() {						// init our starting ticks
 	uint32 ticks[2];
@@ -84,4 +83,3 @@ uint32 PspRtc::getMicros() {
 
 	return ticks[0];
 }
-

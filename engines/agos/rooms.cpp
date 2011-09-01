@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -404,9 +401,9 @@ bool AGOSEngine::loadRoomItems(uint16 room) {
 		filename[i] = 0;
 		p++;
 
-		for (;;) {
-			_roomsListPtr = p;
+		_roomsListPtr = p;
 
+		for (;;) {
 			minNum = READ_BE_UINT16(p); p += 2;
 			if (minNum == 0)
 				break;

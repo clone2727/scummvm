@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef TESTBED_GRAPHICS_H
@@ -35,9 +32,9 @@ namespace GFXtests {
 void drawEllipse(int x, int y, int a, int b);
 void setupMouseLoop(bool disableCursorPalette = false, const char *gfxModeName = "", int cursorTargetScale = 1);
 void initMousePalette();
-Common::Rect computeSize(Common::Rect &cursorRect, int scalingFactor, int cursorTargetScale);
+Common::Rect computeSize(const Common::Rect &cursorRect, int scalingFactor, int cursorTargetScale);
 void HSVtoRGB(int &rComp, int &gComp, int &bComp, int hue, int sat, int val);
-Common::Rect drawCursor(bool cursorPaletteDisabled = false, const char *gfxModeName = "", int cursorTargetScale = 1);
+Common::Rect drawCursor(bool cursorPaletteDisabled = false, int cursorTargetScale = 1);
 
 // will contain function declarations for GFX tests
 TestExitStatus cursorTrails();

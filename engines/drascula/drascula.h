@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef DRASCULA_H
@@ -33,6 +30,7 @@
 #include "common/file.h"
 #include "common/hash-str.h"
 #include "common/keyboard.h"
+#include "common/ptr.h"
 #include "common/random.h"
 #include "common/savefile.h"
 #include "common/system.h"
@@ -267,15 +265,13 @@ private:
 };
 
 class TextResourceParser {
-	Common::SeekableReadStream *_stream;
-	DisposeAfterUse::Flag _dispose;
+	Common::DisposablePtr<Common::SeekableReadStream> _stream;
 	int _maxLen;
 
 	void getLine(char *buf);
 
 public:
 	TextResourceParser(Common::SeekableReadStream *stream, DisposeAfterUse::Flag dispose);
-	~TextResourceParser();
 
 	void parseInt(int &result);
 	void parseString(char *result);
@@ -499,6 +495,8 @@ public:
 	void updateVolume(Audio::Mixer::SoundType soundType, int prevVolume);
 	void volumeControls();
 	bool saveLoadScreen();
+	void loadSaveNames();
+	void saveSaveNames();
 	void print_abc(const char *, int, int);
 	void delay(int ms);
 	bool confirmExit();
@@ -573,8 +571,8 @@ public:
 	void enterName();
 	bool soundIsActive();
 	void waitFrameSSN();
-	void mixVideo(byte *OldScreen, byte *NewScreen);
-	void decodeRLE(byte *BufferRLE, byte *MiVideoRLE);
+	void mixVideo(byte *OldScreen, byte *NewScreen, uint16 oldPitch);
+	void decodeRLE(byte *BufferRLE, byte *MiVideoRLE, uint16 pitch = 320);
 	void decodeOffset(byte *BufferOFF, byte *MiVideoOFF, int length);
 	int playFrameSSN(Common::SeekableReadStream *stream);
 
@@ -591,7 +589,7 @@ public:
 	void quadrant_2();
 	void quadrant_3();
 	void quadrant_4();
-	void saveGame(char[]);
+	void saveGame(const char *gameName);
 	void increaseFrameNum();
 	int whichObject();
 	bool checkMenuFlags();
@@ -779,6 +777,7 @@ private:
 	RoomUpdate *_roomPreUpdates, *_roomUpdates;
 	RoomTalkAction *_roomActions;
 	TalkSequenceCommand *_talkSequences;
+	char _saveNames[10][23];
 
 	char **loadTexts(Common::File &in);
 	void freeTexts(char **ptr);

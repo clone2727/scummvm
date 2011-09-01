@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/util.h"
@@ -332,7 +329,6 @@ void GfxControls::kernelDrawText(Common::Rect rect, reg_t obj, const char *text,
 		if (style & SCI_CONTROLS_STYLE_SELECTED) {
 			_paint16->frameRect(rect);
 		}
-		rect.grow(1);
 		if (!getPicNotValid())
 			_paint16->bitsShow(rect);
 	} else {

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -31,7 +28,7 @@
 #include "backends/platform/symbian/src/SymbianActions.h"
 
 SymbianSdlGraphicsManager::SymbianSdlGraphicsManager(SdlEventSource *sdlEventSource)
-	: SdlGraphicsManager(sdlEventSource) {
+	: SurfaceSdlGraphicsManager(sdlEventSource) {
 }
 
 int SymbianSdlGraphicsManager::getDefaultGraphicsMode() const {
@@ -50,14 +47,14 @@ const OSystem::GraphicsMode *SymbianSdlGraphicsManager::getSupportedGraphicsMode
 // make sure we always go to normal, even if the string might be set wrong!
 bool SymbianSdlGraphicsManager::setGraphicsMode(int /*name*/) {
 	// let parent OSystem_SDL handle it
-	return SdlGraphicsManager::setGraphicsMode(getDefaultGraphicsMode());
+	return SurfaceSdlGraphicsManager::setGraphicsMode(getDefaultGraphicsMode());
 }
 
 bool SymbianSdlGraphicsManager::hasFeature(OSystem::Feature f) {
 	switch (f) {
 	case OSystem::kFeatureFullscreenMode:
 	case OSystem::kFeatureAspectRatioCorrection:
-	case OSystem::kFeatureCursorHasPalette:
+	case OSystem::kFeatureCursorPalette:
 #ifdef  USE_VIBRA_SE_PXXX
 	case OSystem::kFeatureVibration:
 #endif
@@ -75,9 +72,8 @@ void SymbianSdlGraphicsManager::setFeatureState(OSystem::Feature f, bool enable)
 		GUI::Actions::Instance()->beginMapping(enable);
 		break;
 	default:
-		SdlGraphicsManager::setFeatureState(f, enable);
+		SurfaceSdlGraphicsManager::setFeatureState(f, enable);
 	}
 }
 
 #endif
-

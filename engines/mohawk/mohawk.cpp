@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -33,8 +30,6 @@
 #include "mohawk/dialogs.h"
 #include "mohawk/sound.h"
 #include "mohawk/video.h"
-
-#include "audio/mixer.h"
 
 namespace Mohawk {
 

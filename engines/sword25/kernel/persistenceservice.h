@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -60,6 +57,7 @@ public:
 	void            reloadSlots();
 	bool            isSlotOccupied(uint slotID);
 	bool            isSavegameCompatible(uint slotID);
+	int             getSavegameVersion(uint slotID);
 	Common::String &getSavegameDescription(uint slotID);
 	Common::String &getSavegameFilename(uint slotID);
 

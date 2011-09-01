@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Font management and font drawing header file
@@ -120,7 +117,11 @@ struct FontCharEntry {
 struct FontStyle {
 	FontHeader header;
 	FontCharEntry fontCharEntry[256];
+#ifndef __DS__
 	ByteArray font;
+#else
+	byte* font;
+#endif
 };
 
 struct FontData {

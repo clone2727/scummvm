@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 
@@ -82,7 +79,7 @@ Player::Player() :
 	_isMT32(false),
 	_isMIDI(false),
 	_se(0),
-	_vol_chan(0){
+	_vol_chan(0) {
 }
 
 Player::~Player() {
@@ -93,7 +90,7 @@ Player::~Player() {
 }
 
 bool Player::startSound(int sound, MidiDriver *midi) {
-	void *ptr;
+	byte *ptr;
 	int i;
 
 	// Not sure what the old code was doing,
@@ -111,13 +108,8 @@ bool Player::startSound(int sound, MidiDriver *midi) {
 	_active = true;
 	_midi = midi;
 	_id = sound;
-	_priority = 0x80;
-	_volume = 0x7F;
-	_vol_chan = 0xFFFF;
-	_vol_eff = (_se->get_channel_volume(0xFFFF) << 7) >> 7;
-	_pan = 0;
-	_transpose = 0;
-	_detune = 0;
+
+	loadStartParameters(sound);
 
 	for (i = 0; i < ARRAYSIZE(_parameterFaders); ++i)
 		_parameterFaders[i].init();
@@ -141,7 +133,7 @@ bool Player::isFadingOut() const {
 	int i;
 	for (i = 0; i < ARRAYSIZE(_parameterFaders); ++i) {
 		if (_parameterFaders[i].param == ParameterFader::pfVolume &&
-						_parameterFaders[i].end == 0) {
+		        _parameterFaders[i].end == 0) {
 			return true;
 		}
 	}
@@ -202,9 +194,41 @@ int Player::start_seq_sound(int sound, bool reset_vars) {
 	_parser->property(MidiParser::mpSmartJump, 1);
 	_parser->loadMusic(ptr, 0);
 	_parser->setTrack(_track_index);
-	setSpeed(reset_vars ? 128 : _speed);
+
+	ptr = _se->findStartOfSound(sound, IMuseInternal::kMDhd);
+	setSpeed(reset_vars ? (ptr ? (READ_BE_UINT32(&ptr[4]) && ptr[15] ? ptr[15] : 128) : 128) : _speed);
 
 	return 0;
+}
+
+void Player::loadStartParameters(int sound) {
+	_priority = 0x80;
+	_volume = 0x7F;
+	_vol_chan = 0xFFFF;
+	_vol_eff = (_se->get_channel_volume(0xFFFF) << 7) >> 7;
+	_pan = 0;
+	_transpose = 0;
+	_detune = 0;
+
+	byte *ptr = _se->findStartOfSound(sound, IMuseInternal::kMDhd);
+	uint32 size = 0;
+
+	if (ptr) {
+		ptr += 4;
+		size = READ_BE_UINT32(ptr);
+		ptr += 4;
+
+		// MDhd chunks don't get used in MI1 and contain only zeroes.
+		// We check for volume, priority and speed settings of zero here.
+		if (size && (ptr[2] | ptr[3] | ptr[7])) {
+			_priority = ptr[2];
+			_volume = ptr[3];
+			_pan = ptr[4];
+			_transpose = ptr[5];
+			_detune = ptr[6];
+			setSpeed(ptr[7]);
+		}
+	}
 }
 
 void Player::uninit_parts() {
@@ -347,11 +371,13 @@ void Player::sysEx(const byte *p, uint16 len) {
 	if (a != IMUSE_SYSEX_ID) {
 		if (a == ROLAND_SYSEX_ID) {
 			// Roland custom instrument definition.
-			part = getPart(p[0] & 0x0F);
-			if (part) {
-				part->_instrument.roland(p - 1);
-				if (part->clearToTransmit())
-					part->_instrument.send(part->_mc);
+			if (_isMIDI || _isMT32) {
+				part = getPart(p[0] & 0x0F);
+				if (part) {
+					part->_instrument.roland(p - 1);
+					if (part->clearToTransmit())
+						part->_instrument.send(part->_mc);
+				}
 			}
 		} else if (a == YM2612_SYSEX_ID) {
 			// FM-TOWNS custom instrument definition
@@ -375,13 +401,13 @@ void Player::sysEx(const byte *p, uint16 len) {
 
 	if (!_scanning) {
 		for (a = 0; a < len + 1 && a < 19; ++a) {
-			sprintf((char *)&buf[a*3], " %02X", p[a]);
+			sprintf((char *)&buf[a * 3], " %02X", p[a]);
 		} // next for
 		if (a < len + 1) {
-			buf[a*3] = buf[a*3+1] = buf[a*3+2] = '.';
+			buf[a * 3] = buf[a * 3 + 1] = buf[a * 3 + 2] = '.';
 			++a;
 		} // end if
-		buf[a*3] = '\0';
+		buf[a * 3] = '\0';
 		debugC(DEBUG_IMUSE, "[%02d] SysEx:%s", _id, buf);
 	}
 
@@ -790,7 +816,7 @@ int Player::query_part_param(int param, byte chan) {
 				return part->_vol;
 			case 16:
 // FIXME: Need to know where this occurs...
-error("Trying to cast instrument (%d, %d) -- please tell Fingolfin", param, chan);
+				error("Trying to cast instrument (%d, %d) -- please tell Fingolfin", param, chan);
 // In old versions of the code, this used to return part->_program.
 // This was changed in revision 2.29 of imuse.cpp (where this code used
 // to reside).
@@ -821,9 +847,8 @@ void Player::onTimer() {
 	uint beat_index = target_tick / TICKS_PER_BEAT + 1;
 	uint tick_index = target_tick % TICKS_PER_BEAT;
 
-	if (_loop_counter &&(beat_index > _loop_from_beat ||
-	   (beat_index == _loop_from_beat && tick_index >= _loop_from_tick)))
-	{
+	if (_loop_counter && (beat_index > _loop_from_beat ||
+	    (beat_index == _loop_from_beat && tick_index >= _loop_from_tick))) {
 		_loop_counter--;
 		jump(_track_index, _loop_to_beat, _loop_to_tick);
 	}
@@ -867,15 +892,15 @@ int Player::addParameterFader(int param, int target, int time) {
 //		target = target * 128 / 100;
 		break;
 
-	case 127:
-		{ // FIXME? I *think* this clears all parameter faders.
-			ParameterFader *ptr = &_parameterFaders[0];
-			int i;
-			for (i = ARRAYSIZE(_parameterFaders); i; --i, ++ptr)
-				ptr->param = 0;
-			return 0;
-		}
-		break;
+	case 127: {
+		// FIXME? I *think* this clears all parameter faders.
+		ParameterFader *ptr = &_parameterFaders[0];
+		int i;
+		for (i = ARRAYSIZE(_parameterFaders); i; --i, ++ptr)
+			ptr->param = 0;
+		return 0;
+	}
+	break;
 
 	default:
 		debug(0, "Player::addParameterFader(%d, %d, %d): Unknown parameter", param, target, time);
@@ -1061,7 +1086,7 @@ void Player::saveLoadWithSerializer(Serializer *ser) {
 	}
 	ser->saveLoadEntries(this, playerEntries);
 	ser->saveLoadArrayOf(_parameterFaders, ARRAYSIZE(_parameterFaders),
-						sizeof(ParameterFader), parameterFaderEntries);
+	                     sizeof(ParameterFader), parameterFaderEntries);
 	return;
 }
 

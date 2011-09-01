@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "sci/engine/state.h"
@@ -227,7 +224,7 @@ static bool parsePart2(ParseTreeNode* parentNode, bool& nonempty)
 
 	} else if (said_tokens[said_token] == TOKEN_BRACKETO) {
 		said_token++;
-	
+
 		found = parsePart2(newNode, nonempty);
 
 		if (found) {
@@ -285,7 +282,7 @@ static bool parsePart3(ParseTreeNode* parentNode, bool& nonempty)
 
 	} else if (said_tokens[said_token] == TOKEN_BRACKETO) {
 		said_token++;
-	
+
 		found = parsePart3(newNode, nonempty);
 
 		if (found) {
@@ -369,7 +366,7 @@ static bool parseRef(ParseTreeNode* parentNode)
 			said_attach_subtree(newParent, 0x144, 0x14f, newNode);
 
 			newParent = newParent->right;
-			
+
 			newNode = said_branch_node(said_next_node(), 0, 0);
 
 			found = parseRef(newNode);
@@ -384,14 +381,14 @@ static bool parseRef(ParseTreeNode* parentNode)
 
 		}
 
-	} 
+	}
 
 	// NB: This is not an "else if'.
 	// If there is a "< [ ... ]", that is parsed as "< ..."
 
 	if (said_tokens[said_token] == TOKEN_BRACKETO) {
 		said_token++;
-	
+
 		found = parseRef(newNode);
 
 		if (found) {
@@ -1150,4 +1147,3 @@ True
 
 
 } // End of namespace Sci
-

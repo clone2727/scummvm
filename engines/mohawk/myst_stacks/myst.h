@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MYST_SCRIPTS_MYST_H
@@ -43,14 +40,16 @@ public:
 	Myst(MohawkEngine_Myst *vm);
 	~Myst();
 
-	void disablePersistentScripts();
-	void runPersistentScripts();
+	virtual void disablePersistentScripts();
+	virtual void runPersistentScripts();
 
 private:
 	void setupOpcodes();
 	uint16 getVar(uint16 var);
 	void toggleVar(uint16 var);
 	bool setVarValue(uint16 var, uint16 value);
+
+	virtual uint16 getMap() { return 9934; }
 
 	void towerRotationMap_run();
 	void libraryBookcaseTransform_run();

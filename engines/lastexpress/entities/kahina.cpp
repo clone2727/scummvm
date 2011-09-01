@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/entities/kahina.h"
@@ -32,8 +29,10 @@
 #include "lastexpress/game/object.h"
 #include "lastexpress/game/savepoint.h"
 #include "lastexpress/game/scenes.h"
-#include "lastexpress/game/sound.h"
 #include "lastexpress/game/state.h"
+
+#include "lastexpress/sound/queue.h"
+#include "lastexpress/sound/sound.h"
 
 #include "lastexpress/lastexpress.h"
 #include "lastexpress/helpers.h"
@@ -610,8 +609,8 @@ label_callback_3:
 			break;
 
 		if (getEvent(kEventKahinaAskSpeakFirebird)) {
-			if (getSound()->isBuffered(kEntityKahina))
-				getSound()->processEntry(kEntityKahina);
+			if (getSoundQueue()->isBuffered(kEntityKahina))
+				getSoundQueue()->processEntry(kEntityKahina);
 
 			if (savepoint.action == kActionKnock)
 				getSound()->playSound(kEntityPlayer, "LIB012");
@@ -1166,8 +1165,8 @@ IMPLEMENT_FUNCTION(24, Kahina, function24)
 		case 1:
 			if (ENTITY_PARAM(0, 2)) {
 				getEntities()->clearSequences(kEntityKahina);
-				if (getSound()->isBuffered(kEntityKahina))
-					getSound()->processEntry(kEntityKahina);
+				if (getSoundQueue()->isBuffered(kEntityKahina))
+					getSoundQueue()->processEntry(kEntityKahina);
 
 				getProgress().field_44 = 0;
 
@@ -1189,7 +1188,7 @@ IMPLEMENT_FUNCTION(24, Kahina, function24)
 			getEntities()->updateEntity(kEntityKahina, kCarKronos, kPosition_9270);
 			getEntities()->loadSceneFromEntityPosition(getData()->car, (EntityPosition)(getData()->entityPosition + 750));
 			getSavePoints()->push(kEntityKahina, kEntityKronos, kAction235599361);
-			getSound()->playSound(kEntityKahina, "MUS016", SoundManager::kFlagDefault);
+			getSound()->playSound(kEntityKahina, "MUS016", kFlagDefault);
 			getProgress().field_44 = 1;
 
 			params->param1 = true;
@@ -1201,8 +1200,8 @@ IMPLEMENT_FUNCTION(24, Kahina, function24)
 
 	case kAction137503360:
 		getEntities()->clearSequences(kEntityKahina);
-		if (getSound()->isBuffered(kEntityKahina))
-			getSound()->processEntry(kEntityKahina);
+		if (getSoundQueue()->isBuffered(kEntityKahina))
+			getSoundQueue()->processEntry(kEntityKahina);
 
 		getProgress().field_44 = 0;
 

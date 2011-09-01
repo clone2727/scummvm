@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/lastexpress.h"
@@ -29,10 +26,13 @@
 #include "lastexpress/data/font.h"
 
 #include "lastexpress/game/logic.h"
-#include "lastexpress/game/menu.h"
 #include "lastexpress/game/scenes.h"
 #include "lastexpress/game/state.h"
-#include "lastexpress/game/sound.h"
+
+#include "lastexpress/menu/menu.h"
+
+#include "lastexpress/sound/queue.h"
+#include "lastexpress/sound/sound.h"
 
 #include "lastexpress/graphics.h"
 #include "lastexpress/helpers.h"
@@ -40,7 +40,9 @@
 
 #include "common/config-manager.h"
 #include "common/debug-channels.h"
-#include "common/EventRecorder.h"
+#include "common/error.h"
+#include "common/fs.h"
+#include "common/timer.h"
 
 #include "engines/util.h"
 
@@ -52,10 +54,16 @@ const char *g_entityNames[] = { "Player", "Anna", "August", "Mertens", "Coudert"
 namespace LastExpress {
 
 LastExpressEngine::LastExpressEngine(OSystem *syst, const ADGameDescription *gd) :
-    Engine(syst), _gameDescription(gd), _debugger(NULL), _cursor(NULL),
-    _font(NULL), _logic(NULL), _menu(NULL), _frameCounter(0), _lastFrameCount(0),
-	_graphicsMan(NULL), _resMan(NULL), _sceneMan(NULL), _soundMan(NULL),
-	_eventMouse(NULL), _eventTick(NULL), _eventMouseBackup(NULL), _eventTickBackup(NULL) {
+    Engine(syst), _gameDescription(gd),
+    _debugger(NULL), _cursor(NULL),
+    _font(NULL), _logic(NULL), _menu(NULL),
+    _frameCounter(0), _lastFrameCount(0),
+	_graphicsMan(NULL), _resMan(NULL),
+	_sceneMan(NULL), _soundMan(NULL),
+	_eventMouse(NULL), _eventTick(NULL),
+	_eventMouseBackup(NULL), _eventTickBackup(NULL),
+	_random("lastexpress")
+	{
 	// Setup mixer
 	syncSoundSettings();
 
@@ -74,8 +82,6 @@ LastExpressEngine::LastExpressEngine(OSystem *syst, const ADGameDescription *gd)
 	DebugMan.addDebugChannel(kLastExpressDebugLogic, "Logic", "Debug logic");
 	DebugMan.addDebugChannel(kLastExpressDebugScenes, "Scenes", "Debug scenes & hotspots");
 	DebugMan.addDebugChannel(kLastExpressDebugUnknown, "Unknown", "Debug unknown data");
-
-	g_eventRec.registerRandomSource(_random, "lastexpress");
 }
 
 LastExpressEngine::~LastExpressEngine() {
@@ -141,15 +147,15 @@ Common::Error LastExpressEngine::run() {
 
 	// Start sound manager and setup timer
 	_soundMan = new SoundManager(this);
-	_timer->installTimerProc(&soundTimer, 17000, this);
+	_timer->installTimerProc(&soundTimer, 17000, this, "lastexpressSound");
 
 	// Menu
 	_menu = new Menu(this);
 	_menu->show(false, kSavegameTypeIndex, 0);
 
 	while (!shouldQuit()) {
-		_soundMan->updateQueue();
-		_soundMan->updateSubtitles();
+		_soundMan->getQueue()->updateQueue();
+		_soundMan->getQueue()->updateSubtitles();
 
 		if (handleEvents())
 			continue;
@@ -180,7 +186,7 @@ void LastExpressEngine::pollEvents() {
 bool LastExpressEngine::handleEvents() {
 	// Make sure all the subsystems have been initialized
 	if (!_debugger || !_graphicsMan)
-		error("LastExpressEngine::handleEvents: called before the required subsystems have been initialized!");
+		error("[LastExpressEngine::handleEvents] Called before the required subsystems have been initialized");
 
 	// Execute stored commands
 	if (_debugger->hasCommand()) {
@@ -215,6 +221,7 @@ bool LastExpressEngine::handleEvents() {
 		case Common::EVENT_LBUTTONUP:
 		case Common::EVENT_LBUTTONDOWN:
 			getGameLogic()->getGameState()->getGameFlags()->mouseLeftClick = true;
+			getGameLogic()->getGameState()->getGameFlags()->mouseLeftPressed = (ev.type == Common::EVENT_LBUTTONDOWN) ? true : false;
 
 			// Adjust frameInterval flag
 			if (_frameCounter < _lastFrameCount + 30)
@@ -228,6 +235,8 @@ bool LastExpressEngine::handleEvents() {
 		case Common::EVENT_RBUTTONUP:
 		case Common::EVENT_RBUTTONDOWN:
 			getGameLogic()->getGameState()->getGameFlags()->mouseRightClick = true;
+			getGameLogic()->getGameState()->getGameFlags()->mouseRightPressed = (ev.type == Common::EVENT_RBUTTONDOWN) ? true : false;
+
 			if (_eventMouse && _eventMouse->isValid())
 				(*_eventMouse)(ev);
 			break;
@@ -274,7 +283,7 @@ void LastExpressEngine::soundTimer(void *refCon) {
 void LastExpressEngine::handleSoundTimer() {
 	if (_frameCounter & 1)
 		if (_soundMan)
-			_soundMan->handleTimer();
+			_soundMan->getQueue()->handleTimer();
 
 	_frameCounter++;
 }
@@ -283,22 +292,34 @@ void LastExpressEngine::handleSoundTimer() {
 /// Event Handling
 ///////////////////////////////////////////////////////////////////////////////////
 void LastExpressEngine::backupEventHandlers() {
+	if (_eventMouseBackup != NULL || _eventTickBackup != NULL)
+		error("[LastExpressEngine::backupEventHandlers] backup event handlers are already set");
+
 	_eventMouseBackup = _eventMouse;
 	_eventTickBackup = _eventTick;
 }
 
 void LastExpressEngine::restoreEventHandlers() {
 	if (_eventMouseBackup == NULL || _eventTickBackup == NULL)
-		error("LastExpressEngine::restoreEventHandlers: restore called before backing up the event handlers!");
+		error("[LastExpressEngine::restoreEventHandlers] restore called before backing up the event handlers");
+
+	// Cleanup previous event handlers
+	SAFE_DELETE(_eventMouse);
+	SAFE_DELETE(_eventTick);
 
 	_eventMouse = _eventMouseBackup;
 	_eventTick = _eventTickBackup;
+
+	_eventMouseBackup = NULL;
+	_eventTickBackup = NULL;
 }
 
 void LastExpressEngine::setEventHandlers(EventHandler::EventFunction *mouse, EventHandler::EventFunction *tick) {
-	// Cleanup previous event handlers
-	delete _eventMouse;
-	delete _eventTick;
+	if (_eventMouse != _eventMouseBackup)
+		SAFE_DELETE(_eventMouse);
+
+	if (_eventTick != _eventTickBackup)
+		SAFE_DELETE(_eventTick);
 
 	_eventMouse = mouse;
 	_eventTick = tick;
@@ -309,10 +330,6 @@ void LastExpressEngine::setEventHandlers(EventHandler::EventFunction *mouse, Eve
 ///////////////////////////////////////////////////////////////////////////////////
 bool LastExpressEngine::hasFeature(EngineFeature f) const {
 	return (f == kSupportsRTL);
-}
-
-void LastExpressEngine::errorString(const char *buf_input, char *buf_output, int buf_output_size) {
-	snprintf(buf_output, (uint)buf_output_size, "%s", buf_input);
 }
 
 } // End of namespace LastExpress

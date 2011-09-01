@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/array.h"
@@ -136,7 +133,7 @@ void PEResources::parseResourceLevel(Section &section, uint32 offset, int level)
 			_exe->seek(section.offset + (value & 0x7fffffff));
 
 			// Read in the name, truncating from unicode to ascii
-			Common::String name;
+			String name;
 			uint16 nameLength = _exe->readUint16LE();
 			while (nameLength--)
 				name += (char)(_exe->readUint16LE() & 0xff);

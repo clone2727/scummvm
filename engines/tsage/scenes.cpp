@@ -18,18 +18,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "tsage/scenes.h"
 #include "tsage/globals.h"
-#include "tsage/ringworld_logic.h"
+#include "tsage/ringworld/ringworld_logic.h"
 #include "tsage/tsage.h"
 #include "tsage/saveload.h"
 
-namespace tSage {
+namespace TsAGE {
 
 SceneManager::SceneManager() {
 	_scene = NULL;
@@ -41,6 +38,7 @@ SceneManager::SceneManager() {
 	_scrollerRect = Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 	_saver->addListener(this);
 	_objectCount = 0;
+	_loadMode = 0;
 }
 
 SceneManager::~SceneManager() {
@@ -48,7 +46,7 @@ SceneManager::~SceneManager() {
 }
 
 void SceneManager::setNewScene(int sceneNumber) {
-	warning("SetNewScene(%d)", sceneNumber);
+	debug(1, "SetNewScene(%d)", sceneNumber);
 	_nextSceneNumber = sceneNumber;
 }
 
@@ -58,7 +56,7 @@ void SceneManager::checkScene() {
 		_nextSceneNumber = -1;
 	}
 
-	Common::for_each(_globals->_sceneListeners.begin(), _globals->_sceneListeners.end(), SceneHandler::dispatchObject);
+	_globals->dispatchSounds();
 }
 
 void SceneManager::sceneChange() {
@@ -71,7 +69,7 @@ void SceneManager::sceneChange() {
 	}
 
 	// Clear the scene objects
-	SynchronisedList<SceneObject *>::iterator io = _globals->_sceneObjects->begin();
+	SynchronizedList<SceneObject *>::iterator io = _globals->_sceneObjects->begin();
 	while (io != _globals->_sceneObjects->end()) {
 		SceneObject *sceneObj = *io;
 		++io;
@@ -87,7 +85,7 @@ void SceneManager::sceneChange() {
 	}
 
 	// Clear the hotspot list
-	SynchronisedList<SceneItem *>::iterator ii = _globals->_sceneItems.begin();
+	SynchronizedList<SceneItem *>::iterator ii = _globals->_sceneItems.begin();
 	while (ii != _globals->_sceneItems.end()) {
 		SceneItem *sceneItem = *ii;
 		++ii;
@@ -108,8 +106,6 @@ void SceneManager::sceneChange() {
 	// Set the next scene to be active
 	_sceneNumber = _nextSceneNumber;
 
-	// TODO: Unknown check of word_45CD3 / call to saver method
-
 	// Free any regions
 	disposeRegions();
 
@@ -118,7 +114,7 @@ void SceneManager::sceneChange() {
 		assert(_objectCount == _saver->getObjectCount());
 	}
 	_objectCount = _saver->getObjectCount();
-	_globals->_sceneHandler._delayTicks = 2;
+	_globals->_sceneHandler->_delayTicks = 2;
 
 	// Instantiate and set the new scene
 	_scene = getNewScene();
@@ -130,7 +126,7 @@ void SceneManager::sceneChange() {
 }
 
 Scene *SceneManager::getNewScene() {
-	return SceneFactory::createScene(_nextSceneNumber);
+	return _globals->_game->createScene(_nextSceneNumber);
 }
 
 void SceneManager::fadeInIfNecessary() {
@@ -151,7 +147,7 @@ void SceneManager::fadeInIfNecessary() {
 }
 
 void SceneManager::changeScene(int newSceneNumber) {
-	warning("changeScene(%d)", newSceneNumber);
+	debug(1, "changeScene(%d)", newSceneNumber);
 	// Fade out the scene
 	ScenePalette scenePalette;
 	uint32 adjustData = 0;
@@ -164,7 +160,7 @@ void SceneManager::changeScene(int newSceneNumber) {
 	}
 
 	// Stop any objects that were animating
-	SynchronisedList<SceneObject *>::iterator i;
+	SynchronizedList<SceneObject *>::iterator i;
 	for (i = _globals->_sceneObjects->begin(); i != _globals->_sceneObjects->end(); ++i) {
 		SceneObject *sceneObj = *i;
 		Common::Point pt(0, 0);
@@ -177,6 +173,11 @@ void SceneManager::changeScene(int newSceneNumber) {
 
 	// Blank out the screen
 	_globals->_screenSurface.fillRect(_globals->_screenSurface.getBounds(), 0);
+
+	// If there are any fading sounds, wait until fading is complete
+	while (_globals->_soundManager.isFading()) {
+		g_system->delayMillis(10);
+	}
 
 	// Set the new scene to be loaded
 	setNewScene(newSceneNumber);
@@ -211,7 +212,6 @@ void SceneManager::setBackSurface() {
 }
 
 void SceneManager::saveListener(int saveMode) {
-	warning("TODO: SceneManager::saveLIstener");
 }
 
 void SceneManager::loadNotifier(bool postFlag) {
@@ -227,19 +227,28 @@ void SceneManager::setBgOffset(const Common::Point &pt, int loadCount) {
 	_sceneLoadCount = loadCount;
 }
 
-void SceneManager::listenerSynchronise(Serialiser &s) {
+void SceneManager::listenerSynchronize(Serializer &s) {
 	s.validate("SceneManager");
 
-	_altSceneObjects.synchronise(s);
+	if (s.isLoading() && !_globals->_sceneManager._scene)
+		// Loading a savegame straight from the launcher, so instantiate a blank placeholder scene
+		// in order for the savegame loading to work correctly
+		_globals->_sceneManager._scene = new Scene();
+
+	_altSceneObjects.synchronize(s);
 	s.syncAsSint32LE(_sceneNumber);
 	s.syncAsUint16LE(_globals->_sceneManager._scene->_activeScreenNumber);
 
 	if (s.isLoading()) {
 		changeScene(_sceneNumber);
-		checkScene();
+		
+		if (_nextSceneNumber != -1) {
+			sceneChange();
+			_nextSceneNumber = -1;
+		}
 	}
 
-	_globals->_sceneManager._scrollerRect.synchronise(s);
+	_globals->_sceneManager._scrollerRect.synchronize(s);
 	SYNC_POINTER(_globals->_scrollFollower);
 	s.syncAsSint16LE(_loadMode);
 }
@@ -249,6 +258,7 @@ void SceneManager::listenerSynchronise(Serialiser &s) {
 Scene::Scene() : _sceneBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
 			_backgroundBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {
 	_sceneMode = 0;
+	_activeScreenNumber = 0;
 	_oldSceneBounds = Rect(4000, 4000, 4100, 4100);
 	Common::set_to(&_zoomPercents[0], &_zoomPercents[256], 0);
 }
@@ -256,16 +266,17 @@ Scene::Scene() : _sceneBounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT),
 Scene::~Scene() {
 }
 
-void Scene::synchronise(Serialiser &s) {
-	StripCallback::synchronise(s);
+void Scene::synchronize(Serializer &s) {
+	if (s.getVersion() >= 2)
+		StripCallback::synchronize(s);
 
 	s.syncAsSint32LE(_field12);
 	s.syncAsSint32LE(_screenNumber);
 	s.syncAsSint32LE(_activeScreenNumber);
 	s.syncAsSint32LE(_sceneMode);
-	_backgroundBounds.synchronise(s);
-	_sceneBounds.synchronise(s);
-	_oldSceneBounds.synchronise(s);
+	_backgroundBounds.synchronize(s);
+	_sceneBounds.synchronize(s);
+	_oldSceneBounds.synchronize(s);
 	s.syncAsSint16LE(_fieldA);
 	s.syncAsSint16LE(_fieldE);
 
@@ -292,7 +303,7 @@ void Scene::dispatch() {
 }
 
 void Scene::loadScene(int sceneNum) {
-	warning("loadScene(%d)", sceneNum);
+	debug(1, "loadScene(%d)", sceneNum);
 	_screenNumber = sceneNum;
 	if (_globals->_scenePalette.loadPalette(sceneNum))
 		_globals->_sceneManager._hasPalette = true;
@@ -321,7 +332,7 @@ void Scene::loadSceneData(int sceneNum) {
 	// Load the priority regions
 	_priorities.load(sceneNum);
 
-	// Initialise the section enabled list
+	// Initialize the section enabled list
 	Common::set_to(&_enabledSections[0], &_enabledSections[16 * 16], 0xffff);
 
 	_globals->_sceneOffset.x = (_sceneBounds.left / 160) * 160;
@@ -415,6 +426,11 @@ void Scene::refreshBackground(int xAmount, int yAmount) {
 								(xSectionSrc + 1) * 160, (ySectionSrc + 1) * 100);
 						Rect destBounds(xSectionDest * 160, ySectionDest * 100,
 								(xSectionDest + 1) * 160, (ySectionDest + 1) * 100);
+						if (_vm->getGameID() == GType_BlueForce) {
+							// For Blue Force, if the scene has an interface area, exclude it from the copy
+							srcBounds.bottom = MIN<int16>(srcBounds.bottom, BF_GLOBALS._interfaceY);
+							destBounds.bottom = MIN<int16>(destBounds.bottom, BF_GLOBALS._interfaceY);
+						}
 
 						_backSurface.copyFrom(_backSurface, srcBounds, destBounds);
 					}
@@ -435,7 +451,7 @@ void Scene::drawAltObjects() {
 	Common::Array<SceneObject *> objList;
 
 	// Initial loop to set the priority for entries in the list
-	for (SynchronisedList<SceneObject *>::iterator i = _globals->_sceneManager._altSceneObjects.begin();
+	for (SynchronizedList<SceneObject *>::iterator i = _globals->_sceneManager._altSceneObjects.begin();
 		i != _globals->_sceneManager._altSceneObjects.end(); ++i) {
 		SceneObject *obj = *i;
 		objList.push_back(obj);
@@ -460,36 +476,54 @@ void Scene::drawAltObjects() {
 }
 
 void Scene::setZoomPercents(int yStart, int minPercent, int yEnd, int maxPercent) {
-	int var_6 = 0;
+	int currDiff = 0;
 	int v = 0;
 	while (v < yStart)
 		_zoomPercents[v++] = minPercent;
 
 	int diff1 = ABS(maxPercent - minPercent);
 	int diff2 = ABS(yEnd - yStart);
-	int var_8 = MAX(diff1, diff2);
+	int remainingDiff = MAX(diff1, diff2);
 
-	while (var_8-- != 0) {
-        _zoomPercents[v] = minPercent;
-        if (diff2 <= diff1) {
-                ++minPercent;
-                var_6 += diff2;
-                if (var_6 >= diff1) {
-                        var_6 -= diff1;
-                        ++v;
-                }
-        } else {
-                ++v;
-                var_6 += diff1;
-                if (var_6 >= diff2) {
-                        var_6 -= diff2;
-                        ++minPercent;
-                }
-        }
+	while (remainingDiff-- != 0) {
+		_zoomPercents[v] = minPercent;
+		if (diff2 <= diff1) {
+			++minPercent;
+			currDiff += diff2;
+			if (currDiff >= diff1) {
+				currDiff -= diff1;
+				++v;
+			}
+		} else {
+			++v;
+			currDiff += diff1;
+			if (currDiff >= diff2) {
+				currDiff -= diff2;
+				++minPercent;
+			}
+		}
 	}
 
 	while (yEnd < 256)
 		_zoomPercents[yEnd++] = minPercent;
 }
 
-} // End of namespace tSage
+/*--------------------------------------------------------------------------*/
+
+void Game::execute() {
+	// Main game loop
+	bool activeFlag = false;
+	do {
+		// Process all currently atcive game handlers
+		activeFlag = false;
+		for (SynchronizedList<GameHandler *>::iterator i = _handlers.begin(); i != _handlers.end(); ++i) {
+			GameHandler *gh = *i;
+			if (gh->_lockCtr.getCtr() == 0) {
+				gh->execute();
+				activeFlag = true;
+			}
+		}
+	} while (activeFlag && !_vm->shouldQuit());
+}
+
+} // End of namespace TsAGE

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -32,6 +29,7 @@
 #include "common/file.h"
 #include "common/system.h"
 #include "common/textconsole.h"
+#include "common/translation.h"
 
 #include "graphics/cursorman.h"
 #include "graphics/palette.h"
@@ -253,8 +251,11 @@ bool MoviePlayerDXA::load() {
 	}
 
 	Common::String videoName = Common::String::format("%s.dxa", baseName);
-	if (!loadFile(videoName))
+	Common::SeekableReadStream *videoStream = _vm->_archives.open(videoName);
+	if (!videoStream)
 		error("Failed to load video file %s", videoName.c_str());
+	if (!loadStream(videoStream))
+		error("Failed to load video stream from file %s", videoName.c_str());
 
 	debug(0, "Playing video %s", videoName.c_str());
 
@@ -414,8 +415,11 @@ MoviePlayerSMK::MoviePlayerSMK(AGOSEngine_Feeble *vm, const char *name)
 bool MoviePlayerSMK::load() {
 	Common::String videoName = Common::String::format("%s.smk", baseName);
 
-	if (!loadFile(videoName))
+	Common::SeekableReadStream *videoStream = _vm->_archives.open(videoName);
+	if (!videoStream)
 		error("Failed to load video file %s", videoName.c_str());
+	if (!loadStream(videoStream))
+		error("Failed to load video stream from file %s", videoName.c_str());
 
 	debug(0, "Playing video %s", videoName.c_str());
 
@@ -543,10 +547,8 @@ MoviePlayer *makeMoviePlayer(AGOSEngine_Feeble *vm, const char *name) {
 		return new MoviePlayerSMK(vm, baseName);
 	}
 
-	char buf[60];
-
-	sprintf(buf, "Cutscene file '%s' not found!", baseName);
-	GUI::MessageDialog dialog(buf, "OK");
+	Common::String buf = Common::String::format(_("Cutscene file '%s' not found!"), baseName);
+	GUI::MessageDialog dialog(buf, _("OK"));
 	dialog.runModal();
 
 	return NULL;

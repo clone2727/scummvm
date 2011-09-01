@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "mohawk/cursors.h"
@@ -162,6 +159,16 @@ uint16 Channelwood::getVar(uint16 var) {
 		return ((_state.waterValveStates & 0xe2) == 0x80) ? 1 : 0;
 	case 30: // Door State
 		return _doorOpened;
+	case 31: // Water flowing in pipe fork ?
+		// 0 -> keep sound.
+		// 1 -> not flowing.
+		// 2 --> flowing.
+		if ((_state.waterValveStates & 0xe2) == 0x82)	// From left.
+			return 2;
+		if ((_state.waterValveStates & 0xf4) == 0xa0)	// From right.
+			return 1;
+
+		return 0;
 	case 32: // Sound - Water Flowing in Pipe to Book Room Elevator
 		return ((_state.waterValveStates & 0xf8) == 0xb0 && _state.pipeState) ? 1 : 0;
 	case 33: // Channelwood Lower Walkway to Upper Walkway Spiral Stair Upper Door State
@@ -333,7 +340,7 @@ void Channelwood::o_drawImageChangeCardAndVolume(uint16 op, uint16 var, uint16 a
 
 	_vm->_gfx->copyImageToScreen(imageId, Common::Rect(0, 0, 544, 333));
 	_vm->_system->updateScreen();
-	_vm->_system->delayMillis(10);
+
 	_vm->changeToCard(cardId, true);
 
 	if (argc == 3) {
@@ -351,7 +358,6 @@ void Channelwood::o_waterTankValveOpen(uint16 op, uint16 var, uint16 argc, uint1
 		for (uint16 imageId = 3601; imageId >= 3595; imageId--) {
 			_vm->_gfx->copyImageToScreen(imageId, rect);
 			_vm->_system->updateScreen();
-			_vm->_system->delayMillis(5);
 		}
 
 	pipeChangeValve(true, 0x80);
@@ -666,7 +672,6 @@ void Channelwood::o_waterTankValveClose(uint16 op, uint16 var, uint16 argc, uint
 		for (uint16 imageId = 3595; imageId <= 3601; imageId++) {
 			_vm->_gfx->copyImageToScreen(imageId, rect);
 			_vm->_system->updateScreen();
-			_vm->_system->delayMillis(5);
 		}
 
 	pipeChangeValve(false, 0x80);

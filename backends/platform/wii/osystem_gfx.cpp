@@ -20,6 +20,7 @@
  */
 
 #define FORBIDDEN_SYMBOL_EXCEPTION_printf
+#define FORBIDDEN_SYMBOL_EXCEPTION_abort
 
 #include <malloc.h>
 
@@ -394,15 +395,6 @@ void OSystem_Wii::setCursorPalette(const byte *colors, uint start, uint num) {
 	_cursorPaletteDirty = true;
 }
 
-void OSystem_Wii::disableCursorPalette(bool disable) {
-	_cursorPaletteDisabled = disable;
-
-	if (_texMouse.palette && disable) {
-		memcpy(_texMouse.palette, _cursorPalette, 256 * 2);
-		_cursorPaletteDirty = true;
-	}
-}
-
 void OSystem_Wii::copyRectToScreen(const byte *buf, int pitch, int x, int y,
 									int w, int h) {
 	assert(x >= 0 && x < _gameWidth);
@@ -755,4 +747,3 @@ void OSystem_Wii::setMouseCursor(const byte *buf, uint w, uint h, int hotspotX,
 	if ((_texMouse.palette) && (oldKeycolor != _mouseKeyColor))
 		_cursorPaletteDirty = true;
 }
-

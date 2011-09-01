@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/util.h"
@@ -85,7 +82,7 @@ void hexdump(const byte *data, int len, int bytesPerLine, int startOffset) {
 #pragma mark -
 
 
-bool parseBool(const Common::String &val, bool &valAsBool) {
+bool parseBool(const String &val, bool &valAsBool) {
 	if (val.equalsIgnoreCase("true") ||
 		val.equalsIgnoreCase("yes") ||
 		val.equals("1")) {
@@ -107,29 +104,29 @@ bool parseBool(const Common::String &val, bool &valAsBool) {
 
 
 const LanguageDescription g_languages[] = {
-	{ "zh-cn"/*, "zh_CN"*/, "Chinese (China)", ZH_CNA },
-	{    "zh"/*, "zh_TW"*/, "Chinese (Taiwan)", ZH_TWN },
-	{    "cz"/*, "cs_CZ"*/, "Czech", CZ_CZE },
-	{    "nl"/*, "nl_NL"*/, "Dutch", NL_NLD },
-	{    "en"/*,    "en"*/, "English", EN_ANY }, // Generic English (when only one game version exist)
-	{    "gb"/*, "en_GB"*/, "English (GB)", EN_GRB },
-	{    "us"/*, "en_US"*/, "English (US)", EN_USA },
-	{    "fr"/*, "fr_FR"*/, "French", FR_FRA },
-	{    "de"/*, "de_DE"*/, "German", DE_DEU },
-	{    "gr"/*, "el_GR"*/, "Greek", GR_GRE },
-	{    "he"/*, "he_IL"*/, "Hebrew", HE_ISR },
-	{    "hb"/*, "he_IL"*/, "Hebrew", HE_ISR }, // Deprecated
-	{    "hu"/*, "hu_HU"*/, "Hungarian", HU_HUN },
-	{    "it"/*, "it_IT"*/, "Italian", IT_ITA },
-	{    "jp"/*, "ja_JP"*/, "Japanese", JA_JPN },
-	{    "kr"/*, "ko_KR"*/, "Korean", KO_KOR },
-	{    "nb"/*, "nb_NO"*/, "Norwegian Bokm\xE5l", NB_NOR }, // TODO Someone should verify the unix locale
-	{    "pl"/*, "pl_PL"*/, "Polish", PL_POL },
-	{    "br"/*, "pt_BR"*/, "Portuguese", PT_BRA },
-	{    "ru"/*, "ru_RU"*/, "Russian", RU_RUS },
-	{    "es"/*, "es_ES"*/, "Spanish", ES_ESP },
-	{    "se"/*, "sv_SE"*/, "Swedish", SE_SWE },
-	{       0/*,       0*/, 0, UNK_LANG }
+	{ "zh-cn", "zh_CN", "Chinese (China)", ZH_CNA },
+	{    "zh", "zh_TW", "Chinese (Taiwan)", ZH_TWN },
+	{    "cz", "cs_CZ", "Czech", CZ_CZE },
+	{    "nl", "nl_NL", "Dutch", NL_NLD },
+	{    "en",    "en", "English", EN_ANY }, // Generic English (when only one game version exist)
+	{    "gb", "en_GB", "English (GB)", EN_GRB },
+	{    "us", "en_US", "English (US)", EN_USA },
+	{    "fr", "fr_FR", "French", FR_FRA },
+	{    "de", "de_DE", "German", DE_DEU },
+	{    "gr", "el_GR", "Greek", GR_GRE },
+	{    "he", "he_IL", "Hebrew", HE_ISR },
+	{    "hb", "he_IL", "Hebrew", HE_ISR }, // Deprecated
+	{    "hu", "hu_HU", "Hungarian", HU_HUN },
+	{    "it", "it_IT", "Italian", IT_ITA },
+	{    "jp", "ja_JP", "Japanese", JA_JPN },
+	{    "kr", "ko_KR", "Korean", KO_KOR },
+	{    "nb", "nb_NO", "Norwegian Bokm\xE5l", NB_NOR }, // TODO Someone should verify the unix locale
+	{    "pl", "pl_PL", "Polish", PL_POL },
+	{    "br", "pt_BR", "Portuguese", PT_BRA },
+	{    "ru", "ru_RU", "Russian", RU_RUS },
+	{    "es", "es_ES", "Spanish", ES_ESP },
+	{    "se", "sv_SE", "Swedish", SE_SWE },
+	{       0,       0, 0, UNK_LANG }
 };
 
 Language parseLanguage(const String &str) {
@@ -145,7 +142,7 @@ Language parseLanguage(const String &str) {
 	return UNK_LANG;
 }
 
-/*Language parseLanguageFromLocale(const char *locale) {
+Language parseLanguageFromLocale(const char *locale) {
 	if (!locale || !*locale)
 		return UNK_LANG;
 
@@ -156,7 +153,7 @@ Language parseLanguage(const String &str) {
 	}
 
 	return UNK_LANG;
-}*/
+}
 
 const char *getLanguageCode(Language id) {
 	const LanguageDescription *l = g_languages;
@@ -167,14 +164,14 @@ const char *getLanguageCode(Language id) {
 	return 0;
 }
 
-/*const char *getLanguageLocale(Language id) {
+const char *getLanguageLocale(Language id) {
 	const LanguageDescription *l = g_languages;
 	for (; l->code; ++l) {
 		if (l->id == id)
 			return l->unixLocale;
 	}
 	return 0;
-}*/
+}
 
 const char *getLanguageDescription(Language id) {
 	const LanguageDescription *l = g_languages;
@@ -214,6 +211,7 @@ const PlatformDescription g_platforms[] = {
 	{ "windows", "win", "win", "Windows", kPlatformWindows },
 	{ "playstation", "psx", "psx", "Sony PlayStation", kPlatformPSX },
 	{ "cdi", "cdi", "cdi", "Philips CD-i", kPlatformCDi },
+	{ "ios", "ios", "ios", "Apple iOS", kPlatformIOS },
 
 	{ 0, 0, 0, "Default", kPlatformUnknown }
 };
@@ -273,6 +271,7 @@ const char *getPlatformDescription(Platform id) {
 
 
 const RenderModeDescription g_renderModes[] = {
+	// I18N: Hercules is graphics card name
 	{ "hercGreen", _s("Hercules Green"), kRenderHercG },
 	{ "hercAmber", _s("Hercules Amber"), kRenderHercA },
 	{ "cga", "CGA", kRenderCGA },
@@ -404,4 +403,3 @@ void updateGameGUIOptions(const uint32 options, const String &langOption) {
 }
 
 } // End of namespace Common
-

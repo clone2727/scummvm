@@ -18,9 +18,6 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
-* $URL$
-* $Id$
-*
 */
 
 #include "common/debug.h"
@@ -97,7 +94,7 @@ void Movie::play(Common::String video, int32 flags) {
 		_vm->getAudioManager()->setMusicVolume(0);
 	_decoder->loadFile(video.c_str());
 	playVideo(isFirstIntroVideo);
-	_vm->flushPalette(false);
+	_vm->flushPalette(true);
 	if (flags & 1)
 		_vm->getAudioManager()->setMusicVolume(_vm->getAudioManager()->isMusicMuted() ? 0 : 255);
 	_decoder->close();
@@ -106,7 +103,6 @@ void Movie::play(Common::String video, int32 flags) {
 
 bool Movie::playVideo(bool isFirstIntroVideo) {
 	debugC(1, kDebugMovie, "playVideo(isFirstIntroVideo: %d)", isFirstIntroVideo);
-
 	while (!_vm->shouldQuit() && !_decoder->endOfVideo()) {
 		if (_decoder->needsUpdate()) {
 			const Graphics::Surface *frame = _decoder->decodeNextFrame();

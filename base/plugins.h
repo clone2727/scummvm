@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BASE_PLUGINS_H
@@ -83,7 +80,7 @@ extern int pluginTypeVersions[PLUGIN_TYPE_MAX];
 	(ENABLE_##ID && !PLUGIN_ENABLED_DYNAMIC(ID))
 
 #define PLUGIN_ENABLED_DYNAMIC(ID) \
-	(ENABLE_##ID && (ENABLE_##ID == DYNAMIC_PLUGIN) && DYNAMIC_MODULES)
+	(ENABLE_##ID && (ENABLE_##ID == DYNAMIC_PLUGIN) && defined(DYNAMIC_MODULES))
 
 // see comments in backends/plugins/elf/elf-provider.cpp
 #if defined(USE_ELF_LOADER) && defined(ELF_LOADER_CXA_ATEXIT)
@@ -146,7 +143,7 @@ extern int pluginTypeVersions[PLUGIN_TYPE_MAX];
 // Abstract plugins
 
 /**
- * Abstract base class for the plugin objects which handle plugins 
+ * Abstract base class for the plugin objects which handle plugins
  * instantiation. Subclasses for this may be used for engine plugins and other
  * types of plugins. An existing PluginObject refers to an executable file
  * loaded in memory and ready to run. The plugin, on the other hand, is just
@@ -313,7 +310,7 @@ protected:
 
 	bool tryLoadPlugin(Plugin *plugin);
 	void addToPluginsInMemList(Plugin *plugin);
-	
+
 	static PluginManager *_instance;
 	PluginManager();
 
@@ -329,9 +326,9 @@ public:
 	virtual void init()	{}
 	virtual void loadFirstPlugin() {}
 	virtual bool loadNextPlugin() { return false; }
-	virtual bool loadPluginFromGameId(const Common::String &gameId) { return false; } 
-	virtual void updateConfigWithFileName(const Common::String &gameId) {} 
-	
+	virtual bool loadPluginFromGameId(const Common::String &gameId) { return false; }
+	virtual void updateConfigWithFileName(const Common::String &gameId) {}
+
 	// Functions used only by the cached PluginManager
 	virtual void loadAllPlugins();
 	void unloadAllPlugins();
@@ -341,7 +338,7 @@ public:
 	const PluginList &getPlugins(PluginType t) { return _pluginsInMem[t]; }
 };
 
-/** 
+/**
  *  Uncached version of plugin manager
  *  Keeps only one dynamic plugin in memory at a time
  **/
@@ -352,15 +349,15 @@ protected:
 	PluginList::iterator _currentPlugin;
 
 	PluginManagerUncached() {}
-	bool loadPluginByFileName(const Common::String &filename); 
+	bool loadPluginByFileName(const Common::String &filename);
 
 public:
 	virtual void init();
 	virtual void loadFirstPlugin();
 	virtual bool loadNextPlugin();
-	virtual bool loadPluginFromGameId(const Common::String &gameId); 
-	virtual void updateConfigWithFileName(const Common::String &gameId); 
-	
+	virtual bool loadPluginFromGameId(const Common::String &gameId);
+	virtual void updateConfigWithFileName(const Common::String &gameId);
+
 	virtual void loadAllPlugins() {} 	// we don't allow this
 };
 

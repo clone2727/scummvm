@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -172,7 +169,7 @@ bool DLObject::loadSegment(Elf32_Phdr *phdr) {
 		warning("elfloader: Out of memory.");
 		return false;
 	}
-	
+
 	debug(2, "elfloader: Allocated segment @ %p", _segment);
 
 	// Get offset to load segment into
@@ -225,7 +222,7 @@ Elf32_Shdr * DLObject::loadSectionHeaders(Elf32_Ehdr *ehdr) {
 
 int DLObject::findSymbolTableSection(Elf32_Ehdr *ehdr, Elf32_Shdr *shdr) {
 	int SymbolTableSection = -1;
-	
+
 	// Loop over sections, looking for symbol table linked to a string table
 	for (uint32 i = 0; i < ehdr->e_shnum; i++) {
 		if (shdr[i].sh_type == SHT_SYMTAB &&
@@ -236,7 +233,7 @@ int DLObject::findSymbolTableSection(Elf32_Ehdr *ehdr, Elf32_Shdr *shdr) {
 			break;
 		}
 	}
-	
+
 	return SymbolTableSection;
 }
 
@@ -318,12 +315,12 @@ void DLObject::relocateSymbols(ptrdiff_t offset) {
 }
 
 // Track the size of the plugin through memory manager without loading
-// the plugin into memory. 
+// the plugin into memory.
 //
 void DLObject::trackSize(const char *path) {
-	
+
 	_file = Common::FSNode(path).createReadStream();
-	
+
 	if (!_file) {
 		warning("elfloader: File %s not found.", path);
 		return;
@@ -337,11 +334,11 @@ void DLObject::trackSize(const char *path) {
 		_file = 0;
 		return;
 	}
-	
+
 	ELFMemMan.trackPlugin(true);	// begin tracking the plugin size
-	
+
 	// Load the segments
-	for (uint32 i = 0; i < ehdr.e_phnum; i++) {	
+	for (uint32 i = 0; i < ehdr.e_phnum; i++) {
 		debug(2, "elfloader: Loading segment %d", i);
 
 		if (!readProgramHeaders(&ehdr, &phdr, i)) {
@@ -354,7 +351,7 @@ void DLObject::trackSize(const char *path) {
 			ELFMemMan.trackAlloc(phdr.p_align, phdr.p_memsz);
 		}
 	}
-	
+
 	ELFMemMan.trackPlugin(false);	// we're done tracking the plugin size
 
 	delete _file;
@@ -370,7 +367,7 @@ bool DLObject::load() {
 		return false;
 
 	//Load the segments
-	for (uint32 i = 0; i < ehdr.e_phnum; i++) {	
+	for (uint32 i = 0; i < ehdr.e_phnum; i++) {
 		debug(2, "elfloader: Loading segment %d", i);
 
 		if (readProgramHeaders(&ehdr, &phdr, i) == false)
@@ -389,12 +386,12 @@ bool DLObject::load() {
 		free(shdr);
 		return false;
 	}
-		
+
 	if (!loadStringTable(shdr)) {
 		free(shdr);
 		return false;
 	}
-	
+
 	// Offset by our segment allocated address
 	// must use _segmentVMA here for multiple segments (MIPS)
 	_segmentOffset = ptrdiff_t(_segment) - _segmentVMA;
@@ -492,4 +489,3 @@ void *DLObject::symbol(const char *name) {
 }
 
 #endif /* defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER) */
-

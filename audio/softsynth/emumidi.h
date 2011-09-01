@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef SOUND_SOFTSYNTH_EMUMIDI_H
@@ -28,8 +25,6 @@
 #include "audio/audiostream.h"
 #include "audio/mididrv.h"
 #include "audio/mixer.h"
-
-#define FIXP_SHIFT 16
 
 class MidiDriver_Emulated : public Audio::AudioStream, public MidiDriver {
 protected:
@@ -40,6 +35,10 @@ protected:
 private:
 	Common::TimerManager::TimerProc _timerProc;
 	void *_timerParam;
+
+	enum {
+		FIXP_SHIFT = 16
+	};
 
 	int _nextTick;
 	int _samplesPerTick;

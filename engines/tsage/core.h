@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_CORE_H
@@ -36,9 +33,8 @@
 #include "tsage/graphics.h"
 #include "tsage/resources.h"
 #include "tsage/saveload.h"
-#include "tsage/sound.h"
 
-namespace tSage {
+namespace TsAGE {
 
 #define MAX_FLAGS 256
 
@@ -47,7 +43,7 @@ class SceneObject;
 class SceneObjectList;
 class ObjectMover;
 class Action;
-class Serialiser;
+class Serializer;
 
 class InvObject : public SavedObject {
 public:
@@ -59,27 +55,32 @@ public:
 	CursorType _cursorId;
 	Common::String _description;
 	int _iconResNum;
+
+	int _visage;
+	int _strip;
+	int _frame;
 public:
 	InvObject(int sceneNumber, int rlbNum, int cursorNum, CursorType cursorId, const Common::String description);
+	InvObject(int visage, int strip, int frame, int sceneNumber);
 
 	bool inInventory() const { return _sceneNumber == 1; }
 	void setCursor();
 
 	virtual Common::String getClassName() { return "InvObject"; }
-	virtual void synchronise(Serialiser &s) {
+	virtual void synchronize(Serializer &s) {
 		s.syncAsUint16LE(_sceneNumber);
 	}
 };
 
 class InvObjectList : public SavedObject {
 public:
-	SynchronisedList<InvObject *> _itemList;
+	SynchronizedList<InvObject *> _itemList;
 	InvObject *_selectedItem;
 
 	InvObjectList();
 
 	virtual Common::String getClassName() { return "InvObjectList"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 };
 
 /*--------------------------------------------------------------------------*/
@@ -105,7 +106,7 @@ public:
 	int incCtr() { return ++_ctr; }
 	int getCtr() const { return _ctr; }
 
-	virtual void synchronise(Serialiser &s) { s.syncAsSint16LE(_ctr); }
+	virtual void synchronize(Serializer &s) { s.syncAsSint16LE(_ctr); }
 };
 
 class EventHandler : public SavedObject {
@@ -115,7 +116,7 @@ public:
 	EventHandler() : SavedObject() { _action = NULL; }
 	virtual ~EventHandler() { destroy(); }
 
-	virtual void synchronise(Serialiser &s) { SYNC_POINTER(_action); }
+	virtual void synchronize(Serializer &s) { SYNC_POINTER(_action); }
 	virtual Common::String getClassName() { return "EventHandler"; }
 	virtual void postInit(SceneObjectList *OwnerList = NULL) {}
 	virtual void remove() {}
@@ -138,7 +139,7 @@ public:
 
 	Action();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "Action"; }
 	virtual void remove();
 	virtual void process(Event &event);
@@ -161,6 +162,18 @@ public:
 	int _state;
 };
 
+#define ADD_PLAYER_MOVER(X, Y) { Common::Point pt(X, Y); PlayerMover *mover = new PlayerMover(); \
+	_globals->_player.addMover(mover, &pt, this); }
+#define ADD_PLAYER_MOVER_NULL(OBJ, X, Y) { Common::Point pt(X, Y); PlayerMover *mover = new PlayerMover(); \
+	OBJ.addMover(mover, &pt, NULL); }
+#define ADD_PLAYER_MOVER_THIS(OBJ, X, Y) { Common::Point pt(X, Y); PlayerMover *mover = new PlayerMover(); \
+	OBJ.addMover(mover, &pt, this); }
+
+#define ADD_MOVER(OBJ, X, Y) { Common::Point pt(X, Y); NpcMover *mover = new NpcMover(); \
+	OBJ.addMover(mover, &pt, this); }
+#define ADD_MOVER_NULL(OBJ, X, Y) { Common::Point pt(X, Y); NpcMover *mover = new NpcMover(); \
+	OBJ.addMover(mover, &pt, NULL); }
+
 class ObjectMover : public EventHandler {
 public:
 	Common::Point _destPosition;
@@ -175,7 +188,7 @@ public:
 	ObjectMover() { _action = NULL; _sceneObject = NULL; }
 	virtual ~ObjectMover();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "ObjectMover"; }
 	virtual void remove();
 	virtual void dispatch();
@@ -194,7 +207,7 @@ public:
 	ObjectMover2();
 	virtual ~ObjectMover2() {}
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "ObjectMover2"; }
 	virtual void dispatch();
 	virtual void startMove(SceneObject *sceneObj, va_list va);
@@ -232,19 +245,19 @@ protected:
 	int regionIndexOf(int xp, int yp) { return regionIndexOf(Common::Point(xp, yp)); }
 	int findClosestRegion(Common::Point &pt, const Common::List<int> &indexList);
 	int checkMover(Common::Point &srcPos, const Common::Point &destPos);
-	void checkMovement2(const Common::Point &pt1, const Common::Point &pt2, int numSteps, Common::Point &ptOut);
-	int proc1(int *routeList, int srcRegion, int destRegion, int &v);
+	void doStepsOfNpcMovement(const Common::Point &pt1, const Common::Point &pt2, int numSteps, Common::Point &ptOut);
+	int calculateRestOfRoute(int *routeList, int srcRegion, int destRegion, bool &foundRoute);
 
 	static Common::Point *findLinePoint(RouteEnds *routeEnds, Common::Point *objPos, int length, Common::Point *outPos);
 	static int findDistance(const Common::Point &pt1, const Common::Point &pt2);
-	static bool sub_F8E5(const Common::Point &pt1, const Common::Point &pt2, const Common::Point &pt3,
+	static bool sub_F8E5_calculatePoint(const Common::Point &pt1, const Common::Point &pt2, const Common::Point &pt3,
 		const Common::Point &pt4, Common::Point *ptOut = NULL);
 public:
 	Common::Point _finalDest;
 	Common::Point _routeList[MAX_ROUTE_SIZE];
 	int _routeIndex;
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "PlayerMover"; }
 	virtual void startMove(SceneObject *sceneObj, va_list va);
 	virtual void endMove();
@@ -257,7 +270,7 @@ public:
 	int _minArea;
 	PlayerMover2() : PlayerMover() { _destObject = NULL; }
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "PlayerMover2"; }
 	virtual void dispatch();
 	virtual void startMove(SceneObject *sceneObj, va_list va);
@@ -275,7 +288,7 @@ public:
 public:
 	PaletteModifier();
 
-	virtual void synchronise(Serialiser &s) {
+	virtual void synchronize(Serializer &s) {
 		SYNC_POINTER(_scenePalette);
 		SYNC_POINTER(_action);
 	}
@@ -291,9 +304,9 @@ public:
 
 	PaletteModifierCached();
 
-	void setPalette(ScenePalette *palette, int step);
+	virtual void setPalette(ScenePalette *palette, int step);
 	virtual Common::String getClassName() { return "PaletteModifierCached"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 };
 
 class PaletteRotation: public PaletteModifierCached {
@@ -309,7 +322,7 @@ public:
 	PaletteRotation();
 
 	virtual Common::String getClassName() { return "PaletteRotation"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void signal();
 	virtual void remove();
 
@@ -324,9 +337,10 @@ public:
 	byte _palette[256 * 3];
 public:
 	virtual Common::String getClassName() { return "PaletteFader"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void signal();
 	virtual void remove();
+	virtual void setPalette(ScenePalette *palette, int step);
 };
 
 /*--------------------------------------------------------------------------*/
@@ -337,7 +351,7 @@ class ScenePalette : public SavedObject {
 public:
 	byte _palette[256 * 3];
 	GfxColors _colors;
-	SynchronisedList<PaletteModifier *> _listeners;
+	SynchronizedList<PaletteModifier *> _listeners;
 	int _field412;
 
 	uint8 _redColor;
@@ -349,21 +363,23 @@ public:
 public:
 	ScenePalette();
 	ScenePalette(int paletteNum);
+	~ScenePalette();
 
 	bool loadPalette(int paletteNum);
 	void refresh();
 	void setPalette(int index, int count);
+	void setEntry(int index, uint r, uint g, uint b);
 	uint8 indexOf(uint r, uint g, uint b, int threshold = 0xffff);
 	void getPalette(int start = 0, int count = 256);
 	void signalListeners();
 	void clearListeners();
 	void fade(const byte *adjustData, bool fullAdjust, int percent);
 	PaletteRotation *addRotation(int start, int end, int rotationMode, int duration = 0, Action *action = NULL);
-	PaletteFader *addFader(const byte *arrBufferRGB, int palSize, int percent, Action *action);
+	PaletteFader *addFader(const byte *arrBufferRGB, int palSize, int step, Action *action);
 
 	static void changeBackground(const Rect &bounds, FadeMode fadeMode);
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "ScenePalette"; }
 };
 
@@ -392,20 +408,19 @@ public:
 public:
 	SceneItem() : EventHandler() { _msg = "Feature"; _action = NULL; _sceneRegionId = 0; }
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "SceneItem"; }
 	virtual void remove();
 	virtual void destroy() {}
-	virtual void startMover(CursorType action) { doAction(action); }
+	virtual void startAction(CursorType action) { doAction(action); }
 	virtual void doAction(int action);
 
 	bool contains(const Common::Point &pt);
 	void setBounds(const Rect &newBounds) { _bounds = newBounds; }
 	void setBounds(const int ys, const int xe, const int ye, const int xs) { _bounds = Rect(MIN(xs, xe), MIN(ys, ye), MAX(xs, xe), MAX(ys, ye)); }
 	static void display(int resNum, int lineNum, ...);
-	static void display2(int resNum, int lineNum) {
-		display(resNum, lineNum, SET_WIDTH, 200, SET_EXT_BGCOLOR, 7, LIST_END);
-	}
+	static void display2(int resNum, int lineNum);
+	static void display(const Common::String &msg);
 };
 
 class SceneItemExt : public SceneItem {
@@ -413,8 +428,8 @@ public:
 	int _state;
 
 	virtual Common::String getClassName() { return "SceneItemExt"; }
-	virtual void synchronise(Serialiser &s) {
-		SceneItem::synchronise(s);
+	virtual void synchronize(Serializer &s) {
+		SceneItem::synchronize(s);
 		s.syncAsSint16LE(_state);
 	}
 };
@@ -429,17 +444,22 @@ public:
 
 class NamedHotspot : public SceneHotspot {
 public:
-	int _resnum, _lookLineNum, _useLineNum;
-	NamedHotspot() : SceneHotspot() {}
+	int _resNum, _lookLineNum, _useLineNum, _talkLineNum;
+	NamedHotspot();
 
-	void setup(int ys, int xs, int ye, int xe, const int resnum, const int lookLineNum, const int useLineNum);
 	virtual void doAction(int action);
 	virtual Common::String getClassName() { return "NamedHotspot"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
+	void setup(int ys, int xs, int ye, int xe, const int resnum, const int lookLineNum, const int useLineNum);
+	virtual void setup(const Rect &bounds, int resNum, int lookLineNum, int talkLineNum, int useLineNum, int mode, SceneItem *item);
+	virtual void setup(int sceneRegionId, int resNum, int lookLineNum, int talkLineNum, int useLineNum, int mode);
 };
 
 enum AnimateMode {ANIM_MODE_NONE = 0, ANIM_MODE_1 = 1, ANIM_MODE_2 = 2, ANIM_MODE_3 = 3,
-		ANIM_MODE_4 = 4, ANIM_MODE_5 = 5, ANIM_MODE_6 = 6, ANIM_MODE_7 = 7, ANIM_MODE_8 = 8};
+		ANIM_MODE_4 = 4, ANIM_MODE_5 = 5, ANIM_MODE_6 = 6, ANIM_MODE_7 = 7, ANIM_MODE_8 = 8,
+		// Introduced in Blue Force
+		ANIM_MODE_9 = 9
+};
 
 class SceneObject;
 
@@ -470,8 +490,9 @@ public:
 	virtual ~SceneObjectWrapper() {}
 
 	void setSceneObject(SceneObject *so);
+	void check();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "SceneObjectWrapper"; }
 	virtual void remove();
 	virtual void dispatch();
@@ -545,7 +566,7 @@ public:
 	int getSpliceArea(const SceneObject *obj);
 	int getFrameCount();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "SceneObject"; }
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
 	virtual void remove();
@@ -558,18 +579,18 @@ public:
 	virtual void draw();
 	virtual void proc19() {}
 	virtual void updateScreen();
+	// New methods introduced by Blue FOrce
+	virtual void updateAngle(SceneObject *sceneObj);
+	virtual void changeAngle(int angle);
+
 	void setup(int visage, int stripFrameNum, int frameNum, int posX, int posY, int priority);
 };
 
-class SceneObjectExt : public SceneObject {
+class AltSceneObject: public SceneObject {
 public:
-	int _state;
-
-	virtual void synchronise(Serialiser &s) {
-		SceneObject::synchronise(s);
-		s.syncAsSint16LE(_state);
-	}
-	virtual Common::String getClassName() { return "SceneObjectExt"; }
+	virtual Common::String getClassName() { return "AltObjectExt"; }
+	virtual void postInit(SceneObjectList *OwnerList = NULL);
+	virtual void draw();
 };
 
 class SceneText : public SceneObject {
@@ -587,7 +608,7 @@ public:
 
 	void setup(const Common::String &msg);
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "SceneText"; }
 	virtual GfxSurface getFrame() { return _textSurface; }
 };
@@ -597,11 +618,12 @@ public:
 	bool _canWalk;
 	bool _uiEnabled;
 	int _field8C;
+	bool _enabled;
 public:
-	Player() : SceneObject() {}
+	Player();
 
 	virtual Common::String getClassName() { return "Player"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
 	virtual void process(Event &event);
 
@@ -672,14 +694,14 @@ class SceneObjectList : public SavedObject {
 private:
 	void checkIntersection(Common::Array<SceneObject *> &ObjList, uint ObjIndex, int PaneNum);
 
-	SynchronisedList<SceneObject *> _objList;
+	SynchronizedList<SceneObject *> _objList;
 	bool _listAltered;
 public:
 	SceneObjectList() { _listAltered = false; }
 	void sortList(Common::Array<SceneObject *> &ObjList);
 
 	virtual Common::String getClassName() { return "SceneObjectList"; }
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 
 	void draw();
 	void activate();
@@ -689,16 +711,16 @@ public:
 	void recurse(EventHandlerFn Fn) {
 		// Loop through each object
 		_listAltered = false;
-		for (SynchronisedList<SceneObject *>::iterator i = _objList.begin(); i != _objList.end() && !_listAltered; ) {
+		for (SynchronizedList<SceneObject *>::iterator i = _objList.begin(); i != _objList.end() && !_listAltered; ) {
 			SceneObject *o = *i;
 			++i;
 			Fn(o);
 		}
 	}
-	SynchronisedList<SceneObject *>::iterator begin() { return _objList.begin(); }
-	SynchronisedList<SceneObject *>::iterator end() { return _objList.end(); }
+	SynchronizedList<SceneObject *>::iterator begin() { return _objList.begin(); }
+	SynchronizedList<SceneObject *>::iterator end() { return _objList.end(); }
 	int size() const { return _objList.size(); }
-	bool contains(SceneObject *sceneObj) { return tSage::contains(_objList, sceneObj); }
+	bool contains(SceneObject *sceneObj) { return TsAGE::contains(_objList, sceneObj); }
 	void push_back(SceneObject *sceneObj) { _objList.push_back(sceneObj); }
 	void push_front(SceneObject *sceneObj) { _objList.push_front(sceneObj); }
 	void remove(SceneObject *sceneObj) {
@@ -721,75 +743,7 @@ public:
 
 /*--------------------------------------------------------------------------*/
 
-class GameSoundHandler {
-public:
-	void proc1() {
-		warning("TODO: GameSoundHandler::proc1");
-	}
-	void proc5(int v) {
-		warning("TODO: GameSoundHandler::proc5");
-	}
-	void proc11(int v1, int v2, int v3, int v4) {
-		warning("TODO: GameSoundHandler::proc11");
-	}
-	int proc12() {
-		// TODO
-		return -1;
-	}
-	void proc2(int v) {
-		// TODO
-	}
-	int proc3() {
-		return 0;
-	}
-	void setVolume(int volume) {
-		warning("TODO GameSoundHandler::setVolume");
-	}
-	void startSound(int soundNum) {
-		warning("TODO GameSoundHandler::startSound");
-	}
-};
-
-class SoundHandler : public EventHandler {
-public:
-	GameSoundHandler _sound;
-	Action *_action;
-	int _field280;
-public:
-	SoundHandler();
-	~SoundHandler();
-
-	void startSound(int soundNum, Action *action = NULL, int volume = 127);
-	void proc1(Action *action) {
-		proc11(0, 5, 10, 1, action);
-	}
-	void proc2(int v) {
-		warning("TODO: SoundHandler::proc2");
-	}
-	void proc3() {
-		warning("TODO: SoundHandler::proc5");
-	}
-	void proc4() {
-		_sound.proc1();
-	}
-	void proc5(int v) {
-		_sound.proc5(v);
-	}
-	void proc11(int v1, int v2, int v3, int v4, Action *action) {
-		if (action)
-			_action = action;
-
-		_sound.proc11(v1, v2, v3, v4);
-	}
-	void setVolume(int volume) { _sound.setVolume(volume); }
-
-	virtual Common::String getClassName() { return "SoundHandler"; }
-	virtual void dispatch();
-};
-
-/*--------------------------------------------------------------------------*/
-
-class SceneItemList : public SynchronisedList<SceneItem *> {
+class SceneItemList : public SynchronizedList<SceneItem *> {
 public:
 	void addItems(SceneItem *first, ...);
 };
@@ -886,7 +840,7 @@ public:
 	virtual ~GameHandler();
 	void execute();
 
-	virtual void synchronise(Serialiser &s);
+	virtual void synchronize(Serializer &s);
 	virtual Common::String getClassName() { return "GameHandler"; }
 	virtual void postInit(SceneObjectList *OwnerList = NULL) {}
 	virtual void dispatch() {}
@@ -898,9 +852,11 @@ public:
 	int _loadGameSlot;
 	int _delayTicks;
 	Common::String _saveName;
+	uint32 _prevFrameNumber;
 public:
 	SceneHandler();
 	void registerHandler();
+	uint32 getFrameDifference();
 
 	virtual Common::String getClassName() { return "SceneHandler"; }
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
@@ -908,33 +864,9 @@ public:
 	virtual void dispatch();
 
 	static void dispatchObject(EventHandler *obj);
-	static void saveListener(Serialiser &ser);
+	static void saveListener(Serializer &ser);
 };
 
-/*--------------------------------------------------------------------------*/
-
-class Game {
-protected:
-	SynchronisedList<GameHandler *> _handlers;
-
-	static bool notLockedFn(GameHandler *g);
-	virtual void handleSaveLoad(bool saveFlag, int &saveSlot, Common::String &saveName) {}
-public:
-	virtual ~Game() {}
-
-	void addHandler(GameHandler *entry) { _handlers.push_back(entry); }
-	void removeHandler(GameHandler *entry) { _handlers.remove(entry); }
-
-	void execute();
-	virtual void start() = 0;
-	virtual void restart() {}
-	virtual void restartGame() {}
-	virtual void saveGame() {}
-	virtual void restoreGame() {}
-	virtual void quitGame() {}
-	virtual void endGame(int resNum, int lineNum) {}
-};
-
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

@@ -5,6 +5,16 @@
 */
 
 
+// FIXME: LUAI_THROW and LUAI_TRY use either throw/catch or setjmp/longjmp.
+// Neither of these is supported in ScummVM. So we need to come up
+// with a replacement. The most simple, direct and crude approach:
+// Replace "throw" with an "error()" call. Of course we only
+// would want to do that if this actually never happens...
+#define FORBIDDEN_SYMBOL_EXCEPTION_setjmp
+#define FORBIDDEN_SYMBOL_EXCEPTION_longjmp
+
+#include "common/textconsole.h"
+
 #include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,10 +36,9 @@
 #include "lstring.h"
 #include "ltable.h"
 #include "ltm.h"
-#include "lundump.h"
 #include "lvm.h"
 #include "lzio.h"
-
+#include "common/textconsole.h"
 
 
 
@@ -94,6 +103,11 @@ static void resetstack (lua_State *L, int status) {
 void luaD_throw (lua_State *L, int errcode) {
   if (L->errorJmp) {
     L->errorJmp->status = errcode;
+    // FIXME: LUAI_THROW and LUAI_TRY use either throw/catch or setjmp/longjmp.
+    // Neither of these is supported in ScummVM. So we need to come up
+    // with a replacement. The most simple, direct and crude approach:
+    // Replace "throw" with an "error()" call. Of course we only
+    // would want to do that if this actually never happens...
     LUAI_THROW(L, L->errorJmp);
   }
   else {
@@ -103,7 +117,7 @@ void luaD_throw (lua_State *L, int errcode) {
       lua_unlock(L);
       G(L)->panic(L);
     }
-    exit(EXIT_FAILURE);
+    error("luaD_throw failure");
   }
 }
 
@@ -113,6 +127,11 @@ int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
   lj.status = 0;
   lj.previous = L->errorJmp;  /* chain new error handler */
   L->errorJmp = &lj;
+  // FIXME: LUAI_THROW and LUAI_TRY use either throw/catch or setjmp/longjmp.
+  // Neither of these is supported in ScummVM. So we need to come up
+  // with a replacement. The most simple, direct and crude approach:
+  // Replace "throw" with an "error()" call. Of course we only
+  // would want to do that if this actually never happens...
   LUAI_TRY(L, &lj,
     (*f)(L, ud);
   );
@@ -365,7 +384,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
 ** The arguments are on the stack, right after the function.
 ** When returns, all the results are on the stack, starting at the original
 ** function position.
-*/ 
+*/
 void luaD_call (lua_State *L, StkId func, int nResults) {
   if (++L->nCcalls >= LUAI_MAXCCALLS) {
     if (L->nCcalls == LUAI_MAXCCALLS)
@@ -494,8 +513,9 @@ static void f_parser (lua_State *L, void *ud) {
   struct SParser *p = cast(struct SParser *, ud);
   int c = luaZ_lookahead(p->z);
   luaC_checkGC(L);
-  tf = ((c == LUA_SIGNATURE[0]) ? luaU_undump : luaY_parser)(L, p->z,
-                                                             &p->buff, p->name);
+  if (c == LUA_SIGNATURE[0])
+	  error("Handling of precompiled LUA scripts has been removed in ScummVM");
+  tf = luaY_parser(L, p->z, &p->buff, p->name);
   cl = luaF_newLclosure(L, tf->nups, hvalue(gt(L)));
   cl->l.p = tf;
   for (i = 0; i < tf->nups; i++)  /* initialize eventual upvalues */
@@ -514,5 +534,3 @@ int luaD_protectedparser (lua_State *L, ZIO *z, const char *name) {
   luaZ_freebuffer(L, &p.buff);
   return status;
 }
-
-

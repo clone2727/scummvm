@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef COMMON_UTIL_H
@@ -61,6 +58,11 @@ template<typename T> inline void SWAP(T &a, T &b) { T tmp = a; a = b; b = tmp; }
  */
 #define ARRAYSIZE(x) ((int)(sizeof(x) / sizeof(x[0])))
 
+/**
+ * Compute a pointer to one past the last element of an array.
+ */
+#define ARRAYEND(x) ((x) + ARRAYSIZE((x)))
+
 
 /**
  * @def SCUMMVM_CURRENT_FUNCTION
@@ -99,7 +101,7 @@ extern void hexdump(const byte * data, int len, int bytesPerLine = 16, int start
  * @param[out] valAsBool	the parsing result
  * @return 	true if the string parsed correctly, false if an error occurred.
  */
-bool parseBool(const Common::String &val, bool &valAsBool);
+bool parseBool(const String &val, bool &valAsBool);
 
 /**
  * List of game language.
@@ -132,9 +134,9 @@ enum Language {
 
 struct LanguageDescription {
 	const char *code;
-	//const char *unixLocale;
+	const char *unixLocale;
 	const char *description;
-	Common::Language id;
+	Language id;
 };
 
 extern const LanguageDescription g_languages[];
@@ -142,12 +144,10 @@ extern const LanguageDescription g_languages[];
 
 /** Convert a string containing a language name into a Language enum value. */
 extern Language parseLanguage(const String &str);
+extern Language parseLanguageFromLocale(const char *locale);
 extern const char *getLanguageCode(Language id);
+extern const char *getLanguageLocale(Language id);
 extern const char *getLanguageDescription(Language id);
-
-// locale <-> Language conversion is disabled, since it is not used currently
-/*extern const char *getLanguageLocale(Language id);
-extern Language parseLanguageFromLocale(const char *locale);*/
 
 /**
  * List of game platforms. Specifying a platform for a target can be used to
@@ -175,6 +175,7 @@ enum Platform {
 	kPlatformWii,
 	kPlatformPSX,
 	kPlatformCDi,
+	kPlatformIOS,
 
 	kPlatformUnknown = -1
 };
@@ -184,7 +185,7 @@ struct PlatformDescription {
 	const char *code2;
 	const char *abbrev;
 	const char *description;
-	Common::Platform id;
+	Platform id;
 };
 
 extern const PlatformDescription g_platforms[];
@@ -210,15 +211,10 @@ enum RenderMode {
 	kRenderAmiga = 5
 };
 
-enum HerculesDimensions {
-	kHercW = 720,
-	kHercH = 350
-};
-
 struct RenderModeDescription {
 	const char *code;
 	const char *description;
-	Common::RenderMode id;
+	RenderMode id;
 };
 
 extern const RenderModeDescription g_renderModes[];

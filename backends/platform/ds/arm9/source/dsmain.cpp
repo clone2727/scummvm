@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -71,8 +68,7 @@
 // - Try discworld?
 
 
-// Disable symbol overrides for FILE
-#define FORBIDDEN_SYMBOL_EXCEPTION_FILE
+#define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 
 
@@ -579,7 +575,7 @@ void initGame() {
 		for (int r = 0; r < NUM_SUPPORTED_GAMES; r++) {
 			if (!stricmp(gameName, gameList[r].gameId)) {
 				s_currentGame = &gameList[r];
-	//			consolePrintf("Game list num: %d\n", s_currentGame);
+	//			consolePrintf("Game list num: %d\n", r);
 			}
 		}
 	}
@@ -1672,8 +1668,7 @@ void addEventsToQueue() {
 
 
 		if (!keyboardEnable) {
-
-			if ((isScrollingWithDPad() || (indyFightState)) && (displayModeIs8Bit)) {
+			if ((!isScrollingWithDPad() || (indyFightState)) && (displayModeIs8Bit)) {
 				// Controls specific to the control method
 
 				if (s_currentGame->control == CONT_SKY) {

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Scene management module private header file
@@ -129,7 +126,7 @@ struct SceneDescription {
 	uint16 sceneScriptEntrypointNumber;
 	uint16 startScriptEntrypointNumber;
 	int16 musicResourceId;
-	
+
 	void reset()  {
 		flags = resourceListResourceId = endSlope = beginSlope = scriptModuleNumber = sceneScriptEntrypointNumber = startScriptEntrypointNumber = musicResourceId = 0;
 	}

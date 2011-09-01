@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "engines/engine.h"
@@ -93,13 +90,13 @@ public:
 			assert(def_end != NULL);
 
 			char *id_end = def_end;
-			while (id_end >= def_start && !isdigit(*(id_end-1))) {
+			while (id_end >= def_start && !isdigit(static_cast<unsigned char>(*(id_end-1)))) {
 				id_end--;
 			}
 
 			assert(id_end > def_start);
 			char *id_start = id_end;
-			while (isdigit(*(id_start - 1))) {
+			while (isdigit(static_cast<unsigned char>(*(id_start - 1)))) {
 				id_start--;
 			}
 

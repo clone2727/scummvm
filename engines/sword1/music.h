@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SWORD1_MUSIC_H
@@ -46,8 +43,8 @@ private:
 public:
 	MusicHandle() : _fading(0), _audioSource(NULL) {}
 	virtual int readBuffer(int16 *buffer, const int numSamples);
-	bool play(const char *filename, bool loop);
-	bool playPSX(uint16 id, bool loop);
+	bool play(const Common::String &filename, bool loop);
+	bool playPSX(uint16 id);
 	void stop();
 	void fadeUp();
 	void fadeDown();

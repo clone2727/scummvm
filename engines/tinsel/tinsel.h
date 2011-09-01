@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TINSEL_H
@@ -33,9 +30,6 @@
 #include "common/keyboard.h"
 #include "common/random.h"
 #include "common/util.h"
-
-#include "audio/mididrv.h"
-#include "audio/mixer.h"
 
 #include "engines/engine.h"
 #include "tinsel/debugger.h"
@@ -56,6 +50,7 @@ namespace Tinsel {
 
 class BMVPlayer;
 class Config;
+class MidiDriver;
 class MidiMusicPlayer;
 class PCMMusicPlayer;
 class Scheduler;
@@ -172,7 +167,7 @@ protected:
 	virtual bool hasFeature(EngineFeature f) const;
 	Common::Error loadGameState(int slot);
 #if 0
-	Common::Error saveGameState(int slot, const char *desc);
+	Common::Error saveGameState(int slot, const Common::String &desc);
 #endif
 	bool canLoadGameStateCurrently();
 #if 0

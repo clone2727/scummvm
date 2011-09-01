@@ -18,9 +18,6 @@
 @ along with this program@ if not, write to the Free Software
 @ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 @
-@ $URL$
-@ $Id$
-@
 @ @author Robin Watts (robin@wss.co.uk)
 
 	.text
@@ -47,6 +44,7 @@ Normal2xARM:
 	ADD	r3, r3, r6
 yloop:
 	SUBS	r14,r4, #4
+	ADDLT	r14,r14, #4
 	BLT	thin
 xloop:
 	LDRH	r6, [r0], #2

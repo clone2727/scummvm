@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef STATICDATA_H
@@ -321,4 +318,3 @@ const char *exitLine_RU = "Hope you enjoyed playing ToonStruck!!";
 const char* exitLine_SP = "\255\255Esperamos que te diviertas jugando a ToonStruck!!";
 
 #endif
-

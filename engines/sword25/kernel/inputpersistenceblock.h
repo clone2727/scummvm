@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -49,7 +46,7 @@ public:
 		OUT_OF_SYNC
 	};
 
-	InputPersistenceBlock(const void *data, uint dataLength);
+	InputPersistenceBlock(const void *data, uint dataLength, int version);
 	virtual ~InputPersistenceBlock();
 
 	void read(int16 &value);
@@ -67,14 +64,17 @@ public:
 		return _errorState;
 	}
 
+	int getVersion() const { return _version; }
+
 private:
 	bool checkMarker(byte marker);
 	bool checkBlockSize(int size);
-	void rawRead(void *destPtr, size_t size);
 
 	Common::Array<byte> _data;
 	Common::Array<byte>::const_iterator _iter;
 	ErrorState _errorState;
+
+	int _version;
 };
 
 } // End of namespace Sword25

@@ -18,14 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 #include "graphics/scaler/downscaler.h"
 #include "graphics/scaler/intern.h"
 
-#ifdef ARM
+#ifdef USE_ARM_SCALER_ASM
 extern "C" {
 	void DownscaleAllByHalfARM(const uint8 *srcPtr, uint32 srcPitch, uint8 *dstPtr, uint32 dstPitch, int width, int height, int mask, int round);
 }

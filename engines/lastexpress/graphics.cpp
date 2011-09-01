@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "lastexpress/graphics.h"
@@ -75,7 +72,7 @@ void GraphicsManager::clear(BackgroundType type) {
 void GraphicsManager::clear(BackgroundType type, const Common::Rect &rect) {
 	switch (type) {
 		default:
-			error("GraphicsManager::clear() - Unknown background type: %d", type);
+			error("[GraphicsManager::clear] Unknown background type: %d", type);
 			break;
 
 		case kBackgroundA:
@@ -108,7 +105,7 @@ bool GraphicsManager::draw(Drawable *drawable, BackgroundType type, bool transit
 Graphics::Surface *GraphicsManager::getSurface(BackgroundType type) {
 	switch (type) {
 		default:
-			error("GraphicsManager::getSurface() - Unknown surface type: %d", type);
+			error("[GraphicsManager::getSurface] Unknown surface type: %d", type);
 			break;
 
 		case kBackgroundA:
@@ -124,7 +121,7 @@ Graphics::Surface *GraphicsManager::getSurface(BackgroundType type) {
 			return &_inventory;
 
 		case kBackgroundAll:
-			error("GraphicsManager::getSurface() - cannot return a surface for kBackgroundAll!");
+			error("[GraphicsManager::getSurface] Cannot return a surface for kBackgroundAll");
 			break;
 	}
 }

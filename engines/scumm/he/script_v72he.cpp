@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_HE
@@ -624,15 +621,15 @@ void ScummEngine_v72he::o72_getArrayDimSize() {
 }
 
 void ScummEngine_v72he::o72_getNumFreeArrays() {
-	byte **addr = _res->address[rtString];
+	const ResourceManager::ResTypeData &rtd = _res->_types[rtString];
 	int i, num = 0;
 
 	for (i = 1; i < _numArray; i++) {
-		if (!addr[i])
+		if (!rtd[i]._address)
 			num++;
 	}
 
-	push (num);
+	push(num);
 }
 
 void ScummEngine_v72he::o72_roomOps() {
@@ -1449,7 +1446,7 @@ void ScummEngine_v72he::o72_openFile() {
 				_hOutFileTable[slot]->write(initialData, initialSize);
 				delete[] initialData;
 			}
-			
+
 			} break;
 		default:
 			error("o72_openFile(): wrong open file mode %d", mode);
@@ -1830,10 +1827,19 @@ void ScummEngine_v72he::o72_readINI() {
 	switch (subOp) {
 	case 43: // HE 100
 	case 6: // number
-		if (!strcmp((char *)option, "NoPrinting")) {
+		if (!strcmp((char *)option, "DisablePrinting") || !strcmp((char *)option, "NoPrinting")) {
 			push(1);
 		} else if (!strcmp((char *)option, "TextOn")) {
 			push(ConfMan.getBool("subtitles"));
+		} else if (!strcmp((char *)option, "Disk") && (_game.id == GID_BIRTHDAYRED || _game.id == GID_BIRTHDAYYELLOW)) {
+			// WORKAROUND: Override the disk detection
+			// This removes the reliance on having the binary file around (which is
+			// very bad for the Mac version) just for the scripts to figure out if
+			// we're running Yellow or Red
+			if (_game.id == GID_BIRTHDAYRED)
+				push(4);
+			else
+				push(2);
 		} else {
 			push(ConfMan.getInt((char *)option));
 		}
@@ -1914,7 +1920,8 @@ void ScummEngine_v72he::o72_writeINI() {
 
 void ScummEngine_v72he::o72_getResourceSize() {
 	const byte *ptr;
-	int size, type;
+	int size;
+	ResType type;
 
 	int resid = pop();
 	if (_game.heversion == 72) {
@@ -1926,7 +1933,7 @@ void ScummEngine_v72he::o72_getResourceSize() {
 
 	switch (subOp) {
 	case 13:
-		push (getSoundResourceSize(resid));
+		push(getSoundResourceSize(resid));
 		return;
 	case 14:
 		type = rtRoomImage;

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "groovie/groovie.h"
@@ -114,13 +111,27 @@ static const GroovieGameDescription gameDescriptions[] = {
 		kGroovieT7G, 0
 	},
 
+	{
+		{
+			"t7g", "",
+			{
+				{ "script.grv", 0, "d1b8033b40aa67c076039881eccce90d", 16659},
+				{ "SeventhGuest", 0, NULL, -1},
+				{ NULL, 0, NULL, 0}
+			},
+			Common::EN_ANY, Common::kPlatformIOS, ADGF_NO_FLAGS,
+			Common::GUIO_NOMIDI
+		},
+		kGroovieT7G, 0
+	},
+
 #ifdef ENABLE_GROOVIE2
 	// The 11th Hour DOS English
 	{
 		{
 			"11h", "",
 			AD_ENTRY1s("disk.1", "5c0428cd3659fc7bbcd0aa16485ed5da", 227),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS,
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE,
 			Common::GUIO_MIDIADLIB | Common::GUIO_MIDIMT32 | Common::GUIO_MIDIGM
 		},
 		kGroovieV2, 1
@@ -131,7 +142,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"11h", "Demo",
 			AD_ENTRY1s("disk.1", "aacb32ce07e0df2894bd83a3dee40c12", 70),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_DEMO, Common::GUIO_NOLAUNCHLOAD |
+			Common::EN_ANY, Common::kPlatformPC, ADGF_DEMO | ADGF_UNSTABLE, Common::GUIO_NOLAUNCHLOAD |
 			Common::GUIO_MIDIADLIB | Common::GUIO_MIDIMT32 | Common::GUIO_MIDIGM
 		},
 		kGroovieV2, 1
@@ -142,7 +153,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"11h", "Making Of",
 			AD_ENTRY1s("disk.1", "5c0428cd3659fc7bbcd0aa16485ed5da", 227),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE, Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD
 		},
 		kGroovieV2, 2
 	},
@@ -152,7 +163,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"clandestiny", "Trailer",
 			AD_ENTRY1s("disk.1", "5c0428cd3659fc7bbcd0aa16485ed5da", 227),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE, Common::GUIO_NOMIDI | Common::GUIO_NOLAUNCHLOAD
 		},
 		kGroovieV2, 3
 	},
@@ -162,7 +173,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"clandestiny", "",
 			AD_ENTRY1s("disk.1", "f79fc1515174540fef6a34132efc4c53", 76),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, Common::GUIO_NOMIDI
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE, Common::GUIO_NOMIDI
 		},
 		kGroovieV2, 1
 	},
@@ -172,7 +183,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"unclehenry", "",
 			AD_ENTRY1s("disk.1", "0e1b1d3cecc4fc7efa62a968844d1f7a", 72),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, Common::GUIO_NOMIDI
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE, Common::GUIO_NOMIDI
 		},
 		kGroovieV2, 1
 	},
@@ -182,7 +193,7 @@ static const GroovieGameDescription gameDescriptions[] = {
 		{
 			"tlc", "",
 			AD_ENTRY1s("disk.1", "32a1afa68478f1f9d2b25eeea427f2e3", 84),
-			Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, Common::GUIO_NOMIDI
+			Common::EN_ANY, Common::kPlatformPC, ADGF_UNSTABLE, Common::GUIO_NOMIDI
 		},
 		kGroovieV2, 1
 	},
@@ -191,38 +202,25 @@ static const GroovieGameDescription gameDescriptions[] = {
 	{AD_TABLE_END_MARKER, kGroovieT7G, 0}
 };
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)gameDescriptions,
-	// Size of that superset structure
-	sizeof(GroovieGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	groovieGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"groovie",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	kADFlagUseExtraAsHint,
-	// Additional GUI options (for every game}
-	Common::GUIO_NOSUBTITLES | Common::GUIO_NOSFX,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
-
 class GroovieMetaEngine : public AdvancedMetaEngine {
 public:
-	GroovieMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	GroovieMetaEngine() : AdvancedMetaEngine(gameDescriptions, sizeof(GroovieGameDescription), groovieGames) {
+		_singleid = "groovie";
+
+		// Use kADFlagUseExtraAsHint in order to distinguish the 11th hour from
+		// its "Making of" as well as the Clandestiny Trailer; they all share
+		// the same MD5.
+		// TODO: Is this the only reason, or are there others (like the three
+		// potentially sharing a single directory) ? In the former case, then
+		// perhaps a better solution would be to add additional files
+		// to the detection entries. In the latter case, this TODO should be
+		// replaced with an according explanation.
+		_flags = kADFlagUseExtraAsHint;
+		_guioptions = Common::GUIO_NOSUBTITLES | Common::GUIO_NOSFX;
+	}
 
 	const char *getName() const {
-		return "Groovie Engine";
+		return "Groovie";
 	}
 
 	const char *getOriginalCopyright() const {

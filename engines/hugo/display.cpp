@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -647,13 +644,13 @@ bool Screen::isOverlapping(const rect_t *rectA, const rect_t *rectB) const {
 }
 
 /**
- * Display active boundaries in God Mode ('PPG')
+ * Display active boundaries (activated in the console)
  * Light Red   = Exit hotspots
  * Light Green = Visible objects
- * White       = Fixed objects, parts of background
+ * White       = Fix objects, parts of background
  */
 void Screen::drawBoundaries() {
-	if (!_vm->getGameStatus().godModeFl)
+	if (!_vm->getGameStatus().showBoundariesFl)
 		return;
 
 	_vm->_mouse->drawHotspots();
@@ -739,7 +736,7 @@ overlayState_t Screen_v1d::findOvl(seq_t *seq_p, image_pt dst_p, uint16 y) {
 	uint16 index = (uint16)(dst_p - _frontBuffer) >> 3;
 
 	for (int i = 0; i < seq_p->lines-y; i++) {      // Each line in object
-		if (_vm->_object->getBaseBoundary(index))   // If any overlay base byte is non-zero then the object is foreground, else back. 
+		if (_vm->_object->getBaseBoundary(index))   // If any overlay base byte is non-zero then the object is foreground, else back.
 			return kOvlForeground;
 		index += kCompLineSize;
 	}
@@ -816,4 +813,3 @@ overlayState_t Screen_v1w::findOvl(seq_t *seq_p, image_pt dst_p, uint16 y) {
 }
 
 } // End of namespace Hugo
-

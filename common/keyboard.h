@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef COMMON_KEYBOARD_H
@@ -294,7 +291,7 @@ struct KeyState {
 		return f == (flags & ~(KBD_NUM|KBD_CAPS|KBD_SCRL));
 	}
 
-	bool operator ==(const KeyState &x) const {
+	bool operator==(const KeyState &x) const {
 		return keycode == x.keycode && ascii == x.ascii && flags == x.flags;
 	}
 };

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  * Save and restore scene and game.
  */
 
@@ -37,6 +34,7 @@
 #include "common/serializer.h"
 #include "common/savefile.h"
 #include "common/textconsole.h"
+#include "common/translation.h"
 
 #include "gui/message.h"
 
@@ -156,8 +154,15 @@ static bool syncSaveGameHeader(Common::Serializer &s, SaveGameHeader &hdr) {
 	syncTime(s, hdr.dateTime);
 
 	int tmp = hdr.size - s.bytesSynced();
+
+	// NOTE: We can't use SAVEGAME_ID here when attempting to remove a saved game from the launcher,
+	// as there is no TinselEngine initialized then. This means that we can't check if this is a DW1
+	// or DW2 savegame in this case, but it doesn't really matter, as the saved game is about to be
+	// deleted anyway. Refer to bug #3387551.
+	bool correctID = _vm ? (hdr.id == SAVEGAME_ID) : (hdr.id == DW1_SAVEGAME_ID || hdr.id == DW2_SAVEGAME_ID);
+
 	// Perform sanity check
-	if (tmp < 0 || hdr.id != SAVEGAME_ID || hdr.ver > CURRENT_VER || hdr.size > 1024)
+	if (tmp < 0 || !correctID || hdr.ver > CURRENT_VER || hdr.size > 1024)
 		return false;
 	// Skip over any extra bytes
 	s.skip(tmp);
@@ -165,8 +170,7 @@ static bool syncSaveGameHeader(Common::Serializer &s, SaveGameHeader &hdr) {
 }
 
 static void syncSavedMover(Common::Serializer &s, SAVED_MOVER &sm) {
-	SCNHANDLE *pList[3] = { (SCNHANDLE *)&sm.walkReels,
-		(SCNHANDLE *)&sm.standReels, (SCNHANDLE *)&sm.talkReels };
+	int i, j;
 
 	s.syncAsUint32LE(sm.bActive);
 	s.syncAsSint32LE(sm.actorID);
@@ -174,11 +178,21 @@ static void syncSavedMover(Common::Serializer &s, SAVED_MOVER &sm) {
 	s.syncAsSint32LE(sm.objY);
 	s.syncAsUint32LE(sm.hLastfilm);
 
-	for (int pIndex = 0; pIndex < 3; ++pIndex) {
-		SCNHANDLE *p = pList[pIndex];
-		for (int i = 0; i < TOTAL_SCALES * 4; ++i)
-			s.syncAsUint32LE(*p++);
-	}
+	// Sync walk reels
+	for (i = 0; i < TOTAL_SCALES; ++i)
+		for (j = 0; j < 4; ++j)
+			s.syncAsUint32LE(sm.walkReels[i][j]);
+
+	// Sync stand reels
+	for (i = 0; i < TOTAL_SCALES; ++i)
+		for (j = 0; j < 4; ++j)
+			s.syncAsUint32LE(sm.standReels[i][j]);
+
+	// Sync talk reels
+	for (i = 0; i < TOTAL_SCALES; ++i)
+		for (j = 0; j < 4; ++j)
+			s.syncAsUint32LE(sm.talkReels[i][j]);
+
 
 	if (TinselV2) {
 		s.syncAsByte(sm.bHidden);
@@ -458,7 +472,7 @@ static bool DoRestore() {
 	delete f;
 
 	if (failed) {
-		GUI::MessageDialog dialog("Failed to load game state from file.");
+		GUI::MessageDialog dialog(_("Failed to load game state from file."));
 		dialog.runModal();
 	}
 
@@ -476,7 +490,7 @@ static void DoSave() {
 	NeedLoad = true;
 
 	if (SaveSceneName == NULL) {
-		// Generate a new unique save name	
+		// Generate a new unique save name
 		int	i;
 		int	ano = 1;	// Allocated number
 
@@ -536,7 +550,7 @@ save_failure:
 		_vm->getSaveFileMan()->removeSavefile(SaveSceneName);
 		SaveSceneName = NULL;	// Invalidate save name
 	}
-	GUI::MessageDialog dialog("Failed to save game state to file.");
+	GUI::MessageDialog dialog(_("Failed to save game state to file."));
 	dialog.runModal();
 }
 

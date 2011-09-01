@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/config-manager.h"
@@ -170,7 +167,7 @@ TestExitStatus FStests::testWriteFile() {
 		 return kTestPassed;
 	}
 
-	 return kTestFailed;
+	return kTestFailed;
 }
 
 
@@ -192,7 +189,7 @@ FSTestSuite::FSTestSuite() {
 }
 
 void FSTestSuite::enable(bool flag) {
-	Testsuite::enable(ConfParams.isGameDataFound() & flag);
+	Testsuite::enable(ConfParams.isGameDataFound() ? flag : false);
 }
 
 } // End of namespace Testbed

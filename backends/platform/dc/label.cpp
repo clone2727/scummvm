@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include <ronin/ronin.h>
@@ -137,4 +134,3 @@ void Label::draw(float x, float y, unsigned int argb, float scale)
   myvertex.cmd |= TA_CMD_VERTEX_EOS;
   ta_commit_list(&myvertex);
 }
-

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #define RONIN_TIMER_ACCESS
@@ -51,8 +48,8 @@ void OSystem_Dreamcast::delayMillis(uint msecs)
   unsigned int t, start = Timer();
   int time = (((unsigned int)msecs)*3125U)>>6;
   while (((int)((t = Timer())-start))<time) {
-    if (_timer != NULL)
-      _timer->handler();
+    if (_timerManager != NULL)
+      ((DefaultTimerManager *)_timerManager)->handler();
     checkSound();
   }
   getMillis();

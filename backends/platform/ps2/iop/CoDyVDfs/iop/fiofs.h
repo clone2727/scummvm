@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef __FIOFS_H__
@@ -37,4 +34,3 @@ int cd_dread(iop_file_t *handle, fio_dirent_t *buf);
 int cd_dclose(iop_file_t *handle);
 
 #endif // __FIOFS_H__
-

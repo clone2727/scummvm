@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/system.h"
@@ -82,41 +79,18 @@ static const ADGameDescription teenAgentGameDescriptions[] = {
 	AD_TABLE_END_MARKER,
 };
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)teenAgentGameDescriptions,
-	// Size of that superset structure
-	sizeof(ADGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	teenAgentGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"teenagent",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game}
-	Common::GUIO_NONE,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
+enum {
+	MAX_SAVES = 20
 };
-
-#define MAX_SAVES 20
-
 
 class TeenAgentMetaEngine : public AdvancedMetaEngine {
 public:
-	TeenAgentMetaEngine() : AdvancedMetaEngine(detectionParams) {
+	TeenAgentMetaEngine() : AdvancedMetaEngine(teenAgentGameDescriptions, sizeof(ADGameDescription), teenAgentGames) {
+		_singleid = "teenagent";
 	}
 
 	virtual const char *getName() const {
-		return "Teen Agent Engine";
+		return "TeenAgent";
 	}
 
 	virtual const char *getOriginalCopyright() const {
@@ -142,10 +116,6 @@ public:
 		}
 		return desc != 0;
 	}
-
-//	virtual const ADGameDescription *fallbackDetect(const Common::FSList &fslist) const {
-//		return 0;
-//	}
 
 	static Common::String generateGameStateFileName(const char *target, int slot) {
 		return Common::String::format("%s.%02d", target, slot);
@@ -207,9 +177,8 @@ public:
 		ssd.setDeletableFlag(true);
 
 		//checking for the thumbnail
-		Common::ScopedPtr<Graphics::Surface> thumb(new Graphics::Surface);
-		if (Graphics::loadThumbnail(*in, *thumb))
-			ssd.setThumbnail(thumb.release());
+		if (Graphics::Surface *const thumb = Graphics::loadThumbnail(*in))
+			ssd.setThumbnail(thumb);
 
 		return ssd;
 	}

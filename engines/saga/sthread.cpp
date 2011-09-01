@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Scripting module thread management component
@@ -105,9 +102,8 @@ void Script::wakeUpThreadsDelayed(int waitType, int sleepTime) {
 void Script::executeThreads(uint msec) {
 	ScriptThreadList::iterator threadIterator;
 
-	if (_vm->_interface->_statusTextInput) {
+	if (_vm->_interface->_statusTextInput)
 		return;
-	}
 
 	threadIterator = _threadList.begin();
 
@@ -132,11 +128,10 @@ void Script::executeThreads(uint msec) {
 
 			switch (thread._waitType) {
 			case kWaitTypeDelay:
-				if (thread._sleepTime < msec) {
+				if (thread._sleepTime < msec)
 					thread._sleepTime = 0;
-				} else {
+				else
 					thread._sleepTime -= msec;
-				}
 
 				if (thread._sleepTime == 0)
 					thread._flags &= ~kTFlagWaiting;
@@ -144,11 +139,9 @@ void Script::executeThreads(uint msec) {
 
 			case kWaitTypeWalk:
 				{
-					ActorData *actor;
-					actor = (ActorData *)thread._threadObj;
-					if (actor->_currentAction == kActionWait) {
+					ActorData *actor = (ActorData *)thread._threadObj;
+					if (actor->_currentAction == kActionWait)
 						thread._flags &= ~kTFlagWaiting;
-					}
 				}
 				break;
 
@@ -160,9 +153,8 @@ void Script::executeThreads(uint msec) {
 		}
 
 		if (!(thread._flags & kTFlagWaiting)) {
-			if (runThread(thread)) {
+			if (runThread(thread))
 				break;
-			}
 		}
 
 		++threadIterator;
@@ -239,4 +231,3 @@ bool Script::runThread(ScriptThread &thread) {
 }
 
 } // End of namespace Saga
-

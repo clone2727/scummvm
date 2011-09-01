@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef CONSOLE_DIALOG_H
@@ -34,7 +31,7 @@ class ScrollBarWidget;
 /*
  FIXME #1: The console dialog code has some fundamental problems.
  First of, note the conflict between the (constant) value kCharsPerLine, and the
- (variable) value _pageWidth. Look a bit at the code get familiar with them,
+ (variable) value _pageWidth. Look a bit at the code to get familiar with them,
  then return...
  Now, why don't we just drop kCharsPerLine? Because of the problem of resizing!
  When the user changes the scaler, the console will get resized. If the dialog
@@ -50,7 +47,7 @@ class ScrollBarWidget;
  of making things like scrolling, drawing etc. more complicated.
 
  Either way, the current situation is bad, and we should resolve it one way
- or the other (and if you can think of a thirds, feel free to suggest it).
+ or the other (and if you can think of a third, feel free to suggest it).
 
 
 

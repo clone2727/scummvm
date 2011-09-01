@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/file.h"
@@ -28,7 +25,6 @@
 #include "common/config-manager.h"
 #include "common/system.h"
 #include "common/events.h"
-#include "common/EventRecorder.h"
 
 #include "audio/mixer.h"
 
@@ -59,7 +55,7 @@ namespace Saga {
 #define MAX_TIME_DELTA 100
 
 SagaEngine::SagaEngine(OSystem *syst, const SAGAGameDescription *gameDesc)
-	: Engine(syst), _gameDescription(gameDesc) {
+	: Engine(syst), _gameDescription(gameDesc), _rnd("saga") {
 
 	_framesEsc = 0;
 
@@ -76,9 +72,8 @@ SagaEngine::SagaEngine(OSystem *syst, const SAGAGameDescription *gameDesc)
 	_readingSpeed = 0;
 
 	_copyProtection = false;
-	_gf_wyrmkeep = false;
 	_musicWasPlaying = false;
-
+	_hasITESceneSubstitutes = false;
 
 	_sndRes = NULL;
 	_sound = NULL;
@@ -136,7 +131,6 @@ SagaEngine::SagaEngine(OSystem *syst, const SAGAGameDescription *gameDesc)
 	SearchMan.addSubDirectoryMatching(gameDataDir, "video");
 
 	_displayClip.left = _displayClip.top = 0;
-	g_eventRec.registerRandomSource(_rnd, "saga");
 }
 
 SagaEngine::~SagaEngine() {
@@ -216,9 +210,9 @@ Common::Error SagaEngine::run() {
 	_subtitlesEnabled = ConfMan.getBool("subtitles");
 	_readingSpeed = getTalkspeed();
 	_copyProtection = ConfMan.getBool("copy_protection");
-	_gf_wyrmkeep = false;
 	_musicWasPlaying = false;
 	_isIHNMDemo = Common::File::exists("music.res");
+	_hasITESceneSubstitutes = Common::File::exists("boarhall.bbm");
 
 	if (_readingSpeed > 3)
 		_readingSpeed = 0;
@@ -456,7 +450,7 @@ void SagaEngine::loadStrings(StringsTable &stringsTable, const ByteArray &string
 			error("SagaEngine::loadStrings() Wrong offset");
 		}
 		stringsTable.strings[ui] = &stringsTable.buffer[offset];
-		
+
 		debug(9, "string[%i]=%s", ui, stringsTable.strings[ui]);
 	}
 }

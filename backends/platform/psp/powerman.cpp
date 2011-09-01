@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include <psppower.h>
@@ -33,7 +30,9 @@
 //#define __PSP_DEBUG_PRINT__
 #include "backends/platform/psp/trace.h"
 
+namespace Common {
 DECLARE_SINGLETON(PowerManager);
+}
 
 // Function to debug the Power Manager (we have no output to screen)
 inline void PowerManager::debugPM() {

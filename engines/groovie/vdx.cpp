@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "groovie/vdx.h"
@@ -88,6 +85,11 @@ uint16 VDXPlayer::loadInternal() {
 	_flagSeven =	((_flags & (1 << 7)) != 0);
 	_flagEight =	((_flags & (1 << 8)) != 0);
 	_flagNine =		((_flags & (1 << 9)) != 0);
+
+	// Enable highspeed if we're not obeying fps, and not marked as special
+	// This will be disabled in chunk audio if we're actually an audio vdx
+	if ( _vm->_modeSpeed == kGroovieSpeediOS || (_vm->_modeSpeed == kGroovieSpeedTweaked && ((_flags & (1 << 15)) == 0)))
+		setOverrideSpeed(true);
 
 	if (_flagOnePrev && !_flagOne && !_flagEight) {
 		_flagSeven = true;
@@ -525,6 +527,9 @@ void VDXPlayer::decodeBlockDelta(uint32 offset, byte *colors, uint16 imageWidth)
 }
 
 void VDXPlayer::chunkSound(Common::ReadStream *in) {
+	if (getOverrideSpeed())
+		setOverrideSpeed(false);
+
 	if (!_audioStream) {
 		_audioStream = Audio::makeQueuingAudioStream(22050, false);
 		Audio::SoundHandle sound_handle;

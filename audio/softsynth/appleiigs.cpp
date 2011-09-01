@@ -18,9 +18,6 @@
 * along with this program; if not, write to the Free Software
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 *
-* $URL$
-* $Id$
-*
 */
 
 #include "audio/null.h"
@@ -54,4 +51,3 @@ MusicDevices AppleIIGSMusicPlugin::getDevices() const {
 //#else
 	REGISTER_PLUGIN_STATIC(APPLEIIGS, PLUGIN_TYPE_MUSIC, AppleIIGSMusicPlugin);
 //#endif
-

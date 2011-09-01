@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef SCI_H
@@ -41,7 +38,7 @@ struct ADGameDescription;
  * Status of this engine: ???
  *
  * Games using this engine:
- * - Newer Sierra adventure games (based on FreeSCI) 
+ * - Newer Sierra adventure games (based on FreeSCI)
  *
  * @todo give a concrete list of supported games. Could also
  * list future games, with status for each.
@@ -179,7 +176,7 @@ enum SciGameId {
 	GID_FANMADE	// FIXME: Do we really need/want this?
 };
 
-/** 
+/**
  * SCI versions
  * For more information, check here:
  * http://wiki.scummvm.org/index.php/Sierra_Game_Versions#SCI_Games
@@ -224,7 +221,7 @@ public:
 	virtual GUI::Debugger *getDebugger();
 	Console *getSciDebugger();
 	Common::Error loadGameState(int slot);
-	Common::Error saveGameState(int slot, const char *desc);
+	Common::Error saveGameState(int slot, const Common::String &desc);
 	bool canLoadGameStateCurrently();
 	bool canSaveGameStateCurrently();
 	void syncSoundSettings();
@@ -293,7 +290,7 @@ public:
 	void setSciLanguage(kLanguage lang);
 	void setSciLanguage();
 
-	Common::String getSciLanguageString(const char *str, kLanguage lang, kLanguage *lang2 = NULL) const;
+	Common::String getSciLanguageString(const Common::String &str, kLanguage lang, kLanguage *lang2 = NULL) const;
 
 	// Check if vocabulary needs to get switched (in multilingual parser games)
 	void checkVocabularySwitch();

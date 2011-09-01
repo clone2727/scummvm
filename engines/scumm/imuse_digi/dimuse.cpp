@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "common/system.h"
@@ -61,7 +58,7 @@ IMuseDigital::IMuseDigital(ScummEngine_v7 *scumm, Audio::Mixer *mixer, int fps)
 		memset(_track[l], 0, sizeof(Track));
 		_track[l]->trackId = l;
 	}
-	_vm->getTimerManager()->installTimerProc(timer_handler, 1000000 / _callbackFps, this);
+	_vm->getTimerManager()->installTimerProc(timer_handler, 1000000 / _callbackFps, this, "IMuseDigital");
 
 	_audioNames = NULL;
 	_numAudioNames = 0;

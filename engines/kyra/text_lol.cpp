@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifdef ENABLE_LOL
@@ -833,4 +830,3 @@ void TextDisplayer_LoL::clearCurDim() {
 } // End of namespace Kyra
 
 #endif // ENABLE_LOL
-

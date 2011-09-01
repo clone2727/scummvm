@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef LASTEXPRESS_HELPERS_H
@@ -66,6 +63,7 @@
 
 // Sound
 #define getSound() _engine->getSoundManager()
+#define getSoundQueue() _engine->getSoundManager()->getQueue()
 
 // Others
 #define getEntityData(entity) getEntities()->getData(entity)

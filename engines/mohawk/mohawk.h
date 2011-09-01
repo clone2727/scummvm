@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MOHAWK_H
@@ -30,6 +27,8 @@
 #include "common/array.h"
 
 #include "engines/engine.h"
+
+#include "mohawk/video.h"
 
 class OSystem;
 
@@ -78,8 +77,7 @@ enum MohawkGameFeatures {
 struct MohawkGameDescription;
 class Sound;
 class PauseDialog;
-class MohawkArchive;
-class VideoManager;
+class Archive;
 class CursorManager;
 
 class MohawkEngine : public ::Engine {
@@ -115,13 +113,17 @@ public:
 
 	void pauseGame();
 
+	// Check if events should be done based on a video's current time
+	// (currently only used for Riven's storeMovieOpcode function)
+	virtual void doVideoTimer(VideoHandle handle, bool force) {}
+
 private:
 	PauseDialog *_pauseDialog;
 	void pauseEngineIntern(bool);
 
 protected:
 	// An array holding the main Mohawk archives require by the games
-	Common::Array<MohawkArchive *> _mhk;
+	Common::Array<Archive *> _mhk;
 };
 
 } // End of namespace Mohawk

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGOS_INTERN_H
@@ -196,6 +193,9 @@ struct TimeEvent {
 };
 
 struct GameSpecificSettings {
+	const char *base_filename;
+	const char *restore_filename;
+	const char *tbl_filename;
 	const char *effects_filename;
 	const char *speech_filename;
 };
@@ -254,7 +254,8 @@ enum GameFeatures {
 	GF_32COLOR         = 1 << 5,
 	GF_EGA             = 1 << 6,
 	GF_PLANAR          = 1 << 7,
-	GF_DEMO            = 1 << 8
+	GF_DEMO            = 1 << 8,
+	GF_PACKED          = 1 << 9
 };
 
 enum GameFileTypes {

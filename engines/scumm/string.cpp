@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -35,6 +32,7 @@
 #ifdef ENABLE_HE
 #include "scumm/he/intern_he.h"
 #endif
+#include "scumm/resource.h"
 #include "scumm/scumm.h"
 #include "scumm/scumm_v6.h"
 #include "scumm/scumm_v8.h"
@@ -354,7 +352,7 @@ bool ScummEngine::handleNextCharsetCode(Actor *a, int *code) {
 bool ScummEngine_v72he::handleNextCharsetCode(Actor *a, int *code) {
 	const int charsetCode = (_game.heversion >= 80) ? 127 : 64;
 	uint32 talk_sound_a = 0;
-	uint32 talk_sound_b = 0;
+	//uint32 talk_sound_b = 0;
 	int i, c = 0;
 	char value[32];
 	bool endLoop = false;
@@ -385,7 +383,7 @@ bool ScummEngine_v72he::handleNextCharsetCode(Actor *a, int *code) {
 				i++;
 			}
 			value[i] = 0;
-			talk_sound_b = atoi(value);
+			//talk_sound_b = atoi(value);
 			((SoundHE *)_sound)->startHETalkSound(talk_sound_a);
 			break;
 		case 104:
@@ -408,7 +406,7 @@ bool ScummEngine_v72he::handleNextCharsetCode(Actor *a, int *code) {
 			}
 			value[i] = 0;
 			talk_sound_a = atoi(value);
-			talk_sound_b = 0;
+			//talk_sound_b = 0;
 			((SoundHE *)_sound)->startHETalkSound(talk_sound_a);
 			break;
 		case 119:
@@ -1129,8 +1127,6 @@ int ScummEngine::convertMessageToString(const byte *msg, byte *dst, int dstSize)
 				}
 				num += (_game.version == 8) ? 4 : 2;
 			}
-		} else if (_game.id == GID_DIG && (chr == 1 || chr == 2 || chr == 3 || chr == 8)) {
-			// Skip these characters
 		} else {
 			if ((chr != '@') || (_game.id == GID_CMI && _language == Common::ZH_TWN) ||
 				(_game.id == GID_LOOM && _game.platform == Common::kPlatformPCEngine && _language == Common::JA_JPN) ||
@@ -1143,6 +1139,14 @@ int ScummEngine::convertMessageToString(const byte *msg, byte *dst, int dstSize)
 		// Check for a buffer overflow
 		if (dst >= end)
 			error("convertMessageToString: buffer overflow");
+	}
+
+	// WORKAROUND: Russian The Dig pads messages with 03. No idea why
+	// it does not work as is with our rendering code, thus fixing it
+	// with a workaround.
+	if (_game.id == GID_DIG) {
+		while (*(dst - 1) == 0x03)
+			dst--;
 	}
 	*dst = 0;
 
@@ -1212,7 +1216,8 @@ int ScummEngine::convertVerbMessage(byte *dst, int dstSize, int var) {
 	num = readVar(var);
 	if (num) {
 		for (k = 1; k < _numVerbs; k++) {
-			if (num == _verbs[k].verbid && !_verbs[k].type && !_verbs[k].saveid) {
+			// Fix ZAK FM-TOWNS bug #1013617 by emulating exact (inconsistant?) behavior of the original code
+			if (num == _verbs[k].verbid && !_verbs[k].type && (!_verbs[k].saveid || (_game.version == 3 && _game.platform == Common::kPlatformFMTowns))) {
 				const byte *ptr = getResourceAddress(rtVerb, k);
 				return convertMessageToString(ptr, dst, dstSize);
 			}
@@ -1384,10 +1389,10 @@ void ScummEngine_v7::loadLanguageBundle() {
 			} else if (*ptr == '#') {
 				// Number of subtags following a given basetag. We don't need that
 				// information so we just skip it
-			} else if (isdigit(*ptr)) {
+			} else if (isdigit(static_cast<unsigned char>(*ptr))) {
 				int idx = 0;
 				// A number (up to three digits)...
-				while (isdigit(*ptr)) {
+				while (isdigit(static_cast<unsigned char>(*ptr))) {
 					idx = idx * 10 + (*ptr - '0');
 					ptr++;
 				}
@@ -1425,12 +1430,12 @@ void ScummEngine_v7::loadLanguageBundle() {
 		for (i = 0; i < _languageIndexSize; i++) {
 			// First 8 chars in the line give the string ID / 'tag'
 			int j;
-			for (j = 0; j < 8 && !isspace(*ptr); j++, ptr++)
+			for (j = 0; j < 8 && !isspace(static_cast<unsigned char>(*ptr)); j++, ptr++)
 				_languageIndex[i].tag[j] = toupper(*ptr);
 			_languageIndex[i].tag[j] = 0;
 
 			// After that follows a single space which we skip
-			assert(isspace(*ptr));
+			assert(isspace(static_cast<unsigned char>(*ptr)));
 			ptr++;
 
 			// Then comes the translated string: we record an offset to that.

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "drascula/drascula.h"
@@ -162,7 +159,7 @@ void DrasculaEngine::enterName() {
 		key = getScan();
 
 		if (key != 0) {
-			if (key >= 0 && key <= 0xFF && isalpha(key))
+			if (key >= 0 && key <= 0xFF && isalpha(static_cast<unsigned char>(key)))
 				select2[v] = tolower(key);
 			else if ((key >= Common::KEYCODE_0 && key <= Common::KEYCODE_9) || key == Common::KEYCODE_SPACE)
 				select2[v] = key;

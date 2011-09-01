@@ -18,10 +18,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
+
+#include "common/translation.h"
 
 #include "gui/message.h"
 
@@ -105,7 +104,7 @@ void Inter_v5::o5_deleteFile() {
 	if (mode == SaveLoad::kSaveModeSave) {
 
 		if (!_vm->_saveLoad->deleteFile(file)) {
-			GUI::MessageDialog dialog("Failed to delete file.");
+			GUI::MessageDialog dialog(_("Failed to delete file."));
 			dialog.runModal();
 		}
 

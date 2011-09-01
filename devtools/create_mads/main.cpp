@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // HACK to allow building with the SDL backend on MinGW
@@ -51,7 +48,7 @@ void link(const char *destFilename, char **srcFilenames, int srcCount) {
 	fwrite(headerStr, 1, 4, destFile);
 	for (int i = 0; i <= srcCount; ++i)
 		fwrite(&v, 1, 4, destFile);
-	
+
 	// Set up buffer for copying
 	void *tempBuffer = malloc(BUFFER_SIZE);
 
@@ -120,7 +117,7 @@ int main(int argc, char *argv[]) {
 				// Change the extension
 				strcpy(p, ".bin");
 		}
-		
+
 		// Compile the specified source file
 		bool result = Compile(argv[1], destFilename);
 		return result ? 0 : 1;

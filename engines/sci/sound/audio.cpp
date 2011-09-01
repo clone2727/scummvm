@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "sci/resource.h"
@@ -288,7 +285,7 @@ Audio::RewindableAudioStream *AudioPlayer::getAudioStream(uint32 number, uint32 
 		// instead.
 		memcpy(compressedData, audioRes->data, audioRes->size);
 		Common::SeekableReadStream *compressedStream = new Common::MemoryReadStream(compressedData, audioRes->size, DisposeAfterUse::YES);
-		
+
 		switch (audioCompressionType) {
 		case MKTAG('M','P','3',' '):
 #ifdef USE_MAD

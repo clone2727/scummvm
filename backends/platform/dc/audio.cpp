@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include <common/scummsys.h>
@@ -77,5 +74,3 @@ void OSystem_Dreamcast::checkSound()
   if ((fillpos += n) >= curr_ring_buffer_samples)
     fillpos = 0;
 }
-
-

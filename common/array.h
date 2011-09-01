@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #ifndef COMMON_ARRAY_H
@@ -27,6 +24,7 @@
 
 #include "common/scummsys.h"
 #include "common/algorithm.h"
+#include "common/textconsole.h"	// For error()
 
 namespace Common {
 
@@ -44,7 +42,7 @@ namespace Common {
  * management scheme. There, only elements that 'live' are actually constructed
  * (i.e., have their constructor called), and objects that are removed are
  * immediately destructed (have their destructor called).
- * With Common::Array, this is not the case; instead, it simply uses new[] and
+ * With Array, this is not the case; instead, it simply uses new[] and
  * delete[] to allocate whole blocks of objects, possibly more than are
  * currently 'alive'. This simplifies memory management, but may have
  * undesirable side effects when one wants to use an Array of complex
@@ -75,8 +73,7 @@ public:
 
 	Array(const Array<T> &array) : _capacity(array._size), _size(array._size), _storage(0) {
 		if (array._storage) {
-			_storage = new T[_capacity];
-			assert(_storage);
+			allocCapacity(_size);
 			copy(array._storage, array._storage + _size, _storage);
 		}
 	}
@@ -86,9 +83,8 @@ public:
 	 */
 	template<class T2>
 	Array(const T2 *data, int n) {
-		_capacity = _size = n;
-		_storage = new T[_capacity];
-		assert(_storage);
+		_size = n;
+		allocCapacity(n);
 		copy(data, data + _size, _storage);
 	}
 
@@ -182,9 +178,7 @@ public:
 
 		delete[] _storage;
 		_size = array._size;
-		_capacity = _size + 32;
-		_storage = new T[_capacity];
-		assert(_storage);
+		allocCapacity(_size);
 		copy(array._storage, array._storage + _size, _storage);
 
 		return *this;
@@ -241,15 +235,13 @@ public:
 		if (newCapacity <= _capacity)
 			return;
 
-		T *old_storage = _storage;
-		_capacity = newCapacity;
-		_storage = new T[newCapacity];
-		assert(_storage);
+		T *oldStorage = _storage;
+		allocCapacity(newCapacity);
 
-		if (old_storage) {
+		if (oldStorage) {
 			// Copy old data
-			copy(old_storage, old_storage + _size, _storage);
-			delete[] old_storage;
+			copy(oldStorage, oldStorage + _size, _storage);
+			delete[] oldStorage;
 		}
 	}
 
@@ -260,6 +252,13 @@ public:
 		_size = newSize;
 	}
 
+	void assign(const_iterator first, const_iterator last) {
+		resize(distance(first, last)); // FIXME: ineffective?
+		T *dst = _storage;
+		while (first != last)
+			*dst++ = *first++;
+	}
+
 protected:
 	static uint roundUpCapacity(uint capacity) {
 		// Round up capacity to the next power of 2;
@@ -268,6 +267,17 @@ protected:
 		while (capa < capacity)
 			capa <<= 1;
 		return capa;
+	}
+
+	void allocCapacity(uint capacity) {
+		_capacity = capacity;
+		if (capacity) {
+			_storage = new T[capacity];
+			if (!_storage)
+				::error("Common::Array: failure to allocate %u bytes", capacity * (uint)sizeof(T));
+		} else {
+			_storage = 0;
+		}
 	}
 
 	/**
@@ -289,29 +299,28 @@ protected:
 		const uint n = last - first;
 		if (n) {
 			const uint idx = pos - _storage;
-			T *newStorage = _storage;
-			if (_size + n > _capacity) {
+			T *oldStorage = _storage;
+			if (_size + n > _capacity || (_storage <= first && first <= _storage + _size) ) {
 				// If there is not enough space, allocate more and
 				// copy old elements over.
-				uint newCapacity = roundUpCapacity(_size + n);
-				newStorage = new T[newCapacity];
-				assert(newStorage);
-				copy(_storage, _storage + idx, newStorage);
-				pos = newStorage + idx;
+				// Likewise, if this is a self-insert, we allocate new
+				// storage to avoid conflicts. This is not the most efficient
+				// way to ensure that, but probably the simplest on.
+				allocCapacity(roundUpCapacity(_size + n));
+				copy(oldStorage, oldStorage + idx, _storage);
+				pos = _storage + idx;
 			}
 
 			// Make room for the new elements by shifting back
 			// existing ones.
-			copy_backward(_storage + idx, _storage + _size, newStorage + _size + n);
+			copy_backward(oldStorage + idx, oldStorage + _size, _storage + _size + n);
 
 			// Insert the new elements.
 			copy(first, last, pos);
 
 			// Finally, update the internal state
-			if (newStorage != _storage) {
-				delete[] _storage;
-				_capacity = roundUpCapacity(_size + n);
-				_storage = newStorage;
+			if (_storage != oldStorage) {
+				delete[] oldStorage;
 			}
 			_size += n;
 		}

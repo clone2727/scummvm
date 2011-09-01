@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 /*
@@ -53,7 +50,9 @@
 
 #include "sword25/gfx/animationtemplateregistry.h"	// Needed so we can destroy the singleton
 #include "sword25/gfx/renderobjectregistry.h"		// Needed so we can destroy the singleton
+namespace Common {
 DECLARE_SINGLETON(Sword25::RenderObjectRegistry);
+}
 #include "sword25/math/regionregistry.h"			// Needed so we can destroy the singleton
 
 namespace Sword25 {
@@ -97,7 +96,7 @@ Common::Error Sword25Engine::run() {
 }
 
 Common::Error Sword25Engine::appStart() {
-	// Initialise the graphics mode to ARGB8888
+	// Initialize the graphics mode to ARGB8888
 	Graphics::PixelFormat format = Graphics::PixelFormat(4, 8, 8, 8, 8, 16, 8, 0, 24);
 	initGraphics(800, 600, true, &format);
 	if (format != g_system->getScreenFormat())
@@ -145,7 +144,7 @@ bool Sword25Engine::appMain() {
 }
 
 bool Sword25Engine::appEnd() {
-	// The kernel is shutdown, and un-initialises all subsystems
+	// The kernel is shutdown, and un-initializes all subsystems
 	Kernel::deleteInstance();
 
 	AnimationTemplateRegistry::destroy();

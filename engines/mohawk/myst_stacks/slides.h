@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef MYST_SCRIPTS_SLIDES_H
@@ -55,7 +52,7 @@ private:
 
 	bool _cardSwapEnabled;
 	uint16 _nextCardID;
-	uint32 _lastCardTime;
+	uint32 _nextCardTime;
 };
 
 } // End of namespace MystStacks

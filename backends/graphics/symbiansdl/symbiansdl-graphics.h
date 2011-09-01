@@ -18,17 +18,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef BACKENDS_GRAPHICS_SYMBIAN_SDL_H
 #define BACKENDS_GRAPHICS_SYMBIAN_SDL_H
 
-#include "backends/graphics/sdl/sdl-graphics.h"
+#include "backends/graphics/surfacesdl/surfacesdl-graphics.h"
 
-class SymbianSdlGraphicsManager : public SdlGraphicsManager {
+class SymbianSdlGraphicsManager : public SurfaceSdlGraphicsManager {
 public:
 	SymbianSdlGraphicsManager(SdlEventSource *sdlEventSource);
 
@@ -42,4 +39,3 @@ public:
 };
 
 #endif
-

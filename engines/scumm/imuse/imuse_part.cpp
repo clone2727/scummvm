@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -140,7 +137,8 @@ void Part::set_pan(int8 pan) {
 }
 
 void Part::set_transpose(int8 transpose) {
-	_transpose_eff = transpose_clamp((_transpose = transpose) + _player->getTranspose(), -24, 24);
+	_transpose = transpose;
+	_transpose_eff = (_transpose == -128) ? 0 : transpose_clamp(_transpose + _player->getTranspose(), -24, 24);
 	sendPitchBend();
 }
 
@@ -195,14 +193,18 @@ void Part::set_onoff(bool on) {
 	}
 }
 
-void Part::set_instrument(byte * data) {
-	_instrument.adlib(data);
+void Part::set_instrument(byte *data) {
+	if (_se->_pcSpeaker)
+		_instrument.pcspk(data);
+	else
+		_instrument.adlib(data);
+
 	if (clearToTransmit())
 		_instrument.send(_mc);
 }
 
 void Part::load_global_instrument(byte slot) {
-	_player->_se->copyGlobalAdLibInstrument(slot, &_instrument);
+	_player->_se->copyGlobalInstrument(slot, &_instrument);
 	if (clearToTransmit())
 		_instrument.send(_mc);
 }
@@ -236,7 +238,7 @@ void Part::noteOn(byte note, byte velocity) {
 		// should be implemented as a class static var. As it is, using
 		// a function level static var in most cases is arcane and evil.
 		static byte prev_vol_eff = 128;
-		if (_vol_eff != prev_vol_eff){
+		if (_vol_eff != prev_vol_eff) {
 			mc->volume(_vol_eff);
 			prev_vol_eff = _vol_eff;
 		}

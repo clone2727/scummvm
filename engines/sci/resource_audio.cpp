@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Resource library
@@ -200,7 +197,7 @@ void ResourceManager::readWaveAudioPatches() {
 	for (Common::ArchiveMemberList::const_iterator x = files.begin(); x != files.end(); ++x) {
 		Common::String name = (*x)->getName();
 
-		if (isdigit(name[0]))
+		if (isdigit(static_cast<unsigned char>(name[0])))
 			processWavePatch(ResourceId(kResourceTypeAudio, atoi(name.c_str())), name);
 	}
 }
@@ -359,14 +356,14 @@ int ResourceManager::readAudioMapSCI11(ResourceSource *map) {
 			stream->seek(offset + 1);
 			byte headerSize = stream->readByte();
 			assert(headerSize == 11 || headerSize == 12);
-			
+
 			stream->skip(5);
 			uint32 size = stream->readUint32LE() + headerSize + 2;
 
 			addResource(ResourceId(kResourceTypeAudio, n), src, offset, size);
 		}
 	} else {
-		bool isEarly = (entrySize != 11); 
+		bool isEarly = (entrySize != 11);
 
 		if (!isEarly) {
 			offset = READ_LE_UINT32(ptr);

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 
@@ -110,7 +107,7 @@ void ScummHelp::updateStrings(byte gameId, byte version, Common::Platform platfo
 		ADD_TEXT(_("* Note that using ctrl-f and"));
 		ADD_TEXT(_("  ctrl-g are not recommended"));
 		ADD_TEXT(_("  since they may cause crashes"));
-		ADD_TEXT(_("  or incorrect game behaviour."));
+		ADD_TEXT(_("  or incorrect game behavior."));
 		break;
 	case 3:
 		if (gameId == GID_LOOM)
@@ -178,6 +175,7 @@ void ScummHelp::updateStrings(byte gameId, byte version, Common::Platform platfo
 			ADD_BIND("b", _("To Henry / To Indy"));
 			break;
 		case GID_LOOM:
+			// I18N: These are different musical notes
 			ADD_BIND("q, c", _("play C minor on distaff"));
 			ADD_BIND("w, d", _("play D on distaff"));
 			ADD_BIND("e, e", _("play E on distaff"));
@@ -241,6 +239,7 @@ void ScummHelp::updateStrings(byte gameId, byte version, Common::Platform platfo
 			ADD_BIND("e", _("Examine"));
 			ADD_BIND("t", _("Regular cursor"));
 			ADD_BIND("i", _("Inventory"));
+			// I18N: Comm is a communication device
 			ADD_BIND("c", _("Comm"));
 			break;
 		case GID_CMI:

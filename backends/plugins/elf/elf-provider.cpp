@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/scummsys.h"
@@ -103,7 +100,7 @@ DynamicPlugin::VoidFunc ELFPlugin::findSymbol(const char *symbol) {
 void ELFPlugin::trackSize() {
 	// All we need to do is create our object, track its size, then delete it
 	DLObject *obj = makeDLObject();
-	
+
 	obj->trackSize(_filename.c_str());
 	delete obj;
 }
@@ -183,7 +180,7 @@ void ELFPlugin::unloadPlugin() {
 PluginList ELFPluginProvider::getPlugins() {
 	PluginList pl = FilePluginProvider::getPlugins();
 
-#if defined(UNCACHED_PLUGINS) && !defined(ELF_NO_MEM_MANAGER) 	
+#if defined(UNCACHED_PLUGINS) && !defined(ELF_NO_MEM_MANAGER)
 	// This static downcast is safe because all of the plugins must
 	// be ELF plugins
 	for (PluginList::iterator p = pl.begin(); p != pl.end(); ++p) {
@@ -193,8 +190,8 @@ PluginList ELFPluginProvider::getPlugins() {
 	// The Memory Manager should now allocate space based on the information
 	// it collected
 	ELFMemMan.allocateHeap();
-#endif	
-	
+#endif
+
 	return pl;
 }
 
@@ -210,4 +207,3 @@ bool ELFPluginProvider::isPluginFilename(const Common::FSNode &node) const {
 }
 
 #endif // defined(DYNAMIC_MODULES) && defined(USE_ELF_LOADER)
-

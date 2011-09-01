@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -147,7 +144,7 @@ void EngineState::wait(int16 ticks) {
 
 void EngineState::initGlobals() {
 	Script *script_000 = _segMan->getScript(1);
-	
+
 	if (!script_000->_localsBlock)
 		error("Script 0 has no locals block");
 
@@ -195,10 +192,10 @@ static kLanguage charToLanguage(const char c) {
 	}
 }
 
-Common::String SciEngine::getSciLanguageString(const char *str, kLanguage lang, kLanguage *lang2) const {
+Common::String SciEngine::getSciLanguageString(const Common::String &str, kLanguage lang, kLanguage *lang2) const {
 	kLanguage secondLang = K_LANG_NONE;
 
-	const char *seeker = str;
+	const char *seeker = str.c_str();
 	while (*seeker) {
 		if ((*seeker == '%') || (*seeker == '#')) {
 			secondLang = charToLanguage(*(seeker + 1));
@@ -245,9 +242,9 @@ Common::String SciEngine::getSciLanguageString(const char *str, kLanguage lang, 
 	}
 
 	if (seeker)
-		return Common::String(str, seeker - str);
+		return Common::String(str.c_str(), seeker - str.c_str());
 	else
-		return Common::String(str);
+		return str;
 }
 
 kLanguage SciEngine::getSciLanguage() {
@@ -334,7 +331,7 @@ void SciEngine::checkVocabularySwitch() {
 	uint16 parserLanguage = 1;
 	if (SELECTOR(parseLang) != -1)
 		parserLanguage = readSelectorValue(_gamestate->_segMan, _gameObjectAddress, SELECTOR(parseLang));
-		
+
 	if (parserLanguage != _vocabularyLanguage) {
 		delete _vocabulary;
 		_vocabulary = new Vocabulary(_resMan, parserLanguage > 1 ? true : false);

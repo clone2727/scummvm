@@ -18,15 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef TSAGE_H
 #define TSAGE_H
 
-#include "engines/advancedDetector.h"
 #include "engines/engine.h"
 #include "common/rect.h"
 #include "audio/mixer.h"
@@ -40,7 +36,7 @@
 #include "tsage/resources.h"
 
 
-namespace tSage {
+namespace TsAGE {
 
 enum {
 	GType_Ringworld = 0,
@@ -55,7 +51,9 @@ enum {
 };
 
 enum {
-	kRingDebugScripts = 1 << 0
+	kRingDebugScripts = 1 << 0,
+	ktSageSound = 1 << 1,
+	ktSageCore = 1 << 2
 };
 
 struct tSageGameDescription;
@@ -64,6 +62,7 @@ struct tSageGameDescription;
 #define SCREEN_HEIGHT 200
 #define SCREEN_CENTER_X 160
 #define SCREEN_CENTER_Y 100
+#define BF_INTERFACE_Y 168
 
 class TSageEngine : public Engine {
 private:
@@ -80,17 +79,19 @@ public:
 	uint32 getGameID() const;
 	uint32 getFeatures() const;
 	Common::String getPrimaryFilename() const;
+	bool shouldQuit();
 
 	virtual Common::Error init();
 	virtual Common::Error run();
 	virtual bool canLoadGameStateCurrently();
 	virtual bool canSaveGameStateCurrently();
 	virtual Common::Error loadGameState(int slot);
-	virtual Common::Error saveGameState(int slot, const char *desc);
+	virtual Common::Error saveGameState(int slot, const Common::String &desc);
+	virtual void syncSoundSettings();
 	Common::String generateSaveName(int slot);
 
-	void initialise();
-	void deinitialise();
+	void initialize();
+	void deinitialize();
 };
 
 extern TSageEngine *_vm;
@@ -99,6 +100,6 @@ extern TSageEngine *_vm;
 #define ALLOCATE(x) _vm->_memoryManager.allocate2(x)
 #define DEALLOCATE(x) _vm->_memoryManager.deallocate(x)
 
-} // End of namespace tSage
+} // End of namespace TsAGE
 
 #endif

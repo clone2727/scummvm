@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // TODO: There is a 'please_hyperwalk' variable that gets accessed that is meant to be global, but
@@ -256,7 +253,7 @@ bool Mouse::setCursorNum(int cursorIndex) {
 	_cursor = _cursorSprites->getFrame(cursorIndex);
 
 	// Set the cursor to the sprite
-	CursorMan.replaceCursor((const byte *)_cursor->getBasePtr(), _cursor->width(), _cursor->height(), 
+	CursorMan.replaceCursor((const byte *)_cursor->getBasePtr(), _cursor->width(), _cursor->height(),
 		_cursor->xOffset, _cursor->yOffset, TRANSPARENT_COLOR_INDEX);
 
 	return true;

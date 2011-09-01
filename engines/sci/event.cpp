@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/system.h"
@@ -253,7 +250,7 @@ SciEvent EventManager::getScummVMEvent() {
 	// When Ctrl AND Alt are pressed together with a regular key, Linux will give us control-key, Windows will give
 	//  us the actual key. My opinion is that windows is right, because under DOS the keys worked the same, anyway
 	//  we support the other case as well
-	if ((modifiers & Common::KBD_SHIFT) && input.character > 0 && input.character < 27)
+	if ((modifiers & Common::KBD_ALT) && input.character > 0 && input.character < 27)
 		input.character += 96; // 0x01 -> 'a'
 
 	if (getSciVersion() <= SCI_VERSION_1_MIDDLE) {
@@ -264,7 +261,7 @@ SciEvent EventManager::getScummVMEvent() {
 		else if ((modifiers & Common::KBD_CTRL) && input.character > 0 && input.character < 27)
 			input.character += 96; // 0x01 -> 'a'
 	}
-	
+
 	// If no actual key was pressed (e.g. if only a modifier key was pressed),
 	// ignore the event
 	if (!input.character)
@@ -280,7 +277,7 @@ void EventManager::updateScreen() {
 	if (g_system->getMillis() - s->_screenUpdateTime >= 1000 / 60) {
 		g_system->updateScreen();
 		s->_screenUpdateTime = g_system->getMillis();
-		// Throttle the checking of shouldQuit() to 60fps as well, since 
+		// Throttle the checking of shouldQuit() to 60fps as well, since
 		// Engine::shouldQuit() invokes 2 virtual functions
 		// (EventManager::shouldQuit() and EventManager::shouldRTL()),
 		// which is very expensive to invoke constantly without any

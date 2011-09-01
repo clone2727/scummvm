@@ -17,9 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * $URL$
- * $Id$
  */
 
 #include "base/version.h"
@@ -146,9 +143,9 @@ void MainMenuDialog::handleCommand(GUI::CommandSender *sender, uint32 cmd, uint3
 		break;
 	case kHelpCmd: {
 		GUI::MessageDialog dialog(
-					"Sorry, this engine does not currently provide in-game help. "
+					_("Sorry, this engine does not currently provide in-game help. "
 					"Please consult the README for basic information, and for "
-					"instructions on how to obtain further assistance.");
+					"instructions on how to obtain further assistance."));
 		dialog.runModal();
 		}
 		break;
@@ -176,7 +173,7 @@ void MainMenuDialog::reflowLayout() {
 		_loadButton->setEnabled(_engine->canLoadGameStateCurrently());
 	if (_engine->hasFeature(Engine::kSupportsSavingDuringRuntime))
 		_saveButton->setEnabled(_engine->canSaveGameStateCurrently());
-	
+
 	// Overlay size might have changed since the construction of the dialog.
 	// Update labels when it might be needed
 	// FIXME: it might be better to declare GUI::StaticTextWidget::setLabel() virtual
@@ -230,11 +227,11 @@ void MainMenuDialog::save() {
 		Common::String result(_saveDialog->getResultString());
 		if (result.empty()) {
 			// If the user was lazy and entered no save name, come up with a default name.
-			char buf[20];
-			snprintf(buf, 20, "Save %d", slot + 1);
+			Common::String buf;
+			buf = Common::String::format("Save %d", slot + 1);
 			_engine->saveGameState(slot, buf);
 		} else {
-			_engine->saveGameState(slot, result.c_str());
+			_engine->saveGameState(slot, result);
 		}
 
 		close();
@@ -249,14 +246,10 @@ void MainMenuDialog::load() {
 
 	int slot = _loadDialog->runModalWithPluginAndTarget(plugin, ConfMan.getActiveDomainName());
 
-	if (slot >= 0) {
-		// FIXME: For now we just ignore the return
-		// value, which is quite bad since it could
-		// be a fatal loading error, which renders
-		// the engine unusable.
-		_engine->loadGameState(slot);
+	_engine->setGameToLoadSlot(slot);
+
+	if (slot >= 0)		
 		close();
-	}
 }
 
 enum {
@@ -345,4 +338,3 @@ void ConfigDialog::handleCommand(GUI::CommandSender *sender, uint32 cmd, uint32 
 		GUI::OptionsDialog::handleCommand (sender, cmd, data);
 	}
 }
-

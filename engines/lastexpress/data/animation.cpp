@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 // Based on Deniz Oezmen's code: http://oezmen.eu/
@@ -80,7 +77,7 @@ bool Animation::load(Common::SeekableReadStream *stream, int flag) {
 
 	// Check if there is enough data
 	if (_stream->size() - _stream->pos() < (signed)(numChunks * sizeof(Chunk))) {
-		debugC(2, kLastExpressDebugGraphics, "NIS file seems to be corrupted!");
+		debugC(2, kLastExpressDebugGraphics, "NIS file seems to be corrupted");
 		return false;
 	}
 
@@ -97,23 +94,23 @@ bool Animation::load(Common::SeekableReadStream *stream, int flag) {
 	}
 	_currentChunk = _chunks.begin();
 	_changed = false;
-	_startTime = g_engine->_system->getMillis();
+	_startTime = g_system->getMillis();
 
 	return true;
 }
 
 bool Animation::process() {
 	if (!_currentChunk)
-		error("Animation::process - internal error: the current chunk iterator is invalid!");
+		error("[Animation::process] Current chunk iterator is invalid");
 
 	if (_stream == NULL || _chunks.size() == 0)
-		error("Trying to show an animation before loading data");
+		error("[Animation::process] Trying to show an animation before loading data");
 
 	// TODO: - subtract the time paused by the GUI
 	//       - Re-implement to be closer to the original engine
 	//       - Add support for subtitles
 	//       - Use engine sound queue instead of our own appendable sound instance
-	int32 currentFrame = (g_engine->_system->getMillis() - _startTime) * 3 / 100;
+	int32 currentFrame = (g_system->getMillis() - _startTime) * 3 / 100;
 
 	// Process all chunks until the current frame
 	while (!_changed && _currentChunk != NULL && currentFrame > _currentChunk->frame && !hasEnded()) {
@@ -183,7 +180,7 @@ bool Animation::process() {
 
 			// Synchronize the audio by resetting the start time
 			if (_currentChunk->frame == 0)
-				_startTime = g_engine->_system->getMillis();
+				_startTime = g_system->getMillis();
 			break;
 
 		case kChunkTypeAudioEnd:
@@ -194,7 +191,7 @@ bool Animation::process() {
 			break;
 
 		default:
-			error("  UNKNOWN chunk type=%x frame=%d size=%d", _currentChunk->type, _currentChunk->frame, _currentChunk->size);
+			error("[Animation::process] UNKNOWN chunk type=%x frame=%d size=%d", _currentChunk->type, _currentChunk->frame, _currentChunk->size);
 			break;
 		}
 		_currentChunk++;
@@ -209,7 +206,7 @@ bool Animation::hasEnded() {
 
 Common::Rect Animation::draw(Graphics::Surface *surface) {
 	if (!_overlay)
-		error("Animation::draw - internal error: the current overlay animation frame is invalid!");
+		error("[Animation::draw] Current overlay animation frame is invalid");
 
 	// Paint the background
 	if (_backgroundCurrent == 1 && _background1)
@@ -245,7 +242,7 @@ AnimFrame *Animation::processChunkFrame(Common::SeekableReadStream *in, const Ch
 
 void Animation::processChunkAudio(Common::SeekableReadStream *in, const Chunk &c) {
 	if (!_audio)
-		error("Animation::processChunkAudio - internal error: the audio stream is invalid!");
+		error("[Animation::processChunkAudio] Audio stream is invalid");
 
 	// Skip the Snd header, to queue just the audio blocks
 	uint32 size = c.size;
@@ -263,7 +260,8 @@ void Animation::processChunkAudio(Common::SeekableReadStream *in, const Chunk &c
 
 // TODO: this method will probably go away and be integrated in the main loop
 void Animation::play() {
-	while (!hasEnded() && !g_engine->getEventManager()->shouldQuit() && !g_engine->getEventManager()->shouldRTL()) {
+	Common::EventManager *eventMan = g_system->getEventManager();
+	while (!hasEnded() && !Engine::shouldQuit()) {
 		process();
 
 		if (_changed) {
@@ -286,11 +284,11 @@ void Animation::play() {
 		g_system->updateScreen();
 
 		//FIXME: implement subtitles
-		g_engine->_system->delayMillis(20);
+		g_system->delayMillis(20);
 
 		// Handle right-click to interrupt animations
 		Common::Event ev = Common::Event();
-		while (g_engine->getEventManager()->pollEvent(ev)) {
+		while (eventMan->pollEvent(ev)) {
 			if (ev.type == Common::EVENT_RBUTTONUP) {
 				// Stop audio
 				if (_audio)

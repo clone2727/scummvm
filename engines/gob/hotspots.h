@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef GOB_HOTSPOTS_H
@@ -161,6 +158,8 @@ private:
 		uint32   key;
 		uint32   id;
 		uint32   index;
+		uint16   x;
+		uint16   y;
 	};
 
 	struct InputDesc {
@@ -181,6 +180,8 @@ private:
 	uint16 _currentKey;
 	uint16 _currentIndex;
 	uint16 _currentId;
+	uint16 _currentX;
+	uint16 _currentY;
 
 	/** Add a hotspot, returning the new index. */
 	uint16 add(const Hotspot &hotspot);

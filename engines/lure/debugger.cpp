@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "common/config-manager.h"
@@ -537,7 +534,7 @@ bool Debugger::cmd_showAnim(int argc, const char **argv) {
 	}
 
 	// Bottle object is used as a handy hotspot holder that doesn't have any
-	// tick proc behaviour that we need to worry about
+	// tick proc behavior that we need to worry about
 	Hotspot *hotspot = res.activateHotspot(BOTTLE_HOTSPOT_ID);
 	hotspot->setLayer(0xfe);
 	hotspot->setSize(width, height);
@@ -552,11 +549,16 @@ bool Debugger::cmd_showAnim(int argc, const char **argv) {
 }
 
 bool Debugger::cmd_saveStrings(int argc, const char **argv) {
-	StringData &strings = StringData::getReference();
-	char buffer[32768];
-
 	if (argc != 2) {
 		DebugPrintf("strings <stringId>\n");
+		return true;
+	}
+
+	StringData &strings = StringData::getReference();
+
+	char *buffer = (char *)malloc(32768);
+	if (!buffer) {
+		DebugPrintf("Cannot allocate strings buffer\n");
 		return true;
 	}
 
@@ -580,6 +582,9 @@ bool Debugger::cmd_saveStrings(int argc, const char **argv) {
 
 	DebugPrintf("Done\n");
 */
+
+	free(buffer);
+
 	return true;
 }
 

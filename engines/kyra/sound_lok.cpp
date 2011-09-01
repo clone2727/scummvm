@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #include "kyra/kyra_lok.h"
@@ -77,9 +74,8 @@ void KyraEngine_LoK::snd_playWanderScoreViaMap(int command, int restart) {
 }
 
 void KyraEngine_LoK::snd_playVoiceFile(int id) {
-	char vocFile[9];
-	snprintf(vocFile, sizeof(vocFile), "%03d", id);
-	_speechPlayTime = _sound->voicePlay(vocFile, &_speechHandle);
+	Common::String vocFile = Common::String::format("%03d", id);
+	_speechPlayTime = _sound->voicePlay(vocFile.c_str(), &_speechHandle);
 }
 
 void KyraEngine_LoK::snd_voiceWaitForFinish(bool ingame) {

@@ -18,9 +18,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
- * $URL$
- * $Id$
- *
  */
 
 #ifndef AGOS_AGOS_H
@@ -28,6 +25,7 @@
 
 #include "engines/engine.h"
 
+#include "common/archive.h"
 #include "common/array.h"
 #include "common/error.h"
 #include "common/keyboard.h"
@@ -36,7 +34,6 @@
 #include "common/stack.h"
 #include "common/util.h"
 
-#include "agos/midi.h"
 #include "agos/sound.h"
 #include "agos/vga.h"
 
@@ -53,6 +50,16 @@
  * - Simon the Sorcerer 2
  * - Simon the Sorcerer Puzzle Pack
  */
+
+namespace Common {
+class File;
+class SeekableReadStream;
+}
+
+namespace Graphics {
+struct Surface;
+}
+
 namespace AGOS {
 
 uint fileReadItemID(Common::SeekableReadStream *in);
@@ -62,6 +69,8 @@ uint fileReadItemID(Common::SeekableReadStream *in);
 #ifdef ENABLE_AGOS2
 class MoviePlayer;
 #endif
+
+class MidiPlayer;
 
 struct Child;
 struct SubObject;
@@ -178,7 +187,24 @@ class Debugger;
 #	define _OPCODE(ver, x)	{ &ver::x, "" }
 #endif
 
+class ArchiveMan : public Common::SearchSet {
+public:
+	ArchiveMan();
+
+	void enableFallback(bool val) { _fallBack = val; }
+
+#ifdef ENABLE_AGOS2
+	void registerArchive(const Common::String &filename, int priority);
+#endif
+
+	Common::SeekableReadStream *open(const Common::String &filename);
+
+private:
+	bool _fallBack;
+};
+
 class AGOSEngine : public Engine {
+protected:
 	friend class Debugger;
 
 	// Engine APIs
@@ -196,7 +222,6 @@ class AGOSEngine : public Engine {
 	virtual void syncSoundSettings();
 	virtual void pauseEngineIntern(bool pause);
 
-public:
 	virtual void setupOpcodes();
 	uint16 _numOpcodes, _opcode;
 
@@ -208,8 +233,9 @@ public:
 
 	virtual void setupVideoOpcodes(VgaOpcodeProc *op);
 
-	const AGOSGameDescription *_gameDescription;
+	const AGOSGameDescription * const _gameDescription;
 
+public:
 	virtual void setupGame();
 
 	int getGameId() const;
@@ -315,7 +341,7 @@ protected:
 	bool _backFlag;
 
 	uint16 _debugMode;
-	uint16 _language;
+	Common::Language _language;
 	bool _copyProtection;
 	bool _pause;
 	bool _dumpScripts;
@@ -550,7 +576,7 @@ protected:
 
 	byte _lettersToPrintBuf[80];
 
-	MidiPlayer _midi;
+	MidiPlayer *_midi;
 	bool _midiEnabled;
 
 	int _vgaTickCounter;
@@ -587,8 +613,10 @@ protected:
 	byte _hebrewCharWidths[32];
 
 public:
-	AGOSEngine(OSystem *syst);
+	AGOSEngine(OSystem *system, const AGOSGameDescription *gd);
 	virtual ~AGOSEngine();
+
+	ArchiveMan _archives;
 
 	byte *_curSfxFile;
 	uint32 _curSfxFileSize;
@@ -598,6 +626,10 @@ protected:
 	virtual uint16 to16Wrapper(uint value);
 	virtual uint16 readUint16Wrapper(const void *src);
 	virtual uint32 readUint32Wrapper(const void *src);
+
+#ifdef ENABLE_AGOS2
+	void loadArchives();
+#endif
 
 	int allocGamePcVars(Common::SeekableReadStream *in);
 	void createPlayer();
@@ -783,14 +815,14 @@ protected:
 	void loadTextIntoMem(uint16 stringId);
 
 	uint loadTextFile(const char *filename, byte *dst);
-	Common::File *openTablesFile(const char *filename);
-	void closeTablesFile(Common::File *in);
+	Common::SeekableReadStream *openTablesFile(const char *filename);
+	void closeTablesFile(Common::SeekableReadStream *in);
 
 	uint loadTextFile_simon1(const char *filename, byte *dst);
-	Common::File *openTablesFile_simon1(const char *filename);
+	Common::SeekableReadStream *openTablesFile_simon1(const char *filename);
 
 	uint loadTextFile_gme(const char *filename, byte *dst);
-	Common::File *openTablesFile_gme(const char *filename);
+	Common::SeekableReadStream *openTablesFile_gme(const char *filename);
 
 	void invokeTimeEvent(TimeEvent *te);
 	bool kickoffTimeEvents();
@@ -1284,7 +1316,7 @@ class AGOSEngine_PN : public AGOSEngine {
 	void setupBoxes();
 	int readfromline();
 public:
-	AGOSEngine_PN(OSystem *system);
+	AGOSEngine_PN(OSystem *system, const AGOSGameDescription *gd);
 	~AGOSEngine_PN();
 
 	virtual void setupGame();
@@ -1526,7 +1558,7 @@ protected:
 
 class AGOSEngine_Elvira1 : public AGOSEngine {
 public:
-	AGOSEngine_Elvira1(OSystem *system);
+	AGOSEngine_Elvira1(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_Elvira1();
 
 	virtual void setupGame();
@@ -1607,7 +1639,7 @@ protected:
 
 class AGOSEngine_Elvira2 : public AGOSEngine_Elvira1 {
 public:
-	AGOSEngine_Elvira2(OSystem *system);
+	AGOSEngine_Elvira2(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_Elvira2();
 
 	virtual void setupGame();
@@ -1702,7 +1734,7 @@ protected:
 
 class AGOSEngine_Waxworks : public AGOSEngine_Elvira2 {
 public:
-	AGOSEngine_Waxworks(OSystem *system);
+	AGOSEngine_Waxworks(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_Waxworks();
 
 	virtual void setupGame();
@@ -1769,7 +1801,7 @@ protected:
 
 class AGOSEngine_Simon1 : public AGOSEngine_Waxworks {
 public:
-	AGOSEngine_Simon1(OSystem *system);
+	AGOSEngine_Simon1(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_Simon1();
 
 	virtual void setupGame();
@@ -1840,7 +1872,7 @@ protected:
 
 class AGOSEngine_Simon2 : public AGOSEngine_Simon1 {
 public:
-	AGOSEngine_Simon2(OSystem *system);
+	AGOSEngine_Simon2(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_Simon2();
 
 	virtual void setupGame();
@@ -1887,7 +1919,7 @@ protected:
 #ifdef ENABLE_AGOS2
 class AGOSEngine_Feeble : public AGOSEngine_Simon2 {
 public:
-	AGOSEngine_Feeble(OSystem *system);
+	AGOSEngine_Feeble(OSystem *system, const AGOSGameDescription *gd);
 	~AGOSEngine_Feeble();
 
 	virtual void setupGame();
@@ -2026,7 +2058,7 @@ protected:
 
 class AGOSEngine_FeebleDemo : public AGOSEngine_Feeble {
 public:
-	AGOSEngine_FeebleDemo(OSystem *system);
+	AGOSEngine_FeebleDemo(OSystem *system, const AGOSGameDescription *gd);
 
 protected:
 	bool _filmMenuUsed;
@@ -2047,7 +2079,7 @@ protected:
 
 class AGOSEngine_PuzzlePack : public AGOSEngine_Feeble {
 public:
-	AGOSEngine_PuzzlePack(OSystem *system);
+	AGOSEngine_PuzzlePack(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_PuzzlePack();
 
 	virtual void setupGame();
@@ -2106,7 +2138,7 @@ protected:
 
 class AGOSEngine_DIMP : public AGOSEngine_PuzzlePack {
 public:
-	AGOSEngine_DIMP(OSystem *system);
+	AGOSEngine_DIMP(OSystem *system, const AGOSGameDescription *gd);
 	//~AGOSEngine_DIMP();
 
 	virtual void setupOpcodes();

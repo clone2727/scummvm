@@ -286,34 +286,11 @@ static const JMPGameDescription gameDescriptions[] = {
 
 } // End of namespace JMP
 
-static const ADParams detectionParams = {
-	// Pointer to ADGameDescription or its superset structure
-	(const byte *)JMP::gameDescriptions,
-	// Size of that superset structure
-	sizeof(JMP::JMPGameDescription),
-	// Number of bytes to compute MD5 sum for
-	5000,
-	// List of all engine targets
-	jmpGames,
-	// Structure for autoupgrading obsolete targets
-	0,
-	// Name of single gameid (optional)
-	"jmp",
-	// List of files for file-based fallback detection (optional)
-	0,
-	// Flags
-	0,
-	// Additional GUI options (for every game)
-	Common::GUIO_NONE,
-	// Maximum directory depth
-	1,
-	// List of directory globs
-	0
-};
-
 class JMPMetaEngine : public AdvancedMetaEngine {
 public:
-	JMPMetaEngine() : AdvancedMetaEngine(detectionParams) {}
+	JMPMetaEngine() : AdvancedMetaEngine(JMP::gameDescriptions, sizeof(JMP::JMPGameDescription), jmpGames) {
+		_singleid = "jmp";
+	}
 
 	virtual const char *getName() const {
 		return "JMP Engine";
