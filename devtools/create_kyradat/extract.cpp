@@ -50,8 +50,11 @@ bool extractRaw16to8(PAKFile &out, const ExtractInformation *info, const byte *d
 bool extractMrShapeAnimData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
 bool extractRaw16(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
 bool extractRaw32(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
-bool extractLolButtonDefs(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
+bool extractLoLButtonDefs(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
 
+bool extractEoB2SeqData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
+bool extractEoB2ShapeData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
+bool extractEoBNpcData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id);
 // Extraction type table
 
 const ExtractType extractTypeTable[] = {
@@ -73,13 +76,17 @@ const ExtractType extractTypeTable[] = {
 	{ k3TypeRaw16to8, extractRaw16to8 },
 	{ k3TypeShpData, extractMrShapeAnimData },
 
-	{ kLolTypeCharData, extractRaw },
-	{ kLolTypeSpellData, extractRaw },
-	{ kLolTypeCompassData, extractRaw16to8 },
-	{ kLolTypeFlightShpData, extractRaw16to8 },
-	{ kLolTypeRaw16, extractRaw16 },
-	{ kLolTypeRaw32, extractRaw32 },
-	{ kLolTypeButtonDef, extractLolButtonDefs },
+	{ kLoLTypeCharData, extractRaw },
+	{ kLoLTypeSpellData, extractRaw },
+	{ kLoLTypeCompassData, extractRaw16to8 },
+	{ kLoLTypeFlightShpData, extractRaw16to8 },
+	{ kLoLTypeRaw16, extractRaw16 },
+	{ kLoLTypeRaw32, extractRaw32 },
+	{ kLoLTypeButtonDef, extractLoLButtonDefs },
+
+	{ kEoB2TypeSeqData, extractEoB2SeqData },
+	{ kEoB2TypeShapeData, extractEoB2ShapeData },
+	{ kEoBTypeNpcData, extractEoBNpcData },
 
 	{ -1, 0 }
 };
@@ -104,13 +111,16 @@ const TypeTable typeTable[] = {
 	{ k2TypeSfxList, 0 },
 	{ k3TypeRaw16to8, 1 },
 	{ k3TypeShpData, 7 },
-	{ kLolTypeRaw16, 13 },
-	{ kLolTypeRaw32, 14 },
-	{ kLolTypeButtonDef, 12 },
-	{ kLolTypeCharData, 8 },
-	{ kLolTypeSpellData, 9 },
-	{ kLolTypeCompassData, 10 },
-	{ kLolTypeFlightShpData, 11 },
+	{ kLoLTypeRaw16, 13 },
+	{ kLoLTypeRaw32, 14 },
+	{ kLoLTypeButtonDef, 12 },
+	{ kLoLTypeCharData, 8 },
+	{ kLoLTypeSpellData, 9 },
+	{ kLoLTypeCompassData, 10 },
+	{ kLoLTypeFlightShpData, 11 },
+	{ kEoB2TypeSeqData, 15 },
+	{ kEoB2TypeShapeData, 16 },
+	{ kEoBTypeNpcData, 17},
 	{ -1, 1 }
 };
 
@@ -151,7 +161,7 @@ bool extractStrings(PAKFile &out, const ExtractInformation *info, const byte *da
 	static const uint8 rusFanSkip_k1GUIStrings[] = { 1, 3, 6, 8, 11, 13, 18 };
 	uint32 rusFanSkipIdLen = 0;
 	const uint8 *rusFanSkipId = 0;
-	int rusFanEmptyId = 10000;
+	uint rusFanEmptyId = 10000;
 	uint32 skipCount = 0;
 
 	int patch = 0;
@@ -168,7 +178,7 @@ bool extractStrings(PAKFile &out, const ExtractInformation *info, const byte *da
 		if (id == k2IngamePakFiles)
 			patch = 4;
 
-		if (info->lang == Common::RU_RUS) {
+		if (info->lang == Common::RU_RUS && info->special == kNoSpecial) {
 			patch = 5;
 			if (id == k2SeqplayStrings) {
 				rusFanSkipId = rusFanSkip_k2SeqplayStrings;
@@ -194,7 +204,7 @@ bool extractStrings(PAKFile &out, const ExtractInformation *info, const byte *da
 		}
 
 		// HACK
-		if (id == k2SeqplayIntroTracks && info->game == kLol)
+		if (id == k2SeqplayIntroTracks && info->game == kLoL)
 			return extractStringsWoSuffix(out, info, data, size, filename, id);
 	}
 
@@ -384,7 +394,7 @@ bool extractStrings(PAKFile &out, const ExtractInformation *info, const byte *da
 					}
 				}
 			}
-		
+
 		} while (input < c);
 	} else {
 		uint32 copySize = size;
@@ -1006,7 +1016,7 @@ bool extractRaw32(PAKFile &out, const ExtractInformation *info, const byte *data
 	return out.addFile(filename, buffer, size);
 }
 
-bool extractLolButtonDefs(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id) {
+bool extractLoLButtonDefs(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id) {
 	int num = size / 22;
 	uint8 *buffer = new uint8[size];
 	uint32 outsize = num * 18;
@@ -1032,6 +1042,124 @@ bool extractLolButtonDefs(PAKFile &out, const ExtractInformation *info, const by
 		src += 2; dst += 2;
 		WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
 		src += 2; dst += 2;
+	}
+
+	return out.addFile(filename, buffer, outsize);
+}
+
+bool extractEoB2SeqData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id) {
+	int num = size / 11;
+	uint8 *buffer = new uint8[size];
+	const uint8 *src = data;
+	uint8 *dst = buffer;
+
+	for (int i = 0; i < num; i++) {
+		memcpy(dst, src, 2);
+		src += 2; dst += 2;
+		WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+		src += 2; dst += 2;
+		memcpy(dst, src, 7);
+		src += 7; dst += 7;
+	}
+
+	return out.addFile(filename, buffer, size);
+}
+
+bool extractEoB2ShapeData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id) {
+	int num = size / 6;
+	uint8 *buffer = new uint8[size];
+	const uint8 *src = data;
+	uint8 *dst = buffer;
+
+	for (int i = 0; i < num; i++) {
+		WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+		src += 2; dst += 2;
+		memcpy(dst, src, 4);
+		src += 4; dst += 4;
+	}
+
+	return out.addFile(filename, buffer, size);
+}
+
+bool extractEoBNpcData(PAKFile &out, const ExtractInformation *info, const byte *data, const uint32 size, const char *filename, int id) {
+	// We use one extraction routine for both EOB 1 and EOB 2 (in spite of the data format differences)
+	// since it is easy enough to generate a common output usable by both engines
+
+	uint8 *buffer = 0;
+	uint32 outsize = 0;
+
+	if (info->game == kEoB1) {
+		uint16 num = size / 243;
+		outsize = num * 111 + 2;
+		buffer = new uint8[outsize];
+		const uint8 *src = data;
+		uint8 *dst = buffer;
+
+		WRITE_BE_UINT16(dst, num);
+		dst += 2;
+
+		for (int i = 0; i < num; i++) {
+			memcpy(dst, src, 27);
+			src += 27; dst += 27;
+			WRITE_BE_UINT16(dst, *src++);
+			dst += 2;
+			WRITE_BE_UINT16(dst, *src++);
+			dst += 2;
+			memcpy(dst, src, 10);
+			src += 10; dst += 10;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			// skipping lots of zero space
+			src += 64;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			for (int ii = 0; ii < 27; ii++) {
+				WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+				src += 2; dst += 2;
+			}
+			// skipping more zero space
+			src += 70;
+		}
+	} else {
+		uint16 num = size / 345;
+		outsize = num * 111 + 2;
+		buffer = new uint8[outsize];
+		const uint8 *src = data;
+		uint8 *dst = buffer;
+
+		WRITE_BE_UINT16(dst, num);
+		dst += 2;
+
+		for (int i = 0; i < num; i++) {
+			memcpy(dst, src, 27);
+			src += 27; dst += 27;
+			WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+			src += 2; dst += 2;
+			WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+			src += 2; dst += 2;
+			memcpy(dst, src, 10);
+			src += 10; dst += 10;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			// skipping lots of zero space
+			src += 164;
+			WRITE_BE_UINT32(dst, READ_LE_UINT32(src));
+			src += 4; dst += 4;
+			for (int ii = 0; ii < 27; ii++) {
+				WRITE_BE_UINT16(dst, READ_LE_UINT16(src));
+				src += 2; dst += 2;
+			}
+			// skipping more zero space
+			src += 70;
+		}
 	}
 
 	return out.addFile(filename, buffer, outsize);

@@ -99,7 +99,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_JMAN,
 		GF_TRAILER,
@@ -114,7 +114,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_JMAN,
 		0,
@@ -132,7 +132,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::ES_ESP,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_JMAN,
 		0,
@@ -149,7 +149,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_JOURNEY,
 		0,
@@ -165,7 +165,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		0,
@@ -181,7 +181,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_DEMO,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_DEMO,
@@ -197,7 +197,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_TRAILER,
@@ -216,7 +216,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_TRAILER,
@@ -235,7 +235,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_TRAILER,
@@ -254,7 +254,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_TRAILER,
@@ -273,7 +273,7 @@ static const JMPGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformWindows,
 			ADGF_NO_FLAGS,
-			Common::GUIO_NONE
+			GUIO0()
 		},
 		GType_BIT,
 		GF_TRAILER,

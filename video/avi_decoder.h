@@ -44,10 +44,6 @@ namespace Graphics {
 struct PixelFormat;
 }
 
-namespace Graphics {
-struct Surface;
-}
-
 namespace Video {
 
 class Codec;

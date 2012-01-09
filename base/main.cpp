@@ -103,7 +103,7 @@ static const EnginePlugin *detectPlugin() {
 
 	// Query the plugins and find one that will handle the specified gameid
 	printf("User picked target '%s' (gameid '%s')...\n", ConfMan.getActiveDomainName().c_str(), gameid.c_str());
-	printf("%s", "  Looking for a plugin supporting this gameid... ");
+	printf("  Looking for a plugin supporting this gameid... ");
 
  	GameDescriptor game = EngineMan.findGame(gameid, &plugin);
 
@@ -111,7 +111,7 @@ static const EnginePlugin *detectPlugin() {
 		printf("failed\n");
 		warning("%s is an invalid gameid. Use the --list-games option to list supported gameid", gameid.c_str());
 	} else {
-		printf("%s\n Starting '%s'\n", plugin->getName(), game.description().c_str());
+		printf("%s\n  Starting '%s'\n", plugin->getName(), game.description().c_str());
 	}
 
 	return plugin;
@@ -203,6 +203,9 @@ static Common::Error runGame(const EnginePlugin *plugin, OSystem &system, const 
 			warning(_("Engine does not support debug level '%s'"), token.c_str());
 	}
 
+	// Initialize any game-specific keymaps
+	engine->initKeymap();
+
 	// Inform backend that the engine is about to be run
 	system.engineInit();
 
@@ -211,6 +214,9 @@ static Common::Error runGame(const EnginePlugin *plugin, OSystem &system, const 
 
 	// Inform backend that the engine finished
 	system.engineDone();
+
+	// Clean up any game-specific keymaps
+	engine->deinitKeymap();
 
 	// Free up memory
 	delete engine;
@@ -258,7 +264,7 @@ static void setupKeymapper(OSystem &system) {
 	using namespace Common;
 
 	Keymapper *mapper = system.getEventManager()->getKeymapper();
-	Keymap *globalMap = new Keymap("global");
+	Keymap *globalMap = new Keymap(kGlobalKeymapName);
 	Action *act;
 	HardwareKeySet *keySet;
 
@@ -288,7 +294,7 @@ static void setupKeymapper(OSystem &system) {
 
 	mapper->addGlobalKeymap(globalMap);
 
-	mapper->pushKeymap("global");
+	mapper->pushKeymap(kGlobalKeymapName, true);
 #endif
 
 }

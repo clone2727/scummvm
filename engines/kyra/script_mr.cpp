@@ -405,7 +405,7 @@ int KyraEngine_MR::o3_updateConversations(EMCState *script) {
 	}
 
 	int convs[4];
-	Common::set_to(convs, convs+4, -1);
+	Common::fill(convs, convs+4, -1);
 
 	if (_currentChapter == 1) {
 		switch (_mainCharacter.dlgIndex) {
@@ -1129,7 +1129,7 @@ typedef Common::Functor1Mem<EMCState *, int, KyraEngine_MR> OpcodeV3;
 #define Opcode(x) table->push_back(new OpcodeV3(this, &KyraEngine_MR::x))
 #define OpcodeUnImpl() table->push_back(new OpcodeV3(this, 0))
 void KyraEngine_MR::setupOpcodeTable() {
-	Common::Array<const Opcode *> *table = 0;
+	Common::Array<const Opcode*> *table = 0;
 
 	_opcodes.reserve(176);
 	SetOpcodeTable(_opcodes);

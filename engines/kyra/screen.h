@@ -137,6 +137,37 @@ private:
 	uint16 *_bitmapOffsets;
 };
 
+#ifdef ENABLE_EOB
+/**
+ * Implementation of the Font interface for old DOS fonts used
+ * in EOB and EOB II.
+ *
+ */
+class OldDOSFont : public Font {
+public:
+	OldDOSFont();
+	~OldDOSFont() { unload(); }
+
+	bool load(Common::SeekableReadStream &file);
+	int getHeight() const { return _height; }
+	int getWidth() const { return _width; }
+	int getCharWidth(uint16 c) const;
+	void setColorMap(const uint8 *src) { _colorMap = src; }
+	void drawChar(uint16 c, byte *dst, int pitch) const;
+
+private:
+	void unload();
+
+	uint8 *_data;
+	uint16 *_bitmapOffsets;
+
+	int _width, _height;
+	const uint8 *_colorMap;
+
+	int _numGlyphs;
+};
+#endif // ENABLE_EOB
+
 /**
  * Implementation of the Font interface for AMIGA fonts.
  */
@@ -335,7 +366,7 @@ public:
 		FID_NUM
 	};
 
-	Screen(KyraEngine_v1 *vm, OSystem *system);
+	Screen(KyraEngine_v1 *vm, OSystem *system, const ScreenDim *dimTable, const int dimTableSize);
 	virtual ~Screen();
 
 	// init
@@ -418,9 +449,12 @@ public:
 	virtual void setTextColorMap(const uint8 *cmap) = 0;
 	void setTextColor(const uint8 *cmap, int a, int b);
 
-	virtual void setScreenDim(int dim) = 0;
-	virtual const ScreenDim *getScreenDim(int dim) = 0;
-	virtual int screenDimTableCount() const = 0;
+	const ScreenDim *getScreenDim(int dim) const;
+	void modifyScreenDim(int dim, int x, int y, int w, int h);
+	int screenDimTableCount() const { return _dimTableCount; }
+
+	void setScreenDim(int dim);
+	int curDimIndex() const { return _curDimIndex; }
 
 	const ScreenDim *_curDim;
 
@@ -430,13 +464,13 @@ public:
 	int setNewShapeHeight(uint8 *shape, int height);
 	int resetShapeHeight(uint8 *shape);
 
-	void drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int sd, int flags, ...);
+	virtual void drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int sd, int flags, ...);
 
 	// mouse handling
 	void hideMouse();
 	void showMouse();
 	bool isMouseVisible() const;
-	void setMouseCursor(int x, int y, const byte *shape);
+	virtual void setMouseCursor(int x, int y, const byte *shape);
 
 	// rect handling
 	virtual int getRectSize(int w, int h) = 0;
@@ -471,6 +505,9 @@ public:
 	FontId _currentFont;
 
 	// decoding functions
+	static void decodeFrame1(const uint8 *src, uint8 *dst, uint32 size);
+	static uint16 decodeEGAGetCode(const uint8 *&pos, uint8 &nib);
+
 	static void decodeFrame3(const uint8 *src, uint8 *dst, uint32 size);
 	static uint decodeFrame4(const uint8 *src, uint8 *dst, uint32 dstSize);
 	static void decodeFrameDelta(uint8 *dst, const uint8 *src, bool noXor = false);
@@ -478,6 +515,9 @@ public:
 
 	static void convertAmigaGfx(uint8 *data, int w, int h, int depth = 5, bool wsa = false, int bytesPerPlane = -1);
 	static void convertAmigaMsc(uint8 *data);
+
+	// RPG specific, this does not belong here
+	void crossFadeRegion(int x1, int y1, int x2, int y2, int w, int h, int srcPage, int dstPage);
 
 protected:
 	uint8 *getPagePtr(int pageNum);
@@ -514,7 +554,7 @@ protected:
 	uint8 _sjisInvisibleColor;
 
 	Palette *_screenPalette;
-	Common::Array<Palette *> _palettes;
+	Common::Array<Palette*> _palettes;
 	Palette *_internFadePalette;
 
 	Font *_fonts[FID_NUM];
@@ -525,6 +565,12 @@ protected:
 
 	uint8 *_animBlockPtr;
 	int _animBlockSize;
+
+	// dimension handling
+	const ScreenDim * const _dimTable;
+	ScreenDim **_customDimTable;
+	const int _dimTableCount;
+	int _curDimIndex;
 
 	// mouse handling
 	int _mouseLockCount;

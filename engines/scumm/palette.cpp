@@ -584,10 +584,12 @@ void ScummEngine::stopCycle(int i) {
 	assertRange(0, i, 16, "stopCycle: cycle");
 	if (i != 0) {
 		_colorCycle[i - 1].delay = 0;
-		cycl = &_colorCycle[i - 1];
-		for (int j = cycl->start; j <= cycl->end && j < 32; ++j) {
-			_shadowPalette[j] = j;
-			_colorUsedByCycle[j] = 0;
+		if (_game.platform == Common::kPlatformAmiga && _game.id == GID_INDY4) {
+			cycl = &_colorCycle[i - 1];
+			for (int j = cycl->start; j <= cycl->end && j < 32; ++j) {
+				_shadowPalette[j] = j;
+				_colorUsedByCycle[j] = 0;
+			}
 		}
 		return;
 	}
@@ -821,7 +823,7 @@ void ScummEngine::setShadowPalette(int slot, int redScale, int greenScale, int b
 	if (slot < 0 || slot >= NUM_SHADOW_PALETTE)
 		error("setShadowPalette: invalid slot %d", slot);
 
-	if (startColor < 0 || startColor > 255 || endColor < 0 || startColor > 255 || endColor < startColor)
+	if (startColor < 0 || startColor > 255 || endColor < 0 || endColor > 255 || endColor < startColor)
 		error("setShadowPalette: invalid range from %d to %d", startColor, endColor);
 
 	table = _shadowPalette + slot * 256;
@@ -911,7 +913,7 @@ void ScummEngine::darkenPalette(int redScale, int greenScale, int blueScale, int
 		const byte *palptr = getPalettePtr(_curPalIndex, _roomResource) + startColor * 3;
 
 		for (int i = startColor; i <= endColor; ++i) {
-			if (i >= 16 && i < 48) {
+			if (i > 16 && i < 48) {
 				if (cycleFlag)
 					_colorUsedByCycle[i - 16] &= ~2;
 				else

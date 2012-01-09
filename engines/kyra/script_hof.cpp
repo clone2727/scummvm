@@ -1397,7 +1397,6 @@ int KyraEngine_HoF::o2_demoFinale(EMCState *script) {
 	_screen->copyRegion(0, 0, 0, 0, 320, 200, 2, 0);
 
 	_screen->_curPage = 0;
-	_screen->setFont(Screen::FID_6_FNT);
 	int y = _lang == 1 ? 70 : 65;
 	for (int i = 0; i < 6; i++)
 		_text->printText(strings[i], _text->getCenterStringX(strings[i], 1, 319), y + i * 10, 255, 207, 0);
@@ -1406,7 +1405,7 @@ int KyraEngine_HoF::o2_demoFinale(EMCState *script) {
 	_screen->updateScreen();
 
 	_eventList.clear();
-	while (!skipFlag())
+	while (!skipFlag() && !shouldQuit())
 		delay(10);
 
 	_sound->beginFadeOut();
@@ -1481,7 +1480,7 @@ typedef Common::Functor2Mem<const TIM *, const uint16 *, int, KyraEngine_HoF> TI
 #define OpcodeTimUnImpl() _timOpcodes.push_back(new TIMOpcodeV2(this, 0))
 
 void KyraEngine_HoF::setupOpcodeTable() {
-	Common::Array<const Opcode *> *table = 0;
+	Common::Array<const Opcode*> *table = 0;
 
 	_opcodes.reserve(176);
 	SetOpcodeTable(_opcodes);
