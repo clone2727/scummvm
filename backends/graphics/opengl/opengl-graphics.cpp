@@ -838,38 +838,50 @@ void OpenGLGraphicsManager::refreshCursor() {
 }
 
 void OpenGLGraphicsManager::refreshCursorScale() {
-	// Get the window minimum scale factor. The cursor will mantain its original aspect
-	// ratio, and we do not want it to get too big if only one dimension is resized
-	uint screenScaleFactor = MIN(_videoMode.hardwareWidth * 10000 / _videoMode.screenWidth,
-		_videoMode.hardwareHeight * 10000 / _videoMode.screenHeight);
+	// Calculate the scale factors of the screen. We limit ourselves to 3 at
+	// most here to avoid really big (and ugly) cursors for big resolutions.
+	// It might be noteworthy that 3 is the (current) target scale for the
+	// modern theme and thus assures the cursor is *never* scaled.
+	// We also totally ignore the aspect of the overlay cursor, since aspect
+	// ratio correction only applies to the game screen.
+	uint screenScaleFactorX = MIN(30000, _videoMode.hardwareWidth * 10000 / _videoMode.screenWidth);
+	uint screenScaleFactorY = MIN(30000, _videoMode.hardwareHeight * 10000 / _videoMode.screenHeight);
 
-	// Do not scale cursor if original size is used
-	if (_videoMode.mode == OpenGL::GFX_ORIGINAL)
-		screenScaleFactor = _videoMode.scaleFactor * 10000;
+	// Apply the target scale factor to the cursor.
+	// It might be noteworthy we only apply any scaling to the cursor in case
+	// the current scale factor is bigger than the target scale to match
+	// SurfaceSdlGraphicsManager's behavior. Otherwise we would downscale the
+	// GUI cursor of the modern theme for example.
+	if (screenScaleFactorX > uint(_cursorTargetScale * 10000))
+		screenScaleFactorX /= _cursorTargetScale;
+	else
+		screenScaleFactorX = 10000;
+	if (screenScaleFactorY > uint(_cursorTargetScale * 10000))
+		screenScaleFactorY /= _cursorTargetScale;
+	else
+		screenScaleFactorY = 10000;
 
-	if ((uint)_cursorTargetScale * 10000 >= screenScaleFactor && (uint)_videoMode.scaleFactor * 10000 >= screenScaleFactor) {
-		// If the cursor target scale and the video mode scale factor are bigger than
-		// the current window scale, do not scale the cursor for the overlay
-		_cursorState.rW = _cursorState.w;
-		_cursorState.rH = _cursorState.h;
-		_cursorState.rHotX = _cursorState.hotX;
-		_cursorState.rHotY = _cursorState.hotY;
-	} else {
-		// Otherwise, scale the cursor for the overlay
-		int targetScaleFactor = MIN(_cursorTargetScale, _videoMode.scaleFactor);
-		// We limit the maximum scale to 3 here to avoid too big cursors, for large overlay resolutions
-		int actualFactor = MIN<uint>(3, screenScaleFactor - (targetScaleFactor - 1)) * 10000;
-		_cursorState.rW = (int16)(_cursorState.w * actualFactor / 10000);
-		_cursorState.rH = (int16)(_cursorState.h * actualFactor / 10000);
-		_cursorState.rHotX = (int16)(_cursorState.hotX * actualFactor / 10000);
-		_cursorState.rHotY = (int16)(_cursorState.hotY * actualFactor / 10000);
-	}
+	// Apply them (without any possible) aspect ratio correction to the
+	// overlay.
+	_cursorState.rW = (int16)(_cursorState.w * screenScaleFactorX / 10000);
+	_cursorState.rH = (int16)(_cursorState.h * screenScaleFactorY / 10000);
+	_cursorState.rHotX = (int16)(_cursorState.hotX * screenScaleFactorX / 10000);
+	_cursorState.rHotY = (int16)(_cursorState.hotY * screenScaleFactorY / 10000);
 
-	// Always scale the cursor for the game
-	_cursorState.vW = (int16)(_cursorState.w * screenScaleFactor / 10000);
-	_cursorState.vH = (int16)(_cursorState.h * screenScaleFactor / 10000);
-	_cursorState.vHotX = (int16)(_cursorState.hotX * screenScaleFactor / 10000);
-	_cursorState.vHotY = (int16)(_cursorState.hotY * screenScaleFactor / 10000);
+	// Make sure we properly scale the cursor according to the desired aspect.
+	// It might be noteworthy that, unlike with the overlay, we do not limit
+	// the scale factor here to avoid odd looks if the game uses items as
+	// mouse cursor, which would otherwise suddenly be smaller.
+	int width, height;
+	calculateDisplaySize(width, height);
+	screenScaleFactorX = (width * 10000 / _videoMode.screenWidth) / _cursorTargetScale;
+	screenScaleFactorY = (height * 10000 / _videoMode.screenHeight) / _cursorTargetScale;
+
+	// Always scale the cursor for the game.
+	_cursorState.vW = (int16)(_cursorState.w * screenScaleFactorX / 10000);
+	_cursorState.vH = (int16)(_cursorState.h * screenScaleFactorY / 10000);
+	_cursorState.vHotX = (int16)(_cursorState.hotX * screenScaleFactorX / 10000);
+	_cursorState.vHotY = (int16)(_cursorState.hotY * screenScaleFactorY / 10000);
 }
 
 void OpenGLGraphicsManager::calculateDisplaySize(int &width, int &height) {
@@ -1115,8 +1127,6 @@ void OpenGLGraphicsManager::loadTextures() {
 	}
 #endif
 
-	uint gameScreenBPP = 0;
-
 	if (!_gameTexture) {
 		byte bpp;
 		GLenum intformat;
@@ -1127,7 +1137,6 @@ void OpenGLGraphicsManager::loadTextures() {
 #else
 		getGLPixelFormat(Graphics::PixelFormat::createFormatCLUT8(), bpp, intformat, format, type);
 #endif
-		gameScreenBPP = bpp;
 		_gameTexture = new GLTexture(bpp, intformat, format, type);
 	} else
 		_gameTexture->refresh();
@@ -1186,10 +1195,11 @@ void OpenGLGraphicsManager::loadTextures() {
 	// We need to setup a proper unpack alignment value here, else we will
 	// get problems with the texture updates, in case the surface data is
 	// not properly aligned.
-	// For now we use the gcd of the game screen format and 2, since 2 is
-	// the BPP value for the overlay and the OSD.
-	if (gameScreenBPP)
-		glPixelStorei(GL_UNPACK_ALIGNMENT, Common::gcd<uint>(gameScreenBPP, 2));
+	// It is noteworthy this assumes the OSD uses the same BPP as the overlay
+	// and that the cursor works with any alignment setting.
+	int newAlignment = Common::gcd(_gameTexture->getBytesPerPixel(), _overlayTexture->getBytesPerPixel());
+	assert(newAlignment == 1 || newAlignment == 2 || newAlignment == 4);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, newAlignment);
 
 	// We use a "pack" alignment (when reading from textures) to 4 here,
 	// since the only place where we really use it is the BMP screenshot

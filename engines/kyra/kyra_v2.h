@@ -24,7 +24,7 @@
 #define KYRA_KYRA_V2_H
 
 #include "kyra/kyra_v1.h"
-#include "kyra/gui.h"
+#include "kyra/gui_v1.h"
 #include "kyra/wsamovie.h"
 #include "kyra/item.h"
 
@@ -38,7 +38,7 @@ struct FrameControl {
 	uint16 delay;
 };
 
-struct ItemAnimData_v2 {
+struct ItemAnimDefinition {
 	Item itemIndex;
 	uint8 numFrames;
 	const FrameControl *frames;
@@ -46,7 +46,7 @@ struct ItemAnimData_v2 {
 
 struct ActiveItemAnim {
 	uint16 currentFrame;
-	uint32 nextFrame;
+	uint32 nextFrameTime;
 };
 
 class Screen_v2;
@@ -252,7 +252,7 @@ protected:
 	virtual void uninitAnimationShapes(int count, uint8 *filedata) = 0;
 
 	// Shapes
-	typedef Common::HashMap<int, uint8 *> ShapeMap;
+	typedef Common::HashMap<int, uint8*> ShapeMap;
 	ShapeMap _gameShapes;
 
 	uint8 *getShapePtr(int index) const;

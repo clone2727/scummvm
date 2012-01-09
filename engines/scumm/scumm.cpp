@@ -55,6 +55,7 @@
 #include "scumm/player_nes.h"
 #include "scumm/player_sid.h"
 #include "scumm/player_pce.h"
+#include "scumm/player_apple2.h"
 #include "scumm/player_v1.h"
 #include "scumm/player_v2.h"
 #include "scumm/player_v2cms.h"
@@ -1171,11 +1172,8 @@ Common::Error ScummEngine::init() {
 				Common::List<Graphics::PixelFormat> tryModes = _system->getSupportedFormats();
 				for (Common::List<Graphics::PixelFormat>::iterator g = tryModes.begin(); g != tryModes.end(); ++g) {
 					if (g->bytesPerPixel != 2 || g->aBits()) {
-						g = tryModes.erase(g);
-						g--;
-					}
-
-					if (*g == _outputPixelFormat) {
+						g = tryModes.reverse_erase(g);
+					} else if (*g == _outputPixelFormat) {
 						tryModes.clear();
 						tryModes.push_back(_outputPixelFormat);
 						break;
@@ -1258,6 +1256,16 @@ void ScummEngine::setupScumm() {
 	// Load game from specified slot, if any
 	if (ConfMan.hasKey("save_slot")) {
 		requestLoad(ConfMan.getInt("save_slot"));
+	} else if (!ConfMan.hasKey("boot_param") && _game.id == GID_LOOM && _game.platform == Common::kPlatformFMTowns) {
+		// In case we run the Loom FM-Towns version and have no boot parameter
+		// nor start save game supplied we will show our own custom difficulty
+		// selection dialog, since the original does not have any.
+		LoomTownsDifficultyDialog difficultyDialog;
+		runDialog(difficultyDialog);
+
+		int difficulty = difficultyDialog.getSelectedDifficulty();
+		if (difficulty != -1)
+			_bootParam = difficulty;
 	}
 
 	_res->allocResTypeData(rtBuffer, 0, 10, kDynamicResTypeMode);
@@ -1800,7 +1808,7 @@ void ScummEngine::setupMusic(int midi) {
 	if (_game.version >= 7) {
 		// Setup for digital iMuse is performed in another place
 	} else if (_game.platform == Common::kPlatformApple2GS && _game.version == 0){
-		// TODO: Add support for music format
+		_musicEngine = new Player_AppleII(this, _mixer);
 	} else if (_game.platform == Common::kPlatformC64 && _game.version <= 1) {
 #ifndef DISABLE_SID
 		_musicEngine = new Player_SID(this, _mixer);

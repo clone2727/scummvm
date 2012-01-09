@@ -38,6 +38,9 @@
 #include "gob/sound/sound.h"
 #include "gob/sound/sounddesc.h"
 
+#include "gob/minigames/geisha/diving.h"
+#include "gob/minigames/geisha/penetration.h"
+
 namespace Gob {
 
 #define OPCODEVER Inter_Geisha
@@ -45,7 +48,16 @@ namespace Gob {
 #define OPCODEFUNC(i, x)  _opcodesFunc[i]._OPCODEFUNC(OPCODEVER, x)
 #define OPCODEGOB(i, x)   _opcodesGob[i]._OPCODEGOB(OPCODEVER, x)
 
-Inter_Geisha::Inter_Geisha(GobEngine *vm) : Inter_v1(vm) {
+Inter_Geisha::Inter_Geisha(GobEngine *vm) : Inter_v1(vm),
+	_diving(0), _penetration(0) {
+
+	_diving      = new Geisha::Diving(vm);
+	_penetration = new Geisha::Penetration(vm);
+}
+
+Inter_Geisha::~Inter_Geisha() {
+	delete _penetration;
+	delete _diving;
 }
 
 void Inter_Geisha::setupOpcodesDraw() {
@@ -80,18 +92,6 @@ void Inter_Geisha::oGeisha_loadCursor(OpFuncParams &params) {
 		warning("Geisha Stub: oGeisha_loadCursor: script[1] & 0x80");
 
 	o1_loadCursor(params);
-}
-
-bool Inter_Geisha::keyPressed() {
-	int16 key = _vm->_util->checkKey();
-	if (key)
-		return true;
-
-	int16 x, y;
-	MouseButtons buttons;
-
-	_vm->_util->getMouseState(&x, &y, &buttons);
-	return buttons != kMouseButtonsNone;
 }
 
 struct TOTTransition {
@@ -134,7 +134,7 @@ void Inter_Geisha::oGeisha_loadTot(OpFuncParams &params) {
 		}
 
 	if (needWait)
-		while (!keyPressed())
+		while (!_vm->_util->keyPressed())
 			_vm->_util->longDelay(1);
 }
 
@@ -263,30 +263,24 @@ void Inter_Geisha::oGeisha_writeData(OpFuncParams &params) {
 }
 
 void Inter_Geisha::oGeisha_gamePenetration(OpGobParams &params) {
-	uint16 var1 = _vm->_game->_script->readUint16();
-	uint16 var2 = _vm->_game->_script->readUint16();
-	uint16 var3 = _vm->_game->_script->readUint16();
-	uint16 var4 = _vm->_game->_script->readUint16();
+	uint16 var1      = _vm->_game->_script->readUint16();
+	uint16 var2      = _vm->_game->_script->readUint16();
+	uint16 var3      = _vm->_game->_script->readUint16();
+	uint16 resultVar = _vm->_game->_script->readUint16();
 
-	WRITE_VAR_UINT32(var4, 0);
+	bool result = _penetration->play(var1, var2, var3);
 
-	warning("Geisha Stub: Minigame \"Penetration\": %d, %d, %d, %d", var1, var2, var3, var4);
-
-	// Fudge a win for now
-	WRITE_VAR_UINT32(var4, 1);
+	WRITE_VAR_UINT32(resultVar, result ? 1 : 0);
 }
 
 void Inter_Geisha::oGeisha_gameDiving(OpGobParams &params) {
-	uint16 var1 = _vm->_game->_script->readUint16();
-	uint16 var2 = _vm->_game->_script->readUint16();
-	uint16 var3 = _vm->_game->_script->readUint16();
+	uint16 playerCount      = _vm->_game->_script->readUint16();
+	uint16 hasPearlLocation = _vm->_game->_script->readUint16();
+	uint16 resultVar        = _vm->_game->_script->readUint16();
 
-	WRITE_VAR_UINT32(var3, 1);
+	bool result = _diving->play(playerCount, hasPearlLocation);
 
-	warning("Geisha Stub: Minigame \"Diving\": %d, %d, %d", var1, var2, var3);
-
-	// Fudge a win for now
-	WRITE_VAR_UINT32(var3, 0);
+	WRITE_VAR_UINT32(resultVar, result ? 1 : 0);
 }
 
 void Inter_Geisha::oGeisha_loadTitleMusic(OpGobParams &params) {

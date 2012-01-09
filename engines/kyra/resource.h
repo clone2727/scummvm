@@ -35,6 +35,7 @@
 #include "common/archive.h"
 
 #include "kyra/kyra_v1.h"
+#include "kyra/darkmoon.h"
 #include "kyra/lol.h"
 #include "kyra/kyra_hof.h"
 
@@ -250,91 +251,472 @@ enum KyraResources {
 	k3ItemMagicTable,
 	k3ItemStringMap,
 
-#ifdef ENABLE_LOL
-	kLolIngamePakFiles,
-	kLolCharacterDefs,
-	kLolIngameSfxFiles,
-	kLolIngameSfxIndex,
-	kLolMusicTrackMap,
-	kLolIngameGMSfxIndex,
-	kLolIngameMT32SfxIndex,
-	kLolIngamePcSpkSfxIndex,
-	kLolSpellProperties,
-	kLolGameShapeMap,
-	kLolSceneItemOffs,
-	kLolCharInvIndex,
-	kLolCharInvDefs,
-	kLolCharDefsMan,
-	kLolCharDefsWoman,
-	kLolCharDefsKieran,
-	kLolCharDefsAkshel,
-	kLolExpRequirements,
-	kLolMonsterModifiers,
-	kLolMonsterShiftOffsets,
-	kLolMonsterDirFlags,
-	kLolMonsterScaleY,
-	kLolMonsterScaleX,
-	kLolMonsterScaleWH,
-	kLolFlyingObjectShp,
-	kLolInventoryDesc,
+#if defined(ENABLE_EOB) || defined(ENABLE_LOL)
+	kRpgCommonMoreStrings,
+	kRpgCommonDscShapeIndex,
+	kRpgCommonDscX,
+	kRpgCommonDscTileIndex,
+	kRpgCommonDscUnk2,
+	kRpgCommonDscDoorShapeIndex,
+	kRpgCommonDscDimData1,
+	kRpgCommonDscDimData2,
+	kRpgCommonDscBlockMap,
+	kRpgCommonDscDimMap,
+	kRpgCommonDscDoorY2,
+	kRpgCommonDscBlockIndex,
 
-	kLolLevelShpList,
-	kLolLevelDatList,
-	kLolCompassDefs,
-	kLolItemPrices,
-	kLolStashSetup,
+	kEoBBaseChargenStrings1,
+	kEoBBaseChargenStrings2,
+	kEoBBaseChargenStartLevels,
+	kEoBBaseChargenStatStrings,
+	kEoBBaseChargenRaceSexStrings,
+	kEoBBaseChargenClassStrings,
+	kEoBBaseChargenAlignmentStrings,
+	kEoBBaseChargenEnterGameStrings,
+	kEoBBaseChargenClassMinStats,
+	kEoBBaseChargenRaceMinStats,
+	kEoBBaseChargenRaceMaxStats,
 
-	kLolDscUnk1,
-	kLolDscShapeIndex,
-	kLolDscOvlMap,
-	kLolDscScaleWidthData,
-	kLolDscScaleHeightData,
-	kLolDscX,
-	kLolDscY,
-	kLolDscTileIndex,
-	kLolDscUnk2,
-	kLolDscDoorShapeIndex,
-	kLolDscDimData1,
-	kLolDscDimData2,
-	kLolDscBlockMap,
-	kLolDscDimMap,
-	kLolDscDoor1,
-	kLolDscDoorScale,
-	kLolDscDoor4,
-	kLolDscDoorX,
-	kLolDscDoorY,
-	kLolDscOvlIndex,
-	kLolDscBlockIndex,
+	kEoBBaseSaveThrowTable1,
+	kEoBBaseSaveThrowTable2,
+	kEoBBaseSaveThrowTable3,
+	kEoBBaseSaveThrowTable4,
+	kEoBBaseSaveThrwLvlIndex,
+	kEoBBaseSaveThrwModDiv,
+	kEoBBaseSaveThrwModExt,
 
-	kLolScrollXTop,
-	kLolScrollYTop,
-	kLolScrollXBottom,
-	kLolScrollYBottom,
+	kEoBBasePryDoorStrings,
+	kEoBBaseWarningStrings,
 
-	kLolButtonDefs,
-	kLolButtonList1,
-	kLolButtonList2,
-	kLolButtonList3,
-	kLolButtonList4,
-	kLolButtonList5,
-	kLolButtonList6,
-	kLolButtonList7,
-	kLolButtonList8,
+	kEoBBaseItemSuffixStringsRings,
+	kEoBBaseItemSuffixStringsPotions,
+	kEoBBaseItemSuffixStringsWands,
 
-	kLolLegendData,
-	kLolMapCursorOvl,
-	kLolMapStringId,
+	kEoBBaseRipItemStrings,
+	kEoBBaseCursedString,
+	kEoBBaseEnchantedString,
+	kEoBBaseMagicObjectStrings,
+	kEoBBaseMagicObjectString5,
+	kEoBBasePatternSuffix,
+	kEoBBasePatternGrFix1,
+	kEoBBasePatternGrFix2,
+	kEoBBaseValidateArmorString,
+	kEoBBaseValidateCursedString,
+	kEoBBaseValidateNoDropString,
+	kEoBBasePotionStrings,
+	kEoBBaseWandStrings,
+	kEoBBaseItemMisuseStrings,
 
-	kLolSpellbookAnim,
-	kLolSpellbookCoords,
-	kLolHealShapeFrames,
-	kLolLightningDefs,
-	kLolFireballCoords,
+	kEoBBaseTakenStrings,
+	kEoBBasePotionEffectStrings,
 
-	kLolCredits,
+	kEoBBaseYesNoStrings,
+	kEoBBaseNpcMaxStrings,
+	kEoBBaseOkStrings,
+	kEoBBaseNpcJoinStrings,
+	kEoBBaseCancelStrings,
+	kEoBBaseAbortStrings,
 
-	kLolHistory,
-#endif
+	kEoBBaseMenuStringsMain,
+	kEoBBaseMenuStringsSaveLoad,
+	kEoBBaseMenuStringsOnOff,
+	kEoBBaseMenuStringsSpells,
+	kEoBBaseMenuStringsRest,
+	kEoBBaseMenuStringsDrop,
+	kEoBBaseMenuStringsExit,
+	kEoBBaseMenuStringsStarve,
+	kEoBBaseMenuStringsScribe,
+	kEoBBaseMenuStringsDrop2,
+	kEoBBaseMenuStringsHead,
+	kEoBBaseMenuStringsPoison,
+	kEoBBaseMenuStringsMgc,
+	kEoBBaseMenuStringsPrefs,
+	kEoBBaseMenuStringsRest2,
+	kEoBBaseMenuStringsRest3,
+	kEoBBaseMenuStringsRest4,
+	kEoBBaseMenuStringsDefeat,
+	kEoBBaseMenuStringsTransfer,
+	kEoBBaseMenuStringsSpec,
+	kEoBBaseMenuStringsSpellNo,
+	kEoBBaseMenuYesNoStrings,
+
+	kEoBBaseSpellLevelsMage,
+	kEoBBaseSpellLevelsCleric,
+	kEoBBaseNumSpellsCleric,
+	kEoBBaseNumSpellsWisAdj,
+	kEoBBaseNumSpellsPal,
+	kEoBBaseNumSpellsMage,
+
+	kEoBBaseCharGuiStringsHp,
+	kEoBBaseCharGuiStringsWp1,
+	kEoBBaseCharGuiStringsWp2,
+	kEoBBaseCharGuiStringsWr,
+	kEoBBaseCharGuiStringsSt1,
+	kEoBBaseCharGuiStringsSt2,
+	kEoBBaseCharGuiStringsIn,
+
+	kEoBBaseCharStatusStrings7,
+	kEoBBaseCharStatusStrings81,
+	kEoBBaseCharStatusStrings82,
+	kEoBBaseCharStatusStrings9,
+	kEoBBaseCharStatusStrings12,
+	kEoBBaseCharStatusStrings131,
+	kEoBBaseCharStatusStrings132,
+
+	kEoBBaseLevelGainStrings,
+	kEoBBaseExperienceTable0,
+	kEoBBaseExperienceTable1,
+	kEoBBaseExperienceTable2,
+	kEoBBaseExperienceTable3,
+	kEoBBaseExperienceTable4,
+
+	kEoBBaseClassModifierFlags,
+
+	kEoBBaseMonsterStepTable01,
+	kEoBBaseMonsterStepTable02,
+	kEoBBaseMonsterStepTable1,
+	kEoBBaseMonsterStepTable2,
+	kEoBBaseMonsterStepTable3,
+	kEoBBaseMonsterCloseAttPosTable1,
+	kEoBBaseMonsterCloseAttPosTable21,
+	kEoBBaseMonsterCloseAttPosTable22,
+	kEoBBaseMonsterCloseAttUnkTable,
+	kEoBBaseMonsterCloseAttChkTable1,
+	kEoBBaseMonsterCloseAttChkTable2,
+	kEoBBaseMonsterCloseAttDstTable1,
+	kEoBBaseMonsterCloseAttDstTable2,
+
+	kEoBBaseMonsterProximityTable,
+	kEoBBaseFindBlockMonstersTable,
+	kEoBBaseMonsterDirChangeTable,
+	kEoBBaseMonsterDistAttStrings,
+
+	kEoBBaseEncodeMonsterDefs,
+	kEoBBaseNpcPresets,
+
+	kEoBBaseWllFlagPreset,
+	kEoBBaseDscShapeCoords,
+
+	kEoBBaseDscDoorScaleOffs,
+	kEoBBaseDscDoorScaleMult1,
+	kEoBBaseDscDoorScaleMult2,
+	kEoBBaseDscDoorScaleMult3,
+	kEoBBaseDscDoorScaleMult4,
+	kEoBBaseDscDoorScaleMult5,
+	kEoBBaseDscDoorScaleMult6,
+	kEoBBaseDscDoorType5Offs,
+	kEoBBaseDscDoorXE,
+	kEoBBaseDscDoorY1,
+	kEoBBaseDscDoorY3,
+	kEoBBaseDscDoorY4,
+	kEoBBaseDscDoorY5,
+	kEoBBaseDscDoorY6,
+	kEoBBaseDscDoorY7,
+	kEoBBaseDscDoorCoordsExt,
+
+	kEoBBaseDscItemPosIndex,
+	kEoBBaseDscItemShpX,
+	kEoBBaseDscItemScaleIndex,
+	kEoBBaseDscItemTileIndex,
+	kEoBBaseDscItemShapeMap,
+
+	kEoBBaseDscMonsterFrmOffsTbl1,
+	kEoBBaseDscMonsterFrmOffsTbl2,
+
+	kEoBBaseInvSlotX,
+	kEoBBaseInvSlotY,
+	kEoBBaseSlotValidationFlags,
+
+	kEoBBaseProjectileWeaponTypes,
+	kEoBBaseWandTypes,
+
+	kEoBBaseDrawObjPosIndex,
+	kEoBBaseFlightObjFlipIndex,
+	kEoBBaseFlightObjShpMap,
+	kEoBBaseFlightObjSclIndex,
+
+	kEoBBaseDscTelptrShpCoords,
+
+	kEoBBasePortalSeqData,
+	kEoBBaseManDef,
+	kEoBBaseManWord,
+	kEoBBaseManPrompt,
+
+	kEoBBaseBookNumbers,
+	kEoBBaseMageSpellsList,
+	kEoBBaseClericSpellsList,
+	kEoBBaseSpellNames,
+	kEoBBaseMagicStrings1,
+	kEoBBaseMagicStrings2,
+	kEoBBaseMagicStrings3,
+	kEoBBaseMagicStrings4,
+	kEoBBaseMagicStrings6,
+	kEoBBaseMagicStrings7,
+	kEoBBaseMagicStrings8,
+
+	kEoBBaseExpObjectTlMode,
+	kEoBBaseExpObjectTblIndex,
+	kEoBBaseExpObjectShpStart,
+	kEoBBaseExpObjectTbl1,
+	kEoBBaseExpObjectTbl2,
+	kEoBBaseExpObjectTbl3,
+	kEoBBaseExpObjectY,
+
+	kEoBBaseSparkDefSteps,
+	kEoBBaseSparkDefSubSteps,
+	kEoBBaseSparkDefShift,
+	kEoBBaseSparkDefAdd,
+	kEoBBaseSparkDefX,
+	kEoBBaseSparkDefY,
+	kEoBBaseSparkOfFlags1,
+	kEoBBaseSparkOfFlags2,
+	kEoBBaseSparkOfShift,
+	kEoBBaseSparkOfX,
+	kEoBBaseSparkOfY,
+
+	kEoBBaseSpellProperties,
+	kEoBBaseMagicFlightProps,
+	kEoBBaseTurnUndeadEffect,
+	kEoBBaseBurningHandsDest,
+	kEoBBaseConeOfColdDest1,
+	kEoBBaseConeOfColdDest2,
+	kEoBBaseConeOfColdDest3,
+	kEoBBaseConeOfColdDest4,
+	kEoBBaseConeOfColdGfxTbl,
+
+	kEoB1MainMenuStrings,
+	kEoB1BonusStrings,
+
+	kEoB1IntroFilesOpening,
+	kEoB1IntroFilesTower,
+	kEoB1IntroFilesOrb,
+	kEoB1IntroFilesWdEntry,
+	kEoB1IntroFilesKing,
+	kEoB1IntroFilesHands,
+	kEoB1IntroFilesWdExit,
+	kEoB1IntroFilesTunnel,
+	kEoB1IntroOpeningFrmDelay,
+	kEoB1IntroWdEncodeX,
+	kEoB1IntroWdEncodeY,
+	kEoB1IntroWdEncodeWH,
+	kEoB1IntroWdDsX,
+	kEoB1IntroWdDsY,
+	kEoB1IntroTvlX1,
+	kEoB1IntroTvlY1,
+	kEoB1IntroTvlX2,
+	kEoB1IntroTvlY2,
+	kEoB1IntroTvlW,
+	kEoB1IntroTvlH,
+
+	kEoB1DoorShapeDefs,
+	kEoB1DoorSwitchShapeDefs,
+	kEoB1DoorSwitchCoords,
+	kEoB1MonsterProperties,
+
+	kEoB1EnemyMageSpellList,
+	kEoB1EnemyMageSfx,
+	kEoB1BeholderSpellList,
+	kEoB1BeholderSfx,
+
+	kEoB1TurnUndeadString,
+
+	kEoB1NpcShpData,
+	kEoB1NpcSubShpIndex1,
+	kEoB1NpcSubShpIndex2,
+	kEoB1NpcSubShpY,
+	kEoB1Npc0Strings,
+	kEoB1Npc11Strings,
+	kEoB1Npc12Strings,
+	kEoB1Npc21Strings,
+	kEoB1Npc22Strings,
+	kEoB1Npc31Strings,
+	kEoB1Npc32Strings,
+	kEoB1Npc4Strings,
+	kEoB1Npc5Strings,
+	kEoB1Npc6Strings,
+	kEoB1Npc7Strings,
+
+	kEoB2MainMenuStrings,
+
+	kEoB2TransferPortraitFrames,
+	kEoB2TransferConvertTable,
+	kEoB2TransferItemTable,
+	kEoB2TransferExpTable,
+	kEoB2TransferStrings1,
+	kEoB2TransferStrings2,
+	kEoB2TransferLabels,
+
+	kEoB2IntroStrings,
+	kEoB2IntroCPSFiles,
+	kEoB2IntroSeqData00,
+	kEoB2IntroSeqData01,
+	kEoB2IntroSeqData02,
+	kEoB2IntroSeqData03,
+	kEoB2IntroSeqData04,
+	kEoB2IntroSeqData05,
+	kEoB2IntroSeqData06,
+	kEoB2IntroSeqData07,
+	kEoB2IntroSeqData08,
+	kEoB2IntroSeqData09,
+	kEoB2IntroSeqData10,
+	kEoB2IntroSeqData11,
+	kEoB2IntroSeqData12,
+	kEoB2IntroSeqData13,
+	kEoB2IntroSeqData14,
+	kEoB2IntroSeqData15,
+	kEoB2IntroSeqData16,
+	kEoB2IntroSeqData17,
+	kEoB2IntroSeqData18,
+	kEoB2IntroSeqData19,
+	kEoB2IntroSeqData20,
+	kEoB2IntroSeqData21,
+	kEoB2IntroSeqData22,
+	kEoB2IntroSeqData23,
+	kEoB2IntroSeqData24,
+	kEoB2IntroSeqData25,
+	kEoB2IntroSeqData26,
+	kEoB2IntroSeqData27,
+	kEoB2IntroSeqData28,
+	kEoB2IntroSeqData29,
+	kEoB2IntroSeqData30,
+	kEoB2IntroSeqData31,
+	kEoB2IntroSeqData32,
+	kEoB2IntroSeqData33,
+	kEoB2IntroSeqData34,
+	kEoB2IntroSeqData35,
+	kEoB2IntroSeqData36,
+	kEoB2IntroSeqData37,
+	kEoB2IntroSeqData38,
+	kEoB2IntroSeqData39,
+	kEoB2IntroSeqData40,
+	kEoB2IntroSeqData41,
+	kEoB2IntroSeqData42,
+	kEoB2IntroSeqData43,
+	kEoB2IntroShapes00,
+	kEoB2IntroShapes01,
+	kEoB2IntroShapes04,
+	kEoB2IntroShapes07,
+
+	kEoB2FinaleStrings,
+	kEoB2CreditsData,
+	kEoB2FinaleCPSFiles,
+	kEoB2FinaleSeqData00,
+	kEoB2FinaleSeqData01,
+	kEoB2FinaleSeqData02,
+	kEoB2FinaleSeqData03,
+	kEoB2FinaleSeqData04,
+	kEoB2FinaleSeqData05,
+	kEoB2FinaleSeqData06,
+	kEoB2FinaleSeqData07,
+	kEoB2FinaleSeqData08,
+	kEoB2FinaleSeqData09,
+	kEoB2FinaleSeqData10,
+	kEoB2FinaleSeqData11,
+	kEoB2FinaleSeqData12,
+	kEoB2FinaleSeqData13,
+	kEoB2FinaleSeqData14,
+	kEoB2FinaleSeqData15,
+	kEoB2FinaleSeqData16,
+	kEoB2FinaleSeqData17,
+	kEoB2FinaleSeqData18,
+	kEoB2FinaleSeqData19,
+	kEoB2FinaleSeqData20,
+	kEoB2FinaleShapes00,
+	kEoB2FinaleShapes03,
+	kEoB2FinaleShapes07,
+	kEoB2FinaleShapes09,
+	kEoB2FinaleShapes10,
+
+	kEoB2NpcShapeData,
+	kEoB2Npc1Strings,
+	kEoB2Npc2Strings,
+	kEoB2MonsterDustStrings,
+
+	kEoB2DreamSteps,
+	kEoB2KheldranStrings,
+	kEoB2HornStrings,
+	kEoB2HornSounds,
+
+	kEoB2WallOfForceDsX,
+	kEoB2WallOfForceDsY,
+	kEoB2WallOfForceNumW,
+	kEoB2WallOfForceNumH,
+	kEoB2WallOfForceShpId,
+
+	kLoLIngamePakFiles,
+	kLoLCharacterDefs,
+	kLoLIngameSfxFiles,
+	kLoLIngameSfxIndex,
+	kLoLMusicTrackMap,
+	kLoLIngameGMSfxIndex,
+	kLoLIngameMT32SfxIndex,
+	kLoLIngamePcSpkSfxIndex,
+	kLoLSpellProperties,
+	kLoLGameShapeMap,
+	kLoLSceneItemOffs,
+	kLoLCharInvIndex,
+	kLoLCharInvDefs,
+	kLoLCharDefsMan,
+	kLoLCharDefsWoman,
+	kLoLCharDefsKieran,
+	kLoLCharDefsAkshel,
+	kLoLExpRequirements,
+	kLoLMonsterModifiers,
+	kLoLMonsterShiftOffsets,
+	kLoLMonsterDirFlags,
+	kLoLMonsterScaleY,
+	kLoLMonsterScaleX,
+	kLoLMonsterScaleWH,
+	kLoLFlyingObjectShp,
+	kLoLInventoryDesc,
+
+	kLoLLevelShpList,
+	kLoLLevelDatList,
+	kLoLCompassDefs,
+	kLoLItemPrices,
+	kLoLStashSetup,
+
+	kLoLDscWalls,
+	kLoLDscOvlMap,
+	kLoLDscScaleWidthData,
+	kLoLDscScaleHeightData,
+	kLoLBaseDscY,
+
+	kLoLDscDoorScale,
+	kLoLDscDoor4,
+	kLoLDscDoorX,
+	kLoLDscDoorY,
+	kLoLDscOvlIndex,
+
+	kLoLScrollXTop,
+	kLoLScrollYTop,
+	kLoLScrollXBottom,
+	kLoLScrollYBottom,
+
+	kLoLButtonDefs,
+	kLoLButtonList1,
+	kLoLButtonList2,
+	kLoLButtonList3,
+	kLoLButtonList4,
+	kLoLButtonList5,
+	kLoLButtonList6,
+	kLoLButtonList7,
+	kLoLButtonList8,
+
+	kLoLLegendData,
+	kLoLMapCursorOvl,
+	kLoLMapStringId,
+
+	kLoLSpellbookAnim,
+	kLoLSpellbookCoords,
+	kLoLHealShapeFrames,
+	kLoLLightningDefs,
+	kLoLFireballCoords,
+
+	kLoLCredits,
+
+	kLoLHistory,
+#endif // ENABLE_EOB || ENABLE_LOL
 
 	kMaxResIDs
 };
@@ -362,16 +744,23 @@ public:
 	const Room *loadRoomTable(int id, int &entries);
 	const HofSeqData *loadHofSequenceData(int id, int &entries);
 	const ItemAnimData_v1 *loadShapeAnimData_v1(int id, int &entries);
-	const ItemAnimData_v2 *loadShapeAnimData_v2(int id, int &entries);
+	const ItemAnimDefinition *loadItemAnimDefinition(int id, int &entries);
+#if defined(ENABLE_EOB) || defined(ENABLE_LOL)
+	const uint16 *loadRawDataBe16(int id, int &entries);
+	const uint32 *loadRawDataBe32(int id, int &entries);
+#endif // (ENABLE_EOB || ENABLE_LOL)
 #ifdef ENABLE_LOL
 	const LoLCharacter *loadCharData(int id, int &entries);
 	const SpellProperty *loadSpellData(int id, int &entries);
 	const CompassDef *loadCompassData(int id, int &entries);
 	const FlyingObjectShape *loadFlyingObjectData(int id, int &entries);
-	const uint16 *loadRawDataBe16(int id, int &entries);
-	const uint32 *loadRawDataBe32(int id, int &entries);
-	const ButtonDef *loadButtonDefs(int id, int &entries);
+	const LoLButtonDef *loadButtonDefs(int id, int &entries);
 #endif // ENABLE_LOL
+#ifdef ENABLE_EOB
+	const EoBSequenceStep *loadEoB2SeqData(int id, int &entries);
+	const EoBShapeDef *loadEoB2ShapeData(int id, int &entries);
+	const EoBCharacter *loadEoBNpcData(int id, int &entries);
+#endif // ENABLE_EOB
 
 	// use '-1' to prefetch/unload all ids
 	// prefetchId retruns false if only on of the resources
@@ -390,6 +779,7 @@ private:
 	const FileType *getFiletype(int type);
 	const void *getData(int id, int requesttype, int &size);
 
+	bool loadDummy(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadStringTable(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadRawData(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadShapeTable(Common::SeekableReadStream &stream, void *&ptr, int &size);
@@ -397,17 +787,25 @@ private:
 	bool loadRoomTable(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadHofSequenceData(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadShapeAnimData_v1(Common::SeekableReadStream &stream, void *&ptr, int &size);
-	bool loadShapeAnimData_v2(Common::SeekableReadStream &stream, void *&ptr, int &size);
+	bool loadItemAnimDefinition(Common::SeekableReadStream &stream, void *&ptr, int &size);
+#if defined(ENABLE_EOB) || defined(ENABLE_LOL)
+	bool loadRawDataBe16(Common::SeekableReadStream &stream, void *&ptr, int &size);
+	bool loadRawDataBe32(Common::SeekableReadStream &stream, void *&ptr, int &size);
+#endif // (ENABLE_LOL || ENABLE_EOB)
 #ifdef ENABLE_LOL
 	bool loadCharData(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadSpellData(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadCompassData(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadFlyingObjectData(Common::SeekableReadStream &stream, void *&ptr, int &size);
-	bool loadRawDataBe16(Common::SeekableReadStream &stream, void *&ptr, int &size);
-	bool loadRawDataBe32(Common::SeekableReadStream &stream, void *&ptr, int &size);
 	bool loadButtonDefs(Common::SeekableReadStream &stream, void *&ptr, int &size);
 #endif // ENABLE_LOL
+#ifdef ENABLE_EOB
+	bool loadEoB2SeqData(Common::SeekableReadStream &stream, void *&ptr, int &size);
+	bool loadEoB2ShapeData(Common::SeekableReadStream &stream, void *&ptr, int &size);
+	bool loadEoBNpcData(Common::SeekableReadStream &stream, void *&ptr, int &size);
+#endif // ENABLE_EOB
 
+	void freeDummy(void *&ptr, int &size);
 	void freeRawData(void *&ptr, int &size);
 	void freeStringTable(void *&ptr, int &size);
 	void freeShapeTable(void *&ptr, int &size);
@@ -415,16 +813,23 @@ private:
 	void freeRoomTable(void *&ptr, int &size);
 	void freeHofSequenceData(void *&ptr, int &size);
 	void freeHofShapeAnimDataV1(void *&ptr, int &size);
-	void freeHofShapeAnimDataV2(void *&ptr, int &size);
+	void freeItemAnimDefinition(void *&ptr, int &size);
+#if defined(ENABLE_EOB) || defined(ENABLE_LOL)
+	void freeRawDataBe16(void *&ptr, int &size);
+	void freeRawDataBe32(void *&ptr, int &size);
+#endif // (ENABLE_EOB || ENABLE_LOL)
 #ifdef ENABLE_LOL
 	void freeCharData(void *&ptr, int &size);
 	void freeSpellData(void *&ptr, int &size);
 	void freeCompassData(void *&ptr, int &size);
 	void freeFlyingObjectData(void *&ptr, int &size);
-	void freeRawDataBe16(void *&ptr, int &size);
-	void freeRawDataBe32(void *&ptr, int &size);
 	void freeButtonDefs(void *&ptr, int &size);
 #endif // ENABLE_LOL
+#ifdef ENABLE_EOB
+	void freeEoB2SeqData(void *&ptr, int &size);
+	void freeEoB2ShapeData(void *&ptr, int &size);
+	void freeEoBNpcData(void *&ptr, int &size);
+#endif // ENABLE_EOB
 
 	enum ResTypes {
 		kStringList = 0,
@@ -435,15 +840,19 @@ private:
 
 		k2SeqData = 5,
 		k2ShpAnimDataV1 = 6,
-		k2ShpAnimDataV2 = 7,
+		k2ItemAnimDefinition = 7,
 
-		kLolCharData = 8,
-		kLolSpellData = 9,
-		kLolCompassData = 10,
-		kLolFlightShpData = 11,
-		kLolButtonData = 12,
-		kLolRawDataBe16 = 13,
-		kLolRawDataBe32 = 14
+		kLoLCharData = 8,
+		kLoLSpellData = 9,
+		kLoLCompassData = 10,
+		kLoLFlightShpData = 11,
+		kLoLButtonData = 12,
+		kRawDataBe16 = 13,
+		kRawDataBe32 = 14,
+
+		kEoB2SequenceData = 15,
+		kEoB2ShapeData = 16,
+		kEoBNpcData = 17
 	};
 
 	struct FileType {

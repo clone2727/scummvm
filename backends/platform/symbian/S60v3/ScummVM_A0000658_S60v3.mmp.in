@@ -2,7 +2,7 @@
  * Copyright (C) 2003-2005 Andreas 'Sprawl' Karlsson - Original EPOC port, ESDL
  * Copyright (C) 2003-2005 Lars 'AnotherGuest' Persson - Original EPOC port, Audio System
  * Copyright (C) 2005 Jurgen 'SumthinWicked' Braam - EPOC/CVS maintainer
- * Copyright (C) 2005-2011 The ScummVM project
+ * Copyright (C) 2005-2012 The ScummVM project
  *
  * ScummVM is the legal property of its developers, whose names
  * are too numerous to list here. Please refer to the COPYRIGHT
@@ -87,7 +87,7 @@ STATICLIBRARY esdl.lib
 
 // *** Include paths
 
-USERINCLUDE	    ..\..\..\.. ..\..\..\..\common ..\..\..\..\gui ..\..\..\..\engines
+USERINCLUDE	    ..\..\..\.. ..\..\..\..\gui ..\..\..\..\engines
 USERINCLUDE		..\..\..\..\backends\fs ..\src ..\..\..\..\backends\platform\sdl ..\..\..\..\audio
 
 SYSTEMINCLUDE	\epoc32\include\ESDL
@@ -130,9 +130,13 @@ SOURCE gui\Dialog.cpp
 
 // Common error
 source common\error.cpp
+source common\quicktime.cpp
 
 // Special for graphics
 source graphics\iff.cpp
+source backends\graphics\symbiansdl\symbiansdl-graphics.cpp
+source backends\graphics\surfacesdl\surfacesdl-graphics.cpp
+source engines\obsolete.cpp
 
 // *** Dynamic Libraries
 LIBRARY cone.lib  eikcore.lib

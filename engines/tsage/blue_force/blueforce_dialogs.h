@@ -24,6 +24,7 @@
 #define TSAGE_BLUEFORCE_DIALOGS_H
 
 #include "gui/options.h"
+#include "tsage/dialogs.h"
 #include "tsage/events.h"
 #include "tsage/graphics.h"
 #include "common/list.h"
@@ -33,6 +34,8 @@
 namespace TsAGE {
 
 namespace BlueForce {
+
+using namespace TsAGE;
 
 class RightClickDialog : public GfxDialog {
 private:
@@ -53,6 +56,48 @@ public:
 	virtual bool process(Event &event);
 	void execute();
 };
+
+class AmmoBeltDialog : public GfxDialog {
+private:
+	GfxSurface _surface;
+	Visage _cursorImages;
+	Rect _dialogRect, _loadedRect, _gunRect, _clip1Rect, _clip2Rect;
+	CursorType _cursorNum;
+	int _inDialog;
+	bool _closeFlag;
+public:
+	AmmoBeltDialog();
+	~AmmoBeltDialog();
+
+	virtual void draw();
+	virtual bool process(Event &event);
+	void execute();
+};
+
+class RadioConvDialog : public GfxDialog {
+private:
+	GfxButton _buttons[8];
+public:
+	RadioConvDialog();
+	virtual ~RadioConvDialog();
+	int execute();
+
+	static int show();
+};
+
+class OptionsDialog: public GfxDialog {
+private:
+	GfxButton _btnSave, _btnRestore, _btnRestart;
+	GfxButton _btnQuit, _btnResume;
+	GfxButton _btnSound;
+	GfxMessage _gfxMessage;
+public:
+	OptionsDialog();
+	virtual ~OptionsDialog() {}
+
+	static void show();
+};
+
 
 } // End of namespace BlueForce
 

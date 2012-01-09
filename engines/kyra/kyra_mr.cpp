@@ -183,7 +183,7 @@ KyraEngine_MR::~KyraEngine_MR() {
 	delete[] _sceneStrings;
 	delete[] _talkObjectList;
 
-	for (Common::Array<const Opcode *>::iterator i = _opcodesDialog.begin(); i != _opcodesDialog.end(); ++i)
+	for (Common::Array<const Opcode*>::iterator i = _opcodesDialog.begin(); i != _opcodesDialog.end(); ++i)
 		delete *i;
 	_opcodesDialog.clear();
 
@@ -205,11 +205,11 @@ Common::Error KyraEngine_MR::init() {
 	assert(_screen);
 	_screen->setResolution();
 
-	KyraEngine_v1::init();
-	initStaticResource();
-
 	_debugger = new Debugger_v2(this);
 	assert(_debugger);
+
+	KyraEngine_v1::init();
+	initStaticResource();
 
 	_soundDigital = new SoundDigital(this, _mixer);
 	assert(_soundDigital);
@@ -887,6 +887,9 @@ bool KyraEngine_MR::checkCharCollision(int x, int y) {
 #pragma mark -
 
 void KyraEngine_MR::runLoop() {
+	// Initialize debugger since how it should be fully usable
+	_debugger->initialize();
+
 	_eventList.clear();
 
 	_runFlag = true;
