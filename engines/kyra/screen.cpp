@@ -36,8 +36,8 @@
 
 namespace Kyra {
 
-Screen::Screen(KyraEngine_v1 *vm, OSystem *system)
-	: _system(system), _vm(vm), _sjisInvisibleColor(0),
+Screen::Screen(KyraEngine_v1 *vm, OSystem *system, const ScreenDim *dimTable, const int dimTableSize)
+	: _system(system), _vm(vm), _sjisInvisibleColor(0), _dimTable(dimTable), _dimTableCount(dimTableSize),
 	_cursorColorKey((vm->game() == GI_KYRA1) ? 0xFF : 0x00) {
 	_debugEnabled = false;
 	_maskMinY = _maskMaxY = -1;
@@ -51,6 +51,7 @@ Screen::Screen(KyraEngine_v1 *vm, OSystem *system)
 
 	_currentFont = FID_8_FNT;
 	_paletteChanged = true;
+	_curDim = 0;
 }
 
 Screen::~Screen() {
@@ -69,6 +70,10 @@ Screen::~Screen() {
 
 	for (uint i = 0; i < _palettes.size(); ++i)
 		delete _palettes[i];
+
+	for (int i = 0; i < _dimTableCount; ++i)
+		delete _customDimTable[i];
+	delete[] _customDimTable;
 }
 
 bool Screen::init() {
@@ -145,6 +150,10 @@ bool Screen::init() {
 		_system->getPaletteManager()->setPalette(palette, 16, 8);
 	}
 
+	_customDimTable = new ScreenDim *[_dimTableCount];
+	memset(_customDimTable, 0, sizeof(ScreenDim *) * _dimTableCount);
+
+	_curDimIndex = -1;
 	_curDim = 0;
 	_charWidth = 0;
 	_charOffset = 0;
@@ -372,6 +381,29 @@ void Screen::mergeOverlay(int x, int y, int w, int h) {
 		dst += add;
 		src += add;
 	}
+}
+
+const ScreenDim *Screen::getScreenDim(int dim) const {
+	assert(dim < _dimTableCount);
+	return _customDimTable[dim] ? _customDimTable[dim] : &_dimTable[dim];
+}
+
+void Screen::modifyScreenDim(int dim, int x, int y, int w, int h) {
+	if (!_customDimTable[dim])
+		_customDimTable[dim] = new ScreenDim;
+
+	memcpy(_customDimTable[dim], &_dimTable[dim], sizeof(ScreenDim));
+	_customDimTable[dim]->sx = x;
+	_customDimTable[dim]->sy = y;
+	_customDimTable[dim]->w = w;
+	_customDimTable[dim]->h = h;
+	if (dim == _curDimIndex || _vm->game() == GI_LOL)
+		setScreenDim(dim);
+}
+
+void Screen::setScreenDim(int dim) {
+	_curDim = getScreenDim(dim);
+	_curDimIndex = dim;
 }
 
 uint8 *Screen::getPagePtr(int pageNum) {
@@ -796,6 +828,9 @@ void Screen::copyRegion(int x1, int y1, int x2, int y2, int w, int h, int srcPag
 	const uint8 *src = getPagePtr(srcPage) + y1 * SCREEN_W + x1;
 	uint8 *dst = getPagePtr(dstPage) + y2 * SCREEN_W + x2;
 
+	if (src == dst)
+		return;
+
 	if (dstPage == 0 || dstPage == 1)
 		addDirtyRect(x2, y2, w, h);
 
@@ -803,7 +838,7 @@ void Screen::copyRegion(int x1, int y1, int x2, int y2, int w, int h, int srcPag
 
 	if (flags & CR_NO_P_CHECK) {
 		while (h--) {
-			memcpy(dst, src, w);
+			memmove(dst, src, w);
 			src += SCREEN_W;
 			dst += SCREEN_W;
 		}
@@ -848,7 +883,8 @@ void Screen::copyRegionToBuffer(int pageNum, int x, int y, int w, int h, uint8 *
 void Screen::copyPage(uint8 srcPage, uint8 dstPage) {
 	uint8 *src = getPagePtr(srcPage);
 	uint8 *dst = getPagePtr(dstPage);
-	memcpy(dst, src, SCREEN_W * SCREEN_H);
+	if (src != dst)
+		memcpy(dst, src, SCREEN_W * SCREEN_H);
 	copyOverlayRegion(0, 0, 0, 0, SCREEN_W, SCREEN_H, srcPage, dstPage);
 
 	if (dstPage == 0 || dstPage == 1)
@@ -1088,6 +1124,10 @@ bool Screen::loadFont(FontId fontId, const char *filename) {
 	if (!fnt) {
 		if (_isAmiga)
 			fnt = new AMIGAFont();
+#ifdef ENABLE_EOB
+		else if (_vm->game() == GI_EOB1 || _vm->game() == GI_EOB2)
+			fnt = new OldDOSFont();
+#endif // ENABLE_EOB
 		else
 			fnt = new DOSFont();
 
@@ -1298,6 +1338,8 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 	if ((flags & 0x2000) && _vm->game() != GI_KYRA1)
 		_dsTable5 = va_arg(args, uint8 *);
 
+	va_end(args);
+
 	static const DsMarginSkipFunc dsMarginFunc[] = {
 		&Screen::drawShapeMarginNoScaleUpwind,
 		&Screen::drawShapeMarginNoScaleDownwind,
@@ -1383,7 +1425,6 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 			warning("Missing drawShape plotting method type %d", ppc);
 		if (dsPlot3 != dsPlot2 && !dsPlot3)
 			warning("Missing drawShape plotting method type %d", (((flags >> 8) & 0xF7) & 0x3F));
-		va_end(args);
 		return;
 	}
 
@@ -1416,10 +1457,8 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 		shapeHeight = (shapeHeight * _dsScaleH) >> 8;
 		shpWidthScaled1 = shpWidthScaled2 = (shapeWidth * _dsScaleW) >> 8;
 
-		if (!shapeHeight || !shpWidthScaled1) {
-			va_end(args);
+		if (!shapeHeight || !shpWidthScaled1)
 			return;
-		}
 	}
 
 	if (flags & DSF_CENTER) {
@@ -1449,7 +1488,6 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 	if (t < 0) {
 		shapeHeight += t;
 		if (shapeHeight <= 0) {
-			va_end(args);
 			return;
 		}
 
@@ -1483,10 +1521,8 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 	}
 
 	t = (flags & 2) ? y + shapeHeight - y1 : y2 - y;
-	if (t <= 0) {
-		va_end(args);
+	if (t <= 0)
 		return;
-	}
 
 	if (t < shapeHeight) {
 		shapeHeight = t;
@@ -1498,20 +1534,16 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 	if (x < 0) {
 		shpWidthScaled1 += x;
 		_dsOffscreenLeft = -x;
-		if (_dsOffscreenLeft >= shpWidthScaled2) {
-			va_end(args);
+		if (_dsOffscreenLeft >= shpWidthScaled2)
 			return;
-		}
 		x = 0;
 	}
 
 	_dsOffscreenRight = 0;
 	t = x2 - x;
 
-	if (t <= 0) {
-		va_end(args);
+	if (t <= 0)
 		return;
-	}
 
 	if (t < shpWidthScaled1) {
 		shpWidthScaled1 = t;
@@ -1591,8 +1623,6 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 			scaleCounterV -= 0x100;
 		} while (scaleCounterV & 0xFF00);
 	}
-
-	va_end(args);
 }
 
 int Screen::drawShapeMarginNoScaleUpwind(uint8 *&dst, const uint8 *&src, int &cnt) {
@@ -1992,6 +2022,87 @@ void Screen::drawShapePlotType52(uint8 *dst, uint8 cmd) {
 		cmd = _dsTable4[(offs << 8) | *dst];
 
 	*dst = cmd;
+}
+
+void Screen::decodeFrame1(const uint8 *src, uint8 *dst, uint32 size) {
+	const uint8 *dstEnd = dst + size;
+
+	struct Pattern {
+		const uint8 *pos;
+		uint16 len;
+	};
+
+	Pattern *patterns = new Pattern[3840];
+	uint16 numPatterns = 0;
+	uint8 nib = 0;
+
+	uint16 code = decodeEGAGetCode(src, nib);
+	uint8 last = code & 0xff;
+
+	uint8 *dstPrev = dst;
+	uint16 count = 1;
+	uint16 countPrev = 1;
+
+	*dst++ = last;
+
+	while (dst < dstEnd) {
+		code = decodeEGAGetCode(src, nib);
+		last = code & 0xff;
+		uint8 cmd = code >> 8;
+
+		if (cmd--) {
+			code = (cmd << 8) | last;
+			uint8 *tmpDst = dst;
+			last = *dst;
+
+			if (code < numPatterns) {
+				const uint8 *tmpSrc = patterns[code].pos;
+				countPrev = patterns[code].len;
+				for (int i = 0; i < countPrev; i++)
+					*dst++ = *tmpSrc++;
+
+			} else {
+				const uint8 *tmpSrc = dstPrev;
+				count = countPrev;
+				for (int i = 0; i < countPrev; i++)
+					*dst++ = *tmpSrc++;
+				*dst++ = last;
+				countPrev++;
+			}
+
+			if (numPatterns < 3840) {
+				patterns[numPatterns].pos = dstPrev;
+				patterns[numPatterns++].len = ++count;
+			}
+
+			dstPrev = tmpDst;
+			count = countPrev;
+
+		} else {
+			*dst++ = last;
+
+			if (numPatterns < 3840) {
+				patterns[numPatterns].pos = dstPrev;
+				patterns[numPatterns++].len = ++count;
+			}
+
+			dstPrev = dst - 1;
+			count = 1;
+			countPrev = 1;
+		}
+	}
+	delete[] patterns;
+}
+
+uint16 Screen::decodeEGAGetCode(const uint8 *&pos, uint8 &nib) {
+	uint16 res = READ_BE_UINT16(pos++);
+	if ((++nib) & 1) {
+		res >>= 4;
+	} else {
+		pos++;
+		res &= 0xfff;
+	}
+	return res;
 }
 
 void Screen::decodeFrame3(const uint8 *src, uint8 *dst, uint32 size) {
@@ -2859,7 +2970,7 @@ void Screen::loadBitmap(const char *filename, int tempPage, int dstPage, Palette
 
 	const char *ext = filename + strlen(filename) - 3;
 	uint8 compType = srcData[2];
-	uint32 imgSize = scumm_stricmp(ext, "CMP") ? READ_LE_UINT32(srcData + 4) : READ_LE_UINT16(srcData);
+	uint32 imgSize = (_vm->game() == GI_KYRA2 && !scumm_stricmp(ext, "CMP")) ? READ_LE_UINT16(srcData) : READ_LE_UINT32(srcData + 4);
 	uint16 palSize = READ_LE_UINT16(srcData + 8);
 
 	if (pal && palSize)
@@ -2874,6 +2985,9 @@ void Screen::loadBitmap(const char *filename, int tempPage, int dstPage, Palette
 	switch (compType) {
 	case 0:
 		memcpy(dstData, srcPtr, imgSize);
+		break;
+	case 1:
+		Screen::decodeFrame1(srcPtr, dstData, imgSize);
 		break;
 	case 3:
 		Screen::decodeFrame3(srcPtr, dstData, imgSize);
@@ -3078,6 +3192,61 @@ void Screen::copyOverlayRegion(int x, int y, int x2, int y2, int w, int h, int s
 			src += 640;
 		}
 	}
+}
+
+void Screen::crossFadeRegion(int x1, int y1, int x2, int y2, int w, int h, int srcPage, int dstPage) {
+	if (srcPage > 13 || dstPage > 13)
+		error("Screen::crossFadeRegion(): attempting to use temp page as source or dest page.");
+
+	hideMouse();
+
+	uint16 *wB = (uint16*)_pagePtrs[14];
+	uint8 *hB = _pagePtrs[14] + 640;
+
+	for (int i = 0; i < w; i++)
+		wB[i] = i;
+
+	for (int i = 0; i < h; i++)
+		hB[i] = i;
+
+	for (int i = 0; i < w; i++)
+		SWAP(wB[_vm->_rnd.getRandomNumberRng(0, w - 1)], wB[i]);
+
+	for (int i = 0; i < h; i++)
+		SWAP(hB[_vm->_rnd.getRandomNumberRng(0, h - 1)], hB[i]);
+
+	uint8 *s = _pagePtrs[srcPage];
+	uint8 *d = _pagePtrs[dstPage];
+
+	for (int i = 0; i < h; i++) {
+		int iH = i;
+		uint32 end = _system->getMillis() + 3;
+		for (int ii = 0; ii < w; ii++) {
+			int sX = x1 + wB[ii];
+			int sY = y1 + hB[iH];
+			int dX = x2 + wB[ii];
+			int dY = y2 + hB[iH];
+
+			if (++iH >= h)
+				iH = 0;
+
+			d[dY * 320 + dX] = s[sY * 320 + sX];
+			addDirtyRect(dX, dY, 1, 1);
+		}
+
+		// This tries to speed things up, to get similiar speeds as in DOSBox etc.
+		// We can't write single pixels directly into the video memory like the original did.
+		// We also (unlike the original) want to aim at similiar speeds for all platforms.
+		if (!(i % 10))
+			updateScreen();
+
+		uint32 cur = _system->getMillis();
+		if (end > cur)
+			_system->delayMillis(end - cur);
+	}
+
+	updateScreen();
+	showMouse();
 }
 
 #pragma mark -
@@ -3379,7 +3548,9 @@ Palette::~Palette() {
 void Palette::loadVGAPalette(Common::ReadStream &stream, int startIndex, int colors) {
 	assert(startIndex + colors <= _numColors);
 
-	stream.read(_palData + startIndex * 3, colors * 3);
+	uint8 *pos = _palData + startIndex * 3;
+	for (int i = 0 ; i < colors * 3; i++)
+		*pos++ = stream.readByte() & 0x3f;
 }
 
 void Palette::loadAmigaPalette(Common::ReadStream &stream, int startIndex, int colors) {

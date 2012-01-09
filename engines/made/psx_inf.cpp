@@ -82,18 +82,18 @@ PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) : Com
 PSXStreamINF::~PSXStreamINF() {
 }
 
-bool PSXStreamINF::hasFile(const Common::String &name) {
+bool PSXStreamINF::hasFile(const Common::String &name) const {
 	return _map.contains(name);
 }
 
-int PSXStreamINF::listMembers(Common::ArchiveMemberList &list) {
+int PSXStreamINF::listMembers(Common::ArchiveMemberList &list) const {
 	for (FileMap::const_iterator it = _map.begin(); it != _map.end(); it++)
 		list.push_back(getMember(it->_key));
 
 	return _map.size();
 }
 
-Common::ArchiveMemberPtr PSXStreamINF::getMember(const Common::String &name) {
+const Common::ArchiveMemberPtr PSXStreamINF::getMember(const Common::String &name) const {
 	return Common::ArchiveMemberPtr(new Common::GenericArchiveMember(name, this));
 }
 

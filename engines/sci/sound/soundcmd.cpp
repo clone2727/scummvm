@@ -32,10 +32,28 @@
 
 namespace Sci {
 
+//#define ENABLE_SFX_TYPE_SELECTION
+
 SoundCommandParser::SoundCommandParser(ResourceManager *resMan, SegManager *segMan, Kernel *kernel, AudioPlayer *audio, SciVersion soundVersion) :
 	_resMan(resMan), _segMan(segMan), _kernel(kernel), _audio(audio), _soundVersion(soundVersion) {
 
-	_music = new SciMusic(_soundVersion);
+#ifdef ENABLE_SFX_TYPE_SELECTION
+	// Check if the user wants synthesized or digital sound effects in SCI1.1
+	// or later games
+	_useDigitalSFX = ConfMan.getBool("multi_midi");
+
+	// In SCI2 and later games, this check should always be true - there was
+	// always only one version of each sound effect or digital music track
+	// (e.g. the menu music in GK1 - there is a sound effect with the same
+	// resource number, but it's totally unrelated to the menu music).
+	if (getSciVersion() >= SCI_VERSION_2)
+		_useDigitalSFX = true;
+#else
+	// Always prefer digital sound effects
+	_useDigitalSFX = true;
+#endif
+
+	_music = new SciMusic(_soundVersion, _useDigitalSFX);
 	_music->init();
 }
 
@@ -63,6 +81,38 @@ int SoundCommandParser::getSoundResourceId(reg_t obj) {
 	return resourceId;
 }
 
+void SoundCommandParser::initSoundResource(MusicEntry *newSound) {
+	if (newSound->resourceId && _resMan->testResource(ResourceId(kResourceTypeSound, newSound->resourceId)))
+		newSound->soundRes = new SoundResource(newSound->resourceId, _resMan, _soundVersion);
+	else
+		newSound->soundRes = 0;
+
+	// In SCI1.1 games, sound effects are started from here. If we can find
+	// a relevant audio resource, play it, otherwise switch to synthesized
+	// effects. If the resource exists, play it using map 65535 (sound
+	// effects map)
+	bool checkAudioResource = getSciVersion() >= SCI_VERSION_1_1;
+	// Hoyle 4 has garbled audio resources in place of the sound resources.
+	// The demo of GK1 has no alternate sound effects.
+	if ((g_sci->getGameId() == GID_HOYLE4) || 
+		(g_sci->getGameId() == GID_GK1 && g_sci->isDemo()))
+		checkAudioResource = false;
+
+	if (checkAudioResource && _resMan->testResource(ResourceId(kResourceTypeAudio, newSound->resourceId))) {
+		// Found a relevant audio resource, create an audio stream if there is
+		// no associated sound resource, or if both resources exist and the
+		// user wants the digital version.
+		if (_useDigitalSFX || !newSound->soundRes) {
+			int sampleLen;
+			newSound->pStreamAud = _audio->getAudioStream(newSound->resourceId, 65535, &sampleLen);
+			newSound->soundType = Audio::Mixer::kSpeechSoundType;
+		}
+	}
+
+	if (!newSound->pStreamAud && newSound->soundRes)
+		_music->soundInitSnd(newSound);
+}
+
 void SoundCommandParser::processInitSound(reg_t obj) {
 	int resourceId = getSoundResourceId(obj);
 
@@ -73,11 +123,6 @@ void SoundCommandParser::processInitSound(reg_t obj) {
 
 	MusicEntry *newSound = new MusicEntry();
 	newSound->resourceId = resourceId;
-	if (resourceId && _resMan->testResource(ResourceId(kResourceTypeSound, resourceId)))
-		newSound->soundRes = new SoundResource(resourceId, _resMan, _soundVersion);
-	else
-		newSound->soundRes = 0;
-
 	newSound->soundObj = obj;
 	newSound->loop = readSelectorValue(_segMan, obj, SELECTOR(loop));
 	newSound->priority = readSelectorValue(_segMan, obj, SELECTOR(pri)) & 0xFF;
@@ -88,25 +133,7 @@ void SoundCommandParser::processInitSound(reg_t obj) {
 	debugC(kDebugLevelSound, "kDoSound(init): %04x:%04x number %d, loop %d, prio %d, vol %d", PRINT_REG(obj),
 			resourceId,	newSound->loop, newSound->priority, newSound->volume);
 
-	// In SCI1.1 games, sound effects are started from here. If we can find
-	// a relevant audio resource, play it, otherwise switch to synthesized
-	// effects. If the resource exists, play it using map 65535 (sound
-	// effects map)
-	bool checkAudioResource = getSciVersion() >= SCI_VERSION_1_1;
-	if (g_sci->getGameId() == GID_HOYLE4)
-		checkAudioResource = false; // hoyle 4 has garbled audio resources in place of the sound resources
-	// if we play those, we will only make the user deaf and break speakers. Sierra SCI doesn't play anything
-	// on soundblaster. FIXME: check, why this is
-
-	if (checkAudioResource && _resMan->testResource(ResourceId(kResourceTypeAudio, resourceId))) {
-		// Found a relevant audio resource, play it
-		int sampleLen;
-		newSound->pStreamAud = _audio->getAudioStream(resourceId, 65535, &sampleLen);
-		newSound->soundType = Audio::Mixer::kSpeechSoundType;
-	} else {
-		if (newSound->soundRes)
-			_music->soundInitSnd(newSound);
-	}
+	initSoundResource(newSound);
 
 	_music->pushBackSlot(newSound);
 
@@ -116,8 +143,6 @@ void SoundCommandParser::processInitSound(reg_t obj) {
 			writeSelectorValue(_segMan, obj, SELECTOR(state), kSoundInitialized);
 		else
 			writeSelector(_segMan, obj, SELECTOR(nodePtr), obj);
-
-		writeSelector(_segMan, obj, SELECTOR(handle), obj);
 	}
 }
 
@@ -130,8 +155,14 @@ reg_t SoundCommandParser::kDoSoundPlay(int argc, reg_t *argv, reg_t acc) {
 void SoundCommandParser::processPlaySound(reg_t obj) {
 	MusicEntry *musicSlot = _music->getSlot(obj);
 	if (!musicSlot) {
-		warning("kDoSound(play): Slot not found (%04x:%04x)", PRINT_REG(obj));
-		return;
+		warning("kDoSound(play): Slot not found (%04x:%04x), initializing it manually", PRINT_REG(obj));
+		// The sound hasn't been initialized for some reason, so initialize it
+		// here. Happens in KQ6, room 460, when giving the creature (child) to
+		// the bookworm. Fixes bugs #3413301 and #3421098.
+		processInitSound(obj);
+		musicSlot = _music->getSlot(obj);
+		if (!musicSlot)
+			error("Failed to initialize uninitialized sound slot");
 	}
 
 	int resourceId = getSoundResourceId(obj);
@@ -157,6 +188,9 @@ void SoundCommandParser::processPlaySound(reg_t obj) {
 
 	musicSlot->loop = readSelectorValue(_segMan, obj, SELECTOR(loop));
 	musicSlot->priority = readSelectorValue(_segMan, obj, SELECTOR(priority));
+	// Reset hold when starting a new song. kDoSoundSetHold is always called after
+	// kDoSoundPlay to set it properly, if needed. Fixes bug #3413589.
+	musicSlot->hold = -1;
 	if (_soundVersion >= SCI_VERSION_1_EARLY)
 		musicSlot->volume = readSelectorValue(_segMan, obj, SELECTOR(vol));
 
@@ -460,7 +494,7 @@ void SoundCommandParser::processUpdateCues(reg_t obj) {
 	} else {
 		// Slot actually has no data (which would mean that a sound-resource w/
 		// unsupported data is used.
-		//  (example lsl5 - sound resource 744 - it's roland exclusive
+		//  (example lsl5 - sound resource 744 - it's Roland exclusive
 		writeSelectorValue(_segMan, obj, SELECTOR(signal), SIGNAL_OFFSET);
 		// If we don't set signal here, at least the switch to the mud wrestling
 		// room in lsl5 will not work.

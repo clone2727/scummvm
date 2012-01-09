@@ -88,7 +88,7 @@ KyraEngine_HoF::KyraEngine_HoF(OSystem *system, const GameFlags &flags) : KyraEn
 	_currentTalkSections.ENDTim = 0;
 
 	memset(&_invWsa, 0, sizeof(_invWsa));
-	_itemAnimData = 0;
+	_itemAnimDefinition = 0;
 	_demoAnimData = 0;
 	_nextAnimItem = 0;
 
@@ -171,7 +171,7 @@ KyraEngine_HoF::~KyraEngine_HoF() {
 		delete[] _conversationState[i];
 	delete[] _conversationState;
 
-	for (Common::Array<const TIMOpcode *>::iterator i = _timOpcodes.begin(); i != _timOpcodes.end(); ++i)
+	for (Common::Array<const TIMOpcode*>::iterator i = _timOpcodes.begin(); i != _timOpcodes.end(); ++i)
 		delete *i;
 	_timOpcodes.clear();
 }
@@ -211,8 +211,8 @@ void KyraEngine_HoF::pauseEngineIntern(bool pause) {
 
 		_nextIdleAnim += pausedTime;
 
-		for (int x = 0; x < _itemAnimDataSize; x++)
-			_activeItemAnim[x].nextFrame += pausedTime;
+		for (int x = 0; x < _itemAnimDefinitionSize; x++)
+			_activeItemAnim[x].nextFrameTime += pausedTime;
 
 		_tim->refreshTimersAfterPause(pausedTime);
 	}
@@ -223,11 +223,12 @@ Common::Error KyraEngine_HoF::init() {
 	assert(_screen);
 	_screen->setResolution();
 
+	_debugger = new Debugger_HoF(this);
+	assert(_debugger);
+
 	KyraEngine_v1::init();
 	initStaticResource();
 
-	_debugger = new Debugger_HoF(this);
-	assert(_debugger);
 	_text = new TextDisplayer_HoF(this, _screen);
 	assert(_text);
 	_gui = new GUI_HoF(this);
@@ -285,7 +286,7 @@ Common::Error KyraEngine_HoF::go() {
 		if (_flags.isDemo && !_flags.isTalkie) {
 #ifdef ENABLE_LOL
 			if (_flags.gameID == GI_LOL)
-				seq_playSequences(kSequenceLolDemoScene1, kSequenceLolDemoScene6);
+				seq_playSequences(kSequenceLoLDemoScene1, kSequenceLoLDemoScene6);
 			else
 #endif // ENABLE_LOL
 				seq_playSequences(kSequenceDemoVirgin, kSequenceDemoFisher);
@@ -455,6 +456,9 @@ void KyraEngine_HoF::startup() {
 }
 
 void KyraEngine_HoF::runLoop() {
+	// Initialize debugger since how it should be fully usable
+	_debugger->initialize();
+
 	_screen->updateScreen();
 
 	_runFlag = true;
@@ -857,7 +861,7 @@ void KyraEngine_HoF::loadOptionsBuffer(const char *file) {
 void KyraEngine_HoF::loadChapterBuffer(int chapter) {
 	char tempString[14];
 
-	static const char *chapterFilenames[] = {
+	static const char *const chapterFilenames[] = {
 		"CH1.XXX", "CH2.XXX", "CH3.XXX", "CH4.XXX", "CH5.XXX"
 	};
 
@@ -1083,11 +1087,11 @@ void KyraEngine_HoF::loadNPCScript() {
 #pragma mark -
 
 void KyraEngine_HoF::resetScaleTable() {
-	Common::set_to(_scaleTable, ARRAYEND(_scaleTable), 0x100);
+	Common::fill(_scaleTable, ARRAYEND(_scaleTable), 0x100);
 }
 
 void KyraEngine_HoF::setScaleTableItem(int item, int data) {
-	if (item >= 1 || item <= 15)
+	if (item >= 1 && item <= 15)
 		_scaleTable[item-1] = (data << 8) / 100;
 }
 
@@ -1096,7 +1100,7 @@ int KyraEngine_HoF::getScale(int x, int y) {
 }
 
 void KyraEngine_HoF::setDrawLayerTableEntry(int entry, int data) {
-	if (entry >= 1 || entry <= 15)
+	if (entry >= 1 && entry <= 15)
 		_drawLayerTable[entry-1] = data;
 }
 
@@ -1413,7 +1417,7 @@ void KyraEngine_HoF::runIdleScript(int script) {
 		setNextIdleAnimTimer();
 	} else {
 		// FIXME: move this to staticres.cpp?
-		static const char *idleScriptFiles[] = {
+		static const char *const idleScriptFiles[] = {
 			"_IDLHAIR.EMC", "_IDLDUST.EMC", "_IDLLEAN.EMC", "_IDLDIRT.EMC", "_IDLTOSS.EMC", "_IDLNOSE.EMC",
 			"_IDLBRSH.EMC", "_Z3IDLE.EMC", "_Z4IDLE.EMC", "_Z6IDLE.EMC", "_Z7IDLE.EMC", "_Z8IDLE.EMC"
 		};
@@ -1473,7 +1477,7 @@ void KyraEngine_HoF::snd_playVoiceFile(int id) {
 	char vocFile[9];
 	assert(id >= 0 && id <= 9999999);
 	sprintf(vocFile, "%07d", id);
-	if (_sound->voiceFileIsPresent(vocFile)) {
+	if (_sound->isVoicePresent(vocFile)) {
 		snd_stopVoice();
 
 		while (!_sound->voicePlay(vocFile, &_speechHandle)) {
@@ -1673,7 +1677,7 @@ void KyraEngine_HoF::setCauldronState(uint8 state, bool paletteFade) {
 }
 
 void KyraEngine_HoF::clearCauldronTable() {
-	Common::set_to(_cauldronTable, ARRAYEND(_cauldronTable), -1);
+	Common::fill(_cauldronTable, ARRAYEND(_cauldronTable), -1);
 }
 
 void KyraEngine_HoF::addFrontCauldronTable(int item) {

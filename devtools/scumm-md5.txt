@@ -472,7 +472,6 @@ fbpack	Fatty Bear's Fun Pack
 freddi	Freddi Fish 1: The Case of the Missing Kelp Seeds
 	d4cccb5af88f3e77f370896e9ba8c5f9	-1	All	Windows	HE 71	-	-	sev
 	c0039ad982999c92d0de81910d640fa0	-1	nl	Windows	HE 71	-	-	adutchguy
-	e63a0b9249b5ca4cc4d3ac34305ae360	-1	nb	Windows	HE 71	-	-	Karl Ove Hufthammer
 	68530d2e15f339fbbf3150b78b4d2ffb	-1	en	Mac	HE 73	-	-	satz
 	6d1baa1065ac5f7b210be8ebe4235e49	-1	nl	Mac	HE 73	-	-	daniel9
 	c782fbbe74a987c3df8ac73cd3e289ed	-1	se	Mac	HE 73	-	-	Torbjörn Andersson
@@ -485,6 +484,7 @@ freddi	Freddi Fish 1: The Case of the Missing Kelp Seeds
 	746e88c172a5b7a1ae89ac0ee3ee681a	-1	ru	Windows	HE 90	Updated	-	sev
 	a197a87ae77f3b3333f09a7a2c448fe2	-1	en	Windows	HE 99	Updated	-	Jonathan
 	af2bd1a43b50b55915d87994e093203d	34829	de	Windows	HE 99	Updated	-	Lightkey
+	e63a0b9249b5ca4cc4d3ac34305ae360	-1	nb	Windows	HE 99	-	-	Karl Ove Hufthammer
 	57a5cfec9ef231a007043cc1917e8988	-1	en	Wii	HE 100	-	-	sanguinehearts
 	56b5922751be7ffd771b38dda56b028b	34837	nl	Wii	HE 100	-	-	George Kormendi
 	3ae7f002d9256b8bdf76aaf8a3a069f8	34837	gb	Wii	HE 100	-	-	George Kormendi
@@ -526,6 +526,7 @@ freddi3	Freddi Fish 3: The Case of the Stolen Conch Shell
 	78c07ca088526d8d4446a4c2cb501203	-1	fr	All	HE 99	-	-	alamaz, gist974
 	83cedbe26aa8b58988e984e3d34cac8e	-1	de	All	HE 99	-	-	Joachim Eberhard
 	75bff95816b84672b877d22a911ab811	-1	ru	Windows	HE 99	Updated	-	sev
+	0ddf1174d0d097956ba10dd452ea65e6	-1	he	Windows	HE 99	-	-	Matan Bareket
 
 	cb1559e8405d17a5a278a6b5ad9338d1	22718	en	All	-	Demo	-	khalek, sev
 	bbadf7309c4a2c2763e4bbba3c3be634	-1	fr	All	-	Demo	-	Kirben
@@ -632,7 +633,7 @@ pajama	Pajama Sam 1: No Need to Hide When It's Dark Outside
 
 	f237bf8a5ef9af78b2a6a4f3901da341	18354	en	All	-	Demo	-	khalek, sev
 	7f945525abcd48015adf1632637a44a1	-1	fr	All	-	Demo	-	Kirben
-	0305e850382b812fec6e5998ef88a966	-1	nl	Windows	-	Demo	-	adutchguy
+	0305e850382b812fec6e5998ef88a966	-1	nl	All	-	Demo	-	adutchguy
 	87df3e0074624040407764b7c5e710b9	18354	nl	Windows	-	Demo	-	George Kormendi
 	d7ab7cd6105546016e6a0d46fb36b964	-1	en	All	HE 100	Demo	-	khalek
 
@@ -645,6 +646,7 @@ pajama2	Pajama Sam 2: Thunder and Lightning Aren't so Frightening
 	c6907d44f1166941d982864cd42cdc89	-1	de	All	HE 99	-	-	nachbarnebenan
 	f8be685007a8b425ba2a455da732f59f	-1	fr	Mac	HE 99	-	-	alamaz
 	32709cbeeb3044b34129950860a83f14	-1	ru	Windows	HE 99	-	-	sev
+	1af4eb581a33d808707d66d50e084dca	-1	he	Windows	HE 99	-	-	Matan Bareket
 
 	36a6750e03fb505fc19fc2bf3e4dbe91	58749	en	All	-	Demo	-	sev
 	30ba1e825d4ad2b448143ae8df18482a	-1	nl	All	HE 98.5	Demo	-	Kirben
@@ -729,6 +731,7 @@ puttcircus	Putt-Putt Joins the Circus
 	db74136c20557eca6ed3411bff39f7a1	-1	gb	Windows	-	-	-	Reckless
 	d0ad929def3e9cfe39dea55bd12098d4	-1	fr	Windows	-	-	-	gist974
 	febf4a983ea5faea1c9dd6c710ebb09c	-1	de	Windows	-	-	-	andy482
+	c8253da0f4626d2236b5291b99e33408	-1	he	Windows	HE 99	-	-	Matan Bareket
 
 	a7cacad9c40c4dc9e1812abf6c8af9d5	-1	en	All	-	Demo	-	Kirben, sev
 	1387d16aa620dc1c2d1fd87f8a9e7a09	-1	fr	Windows	-	Demo	-	Mevi
@@ -759,6 +762,7 @@ puttzoo	Putt-Putt Saves the Zoo
 	92e7727e67f5cd979d8a1070e4eb8cb3	-1	en	All	HE 98.5	Updated	-	cyx
 	3a3e592b074f595489f7f11e150c398d	-1	us	Windows	HE 99	Updated	-	Adrian
 	c5cc7cba02a2fbd539c4439e775b0536	43470	de	Windows	HE 99	Updated	-	Lightkey
+	5c9cecbd2952ccec14c9ecebf5822a34	-1	en	iOS	HE 100	-	-	clone2727
 
 	3486ede0f904789267d4bcc5537a46d4	14337	en	Mac	-	Demo	-	khalek
 	d220d154aafbfa12bd6f3ab1b2dae420	-1	de	Mac	-	Demo	-	Joachim Eberhard
@@ -834,7 +838,8 @@ spyfox	SPY Fox 1: Dry Cereal
 	fbdd947d21e8f5bac6d6f7a316af1c5a	15693	en	All	-	Demo	-	sev
 	ba888e6831517597859e91aa173f945c	-1	fr	All	-	Demo	-	Kirben
 	73b8197e236da4bf49adc99fe8f5fa1b	-1	de	All	-	Demo	-	Joachim Eberhard
-	4edbf9d03550f7ba01e7f34d69b678dd	-1	nl	Windows	HE 98.5	Demo	-	Kirben
+	4edbf9d03550f7ba01e7f34d69b678dd	-1	nl	All	HE 98.5	Demo	-	Kirben
+	f2ec78e50bdc63b70044e9758be10914	-1	nl	Mac	HE 98.5	Demo	-	Ben Castricum
 	9d4ab3e0e1d1ebc6ba8a6a4c470ed184	-1	en	All	HE 100	Demo	-	khalek
 
 spyfox2	SPY Fox 2: Some Assembly Required

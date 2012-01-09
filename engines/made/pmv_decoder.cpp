@@ -23,11 +23,15 @@
  *
  */
 
+#include "common/stream.h"
+#include "common/system.h"
+#include "audio/audiostream.h"
+#include "audio/decoders/raw.h"
+
 #include "made/graphics.h"
 #include "made/pmv_decoder.h"
 #include "made/screen.h"
 
-#include "audio/decoders/raw.h"
 
 namespace Made {
 

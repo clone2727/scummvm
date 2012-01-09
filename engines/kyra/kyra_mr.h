@@ -219,7 +219,7 @@ private:
 	bool _nextIdleType;
 	void showIdleAnim();
 
-	const ItemAnimData_v2 *_itemAnimData;
+	const ItemAnimDefinition *_itemAnimDefinition;
 	ActiveItemAnim _activeItemAnim[10];
 	int _nextAnimItem;
 
@@ -463,7 +463,7 @@ private:
 
 	void npcChatSequence(const char *str, int object, int vocHigh, int vocLow);
 
-	Common::Array<const Opcode *> _opcodesDialog;
+	Common::Array<const Opcode*> _opcodesDialog;
 
 	int o3d_updateAnim(EMCState *script);
 	int o3d_delay(EMCState *script);
@@ -659,7 +659,7 @@ private:
 
 	// resource specific
 private:
-	static const char *_languageExtension[];
+	static const char *const _languageExtension[];
 	static const int _languageExtensionSize;
 
 	int loadLanguageFile(const char *file, uint8 *&buffer);

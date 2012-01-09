@@ -20,20 +20,21 @@
  *
  */
 
-#include "common/util.h"
-
-#include "backends/audiocd/audiocd.h"
-#include "graphics/cursorman.h"
-#include "audio/softsynth/pcspk.h"
-
+#include "made/scriptfuncs.h"
 #include "made/made.h"
-#include "made/resource.h"
-#include "made/database.h"
 #include "made/screen.h"
 #include "made/script.h"
 #include "made/sound.h"
 #include "made/scriptfuncs.h"
 #include "made/music.h"
+#include "made/database.h"
+
+#include "audio/softsynth/pcspk.h"
+
+#include "backends/audiocd/audiocd.h"
+
+#include "graphics/cursorman.h"
+#include "graphics/surface.h"
 
 namespace Made {
 

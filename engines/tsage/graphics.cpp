@@ -81,7 +81,7 @@ GfxSurface surfaceFromRes(const byte *imgData) {
 	if (!rleEncoded) {
 		Common::copy(srcP, srcP + (r.width() * r.height()), destP);
 	} else {
-		Common::set_to(destP, destP + (r.width() * r.height()), s._transColor);
+		Common::fill(destP, destP + (r.width() * r.height()), s._transColor);
 
 		for (int yp = 0; yp < r.height(); ++yp) {
 			int width = r.width();
@@ -105,7 +105,7 @@ GfxSurface surfaceFromRes(const byte *imgData) {
 					controlVal &= 0x3f;
 					int pixel = *srcP++;
 
-					Common::set_to(destP, destP + controlVal, pixel);
+					Common::fill(destP, destP + controlVal, pixel);
 					destP += controlVal;
 					width -= controlVal;
 				}
@@ -120,7 +120,7 @@ GfxSurface surfaceFromRes(const byte *imgData) {
 
 GfxSurface surfaceFromRes(int resNum, int rlbNum, int subNum) {
 	uint size;
-	byte *imgData = _resourceManager->getSubResource(resNum, rlbNum, subNum, &size);
+	byte *imgData = g_resourceManager->getSubResource(resNum, rlbNum, subNum, &size);
 	GfxSurface surface = surfaceFromRes(imgData);
 	DEALLOCATE(imgData);
 
@@ -202,8 +202,8 @@ void Rect::resize(const GfxSurface &surface, int xp, int yp, int percent) {
  * Expands the pane region to contain the specified Rect
  */
 void Rect::expandPanes() {
-	_globals->_paneRegions[0].uniteRect(*this);
-	_globals->_paneRegions[1].uniteRect(*this);
+	g_globals->_paneRegions[0].uniteRect(*this);
+	g_globals->_paneRegions[1].uniteRect(*this);
 }
 
 /**
@@ -220,10 +220,8 @@ void Rect::synchronize(Serializer &s) {
 
 GfxSurface::GfxSurface() : _bounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {
 	_disableUpdates = false;
-	_screenSurface = false;
 	_lockSurfaceCtr = 0;
 	_customSurface = NULL;
-	_screenSurfaceP = NULL;
 	_transColor = -1;
 }
 
@@ -244,24 +242,71 @@ GfxSurface::~GfxSurface() {
  * Specifies that the surface will encapsulate the ScummVM screen surface
  */
 void GfxSurface::setScreenSurface() {
-	_screenSurface = true;
-	_customSurface = NULL;
-	_lockSurfaceCtr = 0;
+	_trackDirtyRects = true;
+	create(SCREEN_WIDTH, SCREEN_HEIGHT);
 }
+
+/**
+ * Updates the physical screen with the screen surface buffer
+ */
+void GfxSurface::updateScreen() {
+	assert(_trackDirtyRects);
+
+	// Merge any overlapping dirty rects
+	mergeDirtyRects();
+
+	// Loop through the dirty rect list to copy the affected areas to the sc
+	for (Common::List<Rect>::iterator i = _dirtyRects.begin(); i != _dirtyRects.end(); ++i) {
+		Rect r = *i;
+
+		// Make sure that there is something to update. If not, skip this
+		// rectangle. An example case is the speedbike closeup at the beginning
+		// of Ringworld (third screen).
+		if (r.isEmpty())
+			continue;
+
+		const byte *srcP = (const byte *)_customSurface->getBasePtr(r.left, r.top);
+		g_system->copyRectToScreen(srcP, _customSurface->pitch, r.left, r.top, 
+			r.width(), r.height());
+	}
+
+	// Update the physical screen
+	g_system->updateScreen();
+
+	// Now that the dirty rects have been copied, clear the dirty rect list
+	_dirtyRects.clear();
+}
+
+/**
+ * Adds a rect to the dirty rect list
+ */
+void GfxSurface::addDirtyRect(const Rect &r) {
+	if (_trackDirtyRects) {
+		// Get the bounds and adjust to allow for sub-screen areas
+		Rect r2 = r;
+		r2.translate(_bounds.left, _bounds.top);
+
+		// Add to the dirty rect list
+		_dirtyRects.push_back(Rect(r2.left, r2.top, 
+		MIN(r2.right + 1, SCREEN_WIDTH), MIN(r2.bottom + 1, SCREEN_HEIGHT)));
+	}
+}
+
+
 
 /**
  * Specifies that the surface should maintain it's own internal surface
  */
 void GfxSurface::create(int width, int height) {
 	assert((width >= 0) && (height >= 0));
-	_screenSurface = false;
+
 	if (_customSurface) {
 		_customSurface->free();
 		delete _customSurface;
 	}
 	_customSurface = new Graphics::Surface();
 	_customSurface->create(width, height, Graphics::PixelFormat::createFormatCLUT8());
-	Common::set_to((byte *)_customSurface->pixels, (byte *)_customSurface->pixels + (width * height), 0);
+	Common::fill((byte *)_customSurface->pixels, (byte *)_customSurface->pixels + (width * height), 0);
 	_bounds = Rect(0, 0, width, height);
 }
 
@@ -271,13 +316,7 @@ void GfxSurface::create(int width, int height) {
 Graphics::Surface GfxSurface::lockSurface() {
 	++_lockSurfaceCtr;
 
-	Graphics::Surface *src;
-	if (_screenSurface) {
-		if (_lockSurfaceCtr == 1)
-			_screenSurfaceP = g_system->lockScreen();
-		src = _screenSurfaceP;
-	} else
-		src = _customSurface;
+	Graphics::Surface *src = _customSurface;
 	assert(src);
 
 	// Setup the returned surface either as one pointing to the same pixels as the source, or
@@ -298,15 +337,10 @@ Graphics::Surface GfxSurface::lockSurface() {
 void GfxSurface::unlockSurface() {
 	assert(_lockSurfaceCtr > 0);
 	--_lockSurfaceCtr;
-
-	if ((_lockSurfaceCtr == 0) && _screenSurface) {
-		g_system->unlockScreen();
-	}
 }
 
 void GfxSurface::synchronize(Serializer &s) {
 	assert(!_lockSurfaceCtr);
-	assert(!_screenSurface);
 
 	s.syncAsByte(_disableUpdates);
 	_bounds.synchronize(s);
@@ -351,6 +385,7 @@ void GfxSurface::fillRect(const Rect &bounds, int color) {
 	Graphics::Surface surface = lockSurface();
 	surface.fillRect(bounds, color);
 	unlockSurface();
+	addDirtyRect(bounds);
 }
 
 GfxSurface &GfxSurface::operator=(const GfxSurface &s) {
@@ -363,7 +398,6 @@ GfxSurface &GfxSurface::operator=(const GfxSurface &s) {
 	}
 
 	_customSurface = s._customSurface;
-	_screenSurface = s._screenSurface;
 	_disableUpdates = s._disableUpdates;
 	_bounds = s._bounds;
 	_centroid = s._centroid;
@@ -408,7 +442,7 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
 
 	// Write for a  mouse or keypress
 	Event event;
-	while (!_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !_vm->shouldQuit())
+	while (!g_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !g_vm->shouldQuit())
 		;
 
 	// Restore the display area
@@ -423,15 +457,15 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
  * Loads a quarter of a screen from a resource
  */
 void GfxSurface::loadScreenSection(Graphics::Surface &dest, int xHalf, int yHalf, int xSection, int ySection) {
-	int screenNum = _globals->_sceneManager._scene->_activeScreenNumber;
+	int screenNum = g_globals->_sceneManager._scene->_activeScreenNumber;
 	Rect updateRect(0, 0, 160, 100);
 	updateRect.translate(xHalf * 160, yHalf * 100);
-	int xHalfCount = (_globals->_sceneManager._scene->_backgroundBounds.right + 159) / 160;
-	int yHalfCount = (_globals->_sceneManager._scene->_backgroundBounds.bottom + 99) / 100;
+	int xHalfCount = (g_globals->_sceneManager._scene->_backgroundBounds.right + 159) / 160;
+	int yHalfCount = (g_globals->_sceneManager._scene->_backgroundBounds.bottom + 99) / 100;
 
 	if (xSection < xHalfCount && ySection < yHalfCount) {
 		int rlbNum = xSection * yHalfCount + ySection;
-		byte *data = _resourceManager->getResource(RES_BITMAP, screenNum, rlbNum);
+		byte *data = g_resourceManager->getResource(RES_BITMAP, screenNum, rlbNum);
 
 		for (int y = 0; y < updateRect.height(); ++y) {
 			byte *pSrc = data + y * 160;
@@ -455,7 +489,7 @@ static int *scaleLine(int size, int srcSize) {
 	int scale = PRECISION_FACTOR * size / srcSize;
 	assert(scale >= 0);
 	int *v = new int[size];
-	Common::set_to(v, &v[size], -1);
+	Common::fill(v, &v[size], -1);
 
 	int distCtr = PRECISION_FACTOR / 2;
 	int *destP = v;
@@ -493,7 +527,7 @@ static GfxSurface ResizeSurface(GfxSurface &src, int xSize, int ySize, int trans
 		byte *destP = (byte *)destImage.getBasePtr(0, yp);
 
 		if (vertUsage[yp] == -1) {
-			Common::set_to(destP, destP + xSize, transIndex);
+			Common::fill(destP, destP + xSize, transIndex);
 		} else {
 			const byte *srcP = (const byte *)srcImage.getBasePtr(0, vertUsage[yp]);
 
@@ -567,7 +601,11 @@ void GfxSurface::copyFrom(GfxSurface &src, Rect srcBounds, Rect destBounds, Regi
 	if (destBounds.bottom > destSurface.h)
 		destBounds.bottom = destSurface.h;
 
-	if (destBounds.isValidRect()) {
+	if (destBounds.isValidRect() && !((destBounds.right < 0) || (destBounds.bottom < 0)
+			|| (destBounds.left >= SCREEN_WIDTH) || (destBounds.top >= SCREEN_HEIGHT))) {
+		// Register the affected area as dirty
+		addDirtyRect(destBounds);
+
 		const byte *pSrc = (const byte *)srcSurface.getBasePtr(srcX, srcY);
 		byte *pDest = (byte *)destSurface.getBasePtr(destBounds.left, destBounds.top);
 
@@ -582,8 +620,8 @@ void GfxSurface::copyFrom(GfxSurface &src, Rect srcBounds, Rect destBounds, Regi
 
 				while (tempSrc < (pSrc + destBounds.width())) {
 					if (!priorityRegion || !priorityRegion->contains(Common::Point(
-							xp + _globals->_sceneManager._scene->_sceneBounds.left,
-							destBounds.top + y + _globals->_sceneManager._scene->_sceneBounds.top))) {
+							xp + g_globals->_sceneManager._scene->_sceneBounds.left,
+							destBounds.top + y + g_globals->_sceneManager._scene->_sceneBounds.top))) {
 						if (*tempSrc != src._transColor)
 							*tempDest = *tempSrc;
 					}
@@ -609,8 +647,52 @@ void GfxSurface::draw(const Common::Point &pt, Rect *rect) {
 		*rect = tempRect;
 	} else {
 		// Draw image
-		_globals->gfxManager().copyFrom(*this, tempRect, NULL);
+		g_globals->gfxManager().copyFrom(*this, tempRect, NULL);
 	}
+}
+
+/**
+ * Merges any clipping rectangles that overlap to try and reduce
+ * the total number of clip rectangles.
+ */
+void GfxSurface::mergeDirtyRects() {
+	if (_dirtyRects.size() <= 1)
+		return;
+
+	Common::List<Rect>::iterator rOuter, rInner;
+
+	for (rOuter = _dirtyRects.begin(); rOuter != _dirtyRects.end(); ++rOuter) {
+		rInner = rOuter;
+		while (++rInner != _dirtyRects.end()) {
+
+			if ((*rOuter).intersects(*rInner)) {
+				// these two rectangles overlap or
+				// are next to each other - merge them
+
+				unionRectangle(*rOuter, *rOuter, *rInner);
+
+				// remove the inner rect from the list
+				_dirtyRects.erase(rInner);
+
+				// move back to beginning of list
+				rInner = rOuter;
+			}
+		}
+	}
+}
+
+/**
+ * Creates the union of two rectangles.
+ * Returns True if there is a union.
+ * @param pDest			destination rectangle that is to receive the new union
+ * @param pSrc1			a source rectangle
+ * @param pSrc2			a source rectangle
+ */
+bool GfxSurface::unionRectangle(Common::Rect &destRect, const Rect &src1, const Rect &src2) {
+	destRect = src1;
+	destRect.extend(src2);
+
+	return !destRect.isEmpty();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -623,12 +705,12 @@ GfxElement::GfxElement() {
 
 void GfxElement::setDefaults() {
 	_flags = 0;
-	_fontNumber = _globals->_gfxFontNumber;
-	_colors = _globals->_gfxColors;
-	_fontColors = _globals->_fontColors;
-	_color1 = _globals->_color1;
-	_color2 = _globals->_color2;
-	_color3 = _globals->_color3;
+	_fontNumber = g_globals->_gfxFontNumber;
+	_colors = g_globals->_gfxColors;
+	_fontColors = g_globals->_fontColors;
+	_color1 = g_globals->_color1;
+	_color2 = g_globals->_color2;
+	_color3 = g_globals->_color3;
 }
 
 /**
@@ -636,13 +718,13 @@ void GfxElement::setDefaults() {
  */
 void GfxElement::highlight() {
 	// Get a lock on the surface
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 	Graphics::Surface surface = gfxManager.lockSurface();
 
 	// Scan through the contents of the element, switching any occurances of the foreground
 	// color with the background color and vice versa
 	Rect tempRect(_bounds);
-	tempRect.collapse(_globals->_gfxEdgeAdjust - 1, _globals->_gfxEdgeAdjust - 1);
+	tempRect.collapse(g_globals->_gfxEdgeAdjust - 1, g_globals->_gfxEdgeAdjust - 1);
 
 	for (int yp = tempRect.top; yp < tempRect.bottom; ++yp) {
 		byte *lineP = (byte *)surface.getBasePtr(tempRect.left, yp);
@@ -651,6 +733,9 @@ void GfxElement::highlight() {
 			else if (*lineP == _colors.foreground) *lineP = _colors.background;
 		}
 	}
+
+	// Mark the affected area as dirty
+	gfxManager.getSurface().addDirtyRect(tempRect);
 
 	// Release the surface
 	gfxManager.unlockSurface();
@@ -661,7 +746,7 @@ void GfxElement::highlight() {
  */
 void GfxElement::drawFrame() {
 	// Get a lock on the surface and save the active font
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 	gfxManager.lockSurface();
 
 	uint8 bgColor, fgColor;
@@ -674,9 +759,41 @@ void GfxElement::drawFrame() {
 	}
 
 	Rect tempRect = _bounds;
-	tempRect.collapse(_globals->_gfxEdgeAdjust, _globals->_gfxEdgeAdjust);
+	tempRect.collapse(g_globals->_gfxEdgeAdjust, g_globals->_gfxEdgeAdjust);
 	tempRect.collapse(-1, -1);
-	gfxManager.fillRect(tempRect, _colors.background);
+
+	if (g_vm->getGameID() == GType_Ringworld2) {
+		// For Return to Ringworld, use palette shading
+
+		// Get the current palette and determining a shading translation list
+		ScenePalette tempPalette;
+		tempPalette.getPalette(0, 256);
+		int transList[256];
+
+		for (int i = 0; i < 256; ++i) {
+			uint r, g, b, v;
+			tempPalette.getEntry(i, &r, &g, &b);
+			v = ((r >> 1) + (g >> 1) + (b >> 1)) / 4;
+
+			transList[i] = tempPalette.indexOf(v, v, v);
+		}
+
+		// Loop through the surface area to replace each pixel
+		// with its proper shaded replacement
+		Graphics::Surface surface = gfxManager.lockSurface();
+		for (int y = tempRect.top; y < tempRect.bottom; ++y) {
+			byte *lineP = (byte *)surface.getBasePtr(tempRect.left, y);
+			for (int x = 0; x < tempRect.width(); ++x) {
+				*lineP = transList[*lineP];
+				lineP++;
+			}
+		}
+		gfxManager.unlockSurface();
+
+	} else {
+		// Fill dialog content with specified background colour
+		gfxManager.fillRect(tempRect, _colors.background);
+	}
 
 	--tempRect.bottom; --tempRect.right;
 	gfxManager.fillArea(tempRect.left, tempRect.top, bgColor);
@@ -715,10 +832,10 @@ bool GfxElement::focusedEvent(Event &event) {
 
 	// HACK: It should use the GfxManager object to figure out the relative
 	// position, but for now this seems like the easiest way.
-	int xOffset = mousePos.x - _globals->_events._mousePos.x;
-	int yOffset = mousePos.y - _globals->_events._mousePos.y;
+	int xOffset = mousePos.x - g_globals->_events._mousePos.x;
+	int yOffset = mousePos.y - g_globals->_events._mousePos.y;
 
-	while (event.eventType != EVENT_BUTTON_UP && !_vm->shouldQuit()) {
+	while (event.eventType != EVENT_BUTTON_UP && !g_vm->shouldQuit()) {
 		g_system->delayMillis(10);
 
 		if (_bounds.contains(mousePos)) {
@@ -733,7 +850,7 @@ bool GfxElement::focusedEvent(Event &event) {
 			highlight();
 		}
 
-		if (_globals->_events.getEvent(event, EVENT_MOUSE_MOVE | EVENT_BUTTON_UP)) {
+		if (g_globals->_events.getEvent(event, EVENT_MOUSE_MOVE | EVENT_BUTTON_UP)) {
 			if (event.eventType == EVENT_MOUSE_MOVE) {
 				mousePos.x = event.mousePos.x + xOffset;
 				mousePos.y = event.mousePos.y + yOffset;
@@ -769,7 +886,7 @@ void GfxImage::setDefaults() {
 
 	// Decode the image
 	uint size;
-	byte *imgData = _resourceManager->getSubResource(_resNum, _rlbNum, _cursorNum, &size);
+	byte *imgData = g_resourceManager->getSubResource(_resNum, _rlbNum, _cursorNum, &size);
 	_surface = surfaceFromRes(imgData);
 	DEALLOCATE(imgData);
 
@@ -781,9 +898,9 @@ void GfxImage::setDefaults() {
 
 void GfxImage::draw() {
 	Rect tempRect = _bounds;
-	tempRect.translate(_globals->gfxManager()._topLeft.x, _globals->gfxManager()._topLeft.y);
+	tempRect.translate(g_globals->gfxManager()._topLeft.x, g_globals->gfxManager()._topLeft.y);
 
-	_globals->gfxManager().copyFrom(_surface, tempRect);
+	g_globals->gfxManager().copyFrom(_surface, tempRect);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -805,7 +922,7 @@ void GfxMessage::setDefaults() {
 	GfxElement::setDefaults();
 
 	GfxFontBackup font;
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 	Rect tempRect;
 
 	gfxManager._font.setFontNumber(this->_fontNumber);
@@ -818,7 +935,7 @@ void GfxMessage::setDefaults() {
 
 void GfxMessage::draw() {
 	GfxFontBackup font;
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 
 	// Set the font and color
 	gfxManager.setFillFlag(false);
@@ -838,7 +955,7 @@ void GfxButton::setDefaults() {
 	GfxElement::setDefaults();
 
 	GfxFontBackup font;
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 	Rect tempRect;
 
 	// Get the string bounds and round up the x end to a multiple of 16
@@ -847,8 +964,8 @@ void GfxButton::setDefaults() {
 	tempRect.right = ((tempRect.right + 15) / 16) * 16;
 
 	// Set the button bounds
-	tempRect.collapse(-_globals->_gfxEdgeAdjust, -_globals->_gfxEdgeAdjust);
-	if (_vm->getFeatures() & GF_CD)
+	tempRect.collapse(-g_globals->_gfxEdgeAdjust, -g_globals->_gfxEdgeAdjust);
+	if (g_vm->getFeatures() & GF_CD)
 		--tempRect.top;
 	tempRect.moveTo(_bounds.left, _bounds.top);
 	_bounds = tempRect;
@@ -857,7 +974,7 @@ void GfxButton::setDefaults() {
 void GfxButton::draw() {
 	// Get a lock on the surface and save the active font
 	GfxFontBackup font;
-	GfxManager &gfxManager = _globals->gfxManager();
+	GfxManager &gfxManager = g_globals->gfxManager();
 	gfxManager.lockSurface();
 
 	// Draw a basic frame for the button
@@ -873,8 +990,8 @@ void GfxButton::draw() {
 
 	// Display the button's text
 	Rect tempRect(_bounds);
-	tempRect.collapse(_globals->_gfxEdgeAdjust, _globals->_gfxEdgeAdjust);
-	if (_vm->getFeatures() & GF_CD)
+	tempRect.collapse(g_globals->_gfxEdgeAdjust, g_globals->_gfxEdgeAdjust);
+	if (g_vm->getFeatures() & GF_CD)
 		++tempRect.top;
 	gfxManager._font.writeLines(_message.c_str(), tempRect, ALIGN_CENTER);
 
@@ -936,14 +1053,14 @@ void GfxDialog::setDefaults() {
 
 	// Set the dialog boundaries
 	_gfxManager._bounds = tempRect;
-	tempRect.collapse(-_globals->_gfxEdgeAdjust * 2, -_globals->_gfxEdgeAdjust * 2);
+	tempRect.collapse(-g_globals->_gfxEdgeAdjust * 2, -g_globals->_gfxEdgeAdjust * 2);
 	_bounds = tempRect;
 }
 
 void GfxDialog::remove() {
 	if (_savedArea) {
 		// Restore the area the dialog covered
-		_globals->_gfxManagerInstance.copyFrom(*_savedArea, _bounds.left, _bounds.top);
+		g_globals->_gfxManagerInstance.copyFrom(*_savedArea, _bounds.left, _bounds.top);
 
 		delete _savedArea;
 		_savedArea = NULL;
@@ -954,7 +1071,7 @@ void GfxDialog::draw() {
 	Rect tempRect(_bounds);
 
 	// Make a backup copy of the area the dialog will occupy
-	_savedArea = Surface_getArea(_globals->_gfxManagerInstance.getSurface(), _bounds);
+	_savedArea = Surface_getArea(g_globals->_gfxManagerInstance.getSurface(), _bounds);
 
 	// Set the palette for use in the dialog
 	setPalette();
@@ -966,7 +1083,7 @@ void GfxDialog::draw() {
 	drawFrame();
 
 	// Reset the dialog's graphics manager to only draw within the dialog boundaries
-	tempRect.translate(_globals->_gfxEdgeAdjust * 2, _globals->_gfxEdgeAdjust * 2);
+	tempRect.translate(g_globals->_gfxEdgeAdjust * 2, g_globals->_gfxEdgeAdjust * 2);
 	_gfxManager._bounds = tempRect;
 
 	// Draw each element in the dialog in order
@@ -1003,7 +1120,7 @@ void GfxDialog::addElements(GfxElement *ge, ...) {
 }
 
 void GfxDialog::setTopLeft(int xp, int yp) {
-	_bounds.moveTo(xp - _globals->_gfxEdgeAdjust * 2, yp - _globals->_gfxEdgeAdjust * 2);
+	_bounds.moveTo(xp - g_globals->_gfxEdgeAdjust * 2, yp - g_globals->_gfxEdgeAdjust * 2);
 }
 
 void GfxDialog::setCenter(int xp, int yp) {
@@ -1029,9 +1146,9 @@ GfxButton *GfxDialog::execute(GfxButton *defaultButton) {
 	GfxButton *selectedButton = NULL;
 
 	bool breakFlag = false;
-	while (!_vm->shouldQuit() && !breakFlag) {
+	while (!g_vm->shouldQuit() && !breakFlag) {
 		Event event;
-		while (_globals->_events.getEvent(event) && !breakFlag) {
+		while (g_globals->_events.getEvent(event) && !breakFlag) {
 			// Adjust mouse positions to be relative within the dialog
 			event.mousePos.x -= _gfxManager._bounds.left;
 			event.mousePos.y -= _gfxManager._bounds.top;
@@ -1058,7 +1175,7 @@ GfxButton *GfxDialog::execute(GfxButton *defaultButton) {
 		}
 
 		g_system->delayMillis(10);
-		g_system->updateScreen();
+		GLOBALS._screenSurface.updateScreen();
 	}
 
 	_gfxManager.deactivate();
@@ -1069,28 +1186,28 @@ GfxButton *GfxDialog::execute(GfxButton *defaultButton) {
 }
 
 void GfxDialog::setPalette() {
-	if (_vm->getGameID() == GType_BlueForce) {
-		_globals->_scenePalette.loadPalette(2);
-		_globals->_scenePalette.setPalette(0, 1);
-		_globals->_scenePalette.setPalette(_globals->_gfxColors.background, 1);
-		_globals->_scenePalette.setPalette(_globals->_gfxColors.foreground, 1);
-		_globals->_scenePalette.setPalette(_globals->_fontColors.background, 1);
-		_globals->_scenePalette.setPalette(_globals->_fontColors.foreground, 1);
-		_globals->_scenePalette.setEntry(255, 0xff, 0xff, 0xff);
-		_globals->_scenePalette.setPalette(255, 1);	
+	if (g_vm->getGameID() == GType_BlueForce) {
+		g_globals->_scenePalette.loadPalette(2);
+		g_globals->_scenePalette.setPalette(0, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_gfxColors.background, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_gfxColors.foreground, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_fontColors.background, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_fontColors.foreground, 1);
+		g_globals->_scenePalette.setEntry(255, 0xff, 0xff, 0xff);
+		g_globals->_scenePalette.setPalette(255, 1);	
 	} else {
-		_globals->_scenePalette.loadPalette(0);
-		_globals->_scenePalette.setPalette(0, 1);
-		_globals->_scenePalette.setPalette(_globals->_scenePalette._colors.foreground, 1);
-		_globals->_scenePalette.setPalette(_globals->_fontColors.background, 1);
-		_globals->_scenePalette.setPalette(_globals->_fontColors.foreground, 1);
-		_globals->_scenePalette.setPalette(255, 1);
+		g_globals->_scenePalette.loadPalette(0);
+		g_globals->_scenePalette.setPalette(0, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_scenePalette._colors.foreground, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_fontColors.background, 1);
+		g_globals->_scenePalette.setPalette(g_globals->_fontColors.foreground, 1);
+		g_globals->_scenePalette.setPalette(255, 1);
 	}
 }
 
 /*--------------------------------------------------------------------------*/
 
-GfxManager::GfxManager() : _surface(_globals->_screenSurface), _oldManager(NULL) {
+GfxManager::GfxManager() : _surface(g_globals->_screenSurface), _oldManager(NULL) {
 	_font.setOwner(this);
 	_font._fillFlag = false;
 	_bounds = Rect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -1109,19 +1226,19 @@ void GfxManager::setDefaults() {
 	_pane0Rect4 = screenBounds;
 
 	_font._edgeSize = Common::Point(1, 1);
-	_font._colors = _globals->_fontColors;
-	_font.setFontNumber(_globals->_gfxFontNumber);
+	_font._colors = g_globals->_fontColors;
+	_font.setFontNumber(g_globals->_gfxFontNumber);
 }
 
 void GfxManager::activate() {
-	assert(!contains(_globals->_gfxManagers, this));
-	_globals->_gfxManagers.push_front(this);
+	assert(!contains(g_globals->_gfxManagers, this));
+	g_globals->_gfxManagers.push_front(this);
 }
 
 void GfxManager::deactivate() {
 	// Assert that there will still be another manager, and we're correctly removing our own
-	assert((_globals->_gfxManagers.size() > 1) && (&_globals->gfxManager() == this));
-	_globals->_gfxManagers.pop_front();
+	assert((g_globals->_gfxManagers.size() > 1) && (&g_globals->gfxManager() == this));
+	g_globals->_gfxManagers.pop_front();
 }
 
 int GfxManager::getStringWidth(const char *s, int numChars) {
@@ -1159,7 +1276,7 @@ void GfxManager::setDialogPalette() {
 	// Get the main palette information
 	byte palData[256 * 3];
 	uint count, start;
-	_resourceManager->getPalette(0, &palData[0], &start, &count);
+	g_resourceManager->getPalette(0, &palData[0], &start, &count);
 	g_system->getPaletteManager()->setPalette(&palData[0], start, count);
 
 	// Miscellaneous
@@ -1190,11 +1307,40 @@ int GfxManager::getAngle(const Common::Point &p1, const Common::Point &p2) {
 		return result;
 	}
 }
+
+// FIXME: The two checks for screenSurface inside these two copyFrom() methods
+// are meant for Ringworld 2, but the corresponding setBounds cases cause
+// issues with the popup menus when right clicking in all games (e.g. the popup
+// menu is always shown on the top left of the screen). Therefore, these two
+// code fragments are disabled for now, till the glitches they cause are fixed.
+
+void GfxManager::copyFrom(GfxSurface &src, Rect destBounds, Region *priorityRegion) {
+#if 0
+	if (&_surface == &(GLOBALS._screenSurface))
+		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
+	else
+#endif
+		_surface.setBounds(_bounds);
+
+	_surface.copyFrom(src, destBounds, priorityRegion);
+}
+
+void GfxManager::copyFrom(GfxSurface &src, int destX, int destY) {
+#if 0
+	if (&_surface == &(GLOBALS._screenSurface))
+		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
+	else
+#endif
+		_surface.setBounds(_bounds);
+
+	_surface.copyFrom(src, destX, destY);
+}
+
 /*--------------------------------------------------------------------------*/
 
 
 GfxFont::GfxFont() {
-	_fontNumber = (_vm->getFeatures() & GF_DEMO) ? 0 : 50;
+	_fontNumber = (g_vm->getFeatures() & GF_DEMO) ? 0 : 50;
 	_numChars = 0;
 	_bpp = 0;
 	_fontData = NULL;
@@ -1218,11 +1364,15 @@ void GfxFont::setFontNumber(uint32 fontNumber) {
 
 	_fontNumber = fontNumber;
 
-	_fontData = _resourceManager->getResource(RES_FONT, _fontNumber, 0, true);
+	_fontData = g_resourceManager->getResource(RES_FONT, _fontNumber, 0, true);
 	if (!_fontData)
-		_fontData = _resourceManager->getResource(RES_FONT, _fontNumber, 0);
+		_fontData = g_resourceManager->getResource(RES_FONT, _fontNumber, 0);
 
-	_numChars = READ_LE_UINT16(_fontData + 4);
+	// Since some TsAGE game versions don't have a valid character count at offset 4, use the offset of the
+	// first charactre data to calculate the number of characters in the offset table preceeding it
+	_numChars = (READ_LE_UINT32(_fontData + 12) - 12) / 4;
+	assert(_numChars <= 256);
+
 	_fontSize.y = READ_LE_UINT16(_fontData + 6);
 	_fontSize.x = READ_LE_UINT16(_fontData + 8);
 	_bpp = READ_LE_UINT16(_fontData + 10);
@@ -1392,7 +1542,12 @@ int GfxFont::writeChar(const char ch) {
 		}
 	}
 
+	// Mark the affected area as dirty
+	_gfxManager->getSurface().addDirtyRect(charRect);
+
+	// Move the text writing position
 	_position.x += charWidth;
+
 	_gfxManager->unlockSurface();
 	return charWidth;
 }
@@ -1509,17 +1664,17 @@ void GfxFont::writeLines(const char *s, const Rect &bounds, TextAlign align) {
 /*--------------------------------------------------------------------------*/
 
 GfxFontBackup::GfxFontBackup() {
-	_edgeSize = _globals->gfxManager()._font._edgeSize;
-	_position = _globals->gfxManager()._font._position;
-	_colors = _globals->gfxManager()._font._colors;
-	_fontNumber = _globals->gfxManager()._font._fontNumber;
+	_edgeSize = g_globals->gfxManager()._font._edgeSize;
+	_position = g_globals->gfxManager()._font._position;
+	_colors = g_globals->gfxManager()._font._colors;
+	_fontNumber = g_globals->gfxManager()._font._fontNumber;
 }
 
 GfxFontBackup::~GfxFontBackup() {
-	_globals->gfxManager()._font.setFontNumber(_fontNumber);
-	_globals->gfxManager()._font._edgeSize = _edgeSize;
-	_globals->gfxManager()._font._position = _position;
-	_globals->gfxManager()._font._colors = _colors;
+	g_globals->gfxManager()._font.setFontNumber(_fontNumber);
+	g_globals->gfxManager()._font._edgeSize = _edgeSize;
+	g_globals->gfxManager()._font._position = _position;
+	g_globals->gfxManager()._font._colors = _colors;
 }
 
 

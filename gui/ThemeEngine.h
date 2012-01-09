@@ -35,7 +35,7 @@
 #include "graphics/pixelformat.h"
 
 
-#define SCUMMVM_THEME_VERSION_STR "SCUMMVM_STX0.8.3"
+#define SCUMMVM_THEME_VERSION_STR "SCUMMVM_STX0.8.7"
 
 class OSystem;
 
@@ -228,6 +228,7 @@ public:
 	static const char *const kImageLogo;      ///< ScummVM logo used in the launcher
 	static const char *const kImageLogoSmall; ///< ScummVM logo used in the GMM
 	static const char *const kImageSearch;    ///< Search tool image used in the launcher
+	static const char *const kImageEraser;     ///< Clear input image used in the launcher
 
 	/**
 	 * Graphics mode enumeration.
@@ -535,9 +536,7 @@ protected:
 	 */
 	void unloadTheme();
 
-	const Graphics::Font *loadFont(const Common::String &filename);
-	const Graphics::Font *loadFontFromArchive(const Common::String &filename);
-	const Graphics::Font *loadCachedFontFromArchive(const Common::String &filename);
+	const Graphics::Font *loadFont(const Common::String &filename, const bool makeLocalizedFont);
 	Common::String genCacheFilename(const Common::String &filename) const;
 
 	/**
@@ -657,6 +656,7 @@ protected:
 	Common::String _themeId;
 	Common::String _themeFile;
 	Common::Archive *_themeArchive;
+	Common::SearchSet _themeFiles;
 
 	bool _useCursor;
 	int _cursorHotspotX, _cursorHotspotY;

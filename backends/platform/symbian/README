@@ -1,7 +1,7 @@
 
  ScummVM - ScummVM ported to EPOC/SymbianOS
 
- Copyright (C) 2008-2011 ScummVM Team
+ Copyright (C) 2008-2012 ScummVM Team
  Copyright (C) 2003-2008 Lars 'AnotherGuest' Persson
  Copyright (C) 2002-2008 Jurgen 'SumthinWicked' Braam
 
@@ -24,6 +24,17 @@ About ScummVM
 	Jurgen and Lars have successfully transfered all needed changes into CVS/SVN, with additional helpful tools for Symbian OS
 
 Release History:
+	Release version: 1.4.0
+		* Nothing significant in the Symbian port, except SDL improvements (new SDL version used)
+		* See main readme for general ScummVM improvements, major update
+
+	Release version: 1.3.1
+		* Nothing significant in the Symbian port, except SDL improvements (new SDL version used)
+		* See main readme for general ScummVM improvements, major update
+
+	Release version: 1.3.0
+		* Nothing significant in the Symbian port, except SDL improvements (new SDL version used)
+		* See main readme for general ScummVM improvements, major update
 	Release version: 1.2.1
 	* Symbian port now split in two parts, ScummVM 1 and ScummVM 2 to keep the exe size down.
 	  ScummVM 1 contains the following engines:
