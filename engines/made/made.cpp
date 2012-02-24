@@ -109,6 +109,8 @@ MadeEngine::MadeEngine(OSystem *syst, const MadeGameDescription *gameDesc) : Eng
 	}
 
 	syncSoundSettings();
+
+	_psxDisk1Videos = _psxDisk2Videos = _psxAudio = 0;
 }
 
 MadeEngine::~MadeEngine() {
@@ -121,6 +123,9 @@ MadeEngine::~MadeEngine() {
 	delete _dat;
 	delete _script;
 	delete _music;
+	delete _psxDisk1Videos;
+	delete _psxDisk2Videos;
+	delete _psxAudio;
 }
 
 void MadeEngine::syncSoundSettings() {
@@ -301,12 +306,9 @@ Common::Error MadeEngine::run() {
 			_res->open("psj_rtz.prj");
 
 			// We also need to open three archives for audio/video
-			Common::Archive *psxDisk1Videos = new PSXStreamINF("disk1/disk1", false);
-			Common::Archive *psxDisk2Videos = new PSXStreamINF("disk2/disk2", false);
-			Common::Archive *psxAudio = new PSXStreamINF("zorkx", true);
-			SearchMan.add("disk1/disk1", psxDisk1Videos);
-			SearchMan.add("disk2/disk2", psxDisk2Videos);
-			SearchMan.add("zorkx", psxAudio);
+			_psxDisk1Videos = new PSXStreamINF("disk1/disk1", false);
+			_psxDisk2Videos = new PSXStreamINF("disk2/disk2", false);
+			_psxAudio = new PSXStreamINF("zorkx", true);
 		} else if (getFeatures() & GF_DEMO) {
 			_dat->open("demo.dat");
 			_res->open("demo.prj");
@@ -363,7 +365,11 @@ bool MadeEngine::playMovie(const Common::String &fileName) {
 		// Saturn version uses Sega FILM
 		decoder = new Video::SegaFILMDecoder();
 	} else if (getPlatform() == Common::kPlatformPSX) {
-		// TODO: PlayStation streams (all @10fps)
+		// PlayStation streams
+		if (_psxDisk1Videos->hasFile(fileName))
+			decoder = _psxDisk1Videos->createVideoDecoderForMember(fileName);
+		else if (_psxDisk2Videos->hasFile(fileName))
+			decoder = _psxDisk2Videos->createVideoDecoderForMember(fileName);
 	} else {
 		// DOS, Mac, PC-98, FM Towns use PMV/MMV
 		// TODO: MPEG-2 DOS and MPEG-2 Mac
@@ -373,7 +379,8 @@ bool MadeEngine::playMovie(const Common::String &fileName) {
 	if (!decoder)
 		return false;
 
-	if (!decoder->loadFile(fileName)) {
+	// PSX videos are already loaded at this point
+	if (getPlatform() != Common::kPlatformPSX && !decoder->loadFile(fileName)) {
 		return false;
 		delete decoder;
 	}

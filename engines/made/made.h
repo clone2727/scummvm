@@ -66,6 +66,7 @@ class ScriptInterpreter;
 class GameDatabase;
 class MusicPlayer;
 class MadeConsole;
+class PSXStreamINF;
 
 class MadeEngine : public ::Engine {
 	int _gameId;
@@ -98,6 +99,8 @@ public:
 
 private:
 	MadeConsole *_console;
+
+	PSXStreamINF *_psxDisk1Videos, *_psxDisk2Videos, *_psxAudio;
 
 public:
 	ResourceReader *_res;

@@ -20,8 +20,12 @@
  *
  */
 
+#include "audio/mixer.h" // TODO: Move this to psx_decoder.h...
+#include "common/archive.h"
 #include "common/array.h"
+#include "common/substream.h"
 #include "common/tokenizer.h"
+#include "video/psx_decoder.h"
 
 #include "made/psx_inf.h"
 
@@ -30,15 +34,15 @@ namespace Made {
 struct FileListEntry {
 	uint startSector;
 	uint frameCount;
-	uint length;
+	bool highSpeed;
 	Common::String fileName;
 };
 
 #define RAW_CD_SECTOR_SIZE 2352
 
-PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) : Common::Archive() {
+PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) {
 	Common::String infFileName = baseFileName + ".inf";
-	Common::String streamFileName = baseFileName + (audio ? ".xai" : ".stl");
+	_streamFileName = baseFileName + (audio ? ".xai" : ".stl");
 
 	// Read in all lines from the file
 	Common::File infFile;
@@ -46,8 +50,9 @@ PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) : Com
 		error("Could not open '%s'", infFileName.c_str());
 
 	// Now open the stream file
-	if (!_file.open(streamFileName))
-		error("Could not open '%s'", streamFileName.c_str());
+	Common::File file;
+	if (!file.open(_streamFileName))
+		error("Could not open '%s'", _streamFileName.c_str());
 
 	Common::Array<Common::String> fileStrList;
 	while (infFile.pos() < infFile.size())
@@ -64,7 +69,7 @@ PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) : Com
 
 		fileList[i].startSector = (uint)atoi(tokens.nextToken().c_str());
 		fileList[i].frameCount = (uint)atoi(tokens.nextToken().c_str());
-		fileList[i].length = (uint)atoi(tokens.nextToken().c_str());
+		fileList[i].highSpeed = atoi(tokens.nextToken().c_str()) == 1;
 		fileList[i].fileName = tokens.nextToken();
 	}
 
@@ -74,7 +79,8 @@ PSXStreamINF::PSXStreamINF(const Common::String &baseFileName, bool audio) : Com
 	for (uint32 i = 0; i < fileList.size(); i++) {
 		FileEntry entry;
 		entry.offset = fileList[i].startSector * RAW_CD_SECTOR_SIZE;
-		entry.size = ((i == fileList.size() - 1) ? _file.size() : fileList[i + 1].startSector * RAW_CD_SECTOR_SIZE) - entry.offset;
+		entry.size = ((i == fileList.size() - 1) ? file.size() : fileList[i + 1].startSector * RAW_CD_SECTOR_SIZE) - entry.offset;
+		entry.highSpeed = fileList[i].highSpeed;
 		_map[fileList[i].fileName] = entry;
 	}
 }
@@ -86,27 +92,27 @@ bool PSXStreamINF::hasFile(const Common::String &name) const {
 	return _map.contains(name);
 }
 
-int PSXStreamINF::listMembers(Common::ArchiveMemberList &list) const {
-	for (FileMap::const_iterator it = _map.begin(); it != _map.end(); it++)
-		list.push_back(getMember(it->_key));
-
-	return _map.size();
-}
-
-const Common::ArchiveMemberPtr PSXStreamINF::getMember(const Common::String &name) const {
-	return Common::ArchiveMemberPtr(new Common::GenericArchiveMember(name, this));
-}
-
-Common::SeekableReadStream *PSXStreamINF::createReadStreamForMember(const Common::String &name) const {
+Video::VideoDecoder *PSXStreamINF::createVideoDecoderForMember(const Common::String &name) const {
 	if (!_map.contains(name))
 		return 0;
 
 	const FileEntry &entry = _map[name];
 
-	_file.seek(entry.offset);
+	Common::SeekableReadStream *stream = SearchMan.createReadStreamForMember(_streamFileName);
 
-	// TODO: Maybe think about using a SeekableSubReadStream
-	return _file.readStream(entry.size);
+	if (!stream)
+		return 0;
+
+	Common::SeekableReadStream *subStream = new Common::SeekableSubReadStream(stream, entry.offset, entry.offset + entry.size, DisposeAfterUse::YES);
+
+	Video::VideoDecoder *video = new Video::PSXStreamDecoder(entry.highSpeed ? Video::PSXStreamDecoder::kCD2x : Video::PSXStreamDecoder::kCD1x);
+
+	if (!video->loadStream(subStream)) {
+		delete video;
+		return 0;
+	}
+
+	return video;
 }
 
 } // End of namespace Made

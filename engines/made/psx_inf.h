@@ -23,34 +23,36 @@
 #ifndef MADE_PSXINF_H
 #define MADE_PSXINF_H
 
-#include "common/archive.h"
 #include "common/file.h"
 #include "common/hashmap.h"
 #include "common/hash-str.h"
 #include "common/str.h"
+
+namespace Video {
+class VideoDecoder;
+}
 
 namespace Made {
 
 /**
  * An archive implementation of RTZ PSX inf (index) and stl/xai (stream) files
  */
-class PSXStreamINF : public Common::Archive {
+class PSXStreamINF {
 public:
 	PSXStreamINF(const Common::String &baseFileName, bool audio);
 	~PSXStreamINF();
 
 	bool hasFile(const Common::String &name) const;
-	int listMembers(Common::ArchiveMemberList &list) const;
-	const Common::ArchiveMemberPtr getMember(const Common::String &name) const;
-	Common::SeekableReadStream *createReadStreamForMember(const Common::String &name) const;
+	Video::VideoDecoder *createVideoDecoderForMember(const Common::String &name) const;
 
 private:
 	struct FileEntry {
 		uint32 offset;
 		uint32 size;
+		bool highSpeed;
 	};
 
-	mutable Common::File _file;
+	Common::String _streamFileName;
 
 	typedef Common::HashMap<Common::String, FileEntry, Common::IgnoreCase_Hash, Common::IgnoreCase_EqualTo> FileMap;
 	FileMap _map;
