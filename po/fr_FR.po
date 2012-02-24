@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: ScummVM 1.3.0svn\n"
 "Report-Msgid-Bugs-To: scummvm-devel@lists.sf.net\n"
-"POT-Creation-Date: 2011-12-26 15:26+0100\n"
+"POT-Creation-Date: 2012-02-16 12:32+0200\n"
 "PO-Revision-Date: 2011-10-23 14:52+0100\n"
 "Last-Translator: Thierry Crozat <criezy@scummvm.org>\n"
 "Language-Team: French <scummvm-devel@lists.sf.net>\n"
@@ -46,7 +46,7 @@ msgstr "Remonter"
 #: gui/browser.cpp:69 gui/chooser.cpp:45 gui/KeysDialog.cpp:43
 #: gui/launcher.cpp:319 gui/massadd.cpp:94 gui/options.cpp:1221
 #: gui/saveload.cpp:63 gui/saveload.cpp:155 gui/themebrowser.cpp:54
-#: engines/engine.cpp:436 engines/scumm/dialogs.cpp:190
+#: engines/engine.cpp:438 engines/scumm/dialogs.cpp:190
 #: engines/sword1/control.cpp:865 engines/parallaction/saveload.cpp:281
 #: backends/platform/wii/options.cpp:48
 #: backends/events/default/default-events.cpp:222
@@ -58,24 +58,28 @@ msgstr "Annuler"
 msgid "Choose"
 msgstr "Choisir"
 
-#: gui/gui-manager.cpp:116 engines/scumm/help.cpp:125
+#: gui/gui-manager.cpp:115 engines/scumm/help.cpp:125
 #: engines/scumm/help.cpp:140 engines/scumm/help.cpp:165
 #: engines/scumm/help.cpp:191 engines/scumm/help.cpp:209
 #: backends/keymapper/remap-dialog.cpp:52
 msgid "Close"
 msgstr "Fermer"
 
-#: gui/gui-manager.cpp:119
+#: gui/gui-manager.cpp:118
 msgid "Mouse click"
 msgstr "Clic de souris"
 
-#: gui/gui-manager.cpp:122 base/main.cpp:283
+#: gui/gui-manager.cpp:121 base/main.cpp:289
 msgid "Display keyboard"
 msgstr "Afficher le clavier"
 
-#: gui/gui-manager.cpp:125 base/main.cpp:286
+#: gui/gui-manager.cpp:124 base/main.cpp:292
 msgid "Remap keys"
 msgstr "Changer l'affectation des touches"
+
+#: gui/gui-manager.cpp:127 base/main.cpp:295
+msgid "Toggle FullScreen"
+msgstr "Basculer en plein écran"
 
 #: gui/KeysDialog.h:36 gui/KeysDialog.cpp:145
 msgid "Choose an action to map"
@@ -87,11 +91,11 @@ msgstr "Affecter"
 
 #: gui/KeysDialog.cpp:42 gui/launcher.cpp:320 gui/launcher.cpp:959
 #: gui/launcher.cpp:963 gui/massadd.cpp:91 gui/options.cpp:1222
-#: engines/engine.cpp:359 engines/engine.cpp:370 engines/scumm/dialogs.cpp:192
-#: engines/scumm/scumm.cpp:1784 engines/agos/animation.cpp:551
+#: engines/engine.cpp:361 engines/engine.cpp:372 engines/scumm/dialogs.cpp:192
+#: engines/scumm/scumm.cpp:1775 engines/agos/animation.cpp:551
 #: engines/groovie/script.cpp:420 engines/sky/compact.cpp:131
-#: engines/sky/compact.cpp:141 engines/sword1/animation.cpp:345
-#: engines/sword1/animation.cpp:355 engines/sword1/animation.cpp:361
+#: engines/sky/compact.cpp:141 engines/sword1/animation.cpp:449
+#: engines/sword1/animation.cpp:459 engines/sword1/animation.cpp:465
 #: engines/sword1/control.cpp:865 engines/sword1/logic.cpp:1633
 #: engines/sword2/animation.cpp:379 engines/sword2/animation.cpp:389
 #: engines/sword2/animation.cpp:398 engines/parallaction/saveload.cpp:281
@@ -346,7 +350,7 @@ msgstr "Cet ID est déjà utilisé par un autre jeu. Choisissez en un autre svp."
 msgid "~Q~uit"
 msgstr "~Q~uitter"
 
-#: gui/launcher.cpp:578 backends/platform/sdl/macosx/appmenu_osx.mm:80
+#: gui/launcher.cpp:578 backends/platform/sdl/macosx/appmenu_osx.mm:96
 msgid "Quit ScummVM"
 msgstr "Quitter ScummVM"
 
@@ -354,7 +358,7 @@ msgstr "Quitter ScummVM"
 msgid "A~b~out..."
 msgstr "À ~P~ropos..."
 
-#: gui/launcher.cpp:579 backends/platform/sdl/macosx/appmenu_osx.mm:61
+#: gui/launcher.cpp:579 backends/platform/sdl/macosx/appmenu_osx.mm:70
 msgid "About ScummVM"
 msgstr "À propos de ScummVM"
 
@@ -600,7 +604,7 @@ msgstr "Mode spécial de tramage supporté par certains jeux"
 
 #: gui/options.cpp:761
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2248
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:476
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:472
 msgid "Fullscreen mode"
 msgstr "Plein écran"
 
@@ -969,28 +973,28 @@ msgstr "Sauvegarde sans nom"
 msgid "Select a Theme"
 msgstr "Sélectionnez un Thème"
 
-#: gui/ThemeEngine.cpp:329
+#: gui/ThemeEngine.cpp:333
 msgid "Disabled GFX"
 msgstr "GFX désactivé"
 
-#: gui/ThemeEngine.cpp:329
+#: gui/ThemeEngine.cpp:333
 msgctxt "lowres"
 msgid "Disabled GFX"
 msgstr "GFX désactivé"
 
-#: gui/ThemeEngine.cpp:330
+#: gui/ThemeEngine.cpp:334
 msgid "Standard Renderer (16bpp)"
 msgstr "Rendu Standard (16bpp)"
 
-#: gui/ThemeEngine.cpp:330
+#: gui/ThemeEngine.cpp:334
 msgid "Standard (16bpp)"
 msgstr "Standard (16bpp)"
 
-#: gui/ThemeEngine.cpp:332
+#: gui/ThemeEngine.cpp:336
 msgid "Antialiased Renderer (16bpp)"
 msgstr "Rendu Anti-crénelé (16 bpp)"
 
-#: gui/ThemeEngine.cpp:332
+#: gui/ThemeEngine.cpp:336
 msgid "Antialiased (16bpp)"
 msgstr "Anti-crénelé (16 bpp)"
 
@@ -1003,30 +1007,30 @@ msgstr "Effacer la valeur"
 msgid "Engine does not support debug level '%s'"
 msgstr "Le niveau de debug '%s' n'est pas supporté par ce moteur de jeu"
 
-#: base/main.cpp:271
+#: base/main.cpp:277
 msgid "Menu"
 msgstr "Menu"
 
-#: base/main.cpp:274 backends/platform/symbian/src/SymbianActions.cpp:45
+#: base/main.cpp:280 backends/platform/symbian/src/SymbianActions.cpp:45
 #: backends/platform/wince/CEActionsPocket.cpp:45
 #: backends/platform/wince/CEActionsSmartphone.cpp:46
 msgid "Skip"
 msgstr "Passer"
 
-#: base/main.cpp:277 backends/platform/symbian/src/SymbianActions.cpp:50
+#: base/main.cpp:283 backends/platform/symbian/src/SymbianActions.cpp:50
 #: backends/platform/wince/CEActionsPocket.cpp:42
 msgid "Pause"
 msgstr "Mettre en pause"
 
-#: base/main.cpp:280
+#: base/main.cpp:286
 msgid "Skip line"
 msgstr "Passer la phrase"
 
-#: base/main.cpp:439
+#: base/main.cpp:455
 msgid "Error running game:"
 msgstr "Erreur lors de l'éxécution du jeu:"
 
-#: base/main.cpp:463
+#: base/main.cpp:479
 msgid "Could not find any engine capable of running the selected game"
 msgstr "Impossible de trouver un moteur pour exécuter le jeu sélectionné"
 
@@ -1200,23 +1204,23 @@ msgstr "~A~nnuler"
 msgid "~K~eys"
 msgstr "~T~ouches"
 
-#: engines/engine.cpp:233
+#: engines/engine.cpp:235
 msgid "Could not initialize color format."
 msgstr "Impossible d'initialiser le format des couleurs."
 
-#: engines/engine.cpp:241
+#: engines/engine.cpp:243
 msgid "Could not switch to video mode: '"
 msgstr "Impossible de changer le mode vidéo à: '"
 
-#: engines/engine.cpp:250
+#: engines/engine.cpp:252
 msgid "Could not apply aspect ratio setting."
 msgstr "Impossible d'appliquer la correction du rapport d'aspect."
 
-#: engines/engine.cpp:255
+#: engines/engine.cpp:257
 msgid "Could not apply fullscreen setting."
 msgstr "Impossible d'appliquer l'option plein écran."
 
-#: engines/engine.cpp:355
+#: engines/engine.cpp:357
 msgid ""
 "You appear to be playing this game directly\n"
 "from the CD. This is known to cause problems,\n"
@@ -1230,7 +1234,7 @@ msgstr ""
 "données du jeu sur votre disque dur.\n"
 "Lisez le fichier README pour plus de détails."
 
-#: engines/engine.cpp:366
+#: engines/engine.cpp:368
 msgid ""
 "This game has audio tracks in its disk. These\n"
 "tracks need to be ripped from the disk using\n"
@@ -1244,7 +1248,7 @@ msgstr ""
 "logiciel approprié.\n"
 "Lisez le fichier README pour plus de détails."
 
-#: engines/engine.cpp:433
+#: engines/engine.cpp:435
 msgid ""
 "WARNING: The game you are about to start is not yet fully supported by "
 "ScummVM. As such, it is likely to be unstable, and any saves you make might "
@@ -1254,7 +1258,7 @@ msgstr ""
 "complètement supporté par ScummVM. Il est donc instable et les sauvegardes "
 "peuvent ne pas  marcher avec une future version de ScummVM."
 
-#: engines/engine.cpp:436
+#: engines/engine.cpp:438
 msgid "Start anyway"
 msgstr "Jouer quand même"
 
@@ -1381,9 +1385,8 @@ msgid "Refer to your Loom(TM) manual for help."
 msgstr ""
 
 #: engines/scumm/dialogs.cpp:658
-#, fuzzy
 msgid "Standard"
-msgstr "Standard (16bpp)"
+msgstr "Standard"
 
 #: engines/scumm/dialogs.cpp:659
 msgid "Practice"
@@ -1906,7 +1909,7 @@ msgstr "Voler vers la droite"
 msgid "Fly to lower right"
 msgstr "Voler vers la bas à droite"
 
-#: engines/scumm/scumm.cpp:1782
+#: engines/scumm/scumm.cpp:1773
 #, c-format
 msgid ""
 "Native MIDI support requires the Roland Upgrade from LucasArts,\n"
@@ -1915,7 +1918,7 @@ msgstr ""
 "Support MIDI natif requière la mise à jour Roland de LucasArt,\n"
 "mais %s manque. Utilise AdLib à la place."
 
-#: engines/scumm/scumm.cpp:2272 engines/agos/saveload.cpp:189
+#: engines/scumm/scumm.cpp:2271 engines/agos/saveload.cpp:189
 #, c-format
 msgid ""
 "Failed to save game state to file:\n"
@@ -1926,7 +1929,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2279 engines/agos/saveload.cpp:154
+#: engines/scumm/scumm.cpp:2278 engines/agos/saveload.cpp:154
 #, c-format
 msgid ""
 "Failed to load game state from file:\n"
@@ -1937,7 +1940,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2291 engines/agos/saveload.cpp:197
+#: engines/scumm/scumm.cpp:2290 engines/agos/saveload.cpp:197
 #, c-format
 msgid ""
 "Successfully saved game state in file:\n"
@@ -1948,7 +1951,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2506
+#: engines/scumm/scumm.cpp:2505
 msgid ""
 "Usually, Maniac Mansion would start now. But ScummVM doesn't do that yet. To "
 "play it, go to 'Add Game' in the ScummVM start menu and select the 'Maniac' "
@@ -1999,11 +2002,11 @@ msgid "Cutscene file '%s' not found!"
 msgstr "Fichier de séquence '%s' non trouvé!"
 
 #: engines/gob/inter_playtoons.cpp:256 engines/gob/inter_v2.cpp:1283
-#: engines/tinsel/saveload.cpp:482
+#: engines/tinsel/saveload.cpp:500
 msgid "Failed to load game state from file."
 msgstr "Échec du chargement de l'état du jeu depuis le disque."
 
-#: engines/gob/inter_v2.cpp:1353 engines/tinsel/saveload.cpp:495
+#: engines/gob/inter_v2.cpp:1353 engines/tinsel/saveload.cpp:513
 msgid "Failed to save game state to file."
 msgstr "Échec de l'enregistrement de l'état du jeu sur le disque."
 
@@ -2015,59 +2018,51 @@ msgstr "Échec de la suppression du fichier."
 msgid "Failed to save game"
 msgstr "Échec de la sauvegarde."
 
-#: engines/kyra/lol.cpp:572
+#: engines/kyra/lol.cpp:478
 msgid "Attack 1"
-msgstr ""
+msgstr "Attaque 1"
 
-#: engines/kyra/lol.cpp:573
+#: engines/kyra/lol.cpp:479
 msgid "Attack 2"
-msgstr ""
+msgstr "Attaque 2"
 
-#: engines/kyra/lol.cpp:574
+#: engines/kyra/lol.cpp:480
 msgid "Attack 3"
-msgstr ""
+msgstr "Attaque 3"
 
-#: engines/kyra/lol.cpp:575
+#: engines/kyra/lol.cpp:481
 msgid "Move Forward"
-msgstr ""
+msgstr "Avancer"
 
-#: engines/kyra/lol.cpp:576
+#: engines/kyra/lol.cpp:482
 msgid "Move Back"
-msgstr ""
+msgstr "Reculer"
 
-#: engines/kyra/lol.cpp:577
-msgid "Slide Left"
-msgstr ""
+#: engines/kyra/lol.cpp:483
+msgstr "Faire un pas vers la Gauche"
 
-#: engines/kyra/lol.cpp:578
-#, fuzzy
-msgid "Slide Right"
-msgstr "Droite"
+#: engines/kyra/lol.cpp:484
+msgstr "Faire un pas vers la Droite"
 
-#: engines/kyra/lol.cpp:579
-#, fuzzy
+#: engines/kyra/lol.cpp:485
 msgid "Turn Left"
-msgstr "Éteindre"
+msgstr "Tourner vers la Gauche"
 
-#: engines/kyra/lol.cpp:580
-#, fuzzy
+#: engines/kyra/lol.cpp:486
 msgid "Turn Right"
-msgstr "Droit"
+msgstr "Tourner vers la Droite"
 
-#: engines/kyra/lol.cpp:581
-#, fuzzy
+#: engines/kyra/lol.cpp:487
 msgid "Rest"
-msgstr "Charger"
+msgstr "Se Reposer"
 
-#: engines/kyra/lol.cpp:582
-#, fuzzy
+#: engines/kyra/lol.cpp:488
 msgid "Options"
-msgstr "~O~ptions"
+msgstr "Options"
 
-#: engines/kyra/lol.cpp:583
-#, fuzzy
+#: engines/kyra/lol.cpp:489
 msgid "Choose Spell"
-msgstr "Choisir"
+msgstr "Choisir un Sort"
 
 #: engines/kyra/sound_midi.cpp:475
 msgid ""
@@ -2099,17 +2094,17 @@ msgstr ""
 "Le fichier \"sky.cpt\" a une taille incorrecte.\n"
 "Vous pouvez le (re)télécharger sur www.scummvm.org"
 
-#: engines/sword1/animation.cpp:345 engines/sword2/animation.cpp:379
+#: engines/sword1/animation.cpp:449 engines/sword2/animation.cpp:379
 msgid "DXA cutscenes found but ScummVM has been built without zlib support"
 msgstr ""
 "Les séquences DXA sont présente mais ScummVM a été compilé sans le support "
 "zlib."
 
-#: engines/sword1/animation.cpp:355 engines/sword2/animation.cpp:389
+#: engines/sword1/animation.cpp:459 engines/sword2/animation.cpp:389
 msgid "MPEG2 cutscenes are no longer supported"
 msgstr "Les séquences MPEG2 ne sont plus supportées"
 
-#: engines/sword1/animation.cpp:360 engines/sword2/animation.cpp:397
+#: engines/sword1/animation.cpp:464 engines/sword2/animation.cpp:397
 #, c-format
 msgid "Cutscene '%s' not found"
 msgstr "Séquence '%s' non trouvé"
@@ -2270,11 +2265,11 @@ msgstr "Émulateur Apple II GS (PAS IMPLÉMENTÉ)"
 msgid "C64 Audio Emulator"
 msgstr "Émulateur C64 Audio"
 
-#: audio/softsynth/mt32.cpp:329
+#: audio/softsynth/mt32.cpp:293
 msgid "Initializing MT-32 Emulator"
 msgstr "Initialisation de l'Émulateur MT-32"
 
-#: audio/softsynth/mt32.cpp:543
+#: audio/softsynth/mt32.cpp:512
 msgid "MT-32 Emulator"
 msgstr "Émulateur MT-32"
 
@@ -2290,15 +2285,20 @@ msgstr "Émulateur IBM PCjr"
 msgid "Keymap:"
 msgstr "Affectation des touches:"
 
-#: backends/keymapper/remap-dialog.cpp:64
+#: backends/keymapper/remap-dialog.cpp:66
+#, fuzzy
+msgid " (Effective)"
+msgstr "(Actif)"
+
+#: backends/keymapper/remap-dialog.cpp:106
 msgid " (Active)"
 msgstr "(Actif)"
 
-#: backends/keymapper/remap-dialog.cpp:98
+#: backends/keymapper/remap-dialog.cpp:116
 msgid " (Global)"
 msgstr "(Global)"
 
-#: backends/keymapper/remap-dialog.cpp:108
+#: backends/keymapper/remap-dialog.cpp:126
 msgid " (Game)"
 msgstr "(Jeu)"
 
@@ -2394,26 +2394,49 @@ msgstr "Mode touchpad activé"
 msgid "Touchpad mode disabled."
 msgstr "Mode touchpad désactivé"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:67
+#: backends/platform/maemo/maemo.cpp:178
+msgid "Click Mode"
+msgstr "Mode Clic"
+
+#: backends/platform/maemo/maemo.cpp:184
+#: backends/platform/symbian/src/SymbianActions.cpp:42
+#: backends/platform/wince/CEActionsPocket.cpp:60
+#: backends/platform/wince/CEActionsSmartphone.cpp:43
+#: backends/platform/bada/form.cpp:281
+msgid "Left Click"
+msgstr "Clic Gauche"
+
+#: backends/platform/maemo/maemo.cpp:187
+msgid "Middle Click"
+msgstr "Clic Milieu"
+
+#: backends/platform/maemo/maemo.cpp:190
+#: backends/platform/symbian/src/SymbianActions.cpp:43
+#: backends/platform/wince/CEActionsSmartphone.cpp:44
+#: backends/platform/bada/form.cpp:273
+msgid "Right Click"
+msgstr "Clic Droit"
+
+#: backends/platform/sdl/macosx/appmenu_osx.mm:78
 msgid "Hide ScummVM"
-msgstr "Cacher ScummVM"
+msgstr "Masquer ScummVM"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:70
+#: backends/platform/sdl/macosx/appmenu_osx.mm:83
 msgid "Hide Others"
-msgstr "Masquer les Autres"
+msgstr "Masquer les autres"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:74
+#: backends/platform/sdl/macosx/appmenu_osx.mm:88
 msgid "Show All"
-msgstr "Tout Afficher"
+msgstr "Tout afficher"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:92
-#: backends/platform/sdl/macosx/appmenu_osx.mm:99
+#: backends/platform/sdl/macosx/appmenu_osx.mm:110
+#: backends/platform/sdl/macosx/appmenu_osx.mm:121
 msgid "Window"
 msgstr "Fenêtre"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:95
+#: backends/platform/sdl/macosx/appmenu_osx.mm:115
 msgid "Minimize"
-msgstr "Minimiser"
+msgstr "Placer dans le Dock"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:45
 msgid "Normal (no scaling)"
@@ -2425,12 +2448,12 @@ msgid "Normal (no scaling)"
 msgstr "Normal"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2147
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:537
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:533
 msgid "Enabled aspect ratio correction"
 msgstr "Activer la correction du rapport d'aspect"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2153
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:542
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:538
 msgid "Disabled aspect ratio correction"
 msgstr "Désactiver la correction du rapport d'aspect"
 
@@ -2439,7 +2462,7 @@ msgid "Active graphics filter:"
 msgstr "Mode graphique actif:"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2250
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:481
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:477
 msgid "Windowed mode"
 msgstr "Mode Fenêtre"
 
@@ -2463,11 +2486,11 @@ msgstr "Mode vidéo actuel"
 msgid "Current scale"
 msgstr "Échelle actuelle"
 
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:562
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:558
 msgid "Active filter mode: Linear"
 msgstr "Filtre actif: Linéaire"
 
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:564
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:560
 msgid "Active filter mode: Nearest"
 msgstr "Filtre actif: Plus proche"
 
@@ -2490,19 +2513,6 @@ msgstr "Gauche"
 #: backends/platform/wince/CEActionsSmartphone.cpp:42
 msgid "Right"
 msgstr "Droite"
-
-#: backends/platform/symbian/src/SymbianActions.cpp:42
-#: backends/platform/wince/CEActionsPocket.cpp:60
-#: backends/platform/wince/CEActionsSmartphone.cpp:43
-#: backends/platform/bada/form.cpp:281
-msgid "Left Click"
-msgstr "Clic Gauche"
-
-#: backends/platform/symbian/src/SymbianActions.cpp:43
-#: backends/platform/wince/CEActionsSmartphone.cpp:44
-#: backends/platform/bada/form.cpp:273
-msgid "Right Click"
-msgstr "Clic Droit"
 
 #: backends/platform/symbian/src/SymbianActions.cpp:46
 #: backends/platform/wince/CEActionsSmartphone.cpp:47
@@ -2868,11 +2878,11 @@ msgstr "Afficher le clavier"
 msgid "Control Mouse"
 msgstr "Contrôles la Souris"
 
-#: backends/events/maemosdl/maemosdl-events.cpp:129
+#: backends/events/maemosdl/maemosdl-events.cpp:192
 msgid "Clicking Enabled"
 msgstr "Clic Activé"
 
-#: backends/events/maemosdl/maemosdl-events.cpp:129
+#: backends/events/maemosdl/maemosdl-events.cpp:192
 msgid "Clicking Disabled"
 msgstr "Clic Désactivé"
 

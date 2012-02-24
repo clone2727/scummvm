@@ -76,6 +76,7 @@ const unsigned int kSymbolx = 64;
 const unsigned int kSymboly = 56;
 const unsigned int kLengthofvars = 68;
 const unsigned int kFrameBlocksize = 2080;
+const unsigned int kGraphicsFileFrameSize = 347; // ceil(2080 / sizeof(Frame))
 const unsigned int kNumexobjects = 114;
 const unsigned int kNumExTexts = kNumexobjects + 2;
 const uint16 kExtextlen = 18000;
@@ -186,7 +187,6 @@ private:
 	uint8 _channel0, _channel1;
 
 protected:
-	const char *_timedString;
 	GameVars _vars; // saved variables
 
 	// from backdrop.cpp
@@ -227,8 +227,8 @@ protected:
 	Common::Point _lineData[200];		// Output of Bresenham
 
 	// from saveload.cpp
-	char _saveNames[17*7];
-	char _saveNamesOld[17*7];
+	char _saveNames[17*21];
+	char _saveNamesOld[17*21];
 
 	// from vgagrafx.cpp
 	uint8 _workspace[(0x1000 + 2) * 16];
@@ -266,13 +266,28 @@ protected:
 	TextFile _puzzleText;
 	TextFile _commandText;
 
-	// graphics files
-	GraphicsFile _tempGraphics;
-	GraphicsFile _tempGraphics2;
-	GraphicsFile _tempGraphics3;
+	// local graphics files
+	GraphicsFile _keypadGraphics;
+	GraphicsFile _menuGraphics;
+	GraphicsFile _menuGraphics2;
+	GraphicsFile _folderGraphics;
+	GraphicsFile _folderGraphics2;
+	GraphicsFile _folderGraphics3;
+	GraphicsFile _folderCharset;
+	GraphicsFile _symbolGraphics;
+	GraphicsFile _diaryGraphics;
+	GraphicsFile _diaryCharset;
+	GraphicsFile _monitorGraphics;
+	GraphicsFile _monitorCharset;
+	GraphicsFile _newplaceGraphics;
+	GraphicsFile _newplaceGraphics2;
+	GraphicsFile _newplaceGraphics3;
+	GraphicsFile _cityGraphics;
+	GraphicsFile _saveGraphics;
+
+	// global graphics files
 	GraphicsFile _icons1;
 	GraphicsFile _icons2;
-	GraphicsFile _tempCharset;
 	GraphicsFile _charset1;
 	GraphicsFile _mainSprites;
 	const GraphicsFile *_currentCharset;
@@ -416,11 +431,11 @@ public:
 	uint16 _monAdX;
 	uint16 _monAdY;
 	uint16 _timeCount;
-	uint16 _countToTimed;
-	uint8 _timedY;
-	uint8 _timedX;
 	uint8 _needToDumpTimed;
+	TimedTemp _previousTimedTemp;
+	TimedTemp _timedTemp;
 	uint8 _loadingOrSave;
+	uint8 _saveLoadPage;
 	uint8 _currentSlot;
 	uint8 _cursorPos;
 	uint8 _colourPos;
@@ -692,6 +707,7 @@ public:
 	void loadSaveBox();
 	void showNames();
 	void checkInput();
+	void selectSaveLoadPage();
 	void selectSlot();
 	void showSlots();
 	void showOpBox();
@@ -797,15 +813,11 @@ public:
 	void loadGraphicsFile(GraphicsFile &file, const char *fileName);
 	void loadGraphicsSegment(GraphicsFile &file, Common::File &inFile, unsigned int len);
 	void loadTextSegment(TextFile &file, Common::File &inFile, unsigned int len);
-	void loadIntoTemp(const char *fileName);
-	void loadIntoTemp2(const char *fileName);
-	void loadIntoTemp3(const char *fileName);
-	void loadTempCharset(const char *fileName);
 	void loadTravelText();
 	void loadTempText(const char *fileName);
 	void sortOutMap();
 	void loadRoomData(const Room &room, bool skipDat);
-	void useTempCharset();
+	void useTempCharset(GraphicsFile *charset);
 	void useCharset1();
 	void printMessage(uint16 x, uint16 y, uint8 index, uint8 maxWidth, bool centered);
 	void printMessage2(uint16 x, uint16 y, uint8 index, uint8 maxWidth, bool centered, uint8 count);
@@ -848,11 +860,7 @@ public:
 	bool isItWorn(const DynObject *object);
 	bool compare(uint8 index, uint8 flag, const char id[4]);
 	void hangOnW(uint16 frameCount);
-	void getRidOfTemp();
 	void getRidOfTempText();
-	void getRidOfTemp2();
-	void getRidOfTemp3();
-	void getRidOfTempCharset();
 	void getRidOfAll();
 	void placeSetObject(uint8 index);
 	void removeSetObject(uint8 index);
@@ -1122,7 +1130,6 @@ public:
 	void multiPut(const uint8 *src, uint16 x, uint16 y, uint8 width, uint8 height);
 	void multiDump(uint16 x, uint16 y, uint8 width, uint8 height);
 	void workToScreen();
-	void printUnderMon();
 	void frameOutV(uint8 *dst, const uint8 *src, uint16 pitch, uint16 width, uint16 height, int16 x, int16 y);
 	void frameOutNm(uint8 *dst, const uint8 *src, uint16 pitch, uint16 width, uint16 height, uint16 x, uint16 y);
 	void frameOutBh(uint8 *dst, const uint8 *src, uint16 pitch, uint16 width, uint16 height, uint16 x, uint16 y);

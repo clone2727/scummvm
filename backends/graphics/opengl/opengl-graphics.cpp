@@ -81,8 +81,8 @@ OpenGLGraphicsManager::~OpenGLGraphicsManager() {
 
 bool OpenGLGraphicsManager::hasFeature(OSystem::Feature f) {
 	return
-		(f == OSystem::kFeatureAspectRatioCorrection) ||
-		(f == OSystem::kFeatureCursorPalette);
+	    (f == OSystem::kFeatureAspectRatioCorrection) ||
+	    (f == OSystem::kFeatureCursorPalette);
 }
 
 void OpenGLGraphicsManager::setFeatureState(OSystem::Feature f, bool enable) {
@@ -269,9 +269,9 @@ OSystem::TransactionError OpenGLGraphicsManager::endGFXTransaction() {
 		}
 
 		if (_videoMode.fullscreen == _oldVideoMode.fullscreen &&
-			_videoMode.mode == _oldVideoMode.mode &&
-			_videoMode.screenWidth == _oldVideoMode.screenWidth &&
-			_videoMode.screenHeight == _oldVideoMode.screenHeight) {
+		        _videoMode.mode == _oldVideoMode.mode &&
+		        _videoMode.screenWidth == _oldVideoMode.screenWidth &&
+		        _videoMode.screenHeight == _oldVideoMode.screenHeight) {
 
 			_oldVideoMode.setup = false;
 		}
@@ -420,7 +420,7 @@ void OpenGLGraphicsManager::setShakePos(int shakeOffset) {
 	_shakePos = shakeOffset;
 }
 
-void OpenGLGraphicsManager::setFocusRectangle(const Common::Rect& rect) {
+void OpenGLGraphicsManager::setFocusRectangle(const Common::Rect &rect) {
 }
 
 void OpenGLGraphicsManager::clearFocusRectangle() {
@@ -487,7 +487,8 @@ void OpenGLGraphicsManager::copyRectToOverlay(const OverlayColor *buf, int pitch
 	}
 
 	if (y < 0) {
-		h += y; buf -= y * pitch;
+		h += y;
+		buf -= y * pitch;
 		y = 0;
 	}
 
@@ -500,26 +501,13 @@ void OpenGLGraphicsManager::copyRectToOverlay(const OverlayColor *buf, int pitch
 	if (w <= 0 || h <= 0)
 		return;
 
-	if (_overlayFormat.aBits() == 1) {
-		// Copy buffer with the alpha bit on for all pixels for correct
-		// overlay drawing.
-		const uint16 *src = (const uint16 *)buf;
-		uint16 *dst = (uint16 *)_overlayData.pixels + y * _overlayData.w + x;
-		for (int i = 0; i < h; i++) {
-			for (int e = 0; e < w; e++)
-				dst[e] = src[e] | 0x1;
-			src += pitch;
-			dst += _overlayData.w;
-		}
-	} else {
-		// Copy buffer data to internal overlay surface
-		const byte *src = (const byte *)buf;
-		byte *dst = (byte *)_overlayData.pixels + y * _overlayData.pitch;
-		for (int i = 0; i < h; i++) {
-			memcpy(dst + x * _overlayData.format.bytesPerPixel, src, w * _overlayData.format.bytesPerPixel);
-			src += pitch * sizeof(buf[0]);
-			dst += _overlayData.pitch;
-		}
+	// Copy buffer data to internal overlay surface
+	const byte *src = (const byte *)buf;
+	byte *dst = (byte *)_overlayData.pixels + y * _overlayData.pitch;
+	for (int i = 0; i < h; i++) {
+		memcpy(dst + x * _overlayData.format.bytesPerPixel, src, w * _overlayData.format.bytesPerPixel);
+		src += pitch * sizeof(buf[0]);
+		dst += _overlayData.pitch;
 	}
 
 	// Extend dirty area if not full screen redraw is flagged
@@ -594,10 +582,8 @@ void OpenGLGraphicsManager::warpMouse(int x, int y) {
 		scaledY += _displayY;
 	}
 
+	setMousePosition(scaledX, scaledY);
 	setInternalMousePosition(scaledX, scaledY);
-
-	_cursorState.x = scaledX;
-	_cursorState.y = scaledY;
 }
 
 void OpenGLGraphicsManager::setMouseCursor(const byte *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor, int cursorTargetScale, const Graphics::PixelFormat *format) {
@@ -613,7 +599,7 @@ void OpenGLGraphicsManager::setMouseCursor(const byte *buf, uint w, uint h, int 
 
 	// Allocate space for cursor data
 	if (_cursorData.w != w || _cursorData.h != h ||
-			_cursorData.format.bytesPerPixel != _cursorFormat.bytesPerPixel)
+	        _cursorData.format.bytesPerPixel != _cursorFormat.bytesPerPixel)
 		_cursorData.create(w, h, _cursorFormat);
 
 	// Save cursor data
@@ -717,7 +703,7 @@ void OpenGLGraphicsManager::refreshGameScreen() {
 	} else {
 		// Update the texture
 		_gameTexture->updateBuffer((byte *)_screenData.pixels + y * _screenData.pitch +
-			x * _screenData.format.bytesPerPixel, _screenData.pitch, x, y, w, h);
+		                           x * _screenData.format.bytesPerPixel, _screenData.pitch, x, y, w, h);
 	}
 
 	_screenNeedsRedraw = false;
@@ -759,7 +745,7 @@ void OpenGLGraphicsManager::refreshOverlay() {
 	} else {
 		// Update the texture
 		_overlayTexture->updateBuffer((byte *)_overlayData.pixels + y * _overlayData.pitch +
-			x * _overlayData.format.bytesPerPixel, _overlayData.pitch, x, y, w, h);
+		                              x * _overlayData.format.bytesPerPixel, _overlayData.pitch, x, y, w, h);
 	}
 
 	_overlayNeedsRedraw = false;
@@ -1043,10 +1029,10 @@ void OpenGLGraphicsManager::internUpdateScreen() {
 		// Draw the cursor
 		if (_overlayVisible)
 			_cursorTexture->drawTexture(_cursorState.x - _cursorState.rHotX,
-				_cursorState.y - _cursorState.rHotY, _cursorState.rW, _cursorState.rH);
+			                            _cursorState.y - _cursorState.rHotY, _cursorState.rW, _cursorState.rH);
 		else
 			_cursorTexture->drawTexture(_cursorState.x - _cursorState.vHotX,
-				_cursorState.y - _cursorState.vHotY, _cursorState.vW, _cursorState.vH);
+			                            _cursorState.y - _cursorState.vHotY, _cursorState.vW, _cursorState.vH);
 
 		glPopMatrix();
 	}
@@ -1170,23 +1156,23 @@ void OpenGLGraphicsManager::loadTextures() {
 
 	if (
 #ifdef USE_RGB_COLOR
-			_transactionDetails.formatChanged ||
+	    _transactionDetails.formatChanged ||
 #endif
-			_oldVideoMode.screenWidth != _videoMode.screenWidth ||
-			_oldVideoMode.screenHeight != _videoMode.screenHeight)
+	    _oldVideoMode.screenWidth != _videoMode.screenWidth ||
+	    _oldVideoMode.screenHeight != _videoMode.screenHeight)
 		_screenData.create(_videoMode.screenWidth, _videoMode.screenHeight,
 #ifdef USE_RGB_COLOR
-			_screenFormat
+		                   _screenFormat
 #else
-			Graphics::PixelFormat::createFormatCLUT8()
+		                   Graphics::PixelFormat::createFormatCLUT8()
 #endif
-			);
+		                  );
 
 
 	if (_oldVideoMode.overlayWidth != _videoMode.overlayWidth ||
-		_oldVideoMode.overlayHeight != _videoMode.overlayHeight)
+	        _oldVideoMode.overlayHeight != _videoMode.overlayHeight)
 		_overlayData.create(_videoMode.overlayWidth, _videoMode.overlayHeight,
-			_overlayFormat);
+		                    _overlayFormat);
 
 	_screenNeedsRedraw = true;
 	_overlayNeedsRedraw = true;
@@ -1263,8 +1249,8 @@ uint OpenGLGraphicsManager::getAspectRatio() const {
 	// ratio correction is enabled, but it's better than the previous 4/3 mode
 	// mess at least...
 	if (_videoMode.aspectRatioCorrection
-	    && ((_videoMode.screenWidth == 320 && _videoMode.screenHeight == 200)
-	    || (_videoMode.screenWidth == 640 && _videoMode.screenHeight == 400)))
+	        && ((_videoMode.screenWidth == 320 && _videoMode.screenHeight == 200)
+	            || (_videoMode.screenWidth == 640 && _videoMode.screenHeight == 400)))
 		return 13333;
 	else if (_videoMode.mode == OpenGL::GFX_NORMAL)
 		return _videoMode.hardwareWidth * 10000 / _videoMode.hardwareHeight;
@@ -1276,15 +1262,13 @@ void OpenGLGraphicsManager::adjustMousePosition(int16 &x, int16 &y) {
 	if (_overlayVisible)
 		return;
 
-	if (!_overlayVisible) {
-		x -= _displayX;
-		y -= _displayY;
+	x -= _displayX;
+	y -= _displayY;
 
-		if (_displayWidth != _videoMode.screenWidth)
-			x = x * _videoMode.screenWidth / _displayWidth;
-		if (_displayHeight != _videoMode.screenHeight)
-			y = y * _videoMode.screenHeight / _displayHeight;
-	}
+	if (_displayWidth != _videoMode.screenWidth)
+		x = x * _videoMode.screenWidth / _displayWidth;
+	if (_displayHeight != _videoMode.screenHeight)
+		y = y * _videoMode.screenHeight / _displayHeight;
 }
 
 bool OpenGLGraphicsManager::saveScreenshot(const char *filename) {
@@ -1359,7 +1343,7 @@ const char *OpenGLGraphicsManager::getCurrentModeName() {
 
 #ifdef USE_OSD
 const Graphics::Font *OpenGLGraphicsManager::getFontOSD() {
-  return FontMan.getFontByUsage(Graphics::FontManager::kLocalizedFont);
+	return FontMan.getFontByUsage(Graphics::FontManager::kLocalizedFont);
 }
 
 void OpenGLGraphicsManager::updateOSD() {

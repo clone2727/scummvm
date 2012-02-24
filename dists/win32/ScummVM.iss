@@ -1,5 +1,5 @@
 [Setup]
-AppCopyright=2011
+AppCopyright=2012
 AppName=ScummVM
 AppVerName=ScummVM Git
 AppPublisher=The ScummVM Team
@@ -64,11 +64,21 @@ Name: {group}\PrectiMe; Filename: {app}\PrectiMe.txt; WorkingDir: {app}; Comment
 Name: {group}\Liesmich; Filename: {app}\Liesmich.txt; WorkingDir: {app}; Comment: Liesmich; Flags: createonlyiffileexists; Languages: de
 Name: {group}\LasMig; Filename: {app}\LasMig.txt; WorkingDir: {app}; Comment: LasMig; Flags: createonlyiffileexists; Languages: se
 
+Name: {group}\Saved Games\Migrate Saved Games; Filename: {app}\migration.bat; WorkingDir: {app}; Comment: Migrate Saved Games; IconIndex: 0; MinVersion: 0, 1
+Name: {group}\Saved Games\Saved Games (old default); Filename: {app}; WorkingDir: {app}; Comment: Saved Games (old default); IconIndex: 0; MinVersion: 0, 1
+Name: {group}\Saved Games\Saved Games (new default); Filename: {userappdata}\ScummVM\Saved Games; WorkingDir: {userappdata}\ScummVM\Saved Games; Comment: Saved Games (new default); IconIndex: 0; MinVersion: 0, 1
+
 [Run]
 Filename: {app}\ScummVM.exe; Flags: nowait skipifdoesntexist postinstall skipifsilent
+;Creates a symbolic link for standard save games area, under Windows Vista/7
+Filename: {cmd}; Parameters: "/c ""mklink /d ""%userprofile%\Saved Games\ScummVM"" ""%appdata%\ScummVM\Saved games"" "" "; MinVersion: 0, 6.1
 
 [UninstallDelete]
 Type: files; Name: {app}\ISTool.url
+
+[Dirs]
+Name: "{userappdata}\ScummVM"; MinVersion: 0, 1
+Name: "{userappdata}\ScummVM\Saved Games"; MinVersion: 0, 1
 
 [Files]
 Source: AUTHORS.txt; DestDir: {app}; Flags: ignoreversion
@@ -106,3 +116,8 @@ Source: sky.cpt; DestDir: {app}; Flags: ignoreversion
 Source: teenagent.dat; DestDir: {app}; Flags: ignoreversion
 Source: toon.dat; DestDir: {app}; Flags: ignoreversion
 Source: translations.dat; DestDir: {app}; Flags: ignoreversion
+;Mirgration script for saved games in Windows NT4 onwards
+Source: migration.bat; DestDir: {app}; Flags: ignoreversion; MinVersion: 0, 1
+Source: migration.txt; DestDir: {app}; Flags: ignoreversion; MinVersion: 0, 1
+
+

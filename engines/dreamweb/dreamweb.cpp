@@ -190,11 +190,9 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	_monAdX = 0;
 	_monAdY = 0;
 	_timeCount = 0;
-	_countToTimed = 0;
-	_timedY = 0;
-	_timedX = 0;
 	_needToDumpTimed = 0;
 	_loadingOrSave = 0;
+	_saveLoadPage = 0;
 	_currentSlot = 0;
 	_cursorPos = 0;
 	_colourPos = 0;

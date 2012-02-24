@@ -372,6 +372,8 @@ public:
 	~ScenePalette();
 
 	bool loadPalette(int paletteNum);
+	void loadPalette(const byte *pSrc, int start, int count);
+	void replace(const ScenePalette *src) { loadPalette(src->_palette, 0, 256); }
 	void refresh();
 	void setPalette(int index, int count);
 	void getEntry(int index, uint *r, uint *g, uint *b);
@@ -516,8 +518,8 @@ private:
 
 	int getNewFrame();
 	void animEnded();
-	int changeFrame();
 public:
+	int changeFrame();
 	uint32 _updateStartFrame;
 	uint32 _walkStartFrame;
 	Common::Point _field2E;

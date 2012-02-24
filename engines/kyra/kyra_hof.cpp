@@ -171,7 +171,7 @@ KyraEngine_HoF::~KyraEngine_HoF() {
 		delete[] _conversationState[i];
 	delete[] _conversationState;
 
-	for (Common::Array<const TIMOpcode*>::iterator i = _timOpcodes.begin(); i != _timOpcodes.end(); ++i)
+	for (Common::Array<const TIMOpcode *>::iterator i = _timOpcodes.begin(); i != _timOpcodes.end(); ++i)
 		delete *i;
 	_timOpcodes.clear();
 }
@@ -221,7 +221,7 @@ void KyraEngine_HoF::pauseEngineIntern(bool pause) {
 Common::Error KyraEngine_HoF::init() {
 	_screen = new Screen_HoF(this, _system);
 	assert(_screen);
-	_screen->setResolution();
+	_screen->setResolution(_flags.useHiResOverlay);
 
 	_debugger = new Debugger_HoF(this);
 	assert(_debugger);

@@ -40,9 +40,10 @@ void DreamWebEngine::endGame() {
 void DreamWebEngine::monkSpeaking() {
 	_roomsSample = 35;
 	loadRoomsSample();
-	loadIntoTemp("DREAMWEB.G15");
+	GraphicsFile graphics;
+	loadGraphicsFile(graphics, "DREAMWEB.G15");
 	clearWork();
-	showFrame(_tempGraphics, 160, 72, 0, 128);	// show monk
+	showFrame(graphics, 160, 72, 0, 128);	// show monk
 	workToScreen();
 	_volume = 7;
 	_volumeDirection = -1;
@@ -51,8 +52,9 @@ void DreamWebEngine::monkSpeaking() {
 	fadeScreenUps();
 	hangOn(300);
 
+	// TODO: Subtitles+speech mode
 	if (hasSpeech()) {
-		for (int i = 40; i <= 48; i++) {
+		for (int i = 40; i < 48; i++) {
 			loadSpeech('T', 83, 'T', i);
 
 			playChannel1(50 + 12);
@@ -73,7 +75,7 @@ void DreamWebEngine::monkSpeaking() {
 				printResult = printDirect(&string, 36, &y, 239, 239 & 1);
 				workToScreen();
 				clearWork();
-				showFrame(_tempGraphics, 160, 72, 0, 128);	// show monk
+				showFrame(graphics, 160, 72, 0, 128);	// show monk
 				hangOnP(240);
 				if (_quitRequested)
 					return;
@@ -85,7 +87,7 @@ void DreamWebEngine::monkSpeaking() {
 	_volumeTo = 7;
 	fadeScreenDowns();
 	hangOn(300);
-	getRidOfTemp();
+	graphics.clear();
 }
 
 void DreamWebEngine::gettingShot() {

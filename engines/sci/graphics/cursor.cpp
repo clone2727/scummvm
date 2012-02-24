@@ -125,18 +125,28 @@ void GfxCursor::kernelSetShape(GuiResourceId resourceId) {
 		error("cursor resource %d has invalid size", resourceId);
 
 	resourceData = resource->data;
-	// hotspot is specified for SCI1 cursors
-	hotspot.x = READ_LE_UINT16(resourceData);
-	hotspot.y = READ_LE_UINT16(resourceData + 2);
-	// bit 0 of resourceData[3] is set on <SCI1 games, which means center hotspot
-	if ((hotspot.x == 0) && (hotspot.y == 256))
-		hotspot.x = hotspot.y = SCI_CURSOR_SCI0_HEIGHTWIDTH / 2;
+
+	if (getSciVersion() <= SCI_VERSION_0_LATE) {
+		// SCI0 cursors contain hotspot flags, not actual hotspot coordinates.
+		// If bit 0 of resourceData[3] is set, the hotspot should be centered,
+		// otherwise it's in the top left of the mouse cursor.
+		hotspot.x = hotspot.y = resourceData[3] ? SCI_CURSOR_SCI0_HEIGHTWIDTH / 2 : 0;
+	} else {
+		// Cursors in newer SCI versions contain actual hotspot coordinates.
+		hotspot.x = READ_LE_UINT16(resourceData);
+		hotspot.y = READ_LE_UINT16(resourceData + 2);
+	}
 
 	// Now find out what colors we are supposed to use
 	colorMapping[0] = 0; // Black is hardcoded
 	colorMapping[1] = _screen->getColorWhite(); // White is also hardcoded
 	colorMapping[2] = SCI_CURSOR_SCI0_TRANSPARENCYCOLOR;
 	colorMapping[3] = _palette->matchColor(170, 170, 170); // Grey
+	// Special case for the magnifier cursor in LB1 (bug #3487092).
+	// No other SCI0 game has a cursor resource of 1, so this is handled
+	// specifically for LB1.
+	if (g_sci->getGameId() == GID_LAURABOW && resourceId == 1)
+		colorMapping[3] = _screen->getColorWhite();
 
 	// Seek to actual data
 	resourceData += 4;
@@ -163,6 +173,11 @@ void GfxCursor::kernelSetShape(GuiResourceId resourceId) {
 		_screen->scale2x(rawBitmap, upscaledBitmap, SCI_CURSOR_SCI0_HEIGHTWIDTH, SCI_CURSOR_SCI0_HEIGHTWIDTH);
 		delete[] rawBitmap;
 		rawBitmap = upscaledBitmap;
+	}
+
+	if (hotspot.x >= heightWidth || hotspot.y >= heightWidth) {
+		error("cursor %d's hotspot (%d, %d) is out of range of the cursor's dimensions (%dx%d)",
+				resourceId, hotspot.x, hotspot.y, heightWidth, heightWidth);
 	}
 
 	CursorMan.replaceCursor(rawBitmap, heightWidth, heightWidth, hotspot.x, hotspot.y, SCI_CURSOR_SCI0_TRANSPARENCYCOLOR);

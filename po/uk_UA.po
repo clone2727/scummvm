@@ -2,13 +2,13 @@
 # Copyright (C) 2010-2012 ScummVM Team
 # This file is distributed under the same license as the ScummVM package.
 # Lubomyr Lisen, 2010.
-# 
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: ScummVM 1.3.0svn\n"
 "Report-Msgid-Bugs-To: scummvm-devel@lists.sf.net\n"
-"POT-Creation-Date: 2011-12-26 15:26+0100\n"
-"PO-Revision-Date: 2011-08-20 13:30+0200\n"
+"POT-Creation-Date: 2012-02-16 12:32+0200\n"
+"PO-Revision-Date: 2012-02-16 13:09+0200\n"
 "Last-Translator: Eugene Sandulenko\n"
 "Language-Team: Ukrainian\n"
 "Language: Ukrainian\n"
@@ -47,7 +47,7 @@ msgstr "Вгору"
 #: gui/browser.cpp:69 gui/chooser.cpp:45 gui/KeysDialog.cpp:43
 #: gui/launcher.cpp:319 gui/massadd.cpp:94 gui/options.cpp:1221
 #: gui/saveload.cpp:63 gui/saveload.cpp:155 gui/themebrowser.cpp:54
-#: engines/engine.cpp:436 engines/scumm/dialogs.cpp:190
+#: engines/engine.cpp:438 engines/scumm/dialogs.cpp:190
 #: engines/sword1/control.cpp:865 engines/parallaction/saveload.cpp:281
 #: backends/platform/wii/options.cpp:48
 #: backends/events/default/default-events.cpp:222
@@ -59,24 +59,28 @@ msgstr "Відміна"
 msgid "Choose"
 msgstr "Вибрати"
 
-#: gui/gui-manager.cpp:116 engines/scumm/help.cpp:125
+#: gui/gui-manager.cpp:115 engines/scumm/help.cpp:125
 #: engines/scumm/help.cpp:140 engines/scumm/help.cpp:165
 #: engines/scumm/help.cpp:191 engines/scumm/help.cpp:209
 #: backends/keymapper/remap-dialog.cpp:52
 msgid "Close"
 msgstr "Закрити"
 
-#: gui/gui-manager.cpp:119
+#: gui/gui-manager.cpp:118
 msgid "Mouse click"
 msgstr "Клік мишкою"
 
-#: gui/gui-manager.cpp:122 base/main.cpp:283
+#: gui/gui-manager.cpp:121 base/main.cpp:289
 msgid "Display keyboard"
 msgstr "Показати клавіатуру"
 
-#: gui/gui-manager.cpp:125 base/main.cpp:286
+#: gui/gui-manager.cpp:124 base/main.cpp:292
 msgid "Remap keys"
 msgstr "Перепризначити клавіші"
+
+#: gui/gui-manager.cpp:127 base/main.cpp:295
+msgid "Toggle FullScreen"
+msgstr "Перемкнути повноекранний режим"
 
 #: gui/KeysDialog.h:36 gui/KeysDialog.cpp:145
 msgid "Choose an action to map"
@@ -88,11 +92,11 @@ msgstr "Призначити"
 
 #: gui/KeysDialog.cpp:42 gui/launcher.cpp:320 gui/launcher.cpp:959
 #: gui/launcher.cpp:963 gui/massadd.cpp:91 gui/options.cpp:1222
-#: engines/engine.cpp:359 engines/engine.cpp:370 engines/scumm/dialogs.cpp:192
-#: engines/scumm/scumm.cpp:1784 engines/agos/animation.cpp:551
+#: engines/engine.cpp:361 engines/engine.cpp:372 engines/scumm/dialogs.cpp:192
+#: engines/scumm/scumm.cpp:1775 engines/agos/animation.cpp:551
 #: engines/groovie/script.cpp:420 engines/sky/compact.cpp:131
-#: engines/sky/compact.cpp:141 engines/sword1/animation.cpp:345
-#: engines/sword1/animation.cpp:355 engines/sword1/animation.cpp:361
+#: engines/sky/compact.cpp:141 engines/sword1/animation.cpp:449
+#: engines/sword1/animation.cpp:459 engines/sword1/animation.cpp:465
 #: engines/sword1/control.cpp:865 engines/sword1/logic.cpp:1633
 #: engines/sword2/animation.cpp:379 engines/sword2/animation.cpp:389
 #: engines/sword2/animation.cpp:398 engines/parallaction/saveload.cpp:281
@@ -347,7 +351,7 @@ msgstr "Цей ID гри вже використовується. Будь ласка, виберіть інший."
 msgid "~Q~uit"
 msgstr "~В~ихід"
 
-#: gui/launcher.cpp:578 backends/platform/sdl/macosx/appmenu_osx.mm:80
+#: gui/launcher.cpp:578 backends/platform/sdl/macosx/appmenu_osx.mm:96
 msgid "Quit ScummVM"
 msgstr "Вихід зі ScummVM"
 
@@ -355,7 +359,7 @@ msgstr "Вихід зі ScummVM"
 msgid "A~b~out..."
 msgstr "Про п~р~ограму..."
 
-#: gui/launcher.cpp:579 backends/platform/sdl/macosx/appmenu_osx.mm:61
+#: gui/launcher.cpp:579 backends/platform/sdl/macosx/appmenu_osx.mm:70
 msgid "About ScummVM"
 msgstr "Про ScummVM"
 
@@ -598,7 +602,7 @@ msgstr "Спеціальні режими растрування, які підтримують деякі ігри"
 
 #: gui/options.cpp:761
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2248
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:476
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:472
 msgid "Fullscreen mode"
 msgstr "Повноекранний режим"
 
@@ -962,28 +966,28 @@ msgstr "Збереження без імені"
 msgid "Select a Theme"
 msgstr "Виберіть тему"
 
-#: gui/ThemeEngine.cpp:329
+#: gui/ThemeEngine.cpp:333
 msgid "Disabled GFX"
 msgstr "Без графіки"
 
-#: gui/ThemeEngine.cpp:329
+#: gui/ThemeEngine.cpp:333
 msgctxt "lowres"
 msgid "Disabled GFX"
 msgstr "Без графіки"
 
-#: gui/ThemeEngine.cpp:330
+#: gui/ThemeEngine.cpp:334
 msgid "Standard Renderer (16bpp)"
 msgstr "Стандартний растеризатор (16bpp)"
 
-#: gui/ThemeEngine.cpp:330
+#: gui/ThemeEngine.cpp:334
 msgid "Standard (16bpp)"
 msgstr "Стандартний растеризатор (16bpp)"
 
-#: gui/ThemeEngine.cpp:332
+#: gui/ThemeEngine.cpp:336
 msgid "Antialiased Renderer (16bpp)"
 msgstr "Растеризатор зі згладжуванням (16bpp)"
 
-#: gui/ThemeEngine.cpp:332
+#: gui/ThemeEngine.cpp:336
 msgid "Antialiased (16bpp)"
 msgstr "Растеризатор зі згладжуванням (16bpp)"
 
@@ -996,30 +1000,30 @@ msgstr "Очистити значення"
 msgid "Engine does not support debug level '%s'"
 msgstr "Движок не підтримує рівень відладки '%s'"
 
-#: base/main.cpp:271
+#: base/main.cpp:277
 msgid "Menu"
 msgstr "Меню"
 
-#: base/main.cpp:274 backends/platform/symbian/src/SymbianActions.cpp:45
+#: base/main.cpp:280 backends/platform/symbian/src/SymbianActions.cpp:45
 #: backends/platform/wince/CEActionsPocket.cpp:45
 #: backends/platform/wince/CEActionsSmartphone.cpp:46
 msgid "Skip"
 msgstr "Пропустити"
 
-#: base/main.cpp:277 backends/platform/symbian/src/SymbianActions.cpp:50
+#: base/main.cpp:283 backends/platform/symbian/src/SymbianActions.cpp:50
 #: backends/platform/wince/CEActionsPocket.cpp:42
 msgid "Pause"
 msgstr "Пауза"
 
-#: base/main.cpp:280
+#: base/main.cpp:286
 msgid "Skip line"
 msgstr "Пропустити рядок"
 
-#: base/main.cpp:439
+#: base/main.cpp:455
 msgid "Error running game:"
 msgstr "Помилка запуску гри:"
 
-#: base/main.cpp:463
+#: base/main.cpp:479
 msgid "Could not find any engine capable of running the selected game"
 msgstr "Не можу знайти движок для запуску вибраної гри"
 
@@ -1191,23 +1195,23 @@ msgstr "Ві~д~міна"
 msgid "~K~eys"
 msgstr "~К~лавіші"
 
-#: engines/engine.cpp:233
+#: engines/engine.cpp:235
 msgid "Could not initialize color format."
 msgstr "Не можу налаштувати формат кольору."
 
-#: engines/engine.cpp:241
+#: engines/engine.cpp:243
 msgid "Could not switch to video mode: '"
 msgstr "Не вдалося переключити відеорежим: '"
 
-#: engines/engine.cpp:250
+#: engines/engine.cpp:252
 msgid "Could not apply aspect ratio setting."
 msgstr "Не вдалося застосувати корекцію співвідношення сторін."
 
-#: engines/engine.cpp:255
+#: engines/engine.cpp:257
 msgid "Could not apply fullscreen setting."
 msgstr "Не вдалося застосувати повноекранний режим."
 
-#: engines/engine.cpp:355
+#: engines/engine.cpp:357
 msgid ""
 "You appear to be playing this game directly\n"
 "from the CD. This is known to cause problems,\n"
@@ -1221,7 +1225,7 @@ msgstr ""
 "гри на жорсткий диск.\n"
 "Дивіться файл README для подальших інструкцій."
 
-#: engines/engine.cpp:366
+#: engines/engine.cpp:368
 msgid ""
 "This game has audio tracks in its disk. These\n"
 "tracks need to be ripped from the disk using\n"
@@ -1235,7 +1239,7 @@ msgstr ""
 "того, щоб можна було слухати музику у грі.\n"
 "Дивіться файл README для подальших інструкцій."
 
-#: engines/engine.cpp:433
+#: engines/engine.cpp:435
 msgid ""
 "WARNING: The game you are about to start is not yet fully supported by "
 "ScummVM. As such, it is likely to be unstable, and any saves you make might "
@@ -1245,7 +1249,7 @@ msgstr ""
 "ScummVM. Скорше за все вона не буде працювати стабільно, і збереження ігор, "
 "які ви зробите, можуть не працювати у подальших версіях ScummVM."
 
-#: engines/engine.cpp:436
+#: engines/engine.cpp:438
 msgid "Start anyway"
 msgstr "Все одно запустити"
 
@@ -1365,24 +1369,23 @@ msgstr "Озвучка та текст"
 
 #: engines/scumm/dialogs.cpp:653
 msgid "Select a Proficiency Level."
-msgstr ""
+msgstr "Оберіть режим складності."
 
 #: engines/scumm/dialogs.cpp:655
 msgid "Refer to your Loom(TM) manual for help."
-msgstr ""
+msgstr "За допомогою звертайтеся до інструкції Loom(TM)."
 
 #: engines/scumm/dialogs.cpp:658
-#, fuzzy
 msgid "Standard"
-msgstr "Стандартний растеризатор (16bpp)"
+msgstr "Стандартний"
 
 #: engines/scumm/dialogs.cpp:659
 msgid "Practice"
-msgstr ""
+msgstr "Практика"
 
 #: engines/scumm/dialogs.cpp:660
 msgid "Expert"
-msgstr ""
+msgstr "Експерт"
 
 #: engines/scumm/help.cpp:73
 msgid "Common keyboard commands:"
@@ -1897,7 +1900,7 @@ msgstr "Летіти направо"
 msgid "Fly to lower right"
 msgstr "Летіти донизу направо"
 
-#: engines/scumm/scumm.cpp:1782
+#: engines/scumm/scumm.cpp:1773
 #, c-format
 msgid ""
 "Native MIDI support requires the Roland Upgrade from LucasArts,\n"
@@ -1906,7 +1909,7 @@ msgstr ""
 "Режим \"рідного\" MIDI потребує поновлення Roland Upgrade від\n"
 "LucasArts, проте %s відсутній. Перемикаюсь на AdLib."
 
-#: engines/scumm/scumm.cpp:2272 engines/agos/saveload.cpp:189
+#: engines/scumm/scumm.cpp:2271 engines/agos/saveload.cpp:189
 #, c-format
 msgid ""
 "Failed to save game state to file:\n"
@@ -1917,7 +1920,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2279 engines/agos/saveload.cpp:154
+#: engines/scumm/scumm.cpp:2278 engines/agos/saveload.cpp:154
 #, c-format
 msgid ""
 "Failed to load game state from file:\n"
@@ -1928,7 +1931,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2291 engines/agos/saveload.cpp:197
+#: engines/scumm/scumm.cpp:2290 engines/agos/saveload.cpp:197
 #, c-format
 msgid ""
 "Successfully saved game state in file:\n"
@@ -1939,7 +1942,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: engines/scumm/scumm.cpp:2506
+#: engines/scumm/scumm.cpp:2505
 msgid ""
 "Usually, Maniac Mansion would start now. But ScummVM doesn't do that yet. To "
 "play it, go to 'Add Game' in the ScummVM start menu and select the 'Maniac' "
@@ -1989,11 +1992,11 @@ msgid "Cutscene file '%s' not found!"
 msgstr "Файл заставки '%s' не знайдено!"
 
 #: engines/gob/inter_playtoons.cpp:256 engines/gob/inter_v2.cpp:1283
-#: engines/tinsel/saveload.cpp:482
+#: engines/tinsel/saveload.cpp:500
 msgid "Failed to load game state from file."
 msgstr "Не вдалося завантажити стан гри з файлу."
 
-#: engines/gob/inter_v2.cpp:1353 engines/tinsel/saveload.cpp:495
+#: engines/gob/inter_v2.cpp:1353 engines/tinsel/saveload.cpp:513
 msgid "Failed to save game state to file."
 msgstr "Не вдалося зберегти стан гри у файл."
 
@@ -2005,59 +2008,53 @@ msgstr "Не вдалося видалити файл."
 msgid "Failed to save game"
 msgstr "Не вдалося записати гру"
 
-#: engines/kyra/lol.cpp:572
+#: engines/kyra/lol.cpp:478
 msgid "Attack 1"
-msgstr ""
+msgstr "Атака 1"
 
-#: engines/kyra/lol.cpp:573
+#: engines/kyra/lol.cpp:479
 msgid "Attack 2"
-msgstr ""
+msgstr "Атака 2"
 
-#: engines/kyra/lol.cpp:574
+#: engines/kyra/lol.cpp:480
 msgid "Attack 3"
-msgstr ""
+msgstr "Атака 3"
 
-#: engines/kyra/lol.cpp:575
+#: engines/kyra/lol.cpp:481
 msgid "Move Forward"
-msgstr ""
+msgstr "Рухатись уперед"
 
-#: engines/kyra/lol.cpp:576
+#: engines/kyra/lol.cpp:482
 msgid "Move Back"
-msgstr ""
+msgstr "Рухатись назад"
 
-#: engines/kyra/lol.cpp:577
+#: engines/kyra/lol.cpp:483
 msgid "Slide Left"
-msgstr ""
+msgstr "Ковзати наліво"
 
-#: engines/kyra/lol.cpp:578
-#, fuzzy
+#: engines/kyra/lol.cpp:484
 msgid "Slide Right"
-msgstr "Направо"
+msgstr "Ковзати направо"
 
-#: engines/kyra/lol.cpp:579
-#, fuzzy
+#: engines/kyra/lol.cpp:485
 msgid "Turn Left"
-msgstr "Вимкнути"
+msgstr "Повернутися наліво"
 
-#: engines/kyra/lol.cpp:580
-#, fuzzy
+#: engines/kyra/lol.cpp:486
 msgid "Turn Right"
-msgstr "Курсор направо"
+msgstr "Повернутися направо"
 
-#: engines/kyra/lol.cpp:581
-#, fuzzy
+#: engines/kyra/lol.cpp:487
 msgid "Rest"
-msgstr "Відновити"
+msgstr "Відпочити"
 
-#: engines/kyra/lol.cpp:582
-#, fuzzy
+#: engines/kyra/lol.cpp:488
 msgid "Options"
-msgstr "~Н~алаштування"
+msgstr "Налаштування"
 
-#: engines/kyra/lol.cpp:583
-#, fuzzy
+#: engines/kyra/lol.cpp:489
 msgid "Choose Spell"
-msgstr "Вибрати"
+msgstr "Вибрати закляття"
 
 #: engines/kyra/sound_midi.cpp:475
 msgid ""
@@ -2089,15 +2086,15 @@ msgstr ""
 "Файл sky.cpt має невірний розмір.\n"
 "Будь ласка, (пере)завантажте його з www.scummvm.org"
 
-#: engines/sword1/animation.cpp:345 engines/sword2/animation.cpp:379
+#: engines/sword1/animation.cpp:449 engines/sword2/animation.cpp:379
 msgid "DXA cutscenes found but ScummVM has been built without zlib support"
 msgstr "Знайдено заставки DXA, але ScummVM був побудований без підтримки zlib"
 
-#: engines/sword1/animation.cpp:355 engines/sword2/animation.cpp:389
+#: engines/sword1/animation.cpp:459 engines/sword2/animation.cpp:389
 msgid "MPEG2 cutscenes are no longer supported"
 msgstr "Заставки MPEG2 більше не підтримуються"
 
-#: engines/sword1/animation.cpp:360 engines/sword2/animation.cpp:397
+#: engines/sword1/animation.cpp:464 engines/sword2/animation.cpp:397
 #, c-format
 msgid "Cutscene '%s' not found"
 msgstr "Заставку '%s' не знайдено"
@@ -2258,11 +2255,11 @@ msgstr "Apple II GS Емулятор (НЕ РЕАЛІЗОВАНО)"
 msgid "C64 Audio Emulator"
 msgstr "C64 Аудіо Емулятор"
 
-#: audio/softsynth/mt32.cpp:329
+#: audio/softsynth/mt32.cpp:293
 msgid "Initializing MT-32 Emulator"
 msgstr "Налаштовую емулятор MT-32"
 
-#: audio/softsynth/mt32.cpp:543
+#: audio/softsynth/mt32.cpp:512
 msgid "MT-32 Emulator"
 msgstr "Емулятор MT-32"
 
@@ -2278,15 +2275,19 @@ msgstr "Емулятор IBM PCjr"
 msgid "Keymap:"
 msgstr "Мапа клавіш:"
 
-#: backends/keymapper/remap-dialog.cpp:64
+#: backends/keymapper/remap-dialog.cpp:66
+msgid " (Effective)"
+msgstr " (Ефективна)"
+
+#: backends/keymapper/remap-dialog.cpp:106
 msgid " (Active)"
 msgstr " (Активна)"
 
-#: backends/keymapper/remap-dialog.cpp:98
+#: backends/keymapper/remap-dialog.cpp:116
 msgid " (Global)"
 msgstr " (Глобальна)"
 
-#: backends/keymapper/remap-dialog.cpp:108
+#: backends/keymapper/remap-dialog.cpp:126
 msgid " (Game)"
 msgstr " (Ігри)"
 
@@ -2382,24 +2383,47 @@ msgstr "Режим тачпаду увімкнено."
 msgid "Touchpad mode disabled."
 msgstr "Режим тачпаду вимкнено."
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:67
+#: backends/platform/maemo/maemo.cpp:178
+msgid "Click Mode"
+msgstr "Режим кліків"
+
+#: backends/platform/maemo/maemo.cpp:184
+#: backends/platform/symbian/src/SymbianActions.cpp:42
+#: backends/platform/wince/CEActionsPocket.cpp:60
+#: backends/platform/wince/CEActionsSmartphone.cpp:43
+#: backends/platform/bada/form.cpp:281
+msgid "Left Click"
+msgstr "Лівий клік"
+
+#: backends/platform/maemo/maemo.cpp:187
+msgid "Middle Click"
+msgstr "Середній клік"
+
+#: backends/platform/maemo/maemo.cpp:190
+#: backends/platform/symbian/src/SymbianActions.cpp:43
+#: backends/platform/wince/CEActionsSmartphone.cpp:44
+#: backends/platform/bada/form.cpp:273
+msgid "Right Click"
+msgstr "Правий клік"
+
+#: backends/platform/sdl/macosx/appmenu_osx.mm:78
 msgid "Hide ScummVM"
 msgstr "Сховати ScummVM"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:70
+#: backends/platform/sdl/macosx/appmenu_osx.mm:83
 msgid "Hide Others"
 msgstr "Сховати Інші"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:74
+#: backends/platform/sdl/macosx/appmenu_osx.mm:88
 msgid "Show All"
 msgstr "Показати Все"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:92
-#: backends/platform/sdl/macosx/appmenu_osx.mm:99
+#: backends/platform/sdl/macosx/appmenu_osx.mm:110
+#: backends/platform/sdl/macosx/appmenu_osx.mm:121
 msgid "Window"
 msgstr "Вікно"
 
-#: backends/platform/sdl/macosx/appmenu_osx.mm:95
+#: backends/platform/sdl/macosx/appmenu_osx.mm:115
 msgid "Minimize"
 msgstr "Мінімізувати"
 
@@ -2413,12 +2437,12 @@ msgid "Normal (no scaling)"
 msgstr "Без збільшення"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2147
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:537
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:533
 msgid "Enabled aspect ratio correction"
 msgstr "Корекцію співвідношення сторін увімкнено"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2153
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:542
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:538
 msgid "Disabled aspect ratio correction"
 msgstr "Корекцію співвідношення сторін вимкнено"
 
@@ -2427,7 +2451,7 @@ msgid "Active graphics filter:"
 msgstr "Поточний графічний фільтр:"
 
 #: backends/graphics/surfacesdl/surfacesdl-graphics.cpp:2250
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:481
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:477
 msgid "Windowed mode"
 msgstr "Віконний режим"
 
@@ -2451,11 +2475,11 @@ msgstr "Поточний відеорежим"
 msgid "Current scale"
 msgstr "Поточний масштаб"
 
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:562
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:558
 msgid "Active filter mode: Linear"
 msgstr "Активний режим фільтрації: Лінійний"
 
-#: backends/graphics/openglsdl/openglsdl-graphics.cpp:564
+#: backends/graphics/openglsdl/openglsdl-graphics.cpp:560
 msgid "Active filter mode: Nearest"
 msgstr "Активний режим фільтрації: Найближче"
 
@@ -2478,19 +2502,6 @@ msgstr "Наліво"
 #: backends/platform/wince/CEActionsSmartphone.cpp:42
 msgid "Right"
 msgstr "Направо"
-
-#: backends/platform/symbian/src/SymbianActions.cpp:42
-#: backends/platform/wince/CEActionsPocket.cpp:60
-#: backends/platform/wince/CEActionsSmartphone.cpp:43
-#: backends/platform/bada/form.cpp:281
-msgid "Left Click"
-msgstr "Лівий клік"
-
-#: backends/platform/symbian/src/SymbianActions.cpp:43
-#: backends/platform/wince/CEActionsSmartphone.cpp:44
-#: backends/platform/bada/form.cpp:273
-msgid "Right Click"
-msgstr "Правий клік"
 
 #: backends/platform/symbian/src/SymbianActions.cpp:46
 #: backends/platform/wince/CEActionsSmartphone.cpp:47
@@ -2854,11 +2865,11 @@ msgstr "Показати клавіатуру"
 msgid "Control Mouse"
 msgstr "Управління мишею"
 
-#: backends/events/maemosdl/maemosdl-events.cpp:129
+#: backends/events/maemosdl/maemosdl-events.cpp:192
 msgid "Clicking Enabled"
 msgstr "Кліки увімкнено"
 
-#: backends/events/maemosdl/maemosdl-events.cpp:129
+#: backends/events/maemosdl/maemosdl-events.cpp:192
 msgid "Clicking Disabled"
 msgstr "Кліки вимкнено"
 

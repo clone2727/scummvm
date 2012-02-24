@@ -364,7 +364,7 @@ GUI *LoLEngine::gui() const {
 Common::Error LoLEngine::init() {
 	_screen = new Screen_LoL(this, _system);
 	assert(_screen);
-	_screen->setResolution();
+	_screen->setResolution(_flags.useHiResOverlay);
 
 	_debugger = new Debugger_LoL(this);
 	assert(_debugger);
@@ -491,7 +491,7 @@ void LoLEngine::initKeymap() {
 	};
 
 	for (const Common::KeyActionEntry *entry = keyActionEntries; entry->id; ++entry) {
-		Common::Action *const act = new Common::Action(engineKeyMap, entry->id, entry->description, Common::kGenericActionType, Common::kActionKeyType);
+		Common::Action *const act = new Common::Action(engineKeyMap, entry->id, entry->description);
 		act->addKeyEvent(entry->ks);
 	}
 

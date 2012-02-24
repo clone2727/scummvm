@@ -440,7 +440,7 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
 	// Display the text
 	gfxManager._font.writeLines(msg.c_str(), textRect, ALIGN_LEFT);
 
-	// Write for a  mouse or keypress
+	// Wait for a mouse or keypress
 	Event event;
 	while (!g_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !g_vm->shouldQuit())
 		;
@@ -602,7 +602,7 @@ void GfxSurface::copyFrom(GfxSurface &src, Rect srcBounds, Rect destBounds, Regi
 		destBounds.bottom = destSurface.h;
 
 	if (destBounds.isValidRect() && !((destBounds.right < 0) || (destBounds.bottom < 0)
-			|| (destBounds.left >= SCREEN_WIDTH) || (destBounds.top >= SCREEN_HEIGHT))) {
+		|| (destBounds.left >= destSurface.w) || (destBounds.top >= destSurface.h))) {
 		// Register the affected area as dirty
 		addDirtyRect(destBounds);
 
@@ -1308,30 +1308,14 @@ int GfxManager::getAngle(const Common::Point &p1, const Common::Point &p2) {
 	}
 }
 
-// FIXME: The two checks for screenSurface inside these two copyFrom() methods
-// are meant for Ringworld 2, but the corresponding setBounds cases cause
-// issues with the popup menus when right clicking in all games (e.g. the popup
-// menu is always shown on the top left of the screen). Therefore, these two
-// code fragments are disabled for now, till the glitches they cause are fixed.
-
 void GfxManager::copyFrom(GfxSurface &src, Rect destBounds, Region *priorityRegion) {
-#if 0
-	if (&_surface == &(GLOBALS._screenSurface))
-		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
-	else
-#endif
-		_surface.setBounds(_bounds);
+	_surface.setBounds(_bounds);
 
 	_surface.copyFrom(src, destBounds, priorityRegion);
 }
 
 void GfxManager::copyFrom(GfxSurface &src, int destX, int destY) {
-#if 0
-	if (&_surface == &(GLOBALS._screenSurface))
-		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
-	else
-#endif
-		_surface.setBounds(_bounds);
+	_surface.setBounds(_bounds);
 
 	_surface.copyFrom(src, destX, destY);
 }

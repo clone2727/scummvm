@@ -183,7 +183,7 @@ KyraEngine_MR::~KyraEngine_MR() {
 	delete[] _sceneStrings;
 	delete[] _talkObjectList;
 
-	for (Common::Array<const Opcode*>::iterator i = _opcodesDialog.begin(); i != _opcodesDialog.end(); ++i)
+	for (Common::Array<const Opcode *>::iterator i = _opcodesDialog.begin(); i != _opcodesDialog.end(); ++i)
 		delete *i;
 	_opcodesDialog.clear();
 
@@ -203,7 +203,7 @@ KyraEngine_MR::~KyraEngine_MR() {
 Common::Error KyraEngine_MR::init() {
 	_screen = new Screen_MR(this, _system);
 	assert(_screen);
-	_screen->setResolution();
+	_screen->setResolution(_flags.useHiResOverlay);
 
 	_debugger = new Debugger_v2(this);
 	assert(_debugger);

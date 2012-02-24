@@ -102,6 +102,7 @@ public:
 	virtual void loadScene(int sceneNum);
 	virtual void refreshBackground(int xAmount, int yAmount);
 	virtual void saveCharacter(int characterIndex);
+	virtual void restore() {}
 
 	bool display(CursorType action, Event &event);
 	void fadeOut();
@@ -113,6 +114,8 @@ class SceneHandlerExt: public SceneHandler {
 public:
 	virtual void postInit(SceneObjectList *OwnerList = NULL);
 	virtual void process(Event &event);
+
+	void setupPaletteMaps();
 };
 
 
@@ -265,11 +268,114 @@ public:
 	int _state;
 
 	SceneActorExt() { _state = 0; }
+
 	virtual Common::String getClassName() { return "SceneActorExt"; }
 	virtual void synchronize(Serializer &s) {
 		SceneActor::synchronize(s);
 		s.syncAsSint16LE(_state);
 	}
+};
+
+class SceneAreaObject: public SceneArea {
+	class Object1: public SceneActor {
+	public:
+	};
+public:
+	Object1 _object1;
+	int _insetCount;
+
+	virtual void remove();
+	virtual void process(Event &event);
+	void setDetails(int visage, int strip, int frameNumber, const Common::Point &pt);
+	void setDetails(int resNum, int lookLineNum, int talkLineNum, int useLineNum);
+};
+
+class UnkObject1200 : public SavedObject {
+public:
+	Rect _rect1;
+	Rect _rect2;
+
+	int *_field16;
+	int *_field3A;
+
+	int _field12;
+	int _field14;
+	int _field26;
+	int _field28;
+	int _field2A;
+	int _field2C;
+	int _field2E;
+	int _field30;
+	int _field32;
+	int _field34;
+	int _field36;
+	int _field38;
+	int _field3E;
+	int _field40;
+
+	UnkObject1200();
+	void synchronize(Serializer &s);
+
+	void sub51AE9(int arg1);
+	int sub51AF8(Common::Point pt);
+	bool sub51AFD(Common::Point pt);
+	void sub51B02();
+	void sub9EDE8(Rect rect);
+	int sub9EE22(int &arg1, int &arg2);
+	virtual Common::String getClassName() { return "UnkObject1200"; }
+};
+
+class AnimationPlayer: public EventHandler {
+public:
+	Common::File _resourceFile;
+	void *_fieldA;
+	void *_field16;
+
+	byte *_dataP;
+	Rect _rect1, _screenBounds;
+	int _field38;
+	int _field3A, _field3C;
+	int _field56;
+	int _field58, _field5A;
+	ScenePalette _palette;
+	byte _palData[256 * 3];
+	Action *_endAction;
+	int _field576;
+	int _field57C;
+	int _palStart, _palSize;
+	int _field904;
+	int _field908;
+	int _field90C;
+	int _field90E;
+	uint _field910;
+	uint32 _gameFrame;
+public:
+	AnimationPlayer();
+	~AnimationPlayer();
+
+	virtual void synchronize(Serializer &s);
+	virtual void remove();
+	virtual void process(Event &event);
+	virtual void dispatch();
+	virtual void flipPane() {}
+	virtual void changePane() {}
+	virtual void proc14() {}
+
+	bool load(int rlbNum, Action *endAction = NULL);
+	void drawFrame(int frameIndex);
+	void method2();
+	bool method3();
+	void method4();
+	void method5() {}
+};
+
+class AnimationPlayerExt: public AnimationPlayer {
+public:
+	int _v;
+public:
+	AnimationPlayerExt();
+
+	virtual void synchronize(Serializer &s);
 };
 
 } // End of namespace Ringworld2

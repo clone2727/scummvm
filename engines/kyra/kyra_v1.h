@@ -210,7 +210,7 @@ public:
 
 	// input
 	void setMousePos(int x, int y);
-	Common::Point getMousePos() const;
+	Common::Point getMousePos();
 
 	// config specific
 	bool speechEnabled();
@@ -306,6 +306,8 @@ protected:
 	bool _configSounds;
 	uint8 _configVoice;
 
+	Common::RenderMode _configRenderMode;
+
 	// game speed
 	virtual bool skipFlag() const;
 	virtual void resetSkipFlag(bool removeEvent = true);
@@ -326,7 +328,7 @@ protected:
 
 	// opcode
 	virtual void setupOpcodeTable() = 0;
-	Common::Array<const Opcode*> _opcodes;
+	Common::Array<const Opcode *> _opcodes;
 
 	int o1_queryGameFlag(EMCState *script);
 	int o1_setGameFlag(EMCState *script);

@@ -27,7 +27,6 @@
 
 #ifdef ENABLE_KEYMAPPER
 
-#include "backends/keymapper/types.h"
 #include "common/events.h"
 #include "common/func.h"
 #include "common/list.h"
@@ -54,11 +53,6 @@ struct Action {
 
 	/** Events to be sent when mapped key is pressed */
 	List<Event> events;
-	ActionType type;
-	KeyType preferredKey;
-	int priority;
-	int group;
-	int flags;
 
 private:
 	/** Hardware key that is mapped to this Action */
@@ -66,12 +60,16 @@ private:
 	Keymap *_boss;
 
 public:
-	Action(Keymap *boss, const char *id, String des = "",
-		   ActionType typ = kGenericActionType,
-		   KeyType prefKey = kGenericKeyType,
-		   int pri = 0, int flg = 0 );
+	Action(Keymap *boss, const char *id, String des = "");
 
 	void addEvent(const Event &evt) {
+		events.push_back(evt);
+	}
+
+	void addEvent(const EventType evtType) {
+		Event evt;
+
+		evt.type = evtType;
 		events.push_back(evt);
 	}
 
@@ -84,24 +82,15 @@ public:
 	}
 
 	void addLeftClickEvent() {
-		Event evt;
-
-		evt.type = EVENT_LBUTTONDOWN;
-		addEvent(evt);
+		addEvent(EVENT_LBUTTONDOWN);
 	}
 
 	void addMiddleClickEvent() {
-		Event evt;
-
-		evt.type = EVENT_MBUTTONDOWN;
-		addEvent(evt);
+		addEvent(EVENT_MBUTTONDOWN);
 	}
 
 	void addRightClickEvent() {
-		Event evt;
-
-		evt.type = EVENT_RBUTTONDOWN;
-		addEvent(evt);
+		addEvent(EVENT_RBUTTONDOWN);
 	}
 
 	Keymap *getParent() {
@@ -111,15 +100,6 @@ public:
 	void mapKey(const HardwareKey *key);
 	const HardwareKey *getMappedKey() const;
 
-};
-
-struct ActionPriorityComp : public BinaryFunction<Action, Action, bool> {
-	bool operator()(const Action *x, const Action *y) const {
-		return x->priority > y->priority;
-	}
-	bool operator()(const Action &x, const Action &y) const {
-		return x.priority > y.priority;
-	}
 };
 
 } // End of namespace Common
