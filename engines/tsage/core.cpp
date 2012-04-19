@@ -1301,6 +1301,13 @@ bool ScenePalette::loadPalette(int paletteNum) {
 	return true;
 }
 
+/**
+ * Loads a palette from the passed raw data block
+ */
+void ScenePalette::loadPalette(const byte *pSrc, int start, int count) {
+	Common::copy(pSrc, pSrc + count * 3, &_palette[start * 3]);
+}
+
 void ScenePalette::refresh() {
 	// Set indexes for standard colors to closest color in the palette
 	_colors.background = indexOf(255, 255, 255);	// White background
@@ -1347,13 +1354,15 @@ void ScenePalette::setEntry(int index, uint r, uint g, uint b) {
  * @param g			G component
  * @param b			B component
  * @param threshold	Closeness threshold.
+ * @param start		Starting index
+ * @param count		Number of indexes to scan
  * @remarks	A threshold may be provided to specify how close the matching color must be
  */
-uint8 ScenePalette::indexOf(uint r, uint g, uint b, int threshold) {
+uint8 ScenePalette::indexOf(uint r, uint g, uint b, int threshold, int start, int count) {
 	int palIndex = -1;
 	byte *palData = &_palette[0];
 
-	for (int i = 0; i < 256; ++i) {
+	for (int i = start; i < (start + count); ++i) {
 		byte ir = *palData++;
 		byte ig = *palData++;
 		byte ib = *palData++;
@@ -4100,7 +4109,8 @@ void SceneHandler::process(Event &event) {
 
 	// Check for displaying right-click dialog
 	if ((event.eventType == EVENT_BUTTON_DOWN) && (event.btnState == BTNSHIFT_RIGHT) &&
-			g_globals->_player._uiEnabled) {
+			g_globals->_player._uiEnabled &&
+			((g_vm->getGameID() != GType_Ringworld2) || (R2_GLOBALS._sceneManager._sceneNumber != 1330))) {
 		g_globals->_game->rightClick();
 
 		event.handled = true;
@@ -4249,8 +4259,10 @@ void SceneHandler::dispatch() {
 	}
 
 	// Handle drawing the contents of the scene
-	if (g_globals->_sceneManager._scene)
-		g_globals->_sceneObjects->draw();
+	if ((g_vm->getGameID() != GType_Ringworld2) || (R2_GLOBALS._animationCtr == 0)) {
+		if (g_globals->_sceneManager._scene)
+			g_globals->_sceneObjects->draw();
+	}
 
 	// Check to see if any scene change is required
 	g_globals->_sceneManager.checkScene();

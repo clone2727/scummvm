@@ -136,12 +136,25 @@ char *AGOSEngine::genSaveName(int slot) {
 	return buf;
 }
 
+#ifdef ENABLE_AGOS2
+void AGOSEngine_Feeble::quickLoadOrSave() {
+	// Quick loading and saving isn't possible in The Feeble Files or Puzzle Pack.
+}
+#endif
+
 void AGOSEngine::quickLoadOrSave() {
-	// Quick load & save is only supported complete version of Simon the Sorcerer 1/2
-	if (getGameType() == GType_PP || getGameType() == GType_FF ||
-		(getFeatures() & GF_DEMO)) {
+	// The function uses segments of code from the original game scripts 
+	// to allow quick loading and saving, but isn't perfect.
+	//
+	// Unfortuntely this allows loading and saving in locations,
+	// which aren't supported, and will not restore correctly:
+	// Any overhead maps in Simon the Sorcerer 2
+	// Various locations in Elvira 1/2 and Waxworks where saving
+	// was disabled
+
+	// The floppy disk demo of Simon the Sorcerer 1 doesn't work.
+	if (getFeatures() & GF_DEMO)
 		return;
-	}
 
 	bool success;
 	Common::String buf;
@@ -1019,7 +1032,7 @@ bool AGOSEngine::loadGame(const char *filename, bool restartMode) {
 
 	if (restartMode) {
 		// Load restart state
-		f = _archives.open(filename);
+		f = _archives.createReadStreamForMember(filename);
 	} else {
 		f = _saveFileMan->openForLoading(filename);
 	}
@@ -1193,7 +1206,7 @@ bool AGOSEngine_Elvira2::loadGame(const char *filename, bool restartMode) {
 
 	if (restartMode) {
 		// Load restart state
-		f = _archives.open(filename);
+		f = _archives.createReadStreamForMember(filename);
 	} else {
 		f = _saveFileMan->openForLoading(filename);
 	}

@@ -8,19 +8,24 @@ MODULE_OBJS := \
 	debug.o \
 	error.o \
 	EventDispatcher.o \
+	EventMapper.o \
 	EventRecorder.o \
 	file.o \
 	fs.o \
+	gui_options.o \
 	hashmap.o \
 	iff_container.o \
+	language.o \
 	localization.o \
 	macresman.o \
 	memorypool.o \
 	md5.o \
 	mutex.o \
+	platform.o \
 	quicktime.o \
 	random.o \
 	rational.o \
+	rendermode.o \
 	str.o \
 	stream.o \
 	system.o \
@@ -36,7 +41,6 @@ MODULE_OBJS := \
 	xmlparser.o \
 	zlib.o
 
-ifdef USE_BINK
 MODULE_OBJS += \
 	cosinetables.o \
 	dct.o \
@@ -44,7 +48,6 @@ MODULE_OBJS += \
 	huffman.o \
 	rdft.o \
 	sinetables.o
-endif
 
 # Include common rules
 include $(srcdir)/rules.mk

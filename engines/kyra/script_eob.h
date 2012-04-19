@@ -47,8 +47,9 @@ public:
 	bool checkFlags(uint32 flags) const;
 	bool preventRest() const;
 
-	void loadState(Common::SeekableSubReadStreamEndian &in);
+	void loadState(Common::SeekableSubReadStreamEndian &in, bool origFile = false);
 	void saveState(Common::OutSaveFile *out);
+	void reset();
 
 private:
 	const char *getString(uint16 index);
@@ -98,7 +99,7 @@ private:
 		InfProc *proc;
 		Common::String desc;
 	};
-	Common::Array<const InfOpcode*> _opcodes;
+	Common::Array<const InfOpcode *> _opcodes;
 
 	int8 *_scriptData;
 	uint16 _scriptSize;

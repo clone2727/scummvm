@@ -118,10 +118,10 @@ void KyraRpgEngine::restoreFlyingObjectTempData(LevelTempData *tmp) {
 }
 
 void KyraRpgEngine::releaseFlyingObjectTempData(LevelTempData *tmp) {
-	EoBFlyingObject *p = (EoBFlyingObject*)tmp->flyingObjects;
+	EoBFlyingObject *p = (EoBFlyingObject *)tmp->flyingObjects;
 	delete[] p;
 }
 
-}	// End of namespace Kyra
+} // End of namespace Kyra
 
 #endif // ENABLE_EOB || ENABLE_LOL

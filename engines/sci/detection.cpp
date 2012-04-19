@@ -26,6 +26,7 @@
 #include "common/ptr.h"
 #include "common/savefile.h"
 #include "common/system.h"
+#include "common/translation.h"
 #include "graphics/thumbnail.h"
 #include "graphics/surface.h"
 
@@ -303,29 +304,29 @@ Common::String convertSierraGameId(Common::String sierraId, uint32 *gameFlags, R
 	if (sierraId == "fp" || sierraId == "gk" || sierraId == "pq4")
 		demoThreshold = 150;
 
-	Common::ScopedPtr<Common::List<ResourceId> > resources(resMan.listResources(kResourceTypeScript, -1));
-	if (resources->size() < demoThreshold) {
+	Common::List<ResourceId> resources = resMan.listResources(kResourceTypeScript, -1);
+	if (resources.size() < demoThreshold) {
 		*gameFlags |= ADGF_DEMO;
 
 		// Crazy Nick's Picks
-		if (sierraId == "lsl1" && resources->size() == 34)
+		if (sierraId == "lsl1" && resources.size() == 34)
 			return "cnick-lsl";
-		if (sierraId == "sq4" && resources->size() == 34)
+		if (sierraId == "sq4" && resources.size() == 34)
 			return "cnick-sq";
-		if (sierraId == "hoyle3" && resources->size() == 42)
+		if (sierraId == "hoyle3" && resources.size() == 42)
 			return "cnick-kq";
-		if (sierraId == "rh budget" && resources->size() == 39)
+		if (sierraId == "rh budget" && resources.size() == 39)
 			return "cnick-longbow";
 		// TODO: cnick-laurabow (the name of the game object contains junk)
 
 		// Handle Astrochicken 1 (SQ3) and 2 (SQ4)
-		if (sierraId == "sq3" && resources->size() == 20)
+		if (sierraId == "sq3" && resources.size() == 20)
 			return "astrochicken";
 		if (sierraId == "sq4")
 			return "msastrochicken";
 	}
 
-	if (sierraId == "torin" && resources->size() == 226)	// Torin's Passage demo
+	if (sierraId == "torin" && resources.size() == 226)	// Torin's Passage demo
 		*gameFlags |= ADGF_DEMO;
 
 	for (const OldNewIdTableEntry *cur = s_oldNewTable; cur->oldId[0]; ++cur) {
@@ -350,7 +351,7 @@ Common::String convertSierraGameId(Common::String sierraId, uint32 *gameFlags, R
 			return "qfg4";
 
 		// qfg4 demo has less than 50 scripts
-		if (resources->size() < 50)
+		if (resources.size() < 50)
 			return "qfg4";
 
 		// Otherwise it's qfg3
@@ -361,6 +362,83 @@ Common::String convertSierraGameId(Common::String sierraId, uint32 *gameFlags, R
 }
 
 #include "sci/detection_tables.h"
+
+static const ADExtraGuiOptionsMap optionsList[] = {
+	{
+		GAMEOPTION_EGA_UNDITHER,
+		{
+			_s("EGA undithering"),
+			_s("Enable undithering in EGA games"),
+			"disable_dithering",
+			false
+		}
+	},
+
+	{
+		GAMEOPTION_PREFER_DIGITAL_SFX,
+		{
+			_s("Prefer digital sound effects"),
+			_s("Prefer digital sound effects instead of synthesized ones"),
+			"prefer_digitalsfx",
+			true
+		}
+	},
+
+	{
+		GAMEOPTION_ORIGINAL_SAVELOAD,
+		{
+			_s("Use original save/load screens"),
+			_s("Use the original save/load screens, instead of the ScummVM ones"),
+			"originalsaveload",
+			false
+		}
+	},
+
+	{
+		GAMEOPTION_FB01_MIDI,
+		{
+			_s("Use IMF/Yahama FB-01 for MIDI output"),
+			_s("Use an IBM Music Feature card or a Yahama FB-01 FM synth module for MIDI output"),
+			"native_fb01",
+			false
+		}
+	},
+
+	// Jones in the Fast Lane - CD audio tracks or resource.snd
+	{
+		GAMEOPTION_JONES_CDAUDIO,
+		{
+			_s("Use CD audio"),
+			_s("Use CD audio instead of in-game audio, if available"),
+			"use_cdaudio",
+			true
+		}
+	},
+
+	// KQ6 Windows - windows cursors
+	{
+		GAMEOPTION_KQ6_WINDOWS_CURSORS,
+		{
+			_s("Use Windows cursors"),
+			_s("Use the Windows cursors (smaller and monochrome) instead of the DOS ones"),
+			"windows_cursors",
+			false
+		}
+	},
+
+	// SQ4 CD - silver cursors
+	{
+		GAMEOPTION_SQ4_SILVER_CURSORS,
+		{
+			_s("Use silver cursors"),
+			_s("Use the alternate set of silver cursors, instead of the normal golden ones"),
+			"silver_cursors",
+			false
+		}
+	},
+
+	AD_EXTRA_GUI_OPTIONS_TERMINATOR
+};
 
 /**
  * The fallback game descriptor used by the SCI engine's fallbackDetector.
@@ -373,14 +451,14 @@ static ADGameDescription s_fallbackDesc = {
 	Common::UNK_LANG,
 	Common::kPlatformPC,
 	ADGF_NO_FLAGS,
-	GUIO0()
+	GUIO3(GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI)
 };
 
 static char s_fallbackGameIdBuf[256];
 
 class SciMetaEngine : public AdvancedMetaEngine {
 public:
-	SciMetaEngine() : AdvancedMetaEngine(Sci::SciGameDescriptions, sizeof(ADGameDescription), s_sciGameTitles) {
+	SciMetaEngine() : AdvancedMetaEngine(Sci::SciGameDescriptions, sizeof(ADGameDescription), s_sciGameTitles, optionsList) {
 		_singleid = "sci";
 	}
 
@@ -435,7 +513,7 @@ const ADGameDescription *SciMetaEngine::fallbackDetect(const FileMap &allFiles, 
 	s_fallbackDesc.flags = ADGF_NO_FLAGS;
 	s_fallbackDesc.platform = Common::kPlatformPC;	// default to PC platform
 	s_fallbackDesc.gameid = "sci";
-	s_fallbackDesc.guioptions = GUIO0();
+	s_fallbackDesc.guioptions = GUIO3(GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI);
 
 	if (allFiles.contains("resource.map") || allFiles.contains("Data1")
 	    || allFiles.contains("resmap.001") || allFiles.contains("resmap.001")) {
@@ -565,7 +643,7 @@ const ADGameDescription *SciMetaEngine::fallbackDetect(const FileMap &allFiles, 
 	const bool isCD = (s_fallbackDesc.flags & ADGF_CD);
 
 	if (!isCD)
-		s_fallbackDesc.guioptions = GUIO1(GUIO_NOSPEECH);
+		s_fallbackDesc.guioptions = GUIO4(GUIO_NOSPEECH, GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI);
 
 	if (gameId.hasSuffix("sci")) {
 		s_fallbackDesc.extra = "SCI";

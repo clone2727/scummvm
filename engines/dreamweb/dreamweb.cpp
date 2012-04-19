@@ -30,6 +30,8 @@
 #include "common/timer.h"
 #include "common/util.h"
 
+#include "engines/advancedDetector.h"
+
 #include "graphics/palette.h"
 #include "graphics/surface.h"
 
@@ -60,7 +62,21 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	_channel0 = 0;
 	_channel1 = 0;
 
-	_language = gameDesc->desc.language;
+	_datafilePrefix = "DREAMWEB.";
+	// ES and FR CD release use a different data file prefix
+	if (isCD()) {
+		switch(getLanguage()) {
+		case Common::ES_ESP:
+			_datafilePrefix = "DREAMWSP.";
+			break;
+		case Common::FR_FRA:
+			_datafilePrefix = "DREAMWFR.";
+			break;
+		default:
+			// Nothing to do
+			break;
+		}
+	}
 
 	_openChangeSize = kInventx+(4*kItempicsize);
 	_quitRequested = false;
@@ -87,7 +103,7 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	_speechCount = 0;
 	_charShift = 0;
 	_kerning = 0;
-	_brightness = 0;
+	_brightPalette = false;
 	_roomLoaded = 0;
 	_didZoom = 0;
 	_lineSpacing = 10;
@@ -190,11 +206,9 @@ DreamWebEngine::DreamWebEngine(OSystem *syst, const DreamWebGameDescription *gam
 	_monAdX = 0;
 	_monAdY = 0;
 	_timeCount = 0;
-	_countToTimed = 0;
-	_timedY = 0;
-	_timedX = 0;
 	_needToDumpTimed = 0;
 	_loadingOrSave = 0;
+	_saveLoadPage = 0;
 	_currentSlot = 0;
 	_cursorPos = 0;
 	_colourPos = 0;
@@ -365,8 +379,10 @@ Common::Error DreamWebEngine::run() {
 	syncSoundSettings();
 	_console = new DreamWebConsole(this);
 
-	ConfMan.registerDefault("dreamweb_originalsaveload", "false");
+	ConfMan.registerDefault("originalsaveload", "false");
+	ConfMan.registerDefault("bright_palette", true);
 	_hasSpeech = Common::File::exists("speech/r01c0000.raw") && !ConfMan.getBool("speech_mute");
+	_brightPalette = ConfMan.getBool("bright_palette");
 
 	_timer->installTimerProc(vSyncInterrupt, 1000000 / 70, this, "dreamwebVSync");
 	dreamweb();
@@ -479,10 +495,9 @@ uint8 DreamWebEngine::modifyChar(uint8 c) const {
 	if (c < 128)
 		return c;
 
-	switch(_language) {
+	switch(getLanguage()) {
 	case Common::DE_DEU:
-		switch(c)
-		{
+		switch(c) {
 		case 129:
 			return 'Z' + 3;
 		case 132:
@@ -525,16 +540,57 @@ uint8 DreamWebEngine::modifyChar(uint8 c) const {
 		default:
 			return c;
 		}
+	case Common::FR_FRA:
+		switch(c) {
+		case 133:
+			return 'Z' + 1;	
+		case 130:
+			return 'Z' + 2;
+		case 138:
+			return 'Z' + 3;
+		case 136:
+			return 'Z' + 4;
+		case 140:
+			return 'Z' + 5;
+		case 135:
+			return 'Z' + 6;
+		case 149:
+			return ',' - 1;
+		case 131:
+			return ',' - 2;
+		case 141:
+			return ',' - 3;
+		case 139:
+			return ',' - 4;
+		case 151:
+			return 'A' - 1;
+		case 147:
+			return 'A' - 3;
+		case 150:
+			return 'A' - 4;
+		default:
+			return c;
+		}
 	default:
 		return c;
 	}
 }
+	
+Common::String DreamWebEngine::modifyFileName(const char *name) {
+	Common::String fileName(name);
+	
+	// Sanity check
+	if (!fileName.hasPrefix("DREAMWEB."))
+		return fileName;
 
-bool DreamWebEngine::isCD() {
-	return _gameDescription->desc.flags & ADGF_CD;
+	// Make sure we use the correct file name as it differs depending on the game variant
+	fileName = _datafilePrefix;
+	fileName += name + 9;
+	return fileName;
 }
 
 bool DreamWebEngine::hasSpeech() {
 	return isCD() && _hasSpeech;
 }
+
 } // End of namespace DreamWeb

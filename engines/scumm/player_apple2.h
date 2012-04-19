@@ -209,7 +209,7 @@ public:
 	}
 
 	uint32 readSamples(void *buffer, int numSamples) {
-		return _buffer.read((byte*)buffer, numSamples * 2) / 2;
+		return _buffer.read((byte *)buffer, numSamples * 2) / 2;
 	}
 
 private:
@@ -247,7 +247,6 @@ public:
 		_sampleRate = rate;
 		_sampleConverter.setSampleRate(rate); 
 	}
-	void startMusic(int songResIndex);
 	virtual void startSound(int sound);
 	virtual void stopSound(int sound);
 	virtual void stopAllSounds();

@@ -42,6 +42,8 @@ KyraEngine_v1::KyraEngine_v1(OSystem *system, const GameFlags &flags)
 	_emc = 0;
 	_debugger = 0;
 
+	_configRenderMode = Common::kRenderDefault;
+
 	if (_flags.platform == Common::kPlatformAmiga)
 		_gameSpeed = 50;
 	else
@@ -163,6 +165,9 @@ Common::Error KyraEngine_v1::init() {
 	if (_sound)
 		_sound->updateVolumeSettings();
 
+	if (ConfMan.hasKey("render_mode"))
+		_configRenderMode = Common::parseRenderMode(ConfMan.get("render_mode"));
+
 	_res = new Resource(this);
 	assert(_res);
 	_res->reset();
@@ -225,10 +230,10 @@ KyraEngine_v1::~KyraEngine_v1() {
 	delete _debugger;
 }
 
-Common::Point KyraEngine_v1::getMousePos() const {
+Common::Point KyraEngine_v1::getMousePos() {
 	Common::Point mouse = _eventMan->getMousePos();
 
-	if (_flags.useHiResOverlay) {
+	if (_flags.useHiRes) {
 		mouse.x >>= 1;
 		mouse.y >>= 1;
 	}
@@ -237,7 +242,7 @@ Common::Point KyraEngine_v1::getMousePos() const {
 }
 
 void KyraEngine_v1::setMousePos(int x, int y) {
-	if (_flags.useHiResOverlay) {
+	if (_flags.useHiRes) {
 		x <<= 1;
 		y <<= 1;
 	}
@@ -304,7 +309,7 @@ int KyraEngine_v1::checkInput(Button *buttonList, bool mainLoop, int eventFlag) 
 		case Common::EVENT_LBUTTONUP: {
 			_mouseX = event.mouse.x;
 			_mouseY = event.mouse.y;
-			if (_flags.useHiResOverlay) {
+			if (_flags.useHiRes) {
 				_mouseX >>= 1;
 				_mouseY >>= 1;
 			}
@@ -316,7 +321,7 @@ int KyraEngine_v1::checkInput(Button *buttonList, bool mainLoop, int eventFlag) 
 		case Common::EVENT_RBUTTONUP: {
 			_mouseX = event.mouse.x;
 			_mouseY = event.mouse.y;
-			if (_flags.useHiResOverlay) {
+			if (_flags.useHiRes) {
 				_mouseX >>= 1;
 				_mouseY >>= 1;
 			}

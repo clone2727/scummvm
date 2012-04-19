@@ -26,6 +26,7 @@
 #include "startrek/graphics.h"
 
 #include "common/config-manager.h"
+#include "common/rendermode.h"
 #include "graphics/palette.h"
 
 namespace StarTrek {

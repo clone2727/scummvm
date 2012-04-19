@@ -76,6 +76,9 @@ endif
 ifneq ($(BACKEND), iphone)
 # Static libaries, used for the scummvm-static and iphone targets
 OSX_STATIC_LIBS := `$(STATICLIBPATH)/bin/sdl-config --static-libs`
+ifdef USE_FREETYPE2
+OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libfreetype.a $(STATICLIBPATH)/lib/libbz2.a
+endif
 endif
 
 ifdef USE_VORBIS
@@ -110,7 +113,7 @@ OSX_STATIC_LIBS += $(STATICLIBPATH)/lib/libfaad.a
 endif
 
 ifdef USE_ZLIB
-OSX_ZLIB ?= -lz
+OSX_ZLIB ?= $(STATICLIBPATH)/lib/libz.a
 endif
 
 ifdef USE_SPARKLE
@@ -147,7 +150,9 @@ osxsnap: bundle
 	$(srcdir)/devtools/credits.pl --text > $(srcdir)/AUTHORS
 	cp $(srcdir)/AUTHORS ./ScummVM-snapshot/Authors
 	cp $(srcdir)/COPYING ./ScummVM-snapshot/License\ \(GPL\)
+	cp $(srcdir)/COPYING.BSD ./ScummVM-snapshot/License\ \(BSD\)
 	cp $(srcdir)/COPYING.LGPL ./ScummVM-snapshot/License\ \(LGPL\)
+	cp $(srcdir)/COPYING.FREEFONT ./ScummVM-snapshot/License\ \(FREEFONT\)
 	cp $(srcdir)/COPYRIGHT ./ScummVM-snapshot/Copyright\ Holders
 	cp $(srcdir)/NEWS ./ScummVM-snapshot/News
 	cp $(srcdir)/README ./ScummVM-snapshot/ScummVM\ ReadMe
@@ -165,10 +170,10 @@ osxsnap: bundle
 	mkdir ScummVM-snapshot/doc/it
 	cp $(srcdir)/doc/it/GuidaRapida ./ScummVM-snapshot/doc/it/GuidaRapida
 	mkdir ScummVM-snapshot/doc/no-nb
-	cp $(srcdir)doc/no-nb/HurtigStart ./ScummVM-snapshot/doc/no-nb/HurtigStart
+	cp $(srcdir)/doc/no-nb/HurtigStart ./ScummVM-snapshot/doc/no-nb/HurtigStart
 	mkdir ScummVM-snapshot/doc/se
-	cp $(srcdir)doc/se/LasMig ./ScummVM-snapshot/doc/se/LasMig
-	cp $(srcdir)doc/se/Snabbstart ./ScummVM-snapshot/doc/se/Snabbstart
+	cp $(srcdir)/doc/se/LasMig ./ScummVM-snapshot/doc/se/LasMig
+	cp $(srcdir)/doc/se/Snabbstart ./ScummVM-snapshot/doc/se/Snabbstart
 	/Developer/Tools/SetFile -t ttro -c ttxt ./ScummVM-snapshot/*
 	xattr -w "com.apple.TextEncoding" "utf-8;134217984" ./ScummVM-snapshot/doc/cz/*
 	xattr -w "com.apple.TextEncoding" "utf-8;134217984" ./ScummVM-snapshot/doc/de/*
@@ -214,7 +219,9 @@ ifdef DIST_FILES_ENGINEDATA
 endif
 	cp $(srcdir)/AUTHORS $(WIN32PATH)/AUTHORS.txt
 	cp $(srcdir)/COPYING $(WIN32PATH)/COPYING.txt
+	cp $(srcdir)/COPYING.BSD $(WIN32PATH)/COPYING.BSD.txt
 	cp $(srcdir)/COPYING.LGPL $(WIN32PATH)/COPYING.LGPL.txt
+	cp $(srcdir)/COPYING.FREEFONT $(WIN32PATH)/COPYING.FREEFONT.txt
 	cp $(srcdir)/COPYRIGHT $(WIN32PATH)/COPYRIGHT.txt
 	cp $(srcdir)/NEWS $(WIN32PATH)/NEWS.txt
 	cp $(srcdir)/doc/cz/PrectiMe $(WIN32PATH)/doc/cz/PrectiMe.txt
@@ -233,6 +240,8 @@ endif
 	cp /usr/local/bin/SDL.dll $(WIN32PATH)
 	cp $(srcdir)/dists/win32/graphics/left.bmp $(WIN32PATH)/graphics
 	cp $(srcdir)/dists/win32/graphics/scummvm-install.ico $(WIN32PATH)/graphics
+	cp $(srcdir)/dists/win32/migration.bat $(WIN32PATH)
+	cp $(srcdir)/dists/win32/migration.txt $(WIN32PATH)
 	cp $(srcdir)/dists/win32/ScummVM.iss $(WIN32PATH)
 	unix2dos $(WIN32PATH)/*.txt
 	unix2dos $(WIN32PATH)/doc/*.txt

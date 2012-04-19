@@ -26,6 +26,8 @@
 #include "engines/metaengine.h"
 #include "engines/engine.h"
 
+#include "common/gui_options.h" // FIXME: Temporary hack?
+
 namespace Common {
 class Error;
 class FSList;
@@ -132,6 +134,24 @@ enum ADFlags {
 
 
 /**
+ * Map entry for mapping GUIO_GAMEOPTIONS* to their ExtraGuiOption
+ * description.
+ */
+struct ADExtraGuiOptionsMap {
+	/**
+	 * GUIO_GAMEOPTION* string.
+	 */
+	const char *guioFlag;
+
+	/**
+	 * The associated option.
+	 */
+	ExtraGuiOption option;
+};
+
+#define AD_EXTRA_GUI_OPTIONS_TERMINATOR { 0, { 0, 0, 0, 0 } }
+
+/**
  * A MetaEngine implementation based around the advanced detector code.
  */
 class AdvancedMetaEngine : public MetaEngine {
@@ -157,6 +177,11 @@ protected:
 	const PlainGameDescriptor *_gameids;
 
 	/**
+	 * A map containing all the extra game GUI options the engine supports.
+	 */ 
+	const ADExtraGuiOptionsMap * const _extraGuiOptions;
+
+	/**
 	 * The number of bytes to compute MD5 sum for. The AdvancedDetector
 	 * is primarily based on computing and matching MD5 checksums of files.
 	 * Since doing that for large files can be slow, it can be restricted
@@ -169,7 +194,13 @@ protected:
 	/**
 	 * Name of single gameid (optional).
 	 *
-	 * @todo Properly explain this -- what does it do?
+	 * Used to override gameid.
+	 * This is a recommended setting to prevent global gameid pollution.
+	 * With this option set, the gameid effectively turns into engineid. 
+	 *
+	 * FIXME: This field actually removes a feature (gameid) in order to
+	 * address a more generic problem. We should find a better way to
+	 * disambiguate gameids.
 	 */
 	const char *_singleid;
 
@@ -203,7 +234,7 @@ protected:
 	const char * const *_directoryGlobs;
 
 public:
-	AdvancedMetaEngine(const void *descs, uint descItemSize, const PlainGameDescriptor *gameids);
+	AdvancedMetaEngine(const void *descs, uint descItemSize, const PlainGameDescriptor *gameids, const ADExtraGuiOptionsMap *extraGuiOptions = 0);
 
 	/**
 	 * Returns list of targets supported by the engine.
@@ -216,6 +247,8 @@ public:
 	virtual GameList detectGames(const Common::FSList &fslist) const;
 
 	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
+
+	virtual const ExtraGuiOptions getExtraGuiOptions(const Common::String &target) const;
 
 protected:
 	// To be implemented by subclasses

@@ -159,7 +159,7 @@ void VisualSpeaker::setText(const Common::String &msg) {
 	if (s.empty())
 		_numFrames = 0;
 
-	
+
 	if (_fieldF6) {
 		if ((R2_GLOBALS._speechSubtitles & SPEECH_TEXT) || !_soundId)
 			_sceneText.hide();
@@ -193,6 +193,17 @@ void VisualSpeaker::setDelay(int delay) {
 }
 
 //----------------------------------------------------------------------------
+
+SpeakerGameText::SpeakerGameText(): VisualSpeaker() {
+	_speakerName = "GAMETEXT";
+	_color1 = 8;
+	_color2 = 0;
+	_textWidth = 300;
+	_hideObjects = false;
+	_object2 = NULL;
+}
+
+//----------------------------------------------------------------------------
 // Classes related to CAPTAIN
 //----------------------------------------------------------------------------
 
@@ -218,7 +229,7 @@ void SpeakerCaptain3210::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -274,7 +285,7 @@ void SpeakerChief1100::proc15() {
 		_object1.setPosition(_object2->_position);
 		_object1._numFrames = 7;
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -331,7 +342,7 @@ void SpeakerGuard2800::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -371,7 +382,7 @@ void SpeakerJocko3200::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -394,7 +405,7 @@ void SpeakerJocko3220::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -417,7 +428,7 @@ void SpeakerJocko3230::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -431,7 +442,7 @@ void SpeakerJocko3230::proc15() {
 }
 
 //----------------------------------------------------------------------------
-// Classes related to MIRANDA 
+// Classes related to MIRANDA
 //----------------------------------------------------------------------------
 
 SpeakerMiranda::SpeakerMiranda(): VisualSpeaker() {
@@ -461,7 +472,7 @@ void SpeakerMiranda300::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -482,6 +493,29 @@ void SpeakerMiranda300::proc15() {
 		} else {
 			_object1.setup(305, v * 2 - 1, 1);
 		}
+		_object1.animate(ANIM_MODE_5, this);
+	}
+}
+
+void SpeakerMiranda1625::proc15() {
+	int v = _fieldF6;
+
+	if (!_object2) {
+		Scene1625 *scene = (Scene1625 *)R2_GLOBALS._sceneManager._scene;
+		_object2 = &scene->_actor3;
+		_object2->hide();
+		_object1.postInit();
+		_object1.setPosition(Common::Point(196, 65));
+
+		if (_object2->_mover)
+			_object2->addMover(NULL);
+	}
+
+	if (v == 0) {
+		_object1.animate(ANIM_MODE_2, NULL);
+	} else {
+		((SceneItem *)_action)->_sceneRegionId = 0;
+		_object1.setup(1627, 3, 1);
 		_object1.animate(ANIM_MODE_5, this);
 	}
 }
@@ -513,7 +547,7 @@ void SpeakerMiranda3375::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 3) 
+		if (R2_GLOBALS._player._characterIndex == 3)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor2;
@@ -524,7 +558,7 @@ void SpeakerMiranda3375::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (scene->_actor1._position.y != 163)
 			R2_GLOBALS._player.setStrip(8);
 		else
@@ -540,7 +574,7 @@ void SpeakerMiranda3375::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -563,7 +597,7 @@ void SpeakerMiranda3385::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 3) 
+		if (R2_GLOBALS._player._characterIndex == 3)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor2;
@@ -574,7 +608,7 @@ void SpeakerMiranda3385::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3375)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -589,7 +623,7 @@ void SpeakerMiranda3385::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -612,7 +646,7 @@ void SpeakerMiranda3395::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 3) 
+		if (R2_GLOBALS._player._characterIndex == 3)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor2;
@@ -623,7 +657,7 @@ void SpeakerMiranda3395::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3385)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -639,7 +673,7 @@ void SpeakerMiranda3395::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -662,7 +696,7 @@ void SpeakerMiranda3400::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 3) 
+		if (R2_GLOBALS._player._characterIndex == 3)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor2;
@@ -706,7 +740,7 @@ void SpeakerMiranda3600::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 3) 
+		if (R2_GLOBALS._player._characterIndex == 3)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor12;
@@ -824,7 +858,7 @@ void SpeakerNej2700::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -859,7 +893,7 @@ void SpeakerNej2750::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -891,7 +925,7 @@ void SpeakerNej2800::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -968,7 +1002,7 @@ void SpeakerPrivate3210::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1013,7 +1047,7 @@ void SpeakerProtector3600::proc15() {
 		R2_GLOBALS._player.disableControl();
 		R2_GLOBALS._events.setCursor(CURSOR_CROSSHAIRS);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1073,7 +1107,7 @@ void SpeakerQuinn300::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1088,7 +1122,7 @@ void SpeakerQuinn300::proc15() {
 		_object1.animate(ANIM_MODE_6, this);
 	} else {
 		((SceneItem *)_action)->_sceneRegionId = 0;
-		
+
 		switch (_object2->_visage) {
 		case 10:
 			_object1.setup((v - 1) / 4 + 4010, ((v - ((v - 1) / 4 * 4) - 1) % 8) * 2 + 1, 1);
@@ -1124,7 +1158,7 @@ void SpeakerQuinn1100::proc15() {
 		_object1.setPosition(_object2->_position);
 		_object1._numFrames = 7;
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1216,7 +1250,7 @@ void SpeakerQuinn2700::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1247,7 +1281,7 @@ void SpeakerQuinn2750::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1278,7 +1312,7 @@ void SpeakerQuinn2800::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1337,9 +1371,9 @@ void SpeakerQuinn3375::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 1) 
+		if (R2_GLOBALS._player._characterIndex == 1)
 			_object2 = &R2_GLOBALS._player;
-		else if (R2_GLOBALS._player._characterIndex == 2) 
+		else if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &scene->_actor1;
 		else
 			_object2 = &scene->_actor2;
@@ -1350,7 +1384,7 @@ void SpeakerQuinn3375::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (scene->_actor1._position.y != 163)
 			R2_GLOBALS._player.setStrip(8);
 		else
@@ -1365,7 +1399,7 @@ void SpeakerQuinn3375::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -1388,9 +1422,9 @@ void SpeakerQuinn3385::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 1) 
+		if (R2_GLOBALS._player._characterIndex == 1)
 			_object2 = &R2_GLOBALS._player;
-		else if (R2_GLOBALS._player._characterIndex == 2) 
+		else if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &scene->_actor1;
 		else
 			_object2 = &scene->_actor2;
@@ -1401,7 +1435,7 @@ void SpeakerQuinn3385::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3375)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -1416,7 +1450,7 @@ void SpeakerQuinn3385::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -1443,9 +1477,9 @@ void SpeakerQuinn3395::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 1) 
+		if (R2_GLOBALS._player._characterIndex == 1)
 			_object2 = &R2_GLOBALS._player;
-		else if (R2_GLOBALS._player._characterIndex == 2) 
+		else if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &scene->_actor1;
 		else
 			_object2 = &scene->_actor2;
@@ -1456,7 +1490,7 @@ void SpeakerQuinn3395::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3385)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -1471,7 +1505,7 @@ void SpeakerQuinn3395::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -1498,9 +1532,9 @@ void SpeakerQuinn3400::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 1) 
+		if (R2_GLOBALS._player._characterIndex == 1)
 			_object2 = &R2_GLOBALS._player;
-		else if (R2_GLOBALS._player._characterIndex == 2) 
+		else if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &scene->_actor1;
 		else
 			_object2 = &scene->_actor2;
@@ -1547,7 +1581,7 @@ void SpeakerQuinn3600::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 1) 
+		if (R2_GLOBALS._player._characterIndex == 1)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor10;
@@ -1702,7 +1736,7 @@ void SpeakerRalf3245::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1754,7 +1788,7 @@ void SpeakerRocko3200::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1777,7 +1811,7 @@ void SpeakerRocko3220::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1800,7 +1834,7 @@ void SpeakerRocko3230::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1845,7 +1879,7 @@ void SpeakerSeeker300::proc15() {
 		_object1.fixPriority(140);
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1884,7 +1918,7 @@ void SpeakerSeeker1100::proc15() {
 		_object1.setPosition(_object2->_position);
 		_object1._numFrames = 7;
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -1921,6 +1955,36 @@ void SpeakerSeeker1100::proc15() {
 	default:
 		signal();
 		break;
+	}
+}
+
+void SpeakerSeeker1900::proc15() {
+	int v = _fieldF6;
+
+	if (!_object2) {
+		if (R2_GLOBALS._player._characterIndex == 2) {
+			_object2 = &R2_GLOBALS._player;
+		} else {
+			Scene1900 *scene = (Scene1900 *)R2_GLOBALS._sceneManager._scene;
+			_object2 = &scene->_actor1;
+		}
+
+		_object2->hide();
+		_object1.postInit();
+		_object1.setPosition(_object2->_position);
+		_object1._numFrames = 7;
+
+		if (_object2->_mover)
+			_object2->addMover(NULL);
+	}
+
+	if (v == 0) {
+		_object1.animate(ANIM_MODE_2, NULL);
+	} else if (v == 1) {
+		_object1.setup(4032, 1, 1);
+		_object1.animate(ANIM_MODE_5, this);
+	} else {
+		signal();
 	}
 }
 
@@ -1981,7 +2045,7 @@ void SpeakerSeeker3375::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 2) 
+		if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor1;
@@ -1992,7 +2056,7 @@ void SpeakerSeeker3375::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (scene->_actor1._position.y != 163)
 			R2_GLOBALS._player.setStrip(8);
 		else
@@ -2007,7 +2071,7 @@ void SpeakerSeeker3375::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -2030,7 +2094,7 @@ void SpeakerSeeker3385::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 2) 
+		if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor1;
@@ -2041,7 +2105,7 @@ void SpeakerSeeker3385::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3375)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -2056,7 +2120,7 @@ void SpeakerSeeker3385::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -2079,7 +2143,7 @@ void SpeakerSeeker3395::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 2) 
+		if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor1;
@@ -2090,7 +2154,7 @@ void SpeakerSeeker3395::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3385)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -2105,7 +2169,7 @@ void SpeakerSeeker3395::proc15() {
 		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
-	
+
 
 	switch (v) {
 	case 0:
@@ -2128,7 +2192,7 @@ void SpeakerSeeker3400::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 2) 
+		if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor1;
@@ -2187,7 +2251,7 @@ void SpeakerSeeker3600::proc15() {
 	int v = _fieldF6;
 
 	if (!_object2) {
-		if (R2_GLOBALS._player._characterIndex == 2) 
+		if (R2_GLOBALS._player._characterIndex == 2)
 			_object2 = &R2_GLOBALS._player;
 		else
 			_object2 = &scene->_actor11;
@@ -2330,7 +2394,7 @@ void SpeakerSocko3200::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2347,9 +2411,9 @@ void SpeakerSocko3200::proc15() {
 // Classes related to SOLDIER
 //----------------------------------------------------------------------------
 
-SpeakerSoldier300::SpeakerSoldier300(): VisualSpeaker() {
+SpeakerSoldier::SpeakerSoldier(int colour) {
 	_speakerName = "SOLDIER";
-	_color1 = 60;
+	_color1 = colour;
 	_color2 = 0;
 	_fieldF6 = 0;
 	_textWidth = 300;
@@ -2370,7 +2434,7 @@ void SpeakerSoldier300::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2414,7 +2478,7 @@ void SpeakerTeal300::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2423,6 +2487,30 @@ void SpeakerTeal300::proc15() {
 	} else {
 		((SceneItem *)_action)->_sceneRegionId = 0;
 		_object1.setup(303, 1, 1);
+		_object1.animate(ANIM_MODE_5, this);
+	}
+}
+
+void SpeakerTeal1625::proc15() {
+	int v = _fieldF6;
+
+	if (!_object2) {
+		Scene1625 *scene = (Scene1625 *)R2_GLOBALS._sceneManager._scene;
+		_object2 = &scene->_actor2;
+		_object2->hide();
+
+		_object1.postInit();
+		_object1.setPosition(Common::Point(68, 68));
+
+		if (_object2->_mover)
+			_object2->addMover(NULL);
+	}
+
+	if (v == 0) {
+		_object1.animate(ANIM_MODE_2, NULL);
+	} else {
+		((SceneItem *)_action)->_sceneRegionId = 0;
+		_object1.setup(1627, 1, 1);
 		_object1.animate(ANIM_MODE_5, this);
 	}
 }
@@ -2437,7 +2525,7 @@ void SpeakerTeal3240::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2589,7 +2677,7 @@ void SpeakerTomko3245::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2641,7 +2729,7 @@ void SpeakerWebbster3240::proc15() {
 		_object1.postInit();
 		_object1.setPosition(_object2->_position);
 
-		if (_object2->_mover) 
+		if (_object2->_mover)
 			_object2->addMover(NULL);
 	}
 
@@ -2667,7 +2755,7 @@ void SpeakerWebbster3375::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (scene->_actor1._position.y != 163)
 			R2_GLOBALS._player.setStrip(8);
 		else
@@ -2711,7 +2799,7 @@ void SpeakerWebbster3385::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3375)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -2755,7 +2843,7 @@ void SpeakerWebbster3395::proc15() {
 		_object1._numFrames = 7;
 		_object1._effect = 1;
 		_object1.changeZoom(-1);
-		
+
 		if (R2_GLOBALS._sceneManager._previousScene == 3385)
 			R2_GLOBALS._player.setStrip(4);
 		else
@@ -2830,6 +2918,51 @@ void SpeakerWebbster3400::proc15() {
 		break;
 	}
 }
+
+//----------------------------------------------------------------------------
+
+SpeakerDutyOfficer::SpeakerDutyOfficer(): VisualSpeaker() {
+	_speakerName = "DUTYOFFICER";
+	_color1 = 5;
+	_color2 = 0;
+	_fieldF6 = 0;
+	_textWidth = 300;
+	_hideObjects = false;
+	_object2 = NULL;
+	_displayMode = 1;
+	_numFrames = 0;
+}
+
+void SpeakerDutyOfficer::proc15() {
+	Scene180 *scene = (Scene180 *)R2_GLOBALS._sceneManager._scene;
+
+	int v = _fieldF6;
+
+	if (!_object2) {
+		_object2 = &scene->_object2;
+		_object2->hide();
+		_object1.postInit();
+		_object1.setPosition(_object2->_position);
+
+		if (_object2->_mover)
+			_object2->addMover(NULL);
+	}
+
+	switch (v) {
+	case 0:
+		_object1.animate(ANIM_MODE_2, NULL);
+		break;
+	case 1:
+		_action = NULL;
+		_object1.setup(76, 2, 1);
+		_object1.animate(ANIM_MODE_5, this);
+		break;
+	default:
+		signal();
+		break;
+	}
+}
+
 
 } // End of namespace Ringworld2
 } // End of namespace TsAGE
