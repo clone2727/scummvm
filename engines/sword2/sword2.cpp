@@ -25,12 +25,14 @@
 #include "base/plugins.h"
 
 #include "common/config-manager.h"
+#include "common/events.h"
 #include "common/file.h"
 #include "common/fs.h"
-#include "common/events.h"
+#include "common/gui_options.h"
 #include "common/savefile.h"
 #include "common/system.h"
 #include "common/textconsole.h"
+#include "common/translation.h"
 
 #include "engines/metaengine.h"
 #include "engines/util.h"
@@ -73,6 +75,13 @@ static const GameSettings sword2_settings[] = {
 
 } // End of namespace Sword2
 
+static const ExtraGuiOption sword2ExtraGuiOption = {
+	_s("Show object labels"),
+	_s("Show labels for objects on mouse hover"),
+	"object_labels",
+	false
+};
+
 class Sword2MetaEngine : public MetaEngine {
 public:
 	virtual const char *getName() const {
@@ -84,6 +93,7 @@ public:
 
 	virtual bool hasFeature(MetaEngineFeature f) const;
 	virtual GameList getSupportedGames() const;
+	virtual const ExtraGuiOptions getExtraGuiOptions(const Common::String &target) const;
 	virtual GameDescriptor findGame(const char *gameid) const;
 	virtual GameList detectGames(const Common::FSList &fslist) const;
 	virtual SaveStateList listSaves(const char *target) const;
@@ -116,6 +126,12 @@ GameList Sword2MetaEngine::getSupportedGames() const {
 		g++;
 	}
 	return games;
+}
+
+const ExtraGuiOptions Sword2MetaEngine::getExtraGuiOptions(const Common::String &target) const {
+	ExtraGuiOptions options;
+	options.push_back(sword2ExtraGuiOption);
+	return options;
 }
 
 GameDescriptor Sword2MetaEngine::findGame(const char *gameid) const {
@@ -255,6 +271,7 @@ Sword2Engine::Sword2Engine(OSystem *syst) : Engine(syst), _rnd("sword2") {
 	SearchMan.addSubDirectoryMatching(gameDataDir, "sword2");
 	SearchMan.addSubDirectoryMatching(gameDataDir, "video");
 	SearchMan.addSubDirectoryMatching(gameDataDir, "smacks");
+	SearchMan.addSubDirectoryMatching(gameDataDir, "streams"); // PSX video
 
 	if (!scumm_stricmp(ConfMan.get("gameid").c_str(), "sword2demo") || !scumm_stricmp(ConfMan.get("gameid").c_str(), "sword2psxdemo"))
 		_features = GF_DEMO;

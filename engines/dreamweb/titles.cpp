@@ -26,7 +26,7 @@
 namespace DreamWeb {
 
 void DreamWebEngine::endGame() {
-	loadTempText("DREAMWEB.T83");
+	loadTempText("T83");
 	monkSpeaking();
 	if (_quitRequested)
 		return;
@@ -40,9 +40,10 @@ void DreamWebEngine::endGame() {
 void DreamWebEngine::monkSpeaking() {
 	_roomsSample = 35;
 	loadRoomsSample();
-	loadIntoTemp("DREAMWEB.G15");
+	GraphicsFile graphics;
+	loadGraphicsFile(graphics, "G15");
 	clearWork();
-	showFrame(_tempGraphics, 160, 72, 0, 128);	// show monk
+	showFrame(graphics, 160, 72, 0, 128);	// show monk
 	workToScreen();
 	_volume = 7;
 	_volumeDirection = -1;
@@ -51,8 +52,9 @@ void DreamWebEngine::monkSpeaking() {
 	fadeScreenUps();
 	hangOn(300);
 
+	// TODO: Subtitles+speech mode
 	if (hasSpeech()) {
-		for (int i = 40; i <= 48; i++) {
+		for (int i = 40; i < 48; i++) {
 			loadSpeech('T', 83, 'T', i);
 
 			playChannel1(50 + 12);
@@ -73,7 +75,7 @@ void DreamWebEngine::monkSpeaking() {
 				printResult = printDirect(&string, 36, &y, 239, 239 & 1);
 				workToScreen();
 				clearWork();
-				showFrame(_tempGraphics, 160, 72, 0, 128);	// show monk
+				showFrame(graphics, 160, 72, 0, 128);	// show monk
 				hangOnP(240);
 				if (_quitRequested)
 					return;
@@ -85,7 +87,7 @@ void DreamWebEngine::monkSpeaking() {
 	_volumeTo = 7;
 	fadeScreenDowns();
 	hangOn(300);
-	getRidOfTemp();
+	graphics.clear();
 }
 
 void DreamWebEngine::gettingShot() {
@@ -102,7 +104,7 @@ void DreamWebEngine::gettingShot() {
 void DreamWebEngine::bibleQuote() {
 	initGraphics(640, 480, true);
 
-	showPCX("DREAMWEB.I00");
+	showPCX("I00");
 	fadeScreenUps();
 
 	hangOne(80);
@@ -139,7 +141,7 @@ void DreamWebEngine::hangOne(uint16 delay) {
 }
 
 void DreamWebEngine::intro() {
-	loadTempText("DREAMWEB.T82");
+	loadTempText("T82");
 	loadPalFromIFF();
 	setMode();
 	_newLocation = 50;
@@ -290,7 +292,7 @@ void DreamWebEngine::realCredits() {
 	initGraphics(640, 480, true);
 	hangOn(35);
 
-	showPCX("DREAMWEB.I01");
+	showPCX("I01");
 	playChannel0(12, 0);
 
 	hangOne(2);
@@ -316,7 +318,7 @@ void DreamWebEngine::realCredits() {
 		return; // "realcreditsearly"
 	}
 
-	showPCX("DREAMWEB.I02");
+	showPCX("I02");
 	playChannel0(12, 0);
 	hangOne(2);
 
@@ -341,7 +343,7 @@ void DreamWebEngine::realCredits() {
 		return; // "realcreditsearly"
 	}
 
-	showPCX("DREAMWEB.I03");
+	showPCX("I03");
 	playChannel0(12, 0);
 	hangOne(2);
 
@@ -366,7 +368,7 @@ void DreamWebEngine::realCredits() {
 		return; // "realcreditsearly"
 	}
 
-	showPCX("DREAMWEB.I04");
+	showPCX("I04");
 	playChannel0(12, 0);
 	hangOne(2);
 
@@ -391,7 +393,7 @@ void DreamWebEngine::realCredits() {
 		return; // "realcreditsearly"
 	}
 
-	showPCX("DREAMWEB.I05");
+	showPCX("I05");
 	playChannel0(12, 0);
 	hangOne(2);
 
@@ -416,7 +418,7 @@ void DreamWebEngine::realCredits() {
 		return; // "realcreditsearly"
 	}
 
-	showPCX("DREAMWEB.I06");
+	showPCX("I06");
 	fadeScreenUps();
 	hangOne(60);
 

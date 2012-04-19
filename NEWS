@@ -5,22 +5,59 @@ For a more comprehensive changelog of the latest experimental code, see:
  New Games:
    - Added support for Soltys.
 
+ General:
+   - Updated MT-32 emulation code to latest munt project snapshot. The emulation
+     improved dramatically.
+   - Implemented support for TrueType fonts via FreeType2 in our GUI. Along
+     with it GNU FreeFont was also added to our modern theme. Note that not all
+     ports take advantage of this.
+   - Added Basque translation.
+   - Added custom game and engine options in the AGI, DREAMWEB, KYRA, QUEEN,
+     SKY and SCI engines. It is now possible to toggle these options via the
+     Engine tab when adding or editing a configuration for a game. In most
+     cases, you will have to run each game once or readd them all in ScummVM's
+     launcher in order to get the custom options tab.
+
  SDL ports:
    - Added support for OpenGL (GSoC Task).
 
  Broken Sword 1:
    - Fixed incorrect sound effects in the DOS/Windows demo.
+   - Added support for PlayStation videos.
+
+ Broken Sword 2:
+   - Added support for PlayStation videos.
 
  Cine:
    - Implemented Roland MT-32 output driver.
 
  SCUMM:
    - Added support for the Macintosh version of SPY Fox in Hold the Mustard.
+   - Added a difficulty selection dialog for Loom FM-TOWNS.
 
-1.4.1 (????-??-??)
+ iPhone port:
+   - Changed "F5 (menu)" gesture to open up the global main menu instead.
+   - Added support for custom cursor palettes, this makes the moderm theme use
+     the red pointer cursor for example.
+   - Added aspect ratio correction feature.
+   - Implemented 16 bits per pixel support for games.
+
+ Windows port:
+   - Changed default savegames location for Windows NT4/2000/XP/Vista/7.
+     (The migration batch file can be used to copy savegames from the old
+      default location, to the new default location).
+
+1.4.1 (2012-01-27)
  AGOS:
    - Fixed loading videos directly from InstallShield cabinets in the Windows
      version of the The Feeble Files.
+
+ BASS:
+   - Added support for Enhanced Music by James Woodcock
+     (http://www.jameswoodcock.co.uk/?p=7695).
+
+ Broken Sword 2:
+   - Slight graphics improvement for PSX version.
 
  KYRA:
    - Fixed bug in the original Lands of Lore GUI which made ScummVM error out
@@ -34,6 +71,8 @@ For a more comprehensive changelog of the latest experimental code, see:
    - The option to toggle sound effect types between digitized and synthesized
      has been disabled until a more user-friendly GUI option is possible.
      Digital sound effects are always preferred for now.
+   - Fixed a case where starting a new song didn't fully reset its channels,
+     thus some notes sounded wrong.
 
 1.4.0 (2011-11-11)
  New Games:
@@ -137,7 +176,7 @@ For a more comprehensive changelog of the latest experimental code, see:
  New Ports:
    - Added WebOS port.
 
- General
+ General:
    - Added support for loadable modules on platforms without a dynamic
      loader (GSoC Task).
    - Added Danish translation.

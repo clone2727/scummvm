@@ -47,7 +47,7 @@
 #include "video/codecs/rpza.h"
 #include "video/codecs/smc.h"
 #include "video/codecs/cdtoons.h"
-
+#include "video/codecs/svq1.h"
 
 namespace Video {
 
@@ -57,7 +57,6 @@ namespace Video {
 
 QuickTimeDecoder::QuickTimeDecoder() {
 	_setStartTime = false;
-	_audHandle = Audio::SoundHandle();
 	_scaledSurface = 0;
 	_dirtyPalette = false;
 	_palette = 0;
@@ -95,25 +94,29 @@ uint32 QuickTimeDecoder::getFrameCount() const {
 }
 
 void QuickTimeDecoder::startAudio() {
-	if (_audStream) {
-		updateAudioBuffer();
-		g_system->getMixer()->playStream(Audio::Mixer::kPlainSoundType, &_audHandle, _audStream, -1, Audio::Mixer::kMaxChannelVolume, 0, DisposeAfterUse::NO);
-	} // else no audio or the audio compression is not supported
+	updateAudioBuffer();
+
+	for (uint32 i = 0; i < _audioTracks.size(); i++) {
+		g_system->getMixer()->playStream(Audio::Mixer::kPlainSoundType, &_audioHandles[i], _audioTracks[i], -1, Audio::Mixer::kMaxChannelVolume, 0, DisposeAfterUse::NO);
+
+		// Pause the audio again if we're still paused
+		if (isPaused())
+			g_system->getMixer()->pauseHandle(_audioHandles[i], true);
+	}
 }
 
 void QuickTimeDecoder::stopAudio() {
-	if (_audStream)
-		g_system->getMixer()->stopHandle(_audHandle);
+	for (uint32 i = 0; i < _audioHandles.size(); i++)
+		g_system->getMixer()->stopHandle(_audioHandles[i]);
 }
 
 void QuickTimeDecoder::pauseVideoIntern(bool pause) {
-	if (_audStream)
-		g_system->getMixer()->pauseHandle(_audHandle, pause);
+	for (uint32 i = 0; i < _audioHandles.size(); i++)
+		g_system->getMixer()->pauseHandle(_audioHandles[i], pause);
 }
 
 QuickTimeDecoder::VideoTrackHandler *QuickTimeDecoder::findNextVideoTrack() const {
 	VideoTrackHandler *bestTrack = 0;
-	int32 num;
 	uint32 bestTime = 0xffffffff;
 
 	for (uint32 i = 0; i < _handlers.size(); i++) {
@@ -124,7 +127,6 @@ QuickTimeDecoder::VideoTrackHandler *QuickTimeDecoder::findNextVideoTrack() cons
 			if (time < bestTime) {
 				bestTime = time;
 				bestTrack = track;
-				num  = i;
 			}
 		}
 	}
@@ -148,11 +150,15 @@ const Graphics::Surface *QuickTimeDecoder::decodeNextFrame() {
 
 	// Update audio buffers too
 	// (needs to be done after we find the next track)
-	for (uint32 i = 0; i < _handlers.size(); i++)
-		if (_handlers[i]->getTrackType() == TrackHandler::kTrackTypeAudio)
-			((AudioTrackHandler *)_handlers[i])->updateBuffer();
+	updateAudioBuffer();
 
-	if (_scaledSurface) {
+	// We have to initialize the scaled surface
+	if (frame && (_scaleFactorX != 1 || _scaleFactorY != 1)) {
+		if (!_scaledSurface) {
+			_scaledSurface = new Graphics::Surface();
+			_scaledSurface->create(_width, _height, getPixelFormat());
+		}
+
 		scaleSurface(frame, _scaledSurface, _scaleFactorX, _scaleFactorY);
 		return _scaledSurface;
 	}
@@ -180,15 +186,13 @@ bool QuickTimeDecoder::endOfVideo() const {
 }
 
 uint32 QuickTimeDecoder::getElapsedTime() const {
-	// TODO: Convert to multi-track
-	if (_audStream) {
-		// Use the audio time if present and the audio track's time is less than the
-		// total length of the audio track. The audio track can end before the video
-		// track, so we need to fall back on the getMillis() time tracking in that
-		// case.
-		uint32 time = g_system->getMixer()->getSoundElapsedTime(_audHandle) + _audioStartOffset.msecs();
-		if (time < _tracks[_audioTrackIndex]->mediaDuration * 1000 / _tracks[_audioTrackIndex]->timeScale)
-			return time;
+	// Try to base sync off an active audio track
+	for (uint32 i = 0; i < _audioHandles.size(); i++) {
+		if (g_system->getMixer()->isSoundHandleActive(_audioHandles[i])) {
+			uint32 time = g_system->getMixer()->getSoundElapsedTime(_audioHandles[i]) + _audioStartOffset.msecs();
+			if (Audio::Timestamp(time, 1000) < _audioTracks[i]->getLength())
+				return time;
+		}
 	}
 
 	// Just use time elapsed since the beginning
@@ -238,14 +242,12 @@ void QuickTimeDecoder::init() {
 	_startTime = 0;
 	_setStartTime = false;
 
-	// Start the audio codec if we've got one that we can handle
-	if (_audStream) {
-		startAudio();
-		_audioStartOffset = Audio::Timestamp(0);
+	// Initialize all the audio tracks
+	if (!_audioTracks.empty()) {
+		_audioHandles.resize(_audioTracks.size());
 
-		// TODO: Support multiple audio tracks
-		// For now, just push back a handler for the first audio track
-		_handlers.push_back(new AudioTrackHandler(this, _tracks[_audioTrackIndex]));
+		for (uint32 i = 0; i < _audioTracks.size(); i++)
+			_handlers.push_back(new AudioTrackHandler(this, _audioTracks[i]));
 	}
 
 	// Initialize all the video tracks
@@ -262,14 +264,10 @@ void QuickTimeDecoder::init() {
 	_nextVideoTrack = findNextVideoTrack();
 
 	if (_nextVideoTrack) {
-		// Initialize the scaled surface
 		if (_scaleFactorX != 1 || _scaleFactorY != 1) {
-			// We have to initialize the scaled surface
-			_scaledSurface = new Graphics::Surface();
-			_scaledSurface->create((_nextVideoTrack->getWidth() / _scaleFactorX).toInt(),
-					(_nextVideoTrack->getHeight() / _scaleFactorY).toInt(), getPixelFormat());
-			_width = _scaledSurface->w;
-			_height = _scaledSurface->h;
+			// We have to take the scale into consideration when setting width/height
+			_width = (_nextVideoTrack->getWidth() / _scaleFactorX).toInt();
+			_height = (_nextVideoTrack->getHeight() / _scaleFactorY).toInt();
 		} else {
 			_width = _nextVideoTrack->getWidth().toInt();
 			_height = _nextVideoTrack->getHeight().toInt();
@@ -278,6 +276,12 @@ void QuickTimeDecoder::init() {
 		_needUpdate = true;
 	} else {
 		_needUpdate = false;
+	}
+
+	// Now start any audio
+	if (!_audioTracks.empty()) {
+		startAudio();
+		_audioStartOffset = Audio::Timestamp(0);
 	}
 }
 
@@ -403,9 +407,14 @@ void QuickTimeDecoder::freeAllTrackHandlers() {
 }
 
 void QuickTimeDecoder::seekToTime(Audio::Timestamp time) {
+	stopAudio();
+	_audioStartOffset = time;
+
 	// Sets all tracks to this time
 	for (uint32 i = 0; i < _handlers.size(); i++)
 		_handlers[i]->seekToTime(time);
+
+	startAudio();
 
 	// Reset our start time
 	_startTime = g_system->getMillis() - time.msecs();
@@ -464,7 +473,7 @@ void QuickTimeDecoder::VideoSampleDesc::initCodec() {
 		break;
 	case MKTAG('S','V','Q','1'):
 		// Sorenson Video 1: Used by some Myst ME videos.
-		warning("Sorenson Video 1 not yet supported");
+		_videoCodec = new SVQ1Decoder(_parentTrack->width, _parentTrack->height);
 		break;
 	case MKTAG('S','V','Q','3'):
 		// Sorenson Video 3: Used by some Myst ME videos.
@@ -485,7 +494,7 @@ void QuickTimeDecoder::VideoSampleDesc::initCodec() {
 
 bool QuickTimeDecoder::endOfVideoTracks() const {
 	for (uint32 i = 0; i < _handlers.size(); i++)
-		if (_handlers[i]->getTrackType() == TrackHandler::kTrackTypeVideo && !_handlers[i]->endOfTrack())	
+		if (_handlers[i]->getTrackType() == TrackHandler::kTrackTypeVideo && !_handlers[i]->endOfTrack())
 			return false;
 
 	return true;
@@ -500,80 +509,32 @@ bool QuickTimeDecoder::TrackHandler::endOfTrack() {
 	return _curEdit == _parent->editCount;
 }
 
-QuickTimeDecoder::AudioTrackHandler::AudioTrackHandler(QuickTimeDecoder *decoder, Track *parent) : TrackHandler(decoder, parent) {
+QuickTimeDecoder::AudioTrackHandler::AudioTrackHandler(QuickTimeDecoder *decoder, QuickTimeAudioTrack *audioTrack)
+		: TrackHandler(decoder, audioTrack->getParent()), _audioTrack(audioTrack) {
 }
 
 void QuickTimeDecoder::AudioTrackHandler::updateBuffer() {
-	if (!_decoder->_audStream)
-		return;
-
-	uint32 numberOfChunksNeeded = 0;
-
-	if (_decoder->endOfVideoTracks()) {
-		// If we have no video left (or no video), there's nothing to base our buffer against
-		numberOfChunksNeeded = _parent->chunkCount;
-	} else {
-		Audio::QuickTimeAudioDecoder::AudioSampleDesc *entry = (Audio::QuickTimeAudioDecoder::AudioSampleDesc *)_parent->sampleDescs[0];
-
-		// Calculate the amount of chunks we need in memory until the next frame
-		uint32 timeToNextFrame = _decoder->getTimeToNextFrame();
-		uint32 timeFilled = 0;
-		uint32 curAudioChunk = _decoder->_curAudioChunk - _decoder->_audStream->numQueuedStreams();
-
-		for (; timeFilled < timeToNextFrame && curAudioChunk < _parent->chunkCount; numberOfChunksNeeded++, curAudioChunk++) {
-			uint32 sampleCount = entry->getAudioChunkSampleCount(curAudioChunk);
-			assert(sampleCount);
-
-			timeFilled += sampleCount * 1000 / entry->_sampleRate;
-		}
-
-		// Add a couple extra to ensure we don't underrun
-		numberOfChunksNeeded += 3;
-	}
-
-	// Keep three streams in buffer so that if/when the first two end, it goes right into the next
-	while (_decoder->_audStream->numQueuedStreams() < numberOfChunksNeeded && _decoder->_curAudioChunk < _parent->chunkCount)
-		_decoder->queueNextAudioChunk();
+	if (_decoder->endOfVideoTracks()) // If we have no video left (or no video), there's nothing to base our buffer against
+		_audioTrack->queueRemainingAudio();
+	else // Otherwise, queue enough to get us to the next frame plus another half second spare
+		_audioTrack->queueAudio(Audio::Timestamp(_decoder->getTimeToNextFrame() + 500, 1000));
 }
 
 bool QuickTimeDecoder::AudioTrackHandler::endOfTrack() {
-	// TODO: Handle edits
-	return (_decoder->_curAudioChunk == _parent->chunkCount) && _decoder->_audStream->endOfData();
+	return _audioTrack->endOfData();
 }
 
 void QuickTimeDecoder::AudioTrackHandler::seekToTime(Audio::Timestamp time) {
-	if (_decoder->_audStream) {
-		// Stop all audio
-		_decoder->stopAudio();
-
-		_decoder->_audioStartOffset = time;
-
-		// Seek to the new audio location
-		_decoder->setAudioStreamPos(_decoder->_audioStartOffset);
-
-		// Restart the audio
-		_decoder->startAudio();
-
-		// Pause the audio again if we're still paused
-		if (_decoder->isPaused() && _decoder->_audStream)
-			g_system->getMixer()->pauseHandle(_decoder->_audHandle, true);
-	}
+	_audioTrack->seek(time);
 }
 
 QuickTimeDecoder::VideoTrackHandler::VideoTrackHandler(QuickTimeDecoder *decoder, Common::QuickTimeParser::Track *parent) : TrackHandler(decoder, parent) {
-	if (_parent->scaleFactorX != 1 || _parent->scaleFactorY != 1) {
-		_scaledSurface = new Graphics::Surface();
-		_scaledSurface->create(getWidth().toInt(), getHeight().toInt(), getPixelFormat());
-	} else {
-		_scaledSurface = 0;
-	}
-
 	enterNewEditList(false);
 
 	_holdNextFrameStartTime = false;
 	_curFrame = -1;
 	_durationOverride = -1;
-
+	_scaledSurface = 0;
 }
 
 QuickTimeDecoder::VideoTrackHandler::~VideoTrackHandler() {
@@ -610,7 +571,12 @@ const Graphics::Surface *QuickTimeDecoder::VideoTrackHandler::decodeNextFrame() 
 			enterNewEditList(true);
 	}
 
-	if (_scaledSurface) {
+	if (frame && (_parent->scaleFactorX != 1 || _parent->scaleFactorY != 1)) {
+		if (!_scaledSurface) {
+			_scaledSurface = new Graphics::Surface();
+			_scaledSurface->create(getWidth().toInt(), getHeight().toInt(), getPixelFormat());
+		}
+
 		_decoder->scaleSurface(frame, _scaledSurface, _parent->scaleFactorX, _parent->scaleFactorY);
 		return _scaledSurface;
 	}

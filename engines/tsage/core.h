@@ -372,11 +372,13 @@ public:
 	~ScenePalette();
 
 	bool loadPalette(int paletteNum);
+	void loadPalette(const byte *pSrc, int start, int count);
+	void replace(const ScenePalette *src) { loadPalette(src->_palette, 0, 256); }
 	void refresh();
 	void setPalette(int index, int count);
 	void getEntry(int index, uint *r, uint *g, uint *b);
 	void setEntry(int index, uint r, uint g, uint b);
-	uint8 indexOf(uint r, uint g, uint b, int threshold = 0xffff);
+	uint8 indexOf(uint r, uint g, uint b, int threshold = 0xffff, int start = 0, int count = 256);
 	void getPalette(int start = 0, int count = 256);
 	void signalListeners();
 	void clearListeners();
@@ -516,8 +518,8 @@ private:
 
 	int getNewFrame();
 	void animEnded();
-	int changeFrame();
 public:
+	int changeFrame();
 	uint32 _updateStartFrame;
 	uint32 _walkStartFrame;
 	Common::Point _field2E;

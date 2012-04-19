@@ -77,53 +77,10 @@ add_engine() {
 	done
 }
 
-add_engine scumm "SCUMM" yes "scumm_7_8 he"
-add_engine scumm_7_8 "v7 & v8 games" yes
-add_engine he "HE71+ games" yes
-add_engine agi "AGI" yes
-add_engine agos "AGOS" yes "agos2"
-add_engine agos2 "AGOS 2 games" yes
-add_engine cge "CGE" yes
-add_engine cine "Cinematique evo 1" yes
-add_engine composer "Magic Composer" no
-add_engine cruise "Cinematique evo 2" yes
-add_engine draci "Dragon History" yes
-add_engine drascula "Drascula: The Vampire Strikes Back" yes
-add_engine dreamweb "Dreamweb" no
-add_engine gob "Gobli*ns" yes
-add_engine groovie "Groovie" yes "groovie2"
-add_engine groovie2 "Groovie 2 games" no
-add_engine hugo "Hugo Trilogy" yes
-add_engine jmp "The Journeyman Project 1/2" no
-add_engine kyra "Legend of Kyrandia" yes "lol eob"
-add_engine lol "Lands of Lore" yes
-add_engine eob "Eye of the Beholder" no
-add_engine lastexpress "The Last Express" no
-add_engine lure "Lure of the Temptress" yes
-add_engine made "MADE" yes
-add_engine mohawk "Mohawk" yes "cstime myst riven"
-add_engine cstime "Where in Time is Carmen Sandiego?" no
-add_engine riven "Riven: The Sequel to Myst" no
-add_engine myst "Myst" no
-add_engine parallaction "Parallaction" yes
-add_engine queen "Flight of the Amazon Queen" yes
-add_engine saga "SAGA" yes "ihnm saga2"
-add_engine ihnm "IHNM" yes
-add_engine saga2 "SAGA 2 games" no
-add_engine sci "SCI" yes "sci32"
-add_engine sci32 "SCI32 games" no
-add_engine sky "Beneath a Steel Sky" yes
-add_engine sword1 "Broken Sword" yes
-add_engine sword2 "Broken Sword II" yes
-add_engine sword25 "Broken Sword 2.5" no
-add_engine teenagent "Teen Agent" yes
-add_engine testbed "TestBed: the Testing framework" no
-add_engine tinsel "Tinsel" yes
-add_engine toltecs "3 Skulls of the Toltecs" no
-add_engine toon "Toonstruck" yes
-add_engine touche "Touche: The Adventures of the Fifth Musketeer" yes
-add_engine tsage "TsAGE" yes
-add_engine tucker "Bud Tucker in Double Trouble" yes
+_srcdir=`dirname $0`
+
+# Read list of engines
+. $_srcdir/engines/configure.engines
 
 #
 # Default settings
@@ -146,6 +103,7 @@ _fluidsynth=auto
 _opengl=auto
 _opengles=auto
 _readline=auto
+_freetype2=auto
 _taskbar=yes
 _updates=no
 _libunity=auto
@@ -189,7 +147,9 @@ _win32path="c:/scummvm"
 _aos4path="Games:ScummVM"
 _staticlibpath=/sw
 _sdlconfig=sdl-config
+_freetypeconfig=freetype-config
 _sdlpath="$PATH"
+_freetypepath="$PATH"
 _nasmpath="$PATH"
 NASMFLAGS=""
 NASM=""
@@ -227,7 +187,6 @@ _host_vendor=""
 _host_os=""
 _host_alias=""
 
-_srcdir=`dirname $0`
 _port_mk="ports.mk"
 
 # Use temp files in the build directory
@@ -381,6 +340,40 @@ find_sdlconfig() {
 	if test -z "$_sdlconfig"; then
 		echo "none found!"
 		exit 1
+	fi
+}
+
+#
+# Determine freetype-config
+#
+find_freetypeconfig() {
+	echo_n "Looking for freetype-config... "
+	freetypeconfigs="$_freetypeconfig"
+	_freetypeconfig=
+
+	IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="$SEPARATOR"
+	for path_dir in $_freetypepath; do
+		#reset separator to parse freetypeconfigs
+		IFS=":"
+		for freetypeconfig in $freetypeconfigs; do
+			if test -f "$path_dir/$freetypeconfig" ; then
+				_freetypeconfig="$path_dir/$freetypeconfig"
+				echo $_freetypeconfig
+				# Save the prefix
+				_freetypepath=$path_dir
+				if test `basename $path_dir` = bin ; then
+					_freetypepath=`dirname $path_dir`
+				fi
+				# break at first freetype-config found in path
+				break 2
+			fi
+		done
+	done
+
+	IFS="$ac_save_ifs"
+
+	if test -z "$_freetypeconfig"; then
+		echo "none found!"
 	fi
 }
 
@@ -847,6 +840,9 @@ Optional Libraries:
   --with-sdl-prefix=DIR    Prefix where the sdl-config script is
                            installed (optional)
 
+  --with-freetype-prefix=DIR Prefix where the freetype-config script is
+                           installed (optional)
+
   --with-nasm-prefix=DIR   Prefix where nasm executable is installed (optional)
   --disable-nasm           disable assembly language optimizations [autodetect]
 
@@ -906,6 +902,8 @@ for ac_option in $@; do
 	--disable-fluidsynth)     _fluidsynth=no  ;;
 	--enable-readline)        _readline=yes   ;;
 	--disable-readline)       _readline=no    ;;
+	--enable-freetype2)       _freetype2=yes  ;;
+	--disable-freetype2)      _freetype2=no   ;;
 	--enable-taskbar)         _taskbar=yes    ;;
 	--disable-taskbar)        _taskbar=no     ;;
 	--enable-updates)         _updates=yes    ;;
@@ -1042,6 +1040,10 @@ for ac_option in $@; do
 	--with-sdl-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
 		_sdlpath="$arg:$arg/bin"
+		;;
+	--with-freetype2-prefix=*)
+		arg=`echo $ac_option | cut -d '=' -f 2`
+		_freetypepath="$arg:$arg/bin"
 		;;
 	--with-nasm-prefix=*)
 		arg=`echo $ac_option | cut -d '=' -f 2`
@@ -1620,7 +1622,7 @@ fi;
 # However, some platforms use GNU extensions in system header files, so
 # for these we must not use -pedantic.
 case $_host_os in
-android | gamecube | psp | wii)
+android | gamecube | psp | wii | webos)
 	;;
 *)
 	# ICC does not support pedantic, while GCC and clang do.
@@ -1683,7 +1685,7 @@ esac
 # Determine a data type with the given length
 #
 find_type_with_size() {
-	for datatype in int short char long unknown; do
+	for datatype in int short char long "long long" unknown; do
 		cat > tmp_find_type_with_size.cpp << EOF
 typedef $datatype ac__type_sizeof_;
 int main() {
@@ -1710,27 +1712,29 @@ EOF
 # Check whether the system is 32-bit
 #
 pointer_is_32bit() {
-        cat > tmp_pointer_is_32bit.cpp << EOF
+	cat > tmp_pointer_is_32bit.cpp << EOF
 int main() {
-        static int test_array[1 - 2 * !(sizeof(void *) == 4)];
+	static int test_array[1 - 2 * !(sizeof(void *) == 4)];
+	test_array[0] = 0;
+	return 0;
 }
 EOF
-        $CXX $CXXFLAGS -c -o $TMPO.o tmp_pointer_is_32bit.cpp 2>/dev/null
-        status=$?
-        cc_check_clean tmp_pointer_is_32bit.cpp
-        return $status
+	$CXX $CXXFLAGS -c -o $TMPO.o tmp_pointer_is_32bit.cpp 2>/dev/null
+	status=$?
+	cc_check_clean tmp_pointer_is_32bit.cpp
+	return $status
 }
 
 echo_n "Checking 64-bitness... "
 pointer_is_32bit
 if test $? -eq 0; then
-        type_ptr=int32
-        echo "no"
-        add_line_to_config_h "/* #define SCUMM_64BITS */"
+	type_ptr=int32
+	echo "no"
+	add_line_to_config_h "/* #define SCUMM_64BITS */"
 else
-        type_ptr=int64
-        echo "yes"
-        add_line_to_config_h "#define SCUMM_64BITS"
+	type_ptr=int64
+	echo "yes"
+	add_line_to_config_h "#define SCUMM_64BITS"
 fi
 
 #
@@ -1759,8 +1763,8 @@ type_8_byte=`find_type_with_size 8`
 TMPR="$?"
 echo "$type_8_byte"
 if test $TMPR -eq 0; then
-        _def_64bit_type_signed="typedef signed $type_8_byte int64;"
-        _def_64bit_type_unsigned="typedef unsigned $type_8_byte uint64;"
+	_def_64bit_type_signed="typedef signed $type_8_byte int64;"
+	_def_64bit_type_unsigned="typedef unsigned $type_8_byte uint64;"
 fi
 # force cleanup after check for 8 bytes type
 cc_check_clean tmp_find_type_with_size.cpp
@@ -1931,7 +1935,7 @@ case $_host_os in
 		# Now we may have MacPorts or Fink installed
 		# Which put libraries and headers in non-standard places
 		# Checking them here
-		
+
 		# MacPorts
 		# There is no way to get the prefix, so implementing a hack here
 		macport_version=`port version 2>/dev/null`
@@ -2087,6 +2091,7 @@ case $_host_os in
 		LIBS="$LIBS -lnsl -lsocket"
 		;;
 	webos)
+		CXXFLAGS="$CXXFLAGS --sysroot=$WEBOS_PDK/arm-gcc/sysroot"
 		CXXFLAGS="$CXXFLAGS -I$WEBOS_PDK/include"
 		CXXFLAGS="$CXXFLAGS -I$WEBOS_PDK/include/SDL"
 		CXXFLAGS="$CXXFLAGS -I$WEBOS_PDK/device/usr/include"
@@ -2318,8 +2323,10 @@ if test -n "$_host"; then
 		iphone)
 			DEFINES="$DEFINES -DIPHONE"
 			_backend="iphone"
-			_build_hq_scalers=no
+			_build_scalers=no
+			_mt32emu=no
 			_seq_midi=no
+			_timidity=no
 			;;
 		m68k-atari-mint)
 			DEFINES="$DEFINES -DSYSTEM_NOT_SUPPORTING_D_TYPE"
@@ -2591,7 +2598,6 @@ case $_backend in
 	gph)
 		;;
 	iphone)
-		OBJCFLAGS="$OBJCFLAGS --std=c99"
 		LIBS="$LIBS -lobjc -framework UIKit -framework CoreGraphics -framework OpenGLES"
 		LIBS="$LIBS -framework QuartzCore -framework GraphicsServices -framework CoreFoundation"
 		LIBS="$LIBS -framework Foundation -framework AudioToolbox -framework CoreAudio"
@@ -2708,7 +2714,7 @@ esac
 # Enable 16bit support only for backends which support it
 #
 case $_backend in
-	android | bada | dingux | dreamcast | gph | maemo | openpandora | psp | samsungtv | sdl | webos | wii)
+	android | bada | dingux | dreamcast | gph | iphone | maemo | openpandora | psp | samsungtv | sdl | webos | wii)
 		if test "$_16bit" = auto ; then
 			_16bit=yes
 		else
@@ -3411,6 +3417,50 @@ fi
 echo "$_libunity"
 
 #
+# Check for FreeType2 to be present
+#
+if test "$_freetype2" != "no"; then
+
+	# Look for the freetype-config script
+	find_freetypeconfig
+
+	if test -z "$_freetypeconfig"; then
+		_freetype2=no
+	else
+		FREETYPE2_LIBS=`$_freetypeconfig --prefix="$_freetypepath" --libs`
+		FREETYPE2_CFLAGS=`$_freetypeconfig --prefix="$_freetypepath" --cflags`
+
+		if test "$_freetype2" = "auto"; then
+			_freetype2=no
+
+			cat > $TMPC << EOF
+#include <ft2build.h>
+#include FT_FREETYPE_H
+
+int main(int argc, char *argv[]) {
+	FT_Library library;
+	FT_Error error = FT_Init_FreeType(&library);
+	FT_Done_FreeType(library);
+}
+EOF
+
+			cc_check $FREETYPE2_CFLAGS $FREETYPE2_LIBS && _freetype2=yes
+		fi
+
+		if test "$_freetype2" = "yes"; then
+			LIBS="$LIBS $FREETYPE2_LIBS"
+			INCLUDES="$INCLUDES $FREETYPE2_CFLAGS"
+		fi
+	fi
+
+fi
+
+echocheck "FreeType2"
+echo "$_freetype2"
+
+define_in_config_if_yes "$_freetype2" "USE_FREETYPE2"
+
+#
 # Check for OpenGL (ES)
 #
 echocheck "OpenGL"
@@ -3891,6 +3941,10 @@ typedef unsigned $type_4_byte uint32;
 typedef signed $type_1_byte int8;
 typedef signed $type_2_byte int16;
 typedef signed $type_4_byte int32;
+EOF
+
+if test -n "$_def_64bit_type_unsigned"  ; then
+cat >> config.h << EOF
 
 /* 64-bit stuff */
 $_def_64bit_type_signed
@@ -3902,6 +3956,10 @@ $_def_64bit_type_unsigned
 #else
 $_def_64bit_type_unsigned
 #endif
+EOF
+fi
+
+cat >> config.h << EOF
 
 #endif /* CONFIG_H */
 EOF

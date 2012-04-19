@@ -31,7 +31,7 @@
 
 namespace Kyra {
 
-struct EoBShapeDef {
+struct DarkMoonShapeDef {
 	int16 index;
 	uint8 x, y, w, h;
 };
@@ -242,6 +242,7 @@ class EoBInfProcessor;
 class EoBCoreEngine : public KyraRpgEngine {
 friend class TextDisplayer_rpg;
 friend class GUI_EoB;
+friend class Debugger_EoB;
 friend class EoBInfProcessor;
 friend class DarkmoonSequenceHelper;
 friend class CharacterGenerator;
@@ -301,8 +302,8 @@ protected:
 	const uint8 *_blackBoxWideGrid;
 	const uint8 *_lightningColumnShape;
 
-	uint8 *_tempIconShape;
 	uint8 *_itemsOverlay;
+	static const uint8 _itemsOverlayCGA[];
 
 	static const uint8 _teleporterShapeDefs[];
 	static const uint8 _wallOfForceShapeDefs[];
@@ -365,7 +366,7 @@ protected:
 	int getCharacterClassType(int cclass, int levelIndex);
 	int getModifiedHpLimits(int hpModifier, int constModifier, int level, bool mode);
 	Common::String getCharStrength(int str, int strExt);
-	int testCharacter(int index, int flags);
+	int testCharacter(int16 index, int flags);
 	int getNextValidCharIndex(int curCharIndex, int searchStep);
 
 	void recalcArmorClass(int index);
@@ -527,8 +528,8 @@ protected:
 	void updateMonstersSpellStatus(EoBMonsterInPlay *m);
 	void setBlockMonsterDirection(int block, int dir);
 
-	uint8 *_monsterOvl1;
-	uint8 *_monsterOvl2;
+	uint8 *_monsterFlashOverlay;
+	uint8 *_monsterStoneOverlay;
 
 	SpriteDecoration *_monsterDecorations;
 	EoBMonsterProperty *_monsterProps;
@@ -573,11 +574,13 @@ protected:
 
 	// Level
 	void loadLevel(int level, int sub);
+	void readLevelFileData(int level);
 	Common::String initLevelData(int sub);
 	void addLevelItems();
-	void loadVcnData(const char *file, const char * /*nextFile*/);
+	void loadVcnData(const char *file, const uint8 *cgaMapping);
 	void loadBlockProperties(const char *mazFile);
-	const uint8 *getBlockFileData(int levelIndex);
+	const uint8 *getBlockFileData(int levelIndex = 0);
+	Common::String getBlockFileName(int levelIndex, int sub);
 	const uint8 *getBlockFileData(const char *mazFile);
 	void loadDecorations(const char *cpsFile, const char *decFile);
 	void assignWallsAndDecorations(int wallIndex, int vmpIndex, int decDataIndex, int specialType, int flags);
@@ -620,7 +623,7 @@ protected:
 	uint32 _envAudioTimer;
 	uint16 _teleporterPulse;
 
-	Common::Array<const int16*> _dscWallMapping;
+	Common::Array<const int16 *> _dscWallMapping;
 	const int16 *_dscShapeCoords;
 
 	const uint8 *_dscItemPosIndex;
@@ -831,6 +834,23 @@ protected:
 	Common::Error loadGameState(int slot);
 	Common::Error saveGameStateIntern(int slot, const char *saveName, const Graphics::Surface *thumbnail);
 
+	const uint8 *_cgaMappingDefault;
+	const uint8 *_cgaMappingAlt;
+	const uint8 *_cgaMappingInv;
+	const uint8 *_cgaMappingItemsL;
+	const uint8 *_cgaMappingItemsS;
+	const uint8 *_cgaMappingThrown;
+	const uint8 *_cgaMappingIcons;
+	const uint8 *_cgaMappingDeco;
+	const uint8 *_cgaMappingLevel[5];
+	const uint8 *_cgaLevelMappingIndex;
+
+	bool _useHiResDithering;
+
+	// Default parameters will import all present original save files and push them to the top of the save dialog.
+	bool importOriginalSaveFile(int destSlot, const char *sourceFile = 0);
+	Common::String readOriginalSaveFile(Common::String &file);
+
 	void *generateMonsterTempData(LevelTempData *tmp);
 	void restoreMonsterTempData(LevelTempData *tmp);
 	void releaseMonsterTempData(LevelTempData *tmp);
@@ -850,6 +870,7 @@ protected:
 	int8 _rrId[10];
 
 	bool _allowSkip;
+	bool _allowImport;
 
 	Screen_EoB *_screen;
 	GUI_EoB *_gui;
@@ -937,11 +958,11 @@ protected:
 	void printNoEffectWarning();
 
 	void spellCallback_start_empty() {}
-	bool spellCallback_end_empty(void*) { return true; }
+	bool spellCallback_end_empty(void *) { return true; }
 	void spellCallback_start_armor();
 	void spellCallback_start_burningHands();
 	void spellCallback_start_detectMagic();
-	bool spellCallback_end_detectMagic(void*);
+	bool spellCallback_end_detectMagic(void *);
 	void spellCallback_start_magicMissile();
 	bool spellCallback_end_magicMissile(void *obj);
 	void spellCallback_start_shockingGrasp();
@@ -973,7 +994,7 @@ protected:
 	void spellCallback_start_fleshToStone();
 	void spellCallback_start_stoneToFlesh();
 	void spellCallback_start_trueSeeing();
-	bool spellCallback_end_trueSeeing(void*);
+	bool spellCallback_end_trueSeeing(void *);
 	void spellCallback_start_slayLiving();
 	void spellCallback_start_powerWordStun();
 	void spellCallback_start_causeLightWounds();

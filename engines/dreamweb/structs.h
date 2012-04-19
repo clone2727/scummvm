@@ -339,9 +339,9 @@ struct TextFile {
 };
 
 struct GraphicsFile {
-	GraphicsFile() : _data(0) { }
+	GraphicsFile() : _data(0), _frames(0) { }
 
-	Frame _frames[347];
+	Frame *_frames;
 	uint8 *_data;
 
 	const uint8 *getFrameData(unsigned int i) const {
@@ -351,6 +351,8 @@ struct GraphicsFile {
 		return _data + _frames[i].ptr();
 	}
 	void clear() {
+		delete[] _frames;
+		_frames = 0;
 		delete[] _data;
 		_data = 0;
 	}
@@ -416,6 +418,18 @@ struct GameVars {
 	uint8 _dreamNumber;
 	uint8 _roomAfterDream;
 	uint8 _shakeCounter;
+};
+
+struct TimedTemp {
+	TimedTemp() : _timeCount(0), _string(0) { }
+
+	uint8 _x;
+	uint8 _y;
+
+	uint16 _timeCount;
+	uint16 _countToTimed;
+
+	const char *_string;
 };
 
 } // End of namespace DreamWeb

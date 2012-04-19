@@ -25,6 +25,13 @@
 
 namespace DreamWeb {
 
+#define GAMEOPTION_ORIGINAL_SAVELOAD GUIO_GAMEOPTIONS1
+#define GAMEOPTION_BRIGHTPALETTE     GUIO_GAMEOPTIONS2
+
+struct DreamWebGameDescription {
+	ADGameDescription desc;
+};
+
 static const DreamWebGameDescription gameDescriptions[] = {
 	// International floppy release
 	{
@@ -39,7 +46,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformPC,
 			ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -56,7 +63,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::EN_ANY,
 			Common::kPlatformPC,
 			ADGF_CD | ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -73,7 +80,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::EN_USA,
 			Common::kPlatformPC,
 			ADGF_CD,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -90,7 +97,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::FR_FRA,
 			Common::kPlatformPC,
 			ADGF_CD | ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -107,7 +114,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::DE_DEU,
 			Common::kPlatformPC,
 			ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -124,7 +131,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::DE_DEU,
 			Common::kPlatformPC,
 			ADGF_CD | ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -141,7 +148,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::ES_ESP,
 			Common::kPlatformPC,
 			ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -158,7 +165,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::ES_ESP,
 			Common::kPlatformPC,
 			ADGF_CD | ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 
@@ -175,7 +182,7 @@ static const DreamWebGameDescription gameDescriptions[] = {
 			Common::IT_ITA,
 			Common::kPlatformPC,
 			ADGF_UNSTABLE,
-			GUIO0()
+			GUIO2(GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_BRIGHTPALETTE)
 		},
 	},
 

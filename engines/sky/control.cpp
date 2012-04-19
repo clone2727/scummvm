@@ -203,6 +203,7 @@ Control::Control(Common::SaveFileManager *saveFileMan, Screen *screen, Disk *dis
 	_skySound = sound;
 	_skyCompact = skyCompact;
 	_system = system;
+	_controlPanel = NULL;
 }
 
 ConResource *Control::createResource(void *pSpData, uint32 pNSprites, uint32 pCurSprite, int16 pX, int16 pY, uint32 pText, uint8 pOnClick, uint8 panelType) {
@@ -225,6 +226,7 @@ void Control::removePanel() {
 	free(_sprites.slide2);			free(_sprites.slode);
 	free(_sprites.slode2);			free(_sprites.musicBodge);
 	delete _controlPanel;			delete _exitButton;
+	_controlPanel = NULL;
 	delete _slide;				delete _slide2;
 	delete _slode;				delete _restorePanButton;
 	delete _savePanel;			delete _saveButton;
@@ -383,6 +385,8 @@ void Control::animClick(ConResource *pButton) {
 		_text->drawToScreen(WITH_MASK);
 		_system->updateScreen();
 		delay(150);
+		if (!_controlPanel)
+			return;
 		pButton->_curSprite--;
 		_text->flushForRedraw();
 		pButton->drawToScreen(NO_MASK);
@@ -480,6 +484,8 @@ void Control::doControlPanel() {
 		_system->updateScreen();
 		_mouseClicked = false;
 		delay(50);
+		if (!_controlPanel)
+			return;
 		if (_keyPressed.keycode == Common::KEYCODE_ESCAPE) { // escape pressed
 			_mouseClicked = false;
 			quitPanel = true;
@@ -492,6 +498,8 @@ void Control::doControlPanel() {
 				buttonControl(_controlPanLookList[lookCnt]);
 				if (_mouseClicked && _controlPanLookList[lookCnt]->_onClick) {
 					clickRes = handleClick(_controlPanLookList[lookCnt]);
+					if (!_controlPanel) //game state was destroyed
+						return;
 					_text->flushForRedraw();
 					drawMainPanel();
 					_text->drawToScreen(WITH_MASK);
@@ -535,7 +543,7 @@ uint16 Control::handleClick(ConResource *pButton) {
 		return saveRestorePanel(true); // texts can be edited
 	case SAVE_A_GAME:
 		animClick(pButton);
-		return saveGameToFile();
+		return saveGameToFile(true);
 	case RESTORE_A_GAME:
 		animClick(pButton);
 		return restoreGameFromFile(false);
@@ -618,6 +626,11 @@ bool Control::getYesNo(char *text) {
 		}
 		_system->updateScreen();
 		delay(50);
+		if (!_controlPanel) {
+			free(dlgTextDat);
+			delete dlgText;
+			return retVal;
+		}
 		Common::Point mouse = _system->getEventManager()->getMousePos();
 		if ((mouse.y >= 83) && (mouse.y <= 110)) {
 			if ((mouse.x >= 77) && (mouse.x <= 114)) { // over 'yes'
@@ -650,6 +663,8 @@ uint16 Control::doMusicSlide() {
 	uint8 volume;
 	while (_mouseClicked) {
 		delay(50);
+		if (!_controlPanel)
+			return 0;
 		mouse = _system->getEventManager()->getMousePos();
 		int newY = ofsY + mouse.y;
 		if (newY < 59) newY = 59;
@@ -679,6 +694,8 @@ uint16 Control::doSpeedSlide() {
 	speedDelay += 2;
 	while (_mouseClicked) {
 		delay(50);
+		if (!_controlPanel)
+			return SPEED_CHANGED;
 		mouse = _system->getEventManager()->getMousePos();
 		int newY = ofsY + mouse.y;
 		if (newY < MPNL_Y + 93) newY = MPNL_Y + 93;
@@ -870,14 +887,20 @@ uint16 Control::saveRestorePanel(bool allowSave) {
 		_system->updateScreen();
 		_mouseClicked = false;
 		delay(50);
+		if (!_controlPanel)
+			return clickRes;
 		if (_keyPressed.keycode == Common::KEYCODE_ESCAPE) { // escape pressed
 			_mouseClicked = false;
 			clickRes = CANCEL_PRESSED;
 			quitPanel = true;
 		} else if ((_keyPressed.keycode == Common::KEYCODE_RETURN) || (_keyPressed.keycode == Common::KEYCODE_KP_ENTER)) {
 			clickRes = handleClick(lookList[0]);
+			if (!_controlPanel) //game state was destroyed
+				return clickRes;
 			if (clickRes == GAME_SAVED)
 				saveDescriptions(saveGameTexts);
+			else if (clickRes == NO_DISK_SPACE)
+				displayMessage(0, "Could not save the game. (%s)", _saveFileMan->popErrorDesc().c_str());
 			quitPanel = true;
 			_mouseClicked = false;
 			_keyPressed.reset();
@@ -910,6 +933,8 @@ uint16 Control::saveRestorePanel(bool allowSave) {
 					_mouseClicked = false;
 
 					clickRes = handleClick(lookList[cnt]);
+					if (!_controlPanel) //game state was destroyed
+						return clickRes;
 
 					if (clickRes == SHIFTED) {
 						_selectedGame = _firstText;
@@ -972,7 +997,7 @@ void Control::handleKeyPress(Common::KeyState kbd, Common::String &textBuf) {
 
 		// Allow the key only if is a letter, a digit, or one of a selected
 		// list of extra characters
-		if (isalnum(kbd.ascii) || strchr(" ,().='-&+!?\"", kbd.ascii) != 0) {
+		if (Common::isAlnum(kbd.ascii) || strchr(" ,().='-&+!?\"", kbd.ascii) != 0) {
 			textBuf += kbd.ascii;
 		}
 	}
@@ -1092,34 +1117,32 @@ void Control::doAutoSave() {
 		strcpy(fName, "SKY-VM-CD.ASD");
 	else
 		sprintf(fName, "SKY-VM%03d.ASD", SkyEngine::_systemVars.gameVersion);
-	Common::OutSaveFile *outf;
 
-	outf = _saveFileMan->openForSaving(fName);
-	if (outf == NULL) {
-		displayMessage(0, "Unable to create autosave file '%s'. (%s)", fName, _saveFileMan->popErrorDesc().c_str());
-		return;
-	}
-	uint8 *saveData = (uint8 *)malloc(0x20000);
-	uint32 fSize = prepareSaveData(saveData);
+	uint16 res = saveGameToFile(false, fName);
 
-	outf->write(saveData, fSize);
-	outf->finalize();
+	if (res != GAME_SAVED)
+		displayMessage(0, "Unable to perform autosave to '%s'. (%s)", fName, _saveFileMan->popErrorDesc().c_str());
 
-	if (outf->err())
-		displayMessage(0, "Unable to write autosave file '%s'. Disk full? (%s)", fName, _saveFileMan->popErrorDesc().c_str());
-
-	delete outf;
-	free(saveData);
 }
 
-uint16 Control::saveGameToFile() {
+uint16 Control::saveGameToFile(bool fromControlPanel, const char *filename) {
 	char fName[20];
-	sprintf(fName,"SKY-VM.%03d", _selectedGame);
+	if (!filename) {
+		sprintf(fName,"SKY-VM.%03d", _selectedGame);
+		filename = fName;
+	}
 
 	Common::OutSaveFile *outf;
-	outf = _saveFileMan->openForSaving(fName);
+	outf = _saveFileMan->openForSaving(filename);
 	if (outf == NULL)
 		return NO_DISK_SPACE;
+
+	if (!fromControlPanel) {
+		// These variables are usually set when entering the control panel,
+		// but not when using the GMM.
+		_savedCharSet = _skyText->giveCurrentCharSet();
+		_savedMouse = _skyMouse->giveCurrentMouseType();
+	}
 
 	uint8 *saveData = (uint8 *)malloc(0x20000);
 	uint32 fSize = prepareSaveData(saveData);
@@ -1160,7 +1183,7 @@ uint32 Control::prepareSaveData(uint8 *destBuf) {
 
 	for (cnt = 0; cnt < _skyCompact->_numSaveIds; cnt++) {
 		uint16 numElems;
-		uint16 *rawCpt = (uint16*)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, NULL, NULL);
+		uint16 *rawCpt = (uint16 *)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, NULL, NULL);
 		for (uint16 elemCnt = 0; elemCnt < numElems; elemCnt++)
 			STOSW(destPos, rawCpt[elemCnt]);
 	}
@@ -1209,9 +1232,9 @@ void Control::importOldCompact(Compact* destCpt, uint8 **srcPos, uint16 numElems
 		else if (graphType == OG_COMPACT)
 			destCpt->grafixProgId = target;
 		else if (graphType == OG_TALKTABLE)
-			destCpt->grafixProgId = ((uint16*)_skyCompact->fetchCpt(CPT_TALK_TABLE_LIST))[target];
+			destCpt->grafixProgId = ((uint16 *)_skyCompact->fetchCpt(CPT_TALK_TABLE_LIST))[target];
 		else if (graphType == OG_COMPACTELEM)
-			destCpt->grafixProgId = *(uint16*)_skyCompact->getCompactElem(destCpt, target);
+			destCpt->grafixProgId = *(uint16 *)_skyCompact->getCompactElem(destCpt, target);
 		else
 			error("Illegal GrafixProg type encountered for compact %s", name);
 	}
@@ -1330,7 +1353,7 @@ uint16 Control::parseSaveData(uint8 *srcBuf) {
 	LODSD(srcPos, mouseType);
 	LODSD(srcPos, palette);
 
-	_skyLogic->parseSaveData((uint32*)srcPos);
+	_skyLogic->parseSaveData((uint32 *)srcPos);
 	srcPos += NUM_SKY_SCRIPTVARS * sizeof(uint32);
 
 	for (cnt = 0; cnt < 60; cnt++)
@@ -1339,7 +1362,7 @@ uint16 Control::parseSaveData(uint8 *srcBuf) {
 	if (saveRev == SAVE_FILE_REVISION) {
 		for (cnt = 0; cnt < _skyCompact->_numSaveIds; cnt++) {
 			uint16 numElems;
-			uint16 *rawCpt = (uint16*)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, NULL, NULL);
+			uint16 *rawCpt = (uint16 *)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, NULL, NULL);
 			for (uint16 elemCnt = 0; elemCnt < numElems; elemCnt++)
 				LODSW(srcPos, rawCpt[elemCnt]);
 		}
@@ -1348,19 +1371,19 @@ uint16 Control::parseSaveData(uint8 *srcBuf) {
 			uint16 numElems;
 			uint16 type;
 			char name[128];
-			uint16 *rawCpt = (uint16*)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, &type, name);
+			uint16 *rawCpt = (uint16 *)_skyCompact->fetchCptInfo(_skyCompact->_saveIds[cnt], &numElems, &type, name);
 			if (type == COMPACT) {
-				importOldCompact((Compact*)rawCpt, &srcPos, numElems, type, name);
+				importOldCompact((Compact *)rawCpt, &srcPos, numElems, type, name);
 			} else if (type == ROUTEBUF) {
 				assert(numElems == 32);
 				for (uint32 elemCnt = 0; elemCnt < numElems; elemCnt++)
 					LODSW(srcPos, rawCpt[elemCnt]);
 			}
 		}
-		uint16 *rawCpt = (uint16*)_skyCompact->fetchCpt(0xBF);
+		uint16 *rawCpt = (uint16 *)_skyCompact->fetchCpt(0xBF);
 		for (cnt = 0; cnt < 3; cnt++)
 			LODSW(srcPos, rawCpt[cnt]);
-		rawCpt = (uint16*)_skyCompact->fetchCpt(0xC2);
+		rawCpt = (uint16 *)_skyCompact->fetchCpt(0xC2);
 		for (cnt = 0; cnt < 13; cnt++)
 			LODSW(srcPos, rawCpt[cnt]);
 	}
@@ -1420,7 +1443,8 @@ uint16 Control::restoreGameFromFile(bool autoSave) {
 
 uint16 Control::quickXRestore(uint16 slot) {
 	uint16 result;
-	initPanel();
+	if (!_controlPanel)
+		initPanel();
 	_mouseClicked = false;
 
 	_savedCharSet = _skyText->giveCurrentCharSet();
@@ -1467,7 +1491,7 @@ void Control::restartGame() {
 		return; // no restart for floppy demo
 
 	uint8 *resetData = _skyCompact->createResetData((uint16)SkyEngine::_systemVars.gameVersion);
-	parseSaveData((uint8*)resetData);
+	parseSaveData((uint8 *)resetData);
 	free(resetData);
 	_skyScreen->forceRefresh();
 

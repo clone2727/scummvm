@@ -197,8 +197,12 @@ public:
 	void registerArchive(const Common::String &filename, int priority);
 #endif
 
-	bool hasFile(const Common::String &name);
-	Common::SeekableReadStream *open(const Common::String &filename);
+	virtual bool hasFile(const Common::String &name) const;
+	virtual int listMatchingMembers(Common::ArchiveMemberList &list, const Common::String &pattern) const;
+	virtual int listMembers(Common::ArchiveMemberList &list) const;
+
+	virtual const Common::ArchiveMemberPtr getMember(const Common::String &name) const;
+	virtual Common::SeekableReadStream *createReadStreamForMember(const Common::String &filename) const;
 
 private:
 	bool _fallBack;
@@ -1261,7 +1265,7 @@ protected:
 	virtual void doOutput(const byte *src, uint len);
 	void clsCheck(WindowBlock *window);
 
-	void quickLoadOrSave();
+	virtual void quickLoadOrSave();
 
 	byte *vc10_uncompressFlip(const byte *src, uint16 w, uint16 h);
 	byte *vc10_flip(const byte *src, uint16 w, uint16 h);
@@ -2056,6 +2060,7 @@ protected:
 	void windowBackSpace(WindowBlock *window);
 
 	virtual char *genSaveName(int slot);
+	virtual void quickLoadOrSave();
 };
 
 class AGOSEngine_FeebleDemo : public AGOSEngine_Feeble {

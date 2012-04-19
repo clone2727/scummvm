@@ -112,17 +112,22 @@ void GuiManager::initKeymap() {
 	Action *act;
 	Keymap *guiMap = new Keymap(kGuiKeymapName);
 
-	act = new Action(guiMap, "CLOS", _("Close"), kGenericActionType, kStartKeyType);
+	act = new Action(guiMap, "CLOS", _("Close"));
 	act->addKeyEvent(KeyState(KEYCODE_ESCAPE, ASCII_ESCAPE, 0));
 
 	act = new Action(guiMap, "CLIK", _("Mouse click"));
 	act->addLeftClickEvent();
 
-	act = new Action(guiMap, "VIRT", _("Display keyboard"), kVirtualKeyboardActionType);
-	act->addKeyEvent(KeyState(KEYCODE_F7, ASCII_F7, 0));
+#ifdef ENABLE_VKEYBD
+	act = new Action(guiMap, "VIRT", _("Display keyboard"));
+	act->addEvent(EVENT_VIRTUAL_KEYBOARD);
+#endif
 
-	act = new Action(guiMap, "REMP", _("Remap keys"), kKeyRemapActionType);
-	act->addKeyEvent(KeyState(KEYCODE_F8, ASCII_F8, 0));
+	act = new Action(guiMap, "REMP", _("Remap keys"));
+	act->addEvent(EVENT_KEYMAPPER_REMAP);
+
+	act = new Action(guiMap, "FULS", _("Toggle FullScreen"));
+	act->addKeyEvent(KeyState(KEYCODE_RETURN, ASCII_RETURN, KBD_ALT));
 
 	mapper->addGlobalKeymap(guiMap);
 }
@@ -183,7 +188,7 @@ bool GuiManager::loadNewTheme(Common::String id, ThemeEngine::GraphicsMode gfx, 
 	}
 
 	// refresh all dialogs
-	for (int i = 0; i < _dialogStack.size(); ++i)
+	for (DialogStack::size_type i = 0; i < _dialogStack.size(); ++i)
 		_dialogStack[i]->reflowLayout();
 
 	// We need to redraw immediately. Otherwise
@@ -197,7 +202,6 @@ bool GuiManager::loadNewTheme(Common::String id, ThemeEngine::GraphicsMode gfx, 
 }
 
 void GuiManager::redraw() {
-	int i;
 	ThemeEngine::ShadingStyle shading;
 
 	if (_redrawStatus == kRedrawDisabled || _dialogStack.empty())
@@ -218,7 +222,7 @@ void GuiManager::redraw() {
 			_theme->clearAll();
 			_theme->openDialog(true, ThemeEngine::kShadingNone);
 
-			for (i = 0; i < _dialogStack.size() - 1; i++)
+			for (DialogStack::size_type i = 0; i < _dialogStack.size() - 1; i++)
 				_dialogStack[i]->drawDialog();
 
 			_theme->finishBuffering();
@@ -279,7 +283,7 @@ void GuiManager::runLoop() {
 
 	bool tooltipCheck = false;
 
-	while (!_dialogStack.empty() && activeDialog == getTopDialog()) {
+	while (!_dialogStack.empty() && activeDialog == getTopDialog() && !eventMan->shouldQuit()) {
 		redraw();
 
 		// Don't "tickle" the dialog until the theme has had a chance
@@ -358,12 +362,13 @@ void GuiManager::runLoop() {
 			case Common::EVENT_WHEELDOWN:
 				activeDialog->handleMouseWheel(mouse.x, mouse.y, 1);
 				break;
-			case Common::EVENT_QUIT:
-				return;
 			case Common::EVENT_SCREEN_CHANGED:
 				screenChange();
 				break;
 			default:
+#ifdef ENABLE_KEYMAPPER
+				activeDialog->handleOtherEvent(event);
+#endif
 				break;
 			}
 
@@ -387,6 +392,17 @@ void GuiManager::runLoop() {
 		// Delay for a moment
 		_system->delayMillis(10);
 	}
+
+	// WORKAROUND: When quitting we might not properly close the dialogs on
+	// the dialog stack, thus we do this here to avoid any problems.
+	// This is most noticable in bug #3481395 "LAUNCHER: Can't quit from unsupported game dialog".
+	// It seems that Dialog::runModal never removes the dialog from the dialog
+	// stack, thus if the dialog does not call Dialog::close to close itself
+	// it will never be removed. Since we can have multiple run loops being
+	// called we cannot rely on catching EVENT_QUIT in the event loop above,
+	// since it would only catch it for the top run loop.
+	if (eventMan->shouldQuit() && activeDialog == getTopDialog())
+		getTopDialog()->close();
 
 	if (didSaveState) {
 		_theme->disable();
@@ -501,7 +517,7 @@ void GuiManager::screenChange() {
 	_theme->refresh();
 
 	// refresh all dialogs
-	for (int i = 0; i < _dialogStack.size(); ++i) {
+	for (DialogStack::size_type i = 0; i < _dialogStack.size(); ++i) {
 		_dialogStack[i]->reflowLayout();
 	}
 	// We need to redraw immediately. Otherwise

@@ -41,12 +41,17 @@ KyraRpgEngine::KyraRpgEngine(OSystem *system, const GameFlags &flags) : KyraEngi
 
 	_currentLevel = 0;
 
-	_vmpPtr = 0;
 	_vcnBlocks = 0;
 	_vcfBlocks = 0;
+	_vcnTransitionMask = 0;
 	_vcnShift = 0;
-	_vcnExpTable = 0;
+	_vcnColTable = 0;
+	_vcnBlockWidth = 4;
+	_vcnBlockHeight = 8;
+	_vcnFlip0 = 0;
+	_vcnFlip1 = 1;
 	_vmpPtr = 0;
+	_vmpSize = 0;
 	_blockBrightness = _wllVcnOffset = 0;
 	_blockDrawingBuffer = 0;
 	_sceneWindowBuffer = 0;
@@ -93,6 +98,10 @@ KyraRpgEngine::KyraRpgEngine(OSystem *system, const GameFlags &flags) : KyraEngi
 	_dscDimMap = 0;
 	_dscDoorShpIndex = 0;
 	_dscDoorY2 = 0;
+	_dscDoorFrameY1 = 0;
+	_dscDoorFrameY2 = 0;
+	_dscDoorFrameIndex1 = 0;
+	_dscDoorFrameIndex2 = 0;
 
 	_shpDmX1 = _shpDmX2 = 0;
 
@@ -123,9 +132,10 @@ KyraRpgEngine::~KyraRpgEngine() {
 	delete[] _wllWallFlags;
 
 	delete[] _vmpPtr;
-	delete[] _vcnExpTable;
+	delete[] _vcnColTable;
 	delete[] _vcnBlocks;
 	delete[] _vcfBlocks;
+	delete[] _vcnTransitionMask;
 	delete[] _vcnShift;
 	delete[] _blockDrawingBuffer;
 	delete[] _sceneWindowBuffer;
@@ -148,7 +158,7 @@ Common::Error KyraRpgEngine::init() {
 	_levelDecorationProperties = new LevelDecorationProperty[100];
 	memset(_levelDecorationProperties, 0, 100 * sizeof(LevelDecorationProperty));
 	_levelDecorationShapes = new uint8*[400];
-	memset(_levelDecorationShapes, 0, 400 * sizeof(uint8*));
+	memset(_levelDecorationShapes, 0, 400 * sizeof(uint8 *));
 	_levelBlockProperties = new LevelBlockProperty[1025];
 	memset(_levelBlockProperties, 0, 1025 * sizeof(LevelBlockProperty));
 
@@ -163,8 +173,9 @@ Common::Error KyraRpgEngine::init() {
 
 	_blockDrawingBuffer = new uint16[1320];
 	memset(_blockDrawingBuffer, 0, 1320 * sizeof(uint16));
-	_sceneWindowBuffer = new uint8[21120];
-	memset(_sceneWindowBuffer, 0, 21120);
+	uint32 swbSize = 22 * _vcnBlockWidth * 2 * 15 * _vcnBlockHeight;
+	_sceneWindowBuffer = new uint8[swbSize];
+	memset(_sceneWindowBuffer, 0, swbSize);
 
 	_lvlShapeTop = new int16[18];
 	memset(_lvlShapeTop, 0, 18 * sizeof(int16));
@@ -173,12 +184,12 @@ Common::Error KyraRpgEngine::init() {
 	_lvlShapeLeftRight = new int16[36];
 	memset(_lvlShapeLeftRight, 0, 36 * sizeof(int16));
 
-	_vcnExpTable = new uint8[128];
+	_vcnColTable = new uint8[128];
 	for (int i = 0; i < 128; i++)
-		_vcnExpTable[i] = i & 0x0f;
+		_vcnColTable[i] = i & 0x0f;
 
 	_doorShapes = new uint8*[6];
-	memset(_doorShapes, 0, 6 * sizeof(uint8*));
+	memset(_doorShapes, 0, 6 * sizeof(uint8 *));
 
 	initStaticResource();
 
@@ -206,11 +217,11 @@ void KyraRpgEngine::drawDialogueButtons() {
 		if (gameFlags().use16ColorMode) {
 			gui_drawBox(x, ((_dialogueButtonYoffs + _dialogueButtonPosY[i]) & ~7) - 1, 74, 10, 0xee, 0xcc, -1);
 			screen()->printText(_dialogueButtonString[i], (x + 37 - (screen()->getTextWidth(_dialogueButtonString[i])) / 2) & ~3,
-				((_dialogueButtonYoffs + _dialogueButtonPosY[i]) + 2) & ~7, _dialogueHighlightedButton == i ? 0xc1 : 0xe1, 0);
+			                    ((_dialogueButtonYoffs + _dialogueButtonPosY[i]) + 2) & ~7, _dialogueHighlightedButton == i ? 0xc1 : 0xe1, 0);
 		} else {
 			gui_drawBox(x, (_dialogueButtonYoffs + _dialogueButtonPosY[i]), _dialogueButtonWidth, guiSettings()->buttons.height, guiSettings()->colors.frame1, guiSettings()->colors.frame2, guiSettings()->colors.fill);
 			screen()->printText(_dialogueButtonString[i], x + (_dialogueButtonWidth >> 1) - (screen()->getTextWidth(_dialogueButtonString[i])) / 2,
-				(_dialogueButtonYoffs + _dialogueButtonPosY[i]) + 2, _dialogueHighlightedButton == i ? _dialogueButtonLabelColor1 : _dialogueButtonLabelColor2, 0);
+			                    (_dialogueButtonYoffs + _dialogueButtonPosY[i]) + 2, _dialogueHighlightedButton == i ? _dialogueButtonLabelColor1 : _dialogueButtonLabelColor2, 0);
 		}
 	}
 	screen()->setFont(of);
@@ -244,11 +255,11 @@ uint16 KyraRpgEngine::processDialogue() {
 		}
 
 		if (snd_updateCharacterSpeech() != 2) {
-				res = 1;
-				if (!shouldQuit()) {
-					removeInputTop();
-					gui_notifyButtonListChanged();
-				}
+			res = 1;
+			if (!shouldQuit()) {
+				removeInputTop();
+				gui_notifyButtonListChanged();
+			}
 		}
 	} else {
 		int e = checkInput(0, false, 0) & 0xFF;
@@ -351,6 +362,6 @@ void KyraRpgEngine::updateEnvironmentalSfx(int soundId) {
 	snd_processEnvironmentalSoundEffect(soundId, _currentBlock);
 }
 
-}	// End of namespace Kyra
+} // End of namespace Kyra
 
 #endif // ENABLE_EOB || ENABLE_LOL

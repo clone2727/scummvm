@@ -223,12 +223,14 @@ GfxSurface::GfxSurface() : _bounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {
 	_lockSurfaceCtr = 0;
 	_customSurface = NULL;
 	_transColor = -1;
+	_trackDirtyRects = false;
 }
 
 GfxSurface::GfxSurface(const GfxSurface &s) {
 	_lockSurfaceCtr = 0;
 	_customSurface = NULL;
-	this->operator =(s);
+	_trackDirtyRects = false;
+	*this = s;
 }
 
 GfxSurface::~GfxSurface() {
@@ -266,7 +268,7 @@ void GfxSurface::updateScreen() {
 			continue;
 
 		const byte *srcP = (const byte *)_customSurface->getBasePtr(r.left, r.top);
-		g_system->copyRectToScreen(srcP, _customSurface->pitch, r.left, r.top, 
+		g_system->copyRectToScreen(srcP, _customSurface->pitch, r.left, r.top,
 			r.width(), r.height());
 	}
 
@@ -287,7 +289,7 @@ void GfxSurface::addDirtyRect(const Rect &r) {
 		r2.translate(_bounds.left, _bounds.top);
 
 		// Add to the dirty rect list
-		_dirtyRects.push_back(Rect(r2.left, r2.top, 
+		_dirtyRects.push_back(Rect(r2.left, r2.top,
 		MIN(r2.right + 1, SCREEN_WIDTH), MIN(r2.bottom + 1, SCREEN_HEIGHT)));
 	}
 }
@@ -440,7 +442,7 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
 	// Display the text
 	gfxManager._font.writeLines(msg.c_str(), textRect, ALIGN_LEFT);
 
-	// Write for a  mouse or keypress
+	// Wait for a mouse or keypress
 	Event event;
 	while (!g_globals->_events.getEvent(event, EVENT_BUTTON_DOWN | EVENT_KEYPRESS) && !g_vm->shouldQuit())
 		;
@@ -602,7 +604,7 @@ void GfxSurface::copyFrom(GfxSurface &src, Rect srcBounds, Rect destBounds, Regi
 		destBounds.bottom = destSurface.h;
 
 	if (destBounds.isValidRect() && !((destBounds.right < 0) || (destBounds.bottom < 0)
-			|| (destBounds.left >= SCREEN_WIDTH) || (destBounds.top >= SCREEN_HEIGHT))) {
+		|| (destBounds.left >= destSurface.w) || (destBounds.top >= destSurface.h))) {
 		// Register the affected area as dirty
 		addDirtyRect(destBounds);
 
@@ -1194,7 +1196,7 @@ void GfxDialog::setPalette() {
 		g_globals->_scenePalette.setPalette(g_globals->_fontColors.background, 1);
 		g_globals->_scenePalette.setPalette(g_globals->_fontColors.foreground, 1);
 		g_globals->_scenePalette.setEntry(255, 0xff, 0xff, 0xff);
-		g_globals->_scenePalette.setPalette(255, 1);	
+		g_globals->_scenePalette.setPalette(255, 1);
 	} else {
 		g_globals->_scenePalette.loadPalette(0);
 		g_globals->_scenePalette.setPalette(0, 1);
@@ -1308,30 +1310,14 @@ int GfxManager::getAngle(const Common::Point &p1, const Common::Point &p2) {
 	}
 }
 
-// FIXME: The two checks for screenSurface inside these two copyFrom() methods
-// are meant for Ringworld 2, but the corresponding setBounds cases cause
-// issues with the popup menus when right clicking in all games (e.g. the popup
-// menu is always shown on the top left of the screen). Therefore, these two
-// code fragments are disabled for now, till the glitches they cause are fixed.
-
 void GfxManager::copyFrom(GfxSurface &src, Rect destBounds, Region *priorityRegion) {
-#if 0
-	if (&_surface == &(GLOBALS._screenSurface))
-		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
-	else
-#endif
-		_surface.setBounds(_bounds);
+	_surface.setBounds(_bounds);
 
 	_surface.copyFrom(src, destBounds, priorityRegion);
 }
 
 void GfxManager::copyFrom(GfxSurface &src, int destX, int destY) {
-#if 0
-	if (&_surface == &(GLOBALS._screenSurface))
-		_surface.setBounds(Rect(0, 0, _bounds.width(), _bounds.height()));
-	else
-#endif
-		_surface.setBounds(_bounds);
+	_surface.setBounds(_bounds);
 
 	_surface.copyFrom(src, destX, destY);
 }

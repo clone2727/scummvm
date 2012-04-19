@@ -31,7 +31,6 @@
 #include "engines/util.h"
 #include "graphics/cursorman.h"
 #include "graphics/fontman.h"
-#include "graphics/imagedec.h"
 #include "graphics/wincursor.h"
 #include "video/codecs/cinepak.h"
 
