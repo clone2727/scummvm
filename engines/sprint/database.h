@@ -56,7 +56,10 @@ private:
 		uint32 ageNameOffset;
 
 		Common::String name;
+
 		uint16 prefix;
+		uint32 u4;
+		uint32 u5;
 	};
 
 	typedef Common::HashMap<uint16, Common::String> StringTable;
