@@ -50,17 +50,55 @@ void Database::loadAges(Common::SeekableReadStream &s) {
 
 		age.id = s.readUint16BE();
 		age.disk = s.readUint16BE();
-		age.u0 = s.readUint32BE();
+		age.u0 = s.readUint32BE(); // always 0 or 0x10000
 		age.ageDataOffset = s.readUint32BE();
-		age.u1 = s.readUint32BE();
-		age.u2 = s.readUint32BE();
-		age.u3 = s.readUint32BE();
+		age.u1 = s.readUint32BE(); // pointer (can be zero)
+		age.u2 = s.readUint32BE(); // pointer (can be zero)
+		age.u3 = s.readUint32BE(); // pointer (can be zero)
 		age.ageNameOffset = s.readUint32BE();
 
+		_ages.push_back(age);
+	}
+
+	loadAgeNames(s);
+	loadAgeScriptOffsets(s);
+
+	for (uint i = 0; i < 8; i++) {
+		AgeData &age = _ages[i];
 		debug("Age: %d, %d, %x, %x", age.id, age.disk, age.ageDataOffset, age.ageNameOffset);
 		debug("\tUnks: %x, %x, %x, %x", age.u0, age.u1, age.u2, age.u3);
 
-		_ages.push_back(age);
+		if (!age.name.empty()) // NOTE: Intro/Credits don't have a name
+			debug("\tName: %s", age.name.c_str());
+
+		debug("\tPrefix: %c%c", age.prefix >> 8, age.prefix & 0xFF);
+	}
+}
+
+static Common::String readCString(Common::SeekableReadStream &s) {
+	Common::String string;
+
+	for (char c = s.readByte(); c != 0; c = s.readByte())
+		string += c;
+
+	return string;
+}
+
+void Database::loadAgeNames(Common::SeekableReadStream &s) {
+	for (uint i = 0; i < 8; i++) {
+		s.seek(_ages[i].ageNameOffset);
+		_ages[i].name = readCString(s);
+	}
+}
+
+void Database::loadAgeScriptOffsets(Common::SeekableReadStream &s) {
+	for (uint i = 0; i < 8; i++) {
+		s.seek(_ages[i].ageDataOffset);
+		s.seek(s.readUint32BE() + 2); // first two bytes are always 1
+
+		_ages[i].prefix = s.readUint16BE();
+
+		// TODO: Script counts
 	}
 }
 
