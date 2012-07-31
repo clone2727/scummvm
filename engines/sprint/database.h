@@ -58,8 +58,8 @@ private:
 		Common::String name;
 
 		uint16 prefix;
-		uint32 u4;
-		uint32 u5;
+		uint32 mainScriptOffset;
+		uint32 soundScriptOffset;
 	};
 
 	typedef Common::HashMap<uint16, Common::String> StringTable;

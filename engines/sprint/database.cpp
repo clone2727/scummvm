@@ -68,7 +68,9 @@ void Database::loadAges(Common::SeekableReadStream &s) {
 	for (uint i = 0; i < 8; i++) {
 		AgeData &age = _ages[i];
 		debug("Age: %d, %d, %x, %x", age.id, age.disk, age.ageDataOffset, age.ageNameOffset);
-		debug("\tUnks: %x, %x, %x, %x, %x, %x", age.u0, age.u1, age.u2, age.u3, age.u4, age.u5);
+		debug("\tMain Script Offset: %x", age.mainScriptOffset);
+		debug("\tSound Script Offset: %x", age.soundScriptOffset);
+		debug("\tUnks: %x, %x, %x, %x", age.u0, age.u1, age.u2, age.u3);
 
 		if (!age.name.empty()) // NOTE: Intro/Credits don't have a name
 			debug("\tName: %s", age.name.c_str());
@@ -98,13 +100,9 @@ void Database::loadAgeScriptOffsets(Common::SeekableReadStream &s) {
 		s.seek(_ages[i].ageDataOffset);
 		s.seek(s.readUint32BE() + 2); // first two bytes are always 1
 
-		// u4/u5 are some type of script offsets
-
 		_ages[i].prefix = s.readUint16BE();
-		_ages[i].u4 = s.readUint32BE(); // offset
-		_ages[i].u5 = s.readUint32BE(); // offset (can be zero)
-
-		// TOOD: More?
+		_ages[i].mainScriptOffset = s.readUint32BE();
+		_ages[i].soundScriptOffset = s.readUint32BE();
 	}
 }
 
