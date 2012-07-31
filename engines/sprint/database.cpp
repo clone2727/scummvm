@@ -39,6 +39,7 @@ Database::Database(const ExecutableVersion *executableVersion, Common::MacResMan
 	loadSoundNames(*segment);
 	loadMovieNames(*segment);
 	loadHelpTable(*segment);
+	loadURLTable(*segment);
 
 	delete segment;
 }
@@ -160,6 +161,28 @@ void Database::loadHelpTable(Common::SeekableReadStream &s) {
 		_helpTable[id] = readCString(s);
 
 		debug(0, "Help: %d -> '%s'", id, _helpTable[id].c_str());
+
+		s.seek(pos);
+	}
+}
+
+void Database::loadURLTable(Common::SeekableReadStream &s) {
+	s.seek(_executableVersion->urlTableOffset);
+
+	for (;;) {
+		uint32 id = s.readUint16BE();
+
+		if (!id)
+			break;
+
+		s.readUint16BE(); // always 0
+		uint32 offset = s.readUint32BE();
+		uint32 pos = s.pos();
+		s.seek(offset);
+
+		_urlTable[id] = readCString(s);
+
+		debug("URL: %d -> '%s'", id, _urlTable[id].c_str());
 
 		s.seek(pos);
 	}

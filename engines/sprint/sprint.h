@@ -43,6 +43,7 @@ struct ExecutableVersion {
 	uint32 soundTableOffset;
 	uint32 movieTableOffset;
 	uint32 helpTableOffset;
+	uint32 urlTableOffset;
 };
 
 class Database;
