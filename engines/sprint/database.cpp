@@ -38,6 +38,7 @@ Database::Database(const ExecutableVersion *executableVersion, Common::MacResMan
 	loadAges(*segment);
 	loadSoundNames(*segment);
 	loadMovieNames(*segment);
+	loadHelpTable(*segment);
 
 	delete segment;
 }
@@ -139,6 +140,28 @@ void Database::loadMovieNames(Common::SeekableReadStream &s) {
 		_movieNames[id] = Common::String(name) + ".mov";
 
 		debug("Movie: %d -> '%s'", id, _movieNames[id].c_str());
+	}
+}
+
+void Database::loadHelpTable(Common::SeekableReadStream &s) {
+	s.seek(_executableVersion->helpTableOffset);
+
+	for (;;) {
+		uint32 id = s.readUint16BE();
+
+		if (!id)
+			break;
+
+		s.readUint16BE(); // always 0
+		uint32 offset = s.readUint32BE();
+		uint32 pos = s.pos();
+		s.seek(offset);
+
+		_helpTable[id] = readCString(s);
+
+		debug(0, "Help: %d -> '%s'", id, _helpTable[id].c_str());
+
+		s.seek(pos);
 	}
 }
 

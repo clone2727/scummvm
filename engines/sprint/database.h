@@ -65,13 +65,14 @@ private:
 	typedef Common::HashMap<uint16, Common::String> StringTable;
 
 	Common::Array<AgeData> _ages;
-	StringTable _soundNames, _movieNames;
+	StringTable _soundNames, _movieNames, _helpTable;
 
 	void loadAges(Common::SeekableReadStream &s);
 	void loadSoundNames(Common::SeekableReadStream &s);
 	void loadMovieNames(Common::SeekableReadStream &s);
 	void loadAgeNames(Common::SeekableReadStream &s);
 	void loadAgeScriptOffsets(Common::SeekableReadStream &s);
+	void loadHelpTable(Common::SeekableReadStream &s);
 
 	Common::SeekableReadStream *decompressPEFDataSegment(Common::SeekableReadStream *stream, uint segmentID) const;
 };

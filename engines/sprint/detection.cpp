@@ -43,7 +43,7 @@ static const PlainGameDescriptor sprintGames[] = {
 	{ 0, 0 }
 };
 
-static const ExecutableVersion enDVDVersion = { "DVD", kFlagDVD, 0x2598, 0x2678, 0x2DA8 };
+static const ExecutableVersion enDVDVersion = { "DVD", kFlagDVD, 0x2598, 0x2678, 0x2DA8, 0x38FAC };
 
 static const SprintGameDescription gameDescriptions[] = {
 	// Myst 10th Anniversary DVD
