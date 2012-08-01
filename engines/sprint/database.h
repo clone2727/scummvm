@@ -120,6 +120,9 @@ private:
 	ConditionalScriptList readConditionalScripts(Common::SeekableReadStream &s);
 	HotspotList readHotspots(Common::SeekableReadStream &s);
 
+	AgeData *findAge(uint id);
+	const AgeData *findAge(uint id) const;
+
 	Common::SeekableReadStream *decompressPEFDataSegment(Common::SeekableReadStream *stream, uint segmentID) const;
 };
 

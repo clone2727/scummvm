@@ -75,20 +75,17 @@ Common::String Database::getMovieName(uint32 id) const {
 }
 
 Node Database::getNode(uint age, uint16 node) const {
-	if (age >= _ages.size())
-		error("Invalid age %d", age);
+	const AgeData *ageData = findAge(age);
 
-	if (!_ages[age].nodes.contains(node))
+	if (!ageData->nodes.contains(node))
 		error("Age %d has no node %d", age, node);
 
-	return _ages[age].nodes[node];
+	return ageData->nodes[node];
 }
 
 Common::String Database::getAgePrefix(uint age) const {
-	if (age >= _ages.size())
-		error("Invalid age %d", age);
-
-	return Common::String((char)(_ages[age].prefix >> 8)) + (char)(_ages[age].prefix & 0xFF);
+	uint16 prefix = findAge(age)->prefix;
+	return Common::String((char)(prefix >> 8)) + (char)(prefix & 0xFF);
 }
 
 void Database::loadAges(Common::SeekableReadStream &s) {
@@ -392,6 +389,24 @@ HotspotList Database::readHotspots(Common::SeekableReadStream &s) {
 	}
 
 	return hotspotList;
+}
+
+Database::AgeData *Database::findAge(uint id) {
+	for (uint i = 0; i < _ages.size(); i++)
+		if (_ages[i].id == id)
+			return &_ages[i];
+
+	error("Could not find age %d", id);
+	return 0;
+}
+
+const Database::AgeData *Database::findAge(uint id) const {
+	for (uint i = 0; i < _ages.size(); i++)
+		if (_ages[i].id == id)
+			return &_ages[i];
+
+	error("Could not find age %d", id);
+	return 0;
 }
 
 static uint32 getPEFArgument(Common::SeekableReadStream *stream, uint &pos) {
