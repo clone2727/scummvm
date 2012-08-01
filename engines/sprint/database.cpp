@@ -46,6 +46,51 @@ Database::Database(const ExecutableVersion *executableVersion, Common::MacResMan
 	delete segment;
 }
 
+Common::String Database::getURL(uint32 id) const {
+	if (!_urlTable.contains(id))
+		error("Requesting invalid URL %d", id);
+
+	return _urlTable[id];
+}
+
+Common::String Database::getSoundName(uint32 id) const {
+	if (!_soundNames.contains(id))
+		error("Requesting invalid sound %d", id);
+
+	return _soundNames[id];
+}
+
+Common::String Database::getHelpText(uint32 id) const {
+	if (!_helpTable.contains(id))
+		error("Requesting invalid help text %d", id);
+
+	return _helpTable[id];
+}
+
+Common::String Database::getMovieName(uint32 id) const {
+	if (!_movieNames.contains(id))
+		error("Requesting invalid movie %d", id);
+
+	return _movieNames[id];
+}
+
+Node Database::getNode(uint age, uint16 node) const {
+	if (age >= _ages.size())
+		error("Invalid age %d", age);
+
+	if (!_ages[age].nodes.contains(node))
+		error("Age %d has no node %d", age, node);
+
+	return _ages[age].nodes[node];
+}
+
+Common::String Database::getAgePrefix(uint age) const {
+	if (age >= _ages.size())
+		error("Invalid age %d", age);
+
+	return Common::String((char)(_ages[age].prefix >> 8)) + (char)(_ages[age].prefix & 0xFF);
+}
+
 void Database::loadAges(Common::SeekableReadStream &s) {
 	s.seek(_executableVersion->ageTableOffset);
 
@@ -208,8 +253,14 @@ void Database::loadAgeMainScripts(Common::SeekableReadStream &s) {
 				nodeIDs.push_back(id);
 			}
 
-			/* ConditionalScriptList scripts = */ readConditionalScripts(s);
-			/* HotspotList hotspots = */ readHotspots(s);
+			ConditionalScriptList scripts = readConditionalScripts(s);
+			HotspotList hotspots = readHotspots(s);
+
+			for (uint j = 0; j < nodeIDs.size(); j++) {
+				Node &node = _ages[i].nodes[nodeIDs[j]];
+				node.mainScripts = scripts;
+				node.hotspots = hotspots;
+			}
 		}
 	}
 }
@@ -257,7 +308,10 @@ void Database::loadAgeSoundScripts(Common::SeekableReadStream &s) {
 				scriptIDs.push_back(id);
 			}
 
-			/* ConditionalScriptList scripts = */ readConditionalScripts(s);
+			ConditionalScriptList scripts = readConditionalScripts(s);
+
+			for (uint j = 0; j < scriptIDs.size(); j++)
+				_ages[i].nodes[scriptIDs[j]].soundScripts = scripts;
 		}
 	}
 }

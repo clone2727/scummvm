@@ -61,9 +61,22 @@ struct Hotspot {
 
 typedef Common::Array<Hotspot> HotspotList;
 
+struct Node {
+	ConditionalScriptList mainScripts;
+	HotspotList hotspots;
+	ConditionalScriptList soundScripts;
+};
+
 class Database {
 public:
 	Database(const ExecutableVersion *executableVersion, Common::MacResManager *resFork);
+
+	Common::String getURL(uint32 id) const;
+	Common::String getSoundName(uint32 id) const;
+	Common::String getHelpText(uint32 id) const;
+	Common::String getMovieName(uint32 id) const;
+	Node getNode(uint age, uint16 node) const;
+	Common::String getAgePrefix(uint age) const;
 
 private:
 	Common::MacResManager *_resFork;
@@ -84,6 +97,8 @@ private:
 		uint16 prefix;
 		uint32 mainScriptOffset;
 		uint32 soundScriptOffset;
+
+		Common::HashMap<uint16, Node> nodes;
 	};
 
 	typedef Common::HashMap<uint16, Common::String> StringTable;
