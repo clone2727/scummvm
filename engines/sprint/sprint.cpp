@@ -27,6 +27,7 @@
 #include "common/macresman.h"
 
 #include "sprint/database.h"
+#include "sprint/graphics.h"
 #include "sprint/sprint.h"
 
 namespace Sprint {
@@ -34,6 +35,7 @@ namespace Sprint {
 SprintEngine::SprintEngine(OSystem *syst, const SprintGameDescription *desc) : Engine(syst), _gameDescription(desc) {
 	_resFork = 0;
 	_database = 0;
+	_gfx = 0;
 
 	// Add subdirectories to the search path
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
@@ -45,6 +47,7 @@ SprintEngine::SprintEngine(OSystem *syst, const SprintGameDescription *desc) : E
 SprintEngine::~SprintEngine() {
 	delete _resFork;
 	delete _database;
+	delete _gfx;
 }
 
 Common::Error SprintEngine::run() {
@@ -54,6 +57,7 @@ Common::Error SprintEngine::run() {
 		error("Could not open resource fork");
 
 	_database = new Database(getExecutableVersion(), _resFork);
+	_gfx = new GraphicsManager(_resFork);
 
 	return Common::kNoError;
 }

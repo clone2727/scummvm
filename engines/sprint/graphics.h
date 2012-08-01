@@ -20,51 +20,43 @@
  *
  */
 
-#ifndef SPRINT_H
-#define SPRINT_H
+#ifndef SPRINT_GRAPHICS_H
+#define SPRINT_GRAPHICS_H
 
-#include "engines/engine.h"
+#include "common/array.h"
 
 namespace Common {
 class MacResManager;
+class SeekableReadStream;
 }
 
 namespace Sprint {
 
-enum GameVersionFlags {
-	kFlagNone = 0,
-	kFlagDVD = (1 << 2)  // DVD version
-};
-
-struct ExecutableVersion {
-	const char *description;
-	int flags;
-	uint32 ageTableOffset;
-	uint32 soundTableOffset;
-	uint32 movieTableOffset;
-	uint32 helpTableOffset;
-	uint32 urlTableOffset;
-};
-
-class Database;
-class GraphicsManager;
-struct SprintGameDescription;
-
-class SprintEngine : public Engine {
+class GraphicsManager {
 public:
-	SprintEngine(OSystem *syst, const SprintGameDescription *version);
-	virtual ~SprintEngine();
+	GraphicsManager(Common::MacResManager *resFork);
+	~GraphicsManager();
 
-	Common::Error run();
-
-	const ExecutableVersion *getExecutableVersion() const;
+	void openImageArchive(const Common::String &prefix);
 
 private:
-	const SprintGameDescription *_gameDescription;
+	enum ImageType {
+		kImageTypeJPEG = 0,
+		kImageTypePICT = 1
+	};
 
-	Common::MacResManager *_resFork;
-	Database *_database;
-	GraphicsManager *_gfx;
+	struct ImageEntry {
+		uint32 offset;
+		uint32 size;
+		uint16 id;
+		uint16 type;
+		uint16 width;
+		uint16 height;
+	};
+
+	Common::Array<ImageEntry> _imageEntries;
+	Common::SeekableReadStream *_imageFile;
+	Common::MacResManager *_resFork;	
 };
 
 } // End of namespace Sprint

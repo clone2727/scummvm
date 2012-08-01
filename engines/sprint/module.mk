@@ -3,6 +3,7 @@ MODULE := engines/sprint
 MODULE_OBJS := \
 	database.o \
 	detection.o \
+	graphics.o \
 	sprint.o
 
 # This module can be built as a plugin
