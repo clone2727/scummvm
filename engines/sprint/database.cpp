@@ -40,6 +40,7 @@ Database::Database(const ExecutableVersion *executableVersion, Common::MacResMan
 	loadMovieNames(*segment);
 	loadHelpTable(*segment);
 	loadURLTable(*segment);
+	loadAgeSoundScripts(*segment);
 
 	delete segment;
 }
@@ -184,6 +185,93 @@ void Database::loadURLTable(Common::SeekableReadStream &s) {
 
 		s.seek(pos);
 	}
+}
+
+void Database::loadAgeSoundScripts(Common::SeekableReadStream &s) {
+	for (uint i = 0; i < 8; i++) {
+		if (_ages[i].soundScriptOffset == 0) // Nothing for 'XX'
+			continue;
+
+		s.seek(_ages[i].soundScriptOffset);
+
+		for (;;) {
+			int16 id = s.readSint16BE();
+
+			Common::Array<uint16> scriptIDs;
+
+			if (id == 0) {
+				// Done with sound scripts
+				break;
+			} else if (id < -10) {
+				// Can't be less than -10
+				error("Invalid sound script id %d", id);
+			} else if (id == -10) {
+				// Complex list of id's
+				for (;;) {
+					id = s.readSint16BE();
+
+					if (id == 0) {
+						break;
+					} else if (id < 0) {
+						uint16 end = s.readUint16BE();
+
+						for (int j = -id; j < end; j++)
+							scriptIDs.push_back(j);
+					} else {
+						scriptIDs.push_back(id);
+					}
+				}
+			} else if (id < 0) {
+				// Simple list of id's
+				for (int j = 0; j < -id; j++)
+					scriptIDs.push_back(s.readUint16BE());
+			} else {
+				// Single id
+				scriptIDs.push_back(id);
+			}
+
+			/* ConditionalScriptList scripts = */ readConditionalScripts(s);
+		}
+	}
+}
+
+Script Database::readScript(Common::SeekableReadStream &s) {
+	Script script;
+
+	for (;;) {
+		uint16 code = s.readUint16BE();
+
+		if (code == 0)
+			break;
+
+		ScriptOpcode opcode;
+		opcode.op = code & 0xff;
+
+		for (uint i = 0; i < (code >> 8); i++)
+			opcode.args.push_back(s.readSint16BE());
+
+		script.push_back(opcode);
+	}
+
+	return script;
+}
+
+ConditionalScriptList Database::readConditionalScripts(Common::SeekableReadStream &s) {
+	ConditionalScriptList scriptList;
+
+	for (;;) {
+		uint16 condition = s.readUint16BE();
+
+		if (!condition)
+			break;
+
+		ConditionalScript conditionalScript;
+		conditionalScript.condition = condition;
+		conditionalScript.script = readScript(s);
+		scriptList.push_back(conditionalScript);
+	}
+
+	return scriptList;
 }
 
 static uint32 getPEFArgument(Common::SeekableReadStream *stream, uint &pos) {

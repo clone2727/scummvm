@@ -37,6 +37,20 @@ namespace Sprint {
 class SprintEngine;
 struct ExecutableVersion;
 
+struct ScriptOpcode {
+	byte op;
+	Common::Array<int16> args;
+};
+
+typedef Common::Array<ScriptOpcode> Script;
+
+struct ConditionalScript {
+	uint16 condition;
+	Script script;
+};
+
+typedef Common::Array<ConditionalScript> ConditionalScriptList;
+
 class Database {
 public:
 	Database(const ExecutableVersion *executableVersion, Common::MacResManager *resFork);
@@ -74,6 +88,11 @@ private:
 	void loadAgeScriptOffsets(Common::SeekableReadStream &s);
 	void loadHelpTable(Common::SeekableReadStream &s);
 	void loadURLTable(Common::SeekableReadStream &s);
+	void loadAgeMainScripts(Common::SeekableReadStream &s);
+	void loadAgeSoundScripts(Common::SeekableReadStream &s);
+
+	Script readScript(Common::SeekableReadStream &s);
+	ConditionalScriptList readConditionalScripts(Common::SeekableReadStream &s);
 
 	Common::SeekableReadStream *decompressPEFDataSegment(Common::SeekableReadStream *stream, uint segmentID) const;
 };
