@@ -40,6 +40,7 @@ Database::Database(const ExecutableVersion *executableVersion, Common::MacResMan
 	loadMovieNames(*segment);
 	loadHelpTable(*segment);
 	loadURLTable(*segment);
+	loadAgeMainScripts(*segment);
 	loadAgeSoundScripts(*segment);
 
 	delete segment;
@@ -121,7 +122,7 @@ void Database::loadSoundNames(Common::SeekableReadStream &s) {
 		s.read(name, 8);
 		_soundNames[id] = Common::String(name) + ".aif";
 
-		debug("Sound: %d -> '%s'", id, _soundNames[id].c_str());
+		debug(0, "Sound: %d -> '%s'", id, _soundNames[id].c_str());
 	}
 }
 
@@ -139,7 +140,7 @@ void Database::loadMovieNames(Common::SeekableReadStream &s) {
 		s.read(name, 8);
 		_movieNames[id] = Common::String(name) + ".mov";
 
-		debug("Movie: %d -> '%s'", id, _movieNames[id].c_str());
+		debug(0, "Movie: %d -> '%s'", id, _movieNames[id].c_str());
 	}
 }
 
@@ -181,9 +182,35 @@ void Database::loadURLTable(Common::SeekableReadStream &s) {
 
 		_urlTable[id] = readCString(s);
 
-		debug("URL: %d -> '%s'", id, _urlTable[id].c_str());
+		debug(0, "URL: %d -> '%s'", id, _urlTable[id].c_str());
 
 		s.seek(pos);
+	}
+}
+
+void Database::loadAgeMainScripts(Common::SeekableReadStream &s) {
+	for (uint i = 0; i < 8; i++) {
+		s.seek(_ages[i].mainScriptOffset);
+
+		for (;;) {
+			int16 id = s.readSint16BE();
+
+			Common::Array<uint16> nodeIDs;
+
+			if (id == 0) {
+				break;
+			} else if (id <= -10) {
+				error("Unimplemented node list command");
+			} else if (id < 0) {
+				for (int j = 0; j < -id; j++)
+					nodeIDs.push_back(s.readUint16BE());
+			} else {
+				nodeIDs.push_back(id);
+			}
+
+			/* ConditionalScriptList scripts = */ readConditionalScripts(s);
+			/* HotspotList hotspots = */ readHotspots(s);
+		}
 	}
 }
 
@@ -272,6 +299,45 @@ ConditionalScriptList Database::readConditionalScripts(Common::SeekableReadStrea
 	}
 
 	return scriptList;
+}
+
+HotspotList Database::readHotspots(Common::SeekableReadStream &s) {
+	HotspotList hotspotList;
+
+	for (;;) {
+		uint16 condition = s.readUint16BE();
+
+		if (!condition)
+			break;
+
+		Hotspot hotspot;
+		hotspot.condition = condition;
+
+		if (condition != 0xFFFF) {
+			for (;;) {
+				Common::Rect rect;
+				rect.left = s.readSint16BE();
+				rect.top = s.readSint16BE();
+				rect.right = s.readSint16BE();
+				rect.bottom = s.readSint16BE();
+
+				if (rect.top < 0) {
+					rect.top = -rect.top;
+					hotspot.rects.push_back(rect);
+					continue;
+				}
+
+				hotspot.rects.push_back(rect);
+				break;
+			}
+
+			hotspot.cursor = s.readUint16BE();
+		}
+
+		hotspot.script = readScript(s);
+	}
+
+	return hotspotList;
 }
 
 static uint32 getPEFArgument(Common::SeekableReadStream *stream, uint &pos) {

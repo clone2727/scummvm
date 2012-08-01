@@ -25,6 +25,7 @@
 
 #include "common/array.h"
 #include "common/hashmap.h"
+#include "common/rect.h"
 #include "common/str.h"
 
 namespace Common {
@@ -50,6 +51,15 @@ struct ConditionalScript {
 };
 
 typedef Common::Array<ConditionalScript> ConditionalScriptList;
+
+struct Hotspot {
+	uint16 condition;
+	Common::Array<Common::Rect> rects;
+	uint16 cursor;
+	Script script;
+};
+
+typedef Common::Array<Hotspot> HotspotList;
 
 class Database {
 public:
@@ -93,6 +103,7 @@ private:
 
 	Script readScript(Common::SeekableReadStream &s);
 	ConditionalScriptList readConditionalScripts(Common::SeekableReadStream &s);
+	HotspotList readHotspots(Common::SeekableReadStream &s);
 
 	Common::SeekableReadStream *decompressPEFDataSegment(Common::SeekableReadStream *stream, uint segmentID) const;
 };
