@@ -24,6 +24,8 @@
 #include "common/stream.h"
 #include "common/system.h"
 #include "engines/util.h"
+#include "graphics/cursorman.h"
+#include "graphics/maccursor.h"
 
 #include "sprint/graphics.h"
 
@@ -66,6 +68,22 @@ void GraphicsManager::openImageArchive(const Common::String &prefix) {
 		entry.height = _imageFile->readUint16BE();
 		_imageEntries.push_back(entry);
 	}
+}
+
+void GraphicsManager::setCursor(uint16 id) {
+	Common::SeekableReadStream *stream = _resFork->getResource(MKTAG('c', 'r', 's', 'r'), id);
+
+	if (!stream)
+		error("Failed to find cursor %d", id);
+
+	Graphics::MacCursor cursor;
+	if (!cursor.readFromStream(*stream))
+		error("Failed to load Mac cursor %d", id);
+
+	delete stream;
+
+	CursorMan.replaceCursor(cursor.getSurface(), cursor.getWidth(), cursor.getHeight(), cursor.getHotspotX(), cursor.getHotspotY(), cursor.getKeyColor());
+	CursorMan.replaceCursorPalette(cursor.getPalette(), cursor.getPaletteStartIndex(), cursor.getPaletteCount());
 }
 
 } // end of namespace Sprint

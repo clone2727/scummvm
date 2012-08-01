@@ -38,6 +38,7 @@ public:
 	~GraphicsManager();
 
 	void openImageArchive(const Common::String &prefix);
+	void setCursor(uint16 id);
 
 private:
 	enum ImageType {
