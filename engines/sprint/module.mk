@@ -4,6 +4,7 @@ MODULE_OBJS := \
 	database.o \
 	detection.o \
 	graphics.o \
+	script.o \
 	sprint.o
 
 # This module can be built as a plugin

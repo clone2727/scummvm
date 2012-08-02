@@ -28,6 +28,7 @@
 
 #include "sprint/database.h"
 #include "sprint/graphics.h"
+#include "sprint/script.h"
 #include "sprint/sprint.h"
 
 namespace Sprint {
@@ -36,6 +37,7 @@ SprintEngine::SprintEngine(OSystem *syst, const SprintGameDescription *desc) : E
 	_resFork = 0;
 	_database = 0;
 	_gfx = 0;
+	_script = 0;
 
 	// Add subdirectories to the search path
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
@@ -58,6 +60,12 @@ Common::Error SprintEngine::run() {
 
 	_database = new Database(getExecutableVersion(), _resFork);
 	_gfx = new GraphicsManager(_resFork);
+	_script = new ScriptManager(this);
+
+	// HACK: Just play the intro for now
+	Node node = _database->getNode(2, 1000);
+	_script->execute(node.mainScripts[1].script);
+	_script->execute(node.mainScripts[2].script);
 
 	return Common::kNoError;
 }

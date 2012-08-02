@@ -20,54 +20,45 @@
  *
  */
 
-#ifndef SPRINT_H
-#define SPRINT_H
+#ifndef SPRINT_SCRIPT_H
+#define SPRINT_SCRIPT_H
 
-#include "engines/engine.h"
+#include "sprint/database.h"
 
-namespace Common {
-class MacResManager;
-}
+#define DECLARE_OPCODE(x) void x(Context &context, const ScriptOpcode &op)
 
 namespace Sprint {
 
-enum GameVersionFlags {
-	kFlagNone = 0,
-	kFlagDVD = (1 << 2)  // DVD version
-};
+class SprintEngine;
 
-struct ExecutableVersion {
-	const char *description;
-	int flags;
-	uint32 ageTableOffset;
-	uint32 soundTableOffset;
-	uint32 movieTableOffset;
-	uint32 helpTableOffset;
-	uint32 urlTableOffset;
-};
-
-class Database;
-class GraphicsManager;
-class ScriptManager;
-struct SprintGameDescription;
-
-class SprintEngine : public Engine {
+class ScriptManager {
 public:
-	SprintEngine(OSystem *syst, const SprintGameDescription *version);
-	virtual ~SprintEngine();
+	ScriptManager(SprintEngine *vm);
+	~ScriptManager();
 
-	Common::Error run();
-
-	const ExecutableVersion *getExecutableVersion() const;
-
-	Database *_database;
+	void execute(const Script &script);
 
 private:
-	const SprintGameDescription *_gameDescription;
+	SprintEngine *_vm;
 
-	Common::MacResManager *_resFork;
-	GraphicsManager *_gfx;
-	ScriptManager *_script;
+	struct Context {
+		Script script;
+		Script::const_iterator curOp;
+	};
+
+	typedef void (ScriptManager::*OpcodeProc)(Context &context, const ScriptOpcode &op);
+
+	struct Opcode {
+		OpcodeProc proc;
+		const char *desc;
+	};
+
+	const Opcode *_opcodes;
+	void setupOpcodes();
+
+	DECLARE_OPCODE(o_nop);
+
+	DECLARE_OPCODE(o_playMovie);
 };
 
 } // End of namespace Sprint
