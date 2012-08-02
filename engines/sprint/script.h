@@ -58,7 +58,9 @@ private:
 
 	DECLARE_OPCODE(o_nop);
 
+	DECLARE_OPCODE(o_drawImage);
 	DECLARE_OPCODE(o_playMovie);
+	DECLARE_OPCODE(o_playSound);
 };
 
 } // End of namespace Sprint

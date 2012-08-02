@@ -46,7 +46,7 @@ void ScriptManager::setupOpcodes() {
 		NOP,
 		NOP,
 		NOP,
-		NOP, // Looks like "drawImage"
+		OPCODE(o_drawImage),
 		// 0x04 (4)
 		NOP,
 		NOP,
@@ -218,7 +218,7 @@ void ScriptManager::setupOpcodes() {
 		NOP,
 		NOP,
 		// 0x8C (140)
-		NOP, // play sound
+		OPCODE(o_playSound),
 		NOP,
 		NOP,
 		NOP,
@@ -384,6 +384,10 @@ void ScriptManager::o_nop(Context &context, const ScriptOpcode &op) {
 	warning("Unknown opcode %d", op.op);
 }
 
+void ScriptManager::o_drawImage(Context &context, const ScriptOpcode &op) {
+	warning("STUB: Draw image %d", op.args[0]);
+}
+
 void ScriptManager::o_playMovie(Context &context, const ScriptOpcode &op) {
 	// HACK: Just throwing something together to play a video for now
 	// This opcode is definitely movie related since the first argument
@@ -424,6 +428,10 @@ void ScriptManager::o_playMovie(Context &context, const ScriptOpcode &op) {
 
 		g_system->delayMillis(10);
 	}
+}
+
+void ScriptManager::o_playSound(Context &context, const ScriptOpcode &op) {
+	warning("STUB: Play sound '%s' at volume %d", _vm->_database->getSoundName(op.args[0]).c_str(), op.args[1] * 255 / 100);
 }
 
 } // End of namespace Sprint

@@ -67,6 +67,11 @@ Common::Error SprintEngine::run() {
 	_script->execute(node.mainScripts[1].script);
 	_script->execute(node.mainScripts[2].script);
 
+	// This will draw the Myst book and play the sound (eventually)
+	node = _database->getNode(2, 1001);
+	_script->execute(node.mainScripts[0].script);
+	_script->execute(node.soundScripts[0].script);
+
 	return Common::kNoError;
 }
 
