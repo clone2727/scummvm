@@ -338,7 +338,7 @@ ConditionalScriptList Database::readConditionalScripts(Common::SeekableReadStrea
 	ConditionalScriptList scriptList;
 
 	for (;;) {
-		uint16 condition = s.readUint16BE();
+		int16 condition = s.readSint16BE();
 
 		if (!condition)
 			break;
@@ -356,7 +356,7 @@ HotspotList Database::readHotspots(Common::SeekableReadStream &s) {
 	HotspotList hotspotList;
 
 	for (;;) {
-		uint16 condition = s.readUint16BE();
+		int16 condition = s.readSint16BE();
 
 		if (!condition)
 			break;
@@ -364,7 +364,7 @@ HotspotList Database::readHotspots(Common::SeekableReadStream &s) {
 		Hotspot hotspot;
 		hotspot.condition = condition;
 
-		if (condition != 0xFFFF) {
+		if (condition != -1) {
 			for (;;) {
 				Common::Rect rect;
 				rect.left = s.readSint16BE();

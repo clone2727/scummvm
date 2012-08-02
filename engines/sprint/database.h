@@ -46,14 +46,14 @@ struct ScriptOpcode {
 typedef Common::Array<ScriptOpcode> Script;
 
 struct ConditionalScript {
-	uint16 condition;
+	int16 condition;
 	Script script;
 };
 
 typedef Common::Array<ConditionalScript> ConditionalScriptList;
 
 struct Hotspot {
-	uint16 condition;
+	int16 condition;
 	Common::Array<Common::Rect> rects;
 	uint16 cursor;
 	Script script;
