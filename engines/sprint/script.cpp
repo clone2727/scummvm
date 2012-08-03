@@ -154,7 +154,7 @@ void ScriptManager::setupOpcodes() {
 		NOP,
 		// 0x58 (88)
 		NOP,
-		NOP,
+		NOP, // change to node (?) - first arg: node, second/third args: unknown
 		NOP,
 		NOP,
 		// 0x5C (92)
@@ -171,7 +171,7 @@ void ScriptManager::setupOpcodes() {
 		NOP,
 		NOP,
 		NOP,
-		NOP,
+		OPCODE(o_changeAgeRoomNode),
 		// 0x68 (104)
 		NOP,
 		NOP,
@@ -254,7 +254,7 @@ void ScriptManager::setupOpcodes() {
 		NOP,
 		// 0xA8 (168)
 		NOP,
-		NOP,
+		NOP, // run sound script (?)
 		NOP,
 		NOP,
 		// 0xAC (172)
@@ -428,6 +428,10 @@ void ScriptManager::o_playMovie(Context &context, const ScriptOpcode &op) {
 
 		g_system->delayMillis(10);
 	}
+}
+
+void ScriptManager::o_changeAgeRoomNode(Context &context, const ScriptOpcode &op) {
+	_vm->changeToNode(op.args[0], op.args[1], op.args[2]);
 }
 
 void ScriptManager::o_playSound(Context &context, const ScriptOpcode &op) {

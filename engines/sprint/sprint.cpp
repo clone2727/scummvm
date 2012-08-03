@@ -38,6 +38,8 @@ SprintEngine::SprintEngine(OSystem *syst, const SprintGameDescription *desc) : E
 	_database = 0;
 	_gfx = 0;
 	_script = 0;
+	_curAge = 0;
+	_curNode = 0;
 
 	// Add subdirectories to the search path
 	const Common::FSNode gameDataDir(ConfMan.get("path"));
@@ -62,17 +64,31 @@ Common::Error SprintEngine::run() {
 	_gfx = new GraphicsManager(_resFork);
 	_script = new ScriptManager(this);
 
-	// HACK: Just play the intro for now
-	Node node = _database->getNode(2, 1000);
-	_script->execute(node.mainScripts[1].script);
-	_script->execute(node.mainScripts[2].script);
+	// Start us off on the init script
+	changeToNode(1, 1);
 
-	// This will draw the Myst book and play the sound (eventually)
-	node = _database->getNode(2, 1001);
-	_script->execute(node.mainScripts[0].script);
-	_script->execute(node.soundScripts[0].script);
+	// TODO: Main loop
 
 	return Common::kNoError;
+}
+
+void SprintEngine::changeToNode(uint age, uint room, uint node) {
+	if (room != 1)
+		error("Myst ME Mac has only one room per age");
+
+	_curAge = age;
+	_curNode = node;
+	_curNodeData = _database->getNode(age, node);
+
+	Node nodeData = _curNodeData;
+
+	for (uint i = 0; i < nodeData.mainScripts.size(); i++)
+		if (true) // TODO: Evaluate conditions
+			_script->execute(nodeData.mainScripts[i].script);
+}
+
+void SprintEngine::changeToNode(uint age, uint node) {
+	changeToNode(age, 1, node);
 }
 
 } // end of namespace Sprint

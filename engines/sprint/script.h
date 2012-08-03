@@ -61,6 +61,7 @@ private:
 	DECLARE_OPCODE(o_drawImage);
 	DECLARE_OPCODE(o_playMovie);
 	DECLARE_OPCODE(o_playSound);
+	DECLARE_OPCODE(o_changeAgeRoomNode);
 };
 
 } // End of namespace Sprint

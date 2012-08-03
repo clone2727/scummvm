@@ -25,6 +25,8 @@
 
 #include "engines/engine.h"
 
+#include "sprint/database.h"
+
 namespace Common {
 class MacResManager;
 }
@@ -46,7 +48,6 @@ struct ExecutableVersion {
 	uint32 urlTableOffset;
 };
 
-class Database;
 class GraphicsManager;
 class ScriptManager;
 struct SprintGameDescription;
@@ -62,12 +63,18 @@ public:
 
 	Database *_database;
 
+	void changeToNode(uint age, uint node);
+	void changeToNode(uint age, uint room, uint node);
+
 private:
 	const SprintGameDescription *_gameDescription;
 
 	Common::MacResManager *_resFork;
 	GraphicsManager *_gfx;
 	ScriptManager *_script;
+
+	Node _curNodeData;
+	uint _curAge, _curNode;
 };
 
 } // End of namespace Sprint
