@@ -287,13 +287,18 @@ void StarTrekEngine::playMovieMac(Common::String filename) {
 
 	bool continuePlaying = true;
 
+	qtDecoder->start();
+
 	while (!qtDecoder->endOfVideo() && !shouldQuit() && continuePlaying) {
 		if (qtDecoder->needsUpdate()) {
 			const ::Graphics::Surface *frame = qtDecoder->decodeNextFrame();
 
 			if (frame) {
-				_system->copyRectToScreen((byte *)frame->pixels, frame->pitch, 0, 0, frame->w, frame->h);
+				::Graphics::Surface *convertedFrame = frame->convertTo(_system->getScreenFormat());
+				_system->copyRectToScreen((byte *)convertedFrame->pixels, convertedFrame->pitch, 0, 0, convertedFrame->w, convertedFrame->h);
 				_system->updateScreen();
+				convertedFrame->free();
+				delete convertedFrame;
 			}
 		}
 
