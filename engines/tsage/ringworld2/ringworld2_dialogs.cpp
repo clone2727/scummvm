@@ -85,7 +85,7 @@ RightClickDialog::~RightClickDialog() {
 
 void RightClickDialog::draw() {
 	// Save the covered background area
-	_savedArea = Surface_getArea(g_globals->_gfxManagerInstance.getSurface(), _bounds);
+	_savedArea = surfaceGetArea(g_globals->_gfxManagerInstance.getSurface(), _bounds);
 
 	// Draw the dialog image
 	g_globals->gfxManager().copyFrom(_surface, _bounds.left, _bounds.top);
@@ -389,7 +389,7 @@ HelpDialog::HelpDialog() {
 	_msgTitle._bounds.moveTo(5, 0);
 	_msgVersion.set(GAME_VERSION, 172, ALIGN_CENTER);
 	_msgVersion._bounds.moveTo(5, _msgTitle._bounds.bottom + 3);
-	addElements(&_msgTitle, &_msgVersion, NULL);	
+	addElements(&_msgTitle, &_msgVersion, NULL);
 
 	// Set buttons
 	_btnList[0].setText(F2);

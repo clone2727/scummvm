@@ -38,7 +38,7 @@ namespace TsAGE {
  * @src Source surface
  * @bounds Area to backup
  */
-GfxSurface *Surface_getArea(GfxSurface &src, const Rect &bounds) {
+GfxSurface *surfaceGetArea(GfxSurface &src, const Rect &bounds) {
 	assert(bounds.isValidRect());
 	GfxSurface *dest = new GfxSurface();
 	dest->create(bounds.width(), bounds.height());
@@ -223,12 +223,14 @@ GfxSurface::GfxSurface() : _bounds(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT) {
 	_lockSurfaceCtr = 0;
 	_customSurface = NULL;
 	_transColor = -1;
+	_trackDirtyRects = false;
 }
 
 GfxSurface::GfxSurface(const GfxSurface &s) {
 	_lockSurfaceCtr = 0;
 	_customSurface = NULL;
-	this->operator =(s);
+	_trackDirtyRects = false;
+	*this = s;
 }
 
 GfxSurface::~GfxSurface() {
@@ -266,7 +268,7 @@ void GfxSurface::updateScreen() {
 			continue;
 
 		const byte *srcP = (const byte *)_customSurface->getBasePtr(r.left, r.top);
-		g_system->copyRectToScreen(srcP, _customSurface->pitch, r.left, r.top, 
+		g_system->copyRectToScreen(srcP, _customSurface->pitch, r.left, r.top,
 			r.width(), r.height());
 	}
 
@@ -287,7 +289,7 @@ void GfxSurface::addDirtyRect(const Rect &r) {
 		r2.translate(_bounds.left, _bounds.top);
 
 		// Add to the dirty rect list
-		_dirtyRects.push_back(Rect(r2.left, r2.top, 
+		_dirtyRects.push_back(Rect(r2.left, r2.top,
 		MIN(r2.right + 1, SCREEN_WIDTH), MIN(r2.bottom + 1, SCREEN_HEIGHT)));
 	}
 }
@@ -435,7 +437,7 @@ bool GfxSurface::displayText(const Common::String &msg, const Common::Point &pt)
 	// Make a backup copy of the area the text will occupy
 	Rect saveRect = textRect;
 	saveRect.collapse(-20, -8);
-	GfxSurface *savedArea = Surface_getArea(gfxManager.getSurface(), saveRect);
+	GfxSurface *savedArea = surfaceGetArea(gfxManager.getSurface(), saveRect);
 
 	// Display the text
 	gfxManager._font.writeLines(msg.c_str(), textRect, ALIGN_LEFT);
@@ -1071,7 +1073,7 @@ void GfxDialog::draw() {
 	Rect tempRect(_bounds);
 
 	// Make a backup copy of the area the dialog will occupy
-	_savedArea = Surface_getArea(g_globals->_gfxManagerInstance.getSurface(), _bounds);
+	_savedArea = surfaceGetArea(g_globals->_gfxManagerInstance.getSurface(), _bounds);
 
 	// Set the palette for use in the dialog
 	setPalette();
@@ -1194,7 +1196,7 @@ void GfxDialog::setPalette() {
 		g_globals->_scenePalette.setPalette(g_globals->_fontColors.background, 1);
 		g_globals->_scenePalette.setPalette(g_globals->_fontColors.foreground, 1);
 		g_globals->_scenePalette.setEntry(255, 0xff, 0xff, 0xff);
-		g_globals->_scenePalette.setPalette(255, 1);	
+		g_globals->_scenePalette.setPalette(255, 1);
 	} else {
 		g_globals->_scenePalette.loadPalette(0);
 		g_globals->_scenePalette.setPalette(0, 1);

@@ -24,6 +24,7 @@
 #define SCUMM_H
 
 #include "engines/engine.h"
+
 #include "common/endian.h"
 #include "common/events.h"
 #include "common/file.h"
@@ -31,6 +32,7 @@
 #include "common/keyboard.h"
 #include "common/random.h"
 #include "common/rect.h"
+#include "common/rendermode.h"
 #include "common/str.h"
 #include "common/textconsole.h"
 #include "graphics/surface.h"
@@ -239,10 +241,12 @@ enum ScummGameId {
 	GID_PUTTRACE,
 	GID_FUNSHOP,	// Used for all three funshops
 	GID_FOOTBALL,
+	GID_FOOTBALL2002,
 	GID_SOCCER,
 	GID_SOCCERMLS,
 	GID_SOCCER2004,
 	GID_BASEBALL2001,
+	GID_BASEBALL2003,
 	GID_BASKETBALL,
 	GID_MOONBASE,
 	GID_HECUP		// CUP demos

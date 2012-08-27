@@ -36,7 +36,6 @@ public:
 	virtual ~Screen_EoB();
 
 	bool init();
-	bool init(bool useHiResEGADithering);
 
 	void setClearScreenDim(int dim);
 	void clearCurDim();
@@ -60,6 +59,7 @@ public:
 	void setPagePixel(int pageNum, int x, int y, uint8 color);
 
 	void setScreenPalette(const Palette &pal);
+	void getRealPalette(int num, uint8 *dst);
 
 	uint8 *encodeShape(uint16 x, uint16 y, uint16 w, uint16 h, bool encode8bit = false, const uint8 *cgaMapping = 0);
 	void drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int sd = -1, int flags = 0, ...);
@@ -116,7 +116,6 @@ private:
 
 	uint8 *_egaDitheringTable;
 	uint8 *_egaPixelValueTable;
-	bool _useHiResEGADithering;
 
 	static const uint8 _egaMatchTable[];
 	static const ScreenDim _screenDimTable[];

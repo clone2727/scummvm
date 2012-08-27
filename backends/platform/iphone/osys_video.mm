@@ -24,8 +24,9 @@
 #define FORBIDDEN_SYMBOL_ALLOW_ALL
 
 #include "osys_main.h"
-
 #include "iphone_video.h"
+
+#include "graphics/conversion.h"
 
 void OSystem_IPHONE::initVideoContext() {
 	_videoContext = [g_iPhoneViewInstance getVideoContext];
@@ -44,7 +45,6 @@ bool OSystem_IPHONE::setGraphicsMode(int mode) {
 	case kGraphicsModeNone:
 	case kGraphicsModeLinear:
 		_videoContext->graphicsMode = (GraphicsModes)mode;
-		[g_iPhoneViewInstance performSelectorOnMainThread:@selector(setGraphicsMode) withObject:nil waitUntilDone: YES];
 		return true;
 
 	default:
@@ -56,29 +56,72 @@ int OSystem_IPHONE::getGraphicsMode() const {
 	return _videoContext->graphicsMode;
 }
 
+#ifdef USE_RGB_COLOR
+Common::List<Graphics::PixelFormat> OSystem_IPHONE::getSupportedFormats() const {
+	Common::List<Graphics::PixelFormat> list;
+	// RGB565
+	list.push_back(Graphics::createPixelFormat<565>());
+	// CLUT8
+	list.push_back(Graphics::PixelFormat::createFormatCLUT8());
+	return list;
+}
+#endif
+
 void OSystem_IPHONE::initSize(uint width, uint height, const Graphics::PixelFormat *format) {
-	//printf("initSize(%i, %i)\n", width, height);
+	//printf("initSize(%u, %u, %p)\n", width, height, (const void *)format);
 
 	_videoContext->screenWidth = width;
 	_videoContext->screenHeight = height;
 	_videoContext->shakeOffsetY = 0;
 
-	free(_gameScreenRaw);
+	// In case we use the screen texture as frame buffer we reset the pixels
+	// pointer here to avoid freeing the screen texture.
+	if (_framebuffer.pixels == _videoContext->screenTexture.pixels)
+		_framebuffer.pixels = 0;
 
-	_gameScreenRaw = (byte *)malloc(width * height);
-	bzero(_gameScreenRaw, width * height);
+	// Create the screen texture right here. We need to do this here, since
+	// when a game requests hi-color mode, we actually set the framebuffer
+	// to the texture buffer to avoid an additional copy step.
+	[g_iPhoneViewInstance performSelectorOnMainThread:@selector(createScreenTexture) withObject:nil waitUntilDone: YES];
 
-	updateOutputSurface();
+	// In case the client code tries to set up a non supported mode, we will
+	// fall back to CLUT8 and set the transaction error accordingly.
+	if (format && format->bytesPerPixel != 1 && *format != _videoContext->screenTexture.format) {
+		format = 0;
+		_gfxTransactionError = kTransactionFormatNotSupported;
+	}
 
-	clearOverlay();
+	if (!format || format->bytesPerPixel == 1) {
+		_framebuffer.create(width, height, Graphics::PixelFormat::createFormatCLUT8());
+	} else {
+#if 0
+		printf("bytesPerPixel: %u RGBAlosses: %u,%u,%u,%u RGBAshifts: %u,%u,%u,%u\n", format->bytesPerPixel,
+		       format->rLoss, format->gLoss, format->bLoss, format->aLoss,
+		       format->rShift, format->gShift, format->bShift, format->aShift);
+#endif
+		// We directly draw on the screen texture in hi-color mode. Thus
+		// we copy over its settings here and just replace the width and
+		// height to avoid any problems.
+		_framebuffer = _videoContext->screenTexture;
+		_framebuffer.w = width;
+		_framebuffer.h = height;
+	}
 
 	_fullScreenIsDirty = false;
 	dirtyFullScreen();
-	_videoContext->mouseIsVisible = false;
 	_mouseCursorPaletteEnabled = false;
-	_screenChangeCount++;
+}
 
-	updateScreen();
+void OSystem_IPHONE::beginGFXTransaction() {
+	_gfxTransactionError = kTransactionSuccess;
+}
+
+OSystem::TransactionError OSystem_IPHONE::endGFXTransaction() {
+	_screenChangeCount++;
+	updateOutputSurface();
+	[g_iPhoneViewInstance performSelectorOnMainThread:@selector(setGraphicsMode) withObject:nil waitUntilDone: YES];
+
+	return _gfxTransactionError;
 }
 
 void OSystem_IPHONE::updateOutputSurface() {
@@ -94,6 +137,7 @@ int16 OSystem_IPHONE::getWidth() {
 }
 
 void OSystem_IPHONE::setPalette(const byte *colors, uint start, uint num) {
+	//printf("setPalette(%p, %u, %u)\n", colors, start, num);
 	assert(start + num <= 256);
 	const byte *b = colors;
 
@@ -107,6 +151,7 @@ void OSystem_IPHONE::setPalette(const byte *colors, uint start, uint num) {
 }
 
 void OSystem_IPHONE::grabPalette(byte *colors, uint start, uint num) {
+	//printf("grabPalette(%p, %u, %u)\n", colors, start, num);
 	assert(start + num <= 256);
 	byte *b = colors;
 
@@ -116,27 +161,28 @@ void OSystem_IPHONE::grabPalette(byte *colors, uint start, uint num) {
 	}
 }
 
-void OSystem_IPHONE::copyRectToScreen(const byte *buf, int pitch, int x, int y, int w, int h) {
-	//printf("copyRectToScreen(%i, %i, %i, %i)\n", x, y, w, h);
+void OSystem_IPHONE::copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) {
+	//printf("copyRectToScreen(%p, %d, %i, %i, %i, %i)\n", buf, pitch, x, y, w, h);
 	//Clip the coordinates
+	const byte *src = (const byte *)buf;
 	if (x < 0) {
 		w += x;
-		buf -= x;
+		src -= x;
 		x = 0;
 	}
 
 	if (y < 0) {
 		h += y;
-		buf -= y * pitch;
+		src -= y * pitch;
 		y = 0;
 	}
 
-	if (w > (int)_videoContext->screenWidth - x) {
-		w = _videoContext->screenWidth - x;
+	if (w > (int)_framebuffer.w - x) {
+		w = _framebuffer.w - x;
 	}
 
-	if (h > (int)_videoContext->screenHeight - y) {
-		h = _videoContext->screenHeight - y;
+	if (h > (int)_framebuffer.h - y) {
+		h = _framebuffer.h - y;
 	}
 
 	if (w <= 0 || h <= 0)
@@ -146,24 +192,23 @@ void OSystem_IPHONE::copyRectToScreen(const byte *buf, int pitch, int x, int y, 
 		_dirtyRects.push_back(Common::Rect(x, y, x + w, y + h));
 	}
 
-
-	byte *dst = _gameScreenRaw + y * _videoContext->screenWidth + x;
-	if ((int)_videoContext->screenWidth == pitch && pitch == w)
-		memcpy(dst, buf, h * w);
-	else {
+	byte *dst = (byte *)_framebuffer.getBasePtr(x, y);
+	if (_framebuffer.pitch == pitch && _framebuffer.w == w) {
+		memcpy(dst, src, h * pitch);
+	} else {
 		do {
-			memcpy(dst, buf, w);
-			buf += pitch;
-			dst += _videoContext->screenWidth;
+			memcpy(dst, src, w * _framebuffer.format.bytesPerPixel);
+			src += pitch;
+			dst += _framebuffer.pitch;
 		} while (--h);
 	}
 }
 
 void OSystem_IPHONE::updateScreen() {
-	//printf("updateScreen(): %i dirty rects.\n", _dirtyRects.size());
-
 	if (_dirtyRects.size() == 0 && _dirtyOverlayRects.size() == 0 && !_mouseDirty)
 		return;
+
+	//printf("updateScreen(): %i dirty rects.\n", _dirtyRects.size());
 
 	internUpdateScreen();
 	_mouseDirty = false;
@@ -201,30 +246,29 @@ void OSystem_IPHONE::internUpdateScreen() {
 }
 
 void OSystem_IPHONE::drawDirtyRect(const Common::Rect &dirtyRect) {
+	// We only need to do a color look up for CLUT8
+	if (_framebuffer.format.bytesPerPixel != 1)
+		return;
+
 	int h = dirtyRect.bottom - dirtyRect.top;
 	int w = dirtyRect.right - dirtyRect.left;
 
-	byte *src = &_gameScreenRaw[dirtyRect.top * _videoContext->screenWidth + dirtyRect.left];
+	const byte *src = (const byte *)_framebuffer.getBasePtr(dirtyRect.left, dirtyRect.top);
 	byte *dstRaw = (byte *)_videoContext->screenTexture.getBasePtr(dirtyRect.left, dirtyRect.top);
+
+	// When we use CLUT8 do a color look up
 	for (int y = h; y > 0; y--) {
 		uint16 *dst = (uint16 *)dstRaw;
 		for (int x = w; x > 0; x--)
 			*dst++ = _gamePalette[*src++];
 
 		dstRaw += _videoContext->screenTexture.pitch;
-		src += _videoContext->screenWidth - w;
+		src += _framebuffer.pitch - w;
 	}
 }
 
 Graphics::Surface *OSystem_IPHONE::lockScreen() {
 	//printf("lockScreen()\n");
-
-	_framebuffer.pixels = _gameScreenRaw;
-	_framebuffer.w = _videoContext->screenWidth;
-	_framebuffer.h = _videoContext->screenHeight;
-	_framebuffer.pitch = _videoContext->screenWidth;
-	_framebuffer.format = Graphics::PixelFormat::createFormatCLUT8();
-
 	return &_framebuffer;
 }
 
@@ -265,31 +309,33 @@ void OSystem_IPHONE::clearOverlay() {
 	dirtyFullOverlayScreen();
 }
 
-void OSystem_IPHONE::grabOverlay(OverlayColor *buf, int pitch) {
+void OSystem_IPHONE::grabOverlay(void *buf, int pitch) {
 	//printf("grabOverlay()\n");
 	int h = _videoContext->overlayHeight;
 
+	byte *dst = (byte *)buf;
 	const byte *src = (const byte *)_videoContext->overlayTexture.getBasePtr(0, 0);
 	do {
-		memcpy(buf, src, _videoContext->overlayWidth * sizeof(OverlayColor));
+		memcpy(dst, src, _videoContext->overlayWidth * sizeof(uint16));
 		src += _videoContext->overlayTexture.pitch;
-		buf += pitch;
+		dst += pitch;
 	} while (--h);
 }
 
-void OSystem_IPHONE::copyRectToOverlay(const OverlayColor *buf, int pitch, int x, int y, int w, int h) {
-	//printf("copyRectToOverlay(buf, pitch=%i, x=%i, y=%i, w=%i, h=%i)\n", pitch, x, y, w, h);
+void OSystem_IPHONE::copyRectToOverlay(const void *buf, int pitch, int x, int y, int w, int h) {
+	//printf("copyRectToOverlay(%p, pitch=%i, x=%i, y=%i, w=%i, h=%i)\n", (const void *)buf, pitch, x, y, w, h);
+	const byte *src = (const byte *)buf;
 
 	//Clip the coordinates
 	if (x < 0) {
 		w += x;
-		buf -= x;
+		src -= x * sizeof(uint16);
 		x = 0;
 	}
 
 	if (y < 0) {
 		h += y;
-		buf -= y * pitch;
+		src -= y * pitch;
 		y = 0;
 	}
 
@@ -308,8 +354,8 @@ void OSystem_IPHONE::copyRectToOverlay(const OverlayColor *buf, int pitch, int x
 
 	byte *dst = (byte *)_videoContext->overlayTexture.getBasePtr(x, y);
 	do { 
-		memcpy(dst, buf, w * sizeof(OverlayColor));
-		buf += pitch;
+		memcpy(dst, src, w * sizeof(uint16));
+		src += pitch;
 		dst += _videoContext->overlayTexture.pitch;
 	} while (--h);
 }
@@ -323,6 +369,7 @@ int16 OSystem_IPHONE::getOverlayWidth() {
 }
 
 bool OSystem_IPHONE::showMouse(bool visible) {
+	//printf("showMouse(%d)\n", visible);
 	bool last = _videoContext->mouseIsVisible;
 	_videoContext->mouseIsVisible = visible;
 	_mouseDirty = true;
@@ -331,7 +378,7 @@ bool OSystem_IPHONE::showMouse(bool visible) {
 }
 
 void OSystem_IPHONE::warpMouse(int x, int y) {
-	//printf("warpMouse()\n");
+	//printf("warpMouse(%d, %d)\n", x, y);
 	_videoContext->mouseX = x;
 	_videoContext->mouseY = y;
 	[g_iPhoneViewInstance performSelectorOnMainThread:@selector(notifyMouseMove) withObject:nil waitUntilDone: YES];
@@ -354,16 +401,19 @@ void OSystem_IPHONE::dirtyFullOverlayScreen() {
 	}
 }
 
-void OSystem_IPHONE::setMouseCursor(const byte *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor, int cursorTargetScale, const Graphics::PixelFormat *format) {
-	//printf("setMouseCursor(%i, %i, scale %u)\n", hotspotX, hotspotY, cursorTargetScale);
+void OSystem_IPHONE::setMouseCursor(const void *buf, uint w, uint h, int hotspotX, int hotspotY, uint32 keycolor, bool dontScale, const Graphics::PixelFormat *format) {
+	//printf("setMouseCursor(%p, %u, %u, %i, %i, %u, %d, %p)\n", (const void *)buf, w, h, hotspotX, hotspotY, keycolor, dontScale, (const void *)format);
 
-	if (_mouseBuf != NULL && (_videoContext->mouseWidth != w || _videoContext->mouseHeight != h)) {
-		free(_mouseBuf);
-		_mouseBuf = NULL;
-	}
+	const Graphics::PixelFormat pixelFormat = format ? *format : Graphics::PixelFormat::createFormatCLUT8();
+#if 0
+	printf("bytesPerPixel: %u RGBAlosses: %u,%u,%u,%u RGBAshifts: %u,%u,%u,%u\n", pixelFormat.bytesPerPixel,
+	       pixelFormat.rLoss, pixelFormat.gLoss, pixelFormat.bLoss, pixelFormat.aLoss,
+	       pixelFormat.rShift, pixelFormat.gShift, pixelFormat.bShift, pixelFormat.aShift);
+#endif
+	assert(pixelFormat.bytesPerPixel == 1 || pixelFormat.bytesPerPixel == 2);
 
-	if (_mouseBuf == NULL)
-		_mouseBuf = (byte *)malloc(w * h);
+	if (_mouseBuffer.w != w || _mouseBuffer.h != h || _mouseBuffer.format != pixelFormat || !_mouseBuffer.pixels)
+		_mouseBuffer.create(w, h, pixelFormat);
 
 	_videoContext->mouseWidth = w;
 	_videoContext->mouseHeight = h;
@@ -371,15 +421,16 @@ void OSystem_IPHONE::setMouseCursor(const byte *buf, uint w, uint h, int hotspot
 	_videoContext->mouseHotspotX = hotspotX;
 	_videoContext->mouseHotspotY = hotspotY;
 
-	_mouseKeyColor = (byte)keycolor;
+	_mouseKeyColor = keycolor;
 
-	memcpy(_mouseBuf, buf, w * h);
+	memcpy(_mouseBuffer.getBasePtr(0, 0), buf, h * _mouseBuffer.pitch);
 
 	_mouseDirty = true;
 	_mouseNeedTextureUpdate = true;
 }
 
 void OSystem_IPHONE::setCursorPalette(const byte *colors, uint start, uint num) {
+	//printf("setCursorPalette(%p, %u, %u)\n", (const void *)colors, start, num);
 	assert(start + num <= 256);
 
 	for (uint i = start; i < start + num; ++i, colors += 3)
@@ -401,20 +452,45 @@ void OSystem_IPHONE::updateMouseTexture() {
 	if (mouseTexture.w != texWidth || mouseTexture.h != texHeight)
 		mouseTexture.create(texWidth, texHeight, Graphics::createPixelFormat<5551>());
 
-	const uint16 *palette;
-	if (_mouseCursorPaletteEnabled)
-		palette = _mouseCursorPalette;
-	else
-		palette = _gamePaletteRGBA5551;
+	if (_mouseBuffer.format.bytesPerPixel == 1) {
+		const uint16 *palette;
+		if (_mouseCursorPaletteEnabled)
+			palette = _mouseCursorPalette;
+		else
+			palette = _gamePaletteRGBA5551;
 
-	uint16 *mouseBuf = (uint16 *)mouseTexture.getBasePtr(0, 0);
-	for (uint x = 0; x < _videoContext->mouseWidth; ++x) {
-		for (uint y = 0; y < _videoContext->mouseHeight; ++y) {
-			const byte color = _mouseBuf[y * _videoContext->mouseWidth + x];
-			if (color != _mouseKeyColor)
-				mouseBuf[y * texWidth + x] = palette[color] | 0x1;
-			else
-				mouseBuf[y * texWidth + x] = 0x0;
+		uint16 *mouseBuf = (uint16 *)mouseTexture.getBasePtr(0, 0);
+		for (uint x = 0; x < _videoContext->mouseWidth; ++x) {
+			for (uint y = 0; y < _videoContext->mouseHeight; ++y) {
+				const byte color = *(const byte *)_mouseBuffer.getBasePtr(x, y);
+				if (color != _mouseKeyColor)
+					mouseBuf[y * texWidth + x] = palette[color] | 0x1;
+				else
+					mouseBuf[y * texWidth + x] = 0x0;
+			}
+		}
+	} else {
+		if (crossBlit((byte *)mouseTexture.getBasePtr(0, 0), (const byte *)_mouseBuffer.getBasePtr(0, 0), mouseTexture.pitch,
+			          _mouseBuffer.pitch, _mouseBuffer.w, _mouseBuffer.h, mouseTexture.format, _mouseBuffer.format)) {
+			if (!_mouseBuffer.format.aBits()) {
+				// Apply color keying since the original cursor had no alpha channel.
+				const uint16 *src = (const uint16 *)_mouseBuffer.getBasePtr(0, 0);
+				uint8 *dstRaw = (uint8 *)mouseTexture.getBasePtr(0, 0);
+
+				for (uint y = 0; y < _mouseBuffer.h; ++y, dstRaw += mouseTexture.pitch) {
+					uint16 *dst = (uint16 *)dstRaw;
+					for (uint x = 0; x < _mouseBuffer.w; ++x, ++dst) {
+						if (*src++ == _mouseKeyColor)
+							*dst &= ~1;
+						else
+							*dst |= 1;
+					}
+				}
+			}
+		} else {
+			// TODO: Log this!
+			// Make the cursor all transparent... we really need a better fallback ;-).
+			memset(mouseTexture.getBasePtr(0, 0), 0, mouseTexture.h * mouseTexture.pitch);
 		}
 	}
 

@@ -38,7 +38,7 @@ namespace Audio {
 
 namespace Made {
 
-class PMVDecoder : public Video::FixedRateVideoDecoder {
+class PMVDecoder : public Video::VideoDecoder {
 public:
 	PMVDecoder();
 	~PMVDecoder();
@@ -46,34 +46,59 @@ public:
 	// VideoDecoder API
 	bool loadStream(Common::SeekableReadStream *stream);
 	void close();
-	bool isVideoLoaded() const;
-	uint16 getWidth() const { return _surface ? _surface->w : 0; }
-	uint16 getHeight() const { return _surface ? _surface->h : 0; }
-	Graphics::PixelFormat getPixelFormat() const { return Graphics::PixelFormat::createFormatCLUT8(); }
-	const byte *getPalette() { return _paletteRGB; }
-	bool hasDirtyPalette() const { return _dirtyPalette; }
-	uint32 getFrameCount() const { return _frameCount; }
-	uint32 getElapsedTime() const;
-	Graphics::Surface *decodeNextFrame();
 
 protected:
-	// FixedRateVideoDecoder API
-	Common::Rational getFrameRate() const { return Common::Rational(1000, _frameDelay); }
+	void readNextPacket();
+	bool useAudioSync() const { return false; }
 
-protected:
-	byte _paletteRGB[768];
-	bool _dirtyPalette;
-	Graphics::Surface *_surface;
+private:
+	class PMVVideoTrack : public FixedRateVideoTrack {
+	public:
+		PMVVideoTrack(uint width, uint height, uint frameDelay, uint frameCount, const byte *palette);
+		~PMVVideoTrack();
 
-	uint16 _frameDelay;
-	uint16 _frameCount;
+		uint16 getWidth() const { return _surface->w; }
+		uint16 getHeight() const { return _surface->h; }
+		Graphics::PixelFormat getPixelFormat() const { return Graphics::PixelFormat::createFormatCLUT8(); }
+		int getCurFrame() const { return _curFrame; }
+		int getFrameCount() const { return _frameCount; }
+		const Graphics::Surface *decodeNextFrame() { return _surface; }
+		const byte *getPalette() const { _dirtyPalette = false; return _paletteRGB; }
+		bool hasDirtyPalette() const { return _dirtyPalette; }
+
+		void decompressPalette(byte *palData);
+		void decodeFrame(byte *frameData);
+
+	protected:
+		Common::Rational getFrameRate() const { return Common::Rational(1000, _frameDelay); }
+
+	private:
+		byte _paletteRGB[768];
+		mutable bool _dirtyPalette;
+		Graphics::Surface *_surface;
+
+		int _curFrame;
+		uint _frameDelay;
+		int _frameCount;
+	};
+
+	class PMVAudioTrack : public AudioTrack {
+	public:
+		PMVAudioTrack(uint soundFreq);
+		~PMVAudioTrack();
+
+		void queueSound(byte *audioData);
+
+	protected:
+		Audio::AudioStream *getAudioStream() const;
+
+	private:
+		Audio::QueuingAudioStream *_audioStream;
+	};
 
 	Common::SeekableReadStream *_stream;
-	Audio::QueuingAudioStream *_audioStream;
-	Audio::SoundHandle _audioStreamHandle;
 
 	void readChunk(uint32 &chunkType, uint32 &chunkSize);
-	void decompressPalette(byte *palData, byte *outPal, uint32 palDataSize);
 };
 
 } // End of namespace Made

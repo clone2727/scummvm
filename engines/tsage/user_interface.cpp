@@ -112,7 +112,7 @@ void UIQuestion::showItem(int resNum, int rlbNum, int frameNum) {
 	imgRect.center(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
 
 	// Save the area behind where the image will be displayed
-	GfxSurface *savedArea = Surface_getArea(GLOBALS.gfxManager().getSurface(), imgRect);
+	GfxSurface *savedArea = surfaceGetArea(GLOBALS.gfxManager().getSurface(), imgRect);
 
 	// Draw the image
 	GLOBALS.gfxManager().copyFrom(objImage, imgRect);
@@ -316,7 +316,7 @@ void UIElements::synchronize(Serializer &s) {
 }
 
 void UIElements::process(Event &event) {
-	if (_clearScreen && GLOBALS._player._enabled && 
+	if (_clearScreen && GLOBALS._player._enabled &&
 			((g_vm->getGameID() != GType_BlueForce) || (GLOBALS._sceneManager._sceneNumber != 50))) {
 		if (_bounds.contains(event.mousePos)) {
 			// Cursor inside UI area

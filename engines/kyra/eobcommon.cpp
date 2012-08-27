@@ -57,6 +57,8 @@ EoBCoreEngine::EoBCoreEngine(OSystem *system, const GameFlags &flags)
 	_configMouse = true;
 	_loading = false;
 
+	_useHiResDithering = false;
+
 	_envAudioTimer = 0;
 	_flashShapeTimer = 0;
 	_drawSceneTimer = 0;
@@ -369,9 +371,11 @@ Common::Error EoBCoreEngine::init() {
 	if (ConfMan.hasKey("render_mode"))
 		_configRenderMode = Common::parseRenderMode(ConfMan.get("render_mode"));
 
+	_useHiResDithering = (_configRenderMode == Common::kRenderEGA && _flags.useHiRes);
+
 	_screen = new Screen_EoB(this, _system);
 	assert(_screen);
-	_screen->setResolution(_flags.useHiResOverlay || (_flags.gameID == GI_EOB2 && _configRenderMode == Common::kRenderEGA));
+	_screen->setResolution();
 
 	//MidiDriverType midiDriver = MidiDriver::detectDevice(MDT_PCSPK | MDT_ADLIB);
 	_sound = new SoundAdLibPC(this, _mixer);
@@ -390,7 +394,7 @@ Common::Error EoBCoreEngine::init() {
 	if (!_staticres->init())
 		error("_staticres->init() failed");
 
-	if (!_screen->init(_flags.gameID == GI_EOB2 && _configRenderMode == Common::kRenderEGA))
+	if (!_screen->init())
 		error("screen()->init() failed");
 
 	if (ConfMan.hasKey("save_slot")) {
@@ -412,6 +416,12 @@ Common::Error EoBCoreEngine::init() {
 
 	_screen->loadFont(Screen::FID_6_FNT, "FONT6.FNT");
 	_screen->loadFont(Screen::FID_8_FNT, "FONT8.FNT");
+
+	if (_useHiResDithering) {
+		_vcnBlockWidth <<= 1;
+		_vcnBlockHeight <<= 1;
+		SWAP(_vcnFlip0, _vcnFlip1);
+	}
 
 	Common::Error err = KyraRpgEngine::init();
 	if (err.getCode() != Common::kNoError)
@@ -760,7 +770,7 @@ void EoBCoreEngine::releaseItemsAndDecorationsShapes() {
 	if (_spellShapes) {
 		for (int i = 0; i < 4; i++) {
 			if (_spellShapes[i])
-				delete [] _spellShapes[i];
+				delete[] _spellShapes[i];
 		}
 		delete[] _spellShapes;
 	}
@@ -810,7 +820,7 @@ void EoBCoreEngine::releaseItemsAndDecorationsShapes() {
 			if (_firebeamShapes[i])
 				delete[] _firebeamShapes[i];
 		}
-		delete []_firebeamShapes;
+		delete[] _firebeamShapes;
 	}
 
 	delete[] _redSplatShape;
@@ -1738,7 +1748,7 @@ void EoBCoreEngine::seq_portal() {
 bool EoBCoreEngine::checkPassword() {
 	char answ[20];
 	Screen::FontId of = _screen->setFont(Screen::FID_8_FNT);
-	_screen->copyPage(0, (_screen->getPageScaleFactor(0) == 2) ? 4 : 10);
+	_screen->copyPage(0, _useHiResDithering ? 4 : 10);
 
 	_screen->setScreenDim(13);
 	gui_drawBox(_screen->_curDim->sx << 3, _screen->_curDim->sy, _screen->_curDim->w << 3, _screen->_curDim->h, guiSettings()->colors.frame1, guiSettings()->colors.frame2, -1);
@@ -1765,7 +1775,7 @@ bool EoBCoreEngine::checkPassword() {
 
 	_screen->modifyScreenDim(13, _screen->_curDim->sx - 1, _screen->_curDim->sy - 2, _screen->_curDim->w + 2, _screen->_curDim->h + 16);
 	_screen->setFont(of);
-	_screen->copyPage((_screen->getPageScaleFactor(0) == 2) ? 4 : 10, 0);
+	_screen->copyPage(_useHiResDithering ? 4 : 10, 0);
 	return true;
 }
 
@@ -2056,7 +2066,7 @@ bool EoBCoreEngine::characterAttackHitTest(int charIndex, int monsterIndex, int 
 
 	s = CLIP(s, 1, 20);
 
-	return s < m ? false : true;
+	return s >= m;
 }
 
 bool EoBCoreEngine::monsterAttackHitTest(EoBMonsterInPlay *m, int charIndex) {
@@ -2290,7 +2300,7 @@ bool EoBCoreEngine::trySavingThrow(void *target, int hpModifier, int level, int 
 		s -= constMod[c->constitutionCur];
 	}
 
-	return rollDice(1, 20) < s ? false : true;
+	return rollDice(1, 20) >= s;
 }
 
 bool EoBCoreEngine::specialAttackSavingThrow(int charIndex, int type) {

@@ -28,6 +28,7 @@
 #include "common/list.h"
 #include "common/array.h"
 #include "common/rect.h"
+#include "common/rendermode.h"
 #include "common/stream.h"
 
 class OSystem;
@@ -168,6 +169,7 @@ private:
 
 	Common::RenderMode _renderMode;
 	bool _useHiResEGADithering;
+	bool _useLoResEGA;
 
 	static uint16 *_cgaDitheringTable;
 	static int _numRef;
@@ -211,7 +213,7 @@ private:
  */
 class SJISFont : public Font {
 public:
-	SJISFont(Screen *s, Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool outlineSize);
+	SJISFont(Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool outlineSize);
 	~SJISFont() { unload(); }
 
 	bool usesOverlay() const { return true; }
@@ -231,7 +233,6 @@ private:
 	const uint8 _invisColor;
 	const bool _is16Color;
 
-	const Screen *_screen;
 	int _sjisWidth, _asciiWidth;
 	int _fontHeight;
 };
@@ -398,7 +399,7 @@ public:
 
 	// init
 	virtual bool init();
-	virtual void setResolution(bool hiRes = false);
+	virtual void setResolution();
 
 	void updateScreen();
 
@@ -433,8 +434,6 @@ public:
 	virtual void setPagePixel(int pageNum, int x, int y, uint8 color);
 
 	const uint8 *getCPagePtr(int pageNum) const;
-	int getPageScaleFactor(int pageNum);
-
 	uint8 *getPageRect(int pageNum, int x, int y, int w, int h);
 
 	// palette handling
@@ -453,7 +452,7 @@ public:
 	void enableInterfacePalette(bool e);
 	void setInterfacePalette(const Palette &pal, uint8 r, uint8 g, uint8 b);
 
-	void getRealPalette(int num, uint8 *dst);
+	virtual void getRealPalette(int num, uint8 *dst);
 	Palette &getPalette(int num);
 	void copyPalette(const int dst, const int src);
 
@@ -580,6 +579,8 @@ protected:
 	bool _useOverlays;
 	bool _useSJIS;
 	bool _use16ColorMode;
+	bool _useHiResEGADithering;
+	bool _useLoResEGA;
 	bool _isAmiga;
 	Common::RenderMode _renderMode;
 

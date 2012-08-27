@@ -1354,13 +1354,15 @@ void ScenePalette::setEntry(int index, uint r, uint g, uint b) {
  * @param g			G component
  * @param b			B component
  * @param threshold	Closeness threshold.
+ * @param start		Starting index
+ * @param count		Number of indexes to scan
  * @remarks	A threshold may be provided to specify how close the matching color must be
  */
-uint8 ScenePalette::indexOf(uint r, uint g, uint b, int threshold) {
+uint8 ScenePalette::indexOf(uint r, uint g, uint b, int threshold, int start, int count) {
 	int palIndex = -1;
 	byte *palData = &_palette[0];
 
-	for (int i = 0; i < 256; ++i) {
+	for (int i = start; i < (start + count); ++i) {
 		byte ir = *palData++;
 		byte ig = *palData++;
 		byte ib = *palData++;
@@ -4257,8 +4259,10 @@ void SceneHandler::dispatch() {
 	}
 
 	// Handle drawing the contents of the scene
-	if (g_globals->_sceneManager._scene)
-		g_globals->_sceneObjects->draw();
+	if ((g_vm->getGameID() != GType_Ringworld2) || (R2_GLOBALS._animationCtr == 0)) {
+		if (g_globals->_sceneManager._scene)
+			g_globals->_sceneObjects->draw();
+	}
 
 	// Check to see if any scene change is required
 	g_globals->_sceneManager.checkScene();

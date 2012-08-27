@@ -20,6 +20,7 @@
  *
  */
 
+#include "dreamweb/sound.h"
 #include "dreamweb/dreamweb.h"
 
 namespace DreamWeb {
@@ -55,7 +56,7 @@ void DreamWebEngine::selectLocation() {
 	_pointerFrame = 0;
 	showPointer();
 	workToScreen();
-	playChannel0(9, 255);
+	_sound->playChannel0(9, 255);
 	_newLocation = 255;
 
 	while (_newLocation == 255) {
@@ -65,7 +66,7 @@ void DreamWebEngine::selectLocation() {
 		delPointer();
 		readMouse();
 		showPointer();
-		vSync();
+		waitForVSync();
 		dumpPointer();
 		dumpTextLine();
 
@@ -259,13 +260,13 @@ void DreamWebEngine::resetLocation(uint8 index) {
 }
 
 void DreamWebEngine::readDestIcon() {
-	loadGraphicsFile(_newplaceGraphics, "DREAMWEB.G05");
-	loadGraphicsFile(_newplaceGraphics2, "DREAMWEB.G06");
-	loadGraphicsFile(_newplaceGraphics3, "DREAMWEB.G08");
+	loadGraphicsFile(_newplaceGraphics, "G05");
+	loadGraphicsFile(_newplaceGraphics2, "G06");
+	loadGraphicsFile(_newplaceGraphics3, "G08");
 }
 
 void DreamWebEngine::readCityPic() {
-	loadGraphicsFile(_cityGraphics, "DREAMWEB.G04");
+	loadGraphicsFile(_cityGraphics, "G04");
 }
 
 } // End of namespace DreamWeb

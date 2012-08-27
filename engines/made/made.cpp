@@ -389,6 +389,8 @@ bool MadeEngine::playMovie(const Common::String &fileName) {
 	uint16 x = (_system->getWidth() - decoder->getWidth()) / 2;
 	uint16 y = (_system->getHeight() - decoder->getHeight())/ 2;
 
+	decoder->start();
+
 	while (!shouldQuit() && !decoder->endOfVideo() && !result) {
 		if (decoder->needsUpdate()) {
 			const Graphics::Surface *frame = decoder->decodeNextFrame();

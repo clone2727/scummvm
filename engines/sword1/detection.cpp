@@ -25,6 +25,7 @@
 
 #include "base/plugins.h"
 #include "common/fs.h"
+#include "common/gui_options.h"
 #include "common/savefile.h"
 #include "common/system.h"
 #include "graphics/thumbnail.h"
@@ -266,9 +267,6 @@ SaveStateDescriptor SwordMetaEngine::querySaveMetaInfos(const char *target, int 
 		in->read(&versionSave, 1);      // version
 
 		SaveStateDescriptor desc(slot, name);
-
-		desc.setDeletableFlag(true);
-		desc.setWriteProtectedFlag(false);
 
 		if (versionSave < 2) // These older version of the savegames used a flag to signal presence of thumbnail
 			in->skip(1);

@@ -95,8 +95,23 @@ bool Screen::init() {
 	_use16ColorMode = _vm->gameFlags().use16ColorMode;
 	_isAmiga = (_vm->gameFlags().platform == Common::kPlatformAmiga);
 
-	if (ConfMan.hasKey("render_mode"))
-		_renderMode = Common::parseRenderMode(ConfMan.get("render_mode"));
+	// We only check the "render_mode" setting for both Eye of the Beholder
+	// games here, since all the other games do not support the render_mode
+	// setting or handle it differently, like Kyra 1 PC-98. This avoids
+	// graphics glitches and crashes in other games, when the user sets his
+	// global render_mode setting to EGA for example.
+	// TODO/FIXME: It would be nice not to hardcode this. But there is no
+	// trivial/non annoying way to do mode checks in an easy fashion right
+	// now.
+	// In a more general sense, we might want to think about a way to only
+	// pass valid config values, as in values which the engine can work with,
+	// to the engines. We already limit the selection via our GUIO flags in
+	// the game specific settings, but this is not enough due to global
+	// settings allowing everything.
+	if (_vm->game() == GI_EOB1 || _vm->game() == GI_EOB2) {
+		if (ConfMan.hasKey("render_mode"))
+			_renderMode = Common::parseRenderMode(ConfMan.get("render_mode"));
+	}
 
 	// CGA and EGA modes use additional pages to do the CGA/EGA specific graphics conversions.
 	if (_renderMode == Common::kRenderCGA || _renderMode == Common::kRenderEGA) {
@@ -106,8 +121,9 @@ bool Screen::init() {
 
 	memset(_fonts, 0, sizeof(_fonts));
 
-	if (_vm->gameFlags().useHiResOverlay) {
-		_useOverlays = true;
+	_useOverlays = (_vm->gameFlags().useHiRes && _renderMode != Common::kRenderEGA);
+
+	if (_useOverlays) {
 		_useSJIS = (_vm->gameFlags().lang == Common::JA_JPN);
 		_sjisInvisibleColor = (_vm->game() == GI_KYRA1) ? 0x80 : 0xF6;
 
@@ -125,7 +141,7 @@ bool Screen::init() {
 			if (!font)
 				error("Could not load any SJIS font, neither the original nor ScummVM's 'SJIS.FNT'");
 
-			_fonts[FID_SJIS_FNT] = new SJISFont(this, font, _sjisInvisibleColor, _use16ColorMode, !_use16ColorMode);
+			_fonts[FID_SJIS_FNT] = new SJISFont(font, _sjisInvisibleColor, _use16ColorMode, !_use16ColorMode);
 		}
 	}
 
@@ -226,7 +242,7 @@ bool Screen::enableScreenDebug(bool enable) {
 
 	if (_debugEnabled != enable) {
 		_debugEnabled = enable;
-		setResolution(_vm->gameFlags().useHiResOverlay);
+		setResolution();
 		_forceFullUpdate = true;
 		updateScreen();
 	}
@@ -234,14 +250,14 @@ bool Screen::enableScreenDebug(bool enable) {
 	return temp;
 }
 
-void Screen::setResolution(bool hiRes) {
+void Screen::setResolution() {
 	byte palette[3*256];
 	_system->getPaletteManager()->grabPalette(palette, 0, 256);
 
 	int width = 320, height = 200;
 	bool defaultTo1xScaler = false;
 
-	if (hiRes) {
+	if (_vm->gameFlags().useHiRes) {
 		defaultTo1xScaler = true;
 		height = 400;
 
@@ -464,11 +480,6 @@ uint8 *Screen::getPagePtr(int pageNum) {
 const uint8 *Screen::getCPagePtr(int pageNum) const {
 	assert(pageNum < SCREEN_PAGE_NUM);
 	return _pagePtrs[pageNum];
-}
-
-int Screen::getPageScaleFactor(int pageNum) {
-	assert(pageNum < SCREEN_PAGE_NUM);
-	return _pageScaleFactor[pageNum];
 }
 
 uint8 *Screen::getPageRect(int pageNum, int x, int y, int w, int h) {
@@ -1117,8 +1128,6 @@ void Screen::drawBox(int x1, int y1, int x2, int y2, int color) {
 
 void Screen::drawShadedBox(int x1, int y1, int x2, int y2, int color1, int color2) {
 	assert(x1 >= 0 && y1 >= 0);
-	hideMouse();
-
 	fillRect(x1, y1, x2, y1 + 1, color1);
 	fillRect(x2 - 1, y1, x2, y2, color1);
 
@@ -1126,8 +1135,6 @@ void Screen::drawShadedBox(int x1, int y1, int x2, int y2, int color1, int color
 	drawClippedLine(x1 + 1, y1 + 1, x1 + 1, y2 - 1, color2);
 	drawClippedLine(x1, y2 - 1, x2 - 1, y2 - 1, color2);
 	drawClippedLine(x1, y2, x2, y2, color2);
-
-	showMouse();
 }
 
 void Screen::drawClippedLine(int x1, int y1, int x2, int y2, int color) {
@@ -1226,7 +1233,7 @@ bool Screen::loadFont(FontId fontId, const char *filename) {
 			fnt = new AMIGAFont();
 #ifdef ENABLE_EOB
 		else if (_vm->game() == GI_EOB1 || _vm->game() == GI_EOB2)
-			fnt = new OldDOSFont(_renderMode, (_vm->game() == GI_EOB2) && (_renderMode == Common::kRenderEGA));
+			fnt = new OldDOSFont(_renderMode, _vm->gameFlags().useHiRes);
 #endif // ENABLE_EOB
 		else
 			fnt = new DOSFont();
@@ -2896,13 +2903,12 @@ void Screen::setMouseCursor(int x, int y, const byte *shape) {
 	if (_vm->gameFlags().useAltShapeHeader)
 		shape -= 2;
 
-	if (_vm->gameFlags().useHiResOverlay) {
+	if (_vm->gameFlags().useHiRes) {
 		x <<= 1;
 		y <<= 1;
 		mouseWidth <<= 1;
 		mouseHeight <<= 1;
 	}
-
 
 	uint8 *cursor = new uint8[mouseHeight * mouseWidth];
 	fillRect(0, 0, mouseWidth, mouseHeight, _cursorColorKey, 8);
@@ -2910,7 +2916,7 @@ void Screen::setMouseCursor(int x, int y, const byte *shape) {
 
 	int xOffset = 0;
 
-	if (_vm->gameFlags().useHiResOverlay) {
+	if (_vm->gameFlags().useHiRes) {
 		xOffset = mouseWidth;
 		scale2x(getPagePtr(8) + mouseWidth, SCREEN_W, getPagePtr(8), SCREEN_W, mouseWidth, mouseHeight);
 		postProcessCursor(getPagePtr(8) + mouseWidth, mouseWidth, mouseHeight, SCREEN_W);
@@ -3589,8 +3595,8 @@ void AMIGAFont::unload() {
 	memset(_chars, 0, sizeof(_chars));
 }
 
-SJISFont::SJISFont(Screen *s, Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool outlineSize)
-    : _colorMap(0), _font(font), _invisColor(invisColor), _is16Color(is16Color), _screen(s) {
+SJISFont::SJISFont(Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool outlineSize)
+    : _colorMap(0), _font(font), _invisColor(invisColor), _is16Color(is16Color) {
 	assert(_font);
 
 	_font->setDrawingMode(outlineSize ? Graphics::FontSJIS::kOutlineMode : Graphics::FontSJIS::kDefaultMode);

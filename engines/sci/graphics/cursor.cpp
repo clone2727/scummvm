@@ -59,10 +59,16 @@ GfxCursor::GfxCursor(ResourceManager *resMan, GfxPalette *palette, GfxScreen *sc
 	_zoomColor = 0;
 	_zoomMultiplier = 0;
 	_cursorSurface = 0;
+
 	if (g_sci && g_sci->getGameId() == GID_KQ6 && g_sci->getPlatform() == Common::kPlatformWindows)
 		_useOriginalKQ6WinCursors = ConfMan.getBool("windows_cursors");
 	else
 		_useOriginalKQ6WinCursors = false;
+
+	if (g_sci && g_sci->getGameId() == GID_SQ4 && getSciVersion() == SCI_VERSION_1_1)
+		_useSilverSQ4CDCursors = ConfMan.getBool("silver_cursors");
+	else
+		_useSilverSQ4CDCursors = false;
 }
 
 GfxCursor::~GfxCursor() {
@@ -126,7 +132,7 @@ void GfxCursor::kernelSetShape(GuiResourceId resourceId) {
 
 	resourceData = resource->data;
 
-	if (getSciVersion() <= SCI_VERSION_0_LATE) {
+	if (getSciVersion() <= SCI_VERSION_01) {
 		// SCI0 cursors contain hotspot flags, not actual hotspot coordinates.
 		// If bit 0 of resourceData[3] is set, the hotspot should be centered,
 		// otherwise it's in the top left of the mouse cursor.
@@ -142,11 +148,13 @@ void GfxCursor::kernelSetShape(GuiResourceId resourceId) {
 	colorMapping[1] = _screen->getColorWhite(); // White is also hardcoded
 	colorMapping[2] = SCI_CURSOR_SCI0_TRANSPARENCYCOLOR;
 	colorMapping[3] = _palette->matchColor(170, 170, 170); // Grey
-	// Special case for the magnifier cursor in LB1 (bug #3487092).
-	// No other SCI0 game has a cursor resource of 1, so this is handled
-	// specifically for LB1.
+	// TODO: Figure out if the grey color is hardcoded
+	// HACK for the magnifier cursor in LB1, fixes its color (bug #3487092)
 	if (g_sci->getGameId() == GID_LAURABOW && resourceId == 1)
 		colorMapping[3] = _screen->getColorWhite();
+	// HACK for Longbow cursors, fixes the shade of grey they're using (bug #3489101)
+	if (g_sci->getGameId() == GID_LONGBOW)
+		colorMapping[3] = _palette->matchColor(223, 223, 223); // Light Grey
 
 	// Seek to actual data
 	resourceData += 4;
@@ -204,6 +212,26 @@ void GfxCursor::kernelSetView(GuiResourceId viewNum, int loopNum, int celNum, Co
 		// Phantasmagoria 2 views.
 		warning("TODO: Cursor views for Phantasmagoria 2");
 		return;
+	}
+
+	// Use the alternate silver cursors in SQ4 CD, if requested
+	if (_useSilverSQ4CDCursors) {
+		switch(viewNum) {
+		case 850:
+		case 852:
+		case 854:
+		case 856:
+			celNum = 3;
+			break;
+		case 851:
+		case 853:
+		case 855:
+		case 999:
+			celNum = 2;
+			break;
+		default:
+			break;
+		}
 	}
 
 	if (!_cachedCursors.contains(viewNum))
@@ -383,7 +411,7 @@ void GfxCursor::refreshPosition() {
 			}
 		}
 
-		CursorMan.replaceCursor((const byte *)_cursorSurface, cursorCelInfo->width, cursorCelInfo->height, cursorHotspot.x, cursorHotspot.y, cursorCelInfo->clearKey);
+		CursorMan.replaceCursor(_cursorSurface, cursorCelInfo->width, cursorCelInfo->height, cursorHotspot.x, cursorHotspot.y, cursorCelInfo->clearKey);
 	}
 }
 

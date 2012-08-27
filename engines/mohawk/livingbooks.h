@@ -25,7 +25,7 @@
 
 #include "mohawk/mohawk.h"
 #include "mohawk/console.h"
-#include "mohawk/graphics.h"
+#include "mohawk/livingbooks_graphics.h"
 #include "mohawk/sound.h"
 
 #include "common/config-file.h"
@@ -537,6 +537,9 @@ protected:
 struct LiveTextWord {
 	Common::Rect bounds;
 	uint16 soundId;
+
+	uint16 itemType;
+	uint16 itemId;
 };
 
 struct LiveTextPhrase {

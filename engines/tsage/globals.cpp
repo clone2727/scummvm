@@ -247,7 +247,7 @@ void BlueForceGlobals::synchronize(Serializer &s) {
 	for (int i = 0; i < 18; i++)
 		s.syncAsByte(_breakerBoxStatusArr[i]);
 	s.syncAsSint16LE(_hiddenDoorStatus);
-	s.syncAsSint16LE(_v4CEE2);
+	s.syncAsSint16LE(_nico910State);
 	s.syncAsSint16LE(_v4CEE4);
 	s.syncAsSint16LE(_v4CEE6);
 	s.syncAsSint16LE(_v4CEE8);
@@ -320,7 +320,7 @@ void BlueForceGlobals::reset() {
 	_breakerBoxStatusArr[16] = 3;
 	_breakerBoxStatusArr[17] = 0;
 	_hiddenDoorStatus = 0;
-	_v4CEE2 = 0;
+	_nico910State = 0;
 	_v4CEE4 = 0;
 	_v4CEE6 = 0;
 	_v4CEE8 = 0;
@@ -380,6 +380,7 @@ void Ringworld2Globals::reset() {
 	_v5589E.set(0, 0, 0, 0);
 	_v558B6.set(0, 0, 0, 0);
 	_v558C2 = 0;
+	_animationCtr = 0;
 	_v5657C = 0;
 	_v565E1 = 0;
 	_v565E3 = 0;
@@ -493,6 +494,7 @@ void Ringworld2Globals::synchronize(Serializer &s) {
 	_v558B6.synchronize(s);
 
 	s.syncAsSint16LE(_v558C2);
+	s.syncAsSint16LE(_animationCtr);
 	s.syncAsSint16LE(_v5657C);
 	s.syncAsSint16LE(_v565E1);
 	s.syncAsSint16LE(_v565E3);

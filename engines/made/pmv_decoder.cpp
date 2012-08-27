@@ -35,10 +35,8 @@
 
 namespace Made {
 
-PMVDecoder::PMVDecoder() : Video::FixedRateVideoDecoder() {
+PMVDecoder::PMVDecoder() : Video::VideoDecoder() {
 	_stream = 0;
-	_surface = 0;
-	_audioStream = 0;
 }
 
 PMVDecoder::~PMVDecoder() {
@@ -52,21 +50,21 @@ bool PMVDecoder::loadStream(Common::SeekableReadStream *stream) {
 
 	readChunk(chunkType, chunkSize);	// "MOVE"
 	if (chunkType != MKTAG('M','O','V','E')) {
-		warning("Unexpected PMV video header, expected 'MOVE'");
+		warning("Unexpected PMV video header '%s', expected 'MOVE'", tag2str(chunkType));
 		close();
 		return false;
 	}
 
 	readChunk(chunkType, chunkSize);	// "MHED"
 	if (chunkType != MKTAG('M','H','E','D')) {
-		warning("Unexpected PMV video header, expected 'MHED'");
+		warning("Unexpected PMV video header '%s', expected 'MHED'", tag2str(chunkType));
 		close();
 		return false;
 	}
 
-	_frameDelay = _stream->readUint16LE();
+	uint16 frameDelay = _stream->readUint16LE();
 	_stream->skip(4);	// always 0?
-	_frameCount = _stream->readUint16LE();
+	uint16 frameCount = _stream->readUint16LE();
 	_stream->skip(4);	// always 0?
 
 	uint soundFreq = _stream->readUint16LE();
@@ -84,15 +82,15 @@ bool PMVDecoder::loadStream(Common::SeekableReadStream *stream) {
 	}
 
 	// Read palette
-	_stream->read(_paletteRGB, 768);
-	_dirtyPalette = true;
+	byte paletteRGB[768];
+	_stream->read(paletteRGB, sizeof(paletteRGB));
 
 	// Dive into the first frame to get a width/height
 	uint32 startPos = _stream->pos();
 
 	readChunk(chunkType, chunkSize);
 	if (chunkType != MKTAG('M','F','R','M')) {
-		warning("Unknown chunk type");
+		warning("Unknown chunk type '%s'", tag2str(chunkType));
 		close();
 		return false;
 	}
@@ -104,79 +102,91 @@ bool PMVDecoder::loadStream(Common::SeekableReadStream *stream) {
 	uint16 height = _stream->readUint16LE();
 
 	// Create our surface
-	_surface = new Graphics::Surface();
-	_surface->create(width, height, getPixelFormat());
-	_stream->seek(startPos);
+	addTrack(new PMVVideoTrack(width, height, frameDelay, frameCount, paletteRGB));
 
 	// Initialize sound
-	_audioStream = Audio::makeQueuingAudioStream(soundFreq, false);
-	g_system->getMixer()->playStream(Audio::Mixer::kPlainSoundType, &_audioStreamHandle, _audioStream);
+	addTrack(new PMVAudioTrack(soundFreq));
 
+	_stream->seek(startPos);
 	return true;
 }
 
 void PMVDecoder::close() {
-	if (_surface) {
-		_surface->free();
-		delete _surface;
-		_surface = 0;
-	}
+	VideoDecoder::close();
 
 	delete _stream; _stream = 0;
-	_audioStream->finish();
 }
 
-bool PMVDecoder::isVideoLoaded() const {
-	return _stream != 0;
-}
-
-Graphics::Surface *PMVDecoder::decodeNextFrame() {
+void PMVDecoder::readNextPacket() {
 	if (!isVideoLoaded() || endOfVideo())
-		return 0;
+		return;
 
 	uint32 chunkType, chunkSize;
 	readChunk(chunkType, chunkSize);
 	if (chunkType != MKTAG('M','F','R','M'))
-		warning("Unknown chunk type");
+		error("Unknown chunk type");
 
 	byte *frameData = new byte[chunkSize];
 
 	uint32 bytesRead = _stream->read(frameData, chunkSize);
 
-	if (bytesRead < chunkSize || _stream->eos()) {
-		warning("PMVDecoder: end of stream");
-		close();
-		return 0;
-	}
+	if (bytesRead < chunkSize || _stream->eos())
+		error("PMVDecoder: end of stream");
 
 	uint32 soundChunkOfs = READ_LE_UINT32(frameData + 8);
 	uint32 palChunkOfs = READ_LE_UINT32(frameData + 16);
 
 	// Handle audio
-	if (soundChunkOfs) {
-		byte *audioData = frameData + soundChunkOfs - 8;
-		chunkSize = READ_LE_UINT16(audioData + 4);
-		uint16 chunkCount = READ_LE_UINT16(audioData + 6);
+	if (soundChunkOfs)
+		((PMVAudioTrack *)getTrack(1))->queueSound(frameData + soundChunkOfs - 8);
 
-		debug(1, "chunkCount = %d; chunkSize = %d; total = %d\n", chunkCount, chunkSize, chunkCount * chunkSize);
-
-		uint32 soundSize = chunkCount * chunkSize;
-		byte *soundData = (byte *)malloc(soundSize);
-		decompressSound(audioData + 8, soundData, chunkSize, chunkCount);;
-		_audioStream->queueBuffer(soundData, soundSize, DisposeAfterUse::YES, Audio::FLAG_UNSIGNED);
-	}
+	PMVVideoTrack *videoTrack = (PMVVideoTrack *)getTrack(0);
 
 	// Handle palette
-	if (palChunkOfs) {
-		byte *palData = frameData + palChunkOfs - 8;
-		uint32 palSize = READ_LE_UINT32(palData + 4);
-		decompressPalette(palData + 8, _paletteRGB, palSize);
-		_dirtyPalette = true;
-	}
+	if (palChunkOfs)
+		videoTrack->decompressPalette(frameData + palChunkOfs - 8);
 
 	// Handle video
-	byte *imageData = frameData + READ_LE_UINT32(frameData + 12) - 8;
+	videoTrack->decodeFrame(frameData + READ_LE_UINT32(frameData + 12) - 8);
 
+	delete[] frameData;
+}
+
+PMVDecoder::PMVVideoTrack::PMVVideoTrack(uint width, uint height, uint frameDelay, uint frameCount, const byte *palette) {
+	_surface = new Graphics::Surface();
+	_surface->create(width, height, getPixelFormat());
+	_frameDelay = frameDelay;
+	_frameCount = frameCount;
+	_curFrame = -1;
+	memcpy(_paletteRGB, palette, 768);
+	_dirtyPalette = true;
+}
+
+PMVDecoder::PMVVideoTrack::~PMVVideoTrack() {
+	_surface->free();
+	delete _surface;
+}
+
+void PMVDecoder::PMVVideoTrack::decompressPalette(byte *palData) {
+	uint32 palDataSize = READ_LE_UINT32(palData + 4);
+	palData += 8;
+
+	byte *palDataEnd = palData + palDataSize;
+	while (palData < palDataEnd) {
+		byte count = *palData++;
+		byte entry = *palData++;
+
+		if (count == 255 && entry == 255)
+			break;
+
+		memcpy(&_paletteRGB[entry * 3], palData, (count + 1) * 3);
+		palData += (count + 1) * 3;
+	}
+
+	_dirtyPalette = true;
+}
+
+void PMVDecoder:: PMVVideoTrack::decodeFrame(byte *imageData) {
 	// frameNum @0
 	//uint16 width = READ_LE_UINT16(imageData + 8);
 	//uint16 height = READ_LE_UINT16(imageData + 10);
@@ -192,12 +202,30 @@ Graphics::Surface *PMVDecoder::decodeNextFrame() {
 	decompressMovieImage(imageData, *_surface, cmdOffs, pixelOffs, maskOffs, lineSize);
 
 	_curFrame++;
+}
 
-	if (_curFrame == 0)
-		_startTime = g_system->getMillis();
+PMVDecoder::PMVAudioTrack::PMVAudioTrack(uint soundFreq) {
+	_audioStream = Audio::makeQueuingAudioStream(soundFreq, false);
+}
 
-	delete[] frameData;
-	return _surface;
+PMVDecoder::PMVAudioTrack::~PMVAudioTrack() {
+	delete _audioStream;
+}
+
+void PMVDecoder::PMVAudioTrack::queueSound(byte *audioData) {
+	uint16 chunkSize = READ_LE_UINT16(audioData + 4);
+	uint16 chunkCount = READ_LE_UINT16(audioData + 6);
+
+	debug(1, "audio chunkCount = %d; chunkSize = %d; total = %d\n", chunkCount, chunkSize, chunkCount * chunkSize);
+
+	uint32 soundSize = chunkCount * chunkSize;
+	byte *soundData = (byte *)malloc(soundSize);
+	decompressSound(audioData + 8, soundData, chunkSize, chunkCount);
+	_audioStream->queueBuffer(soundData, soundSize, DisposeAfterUse::YES, Audio::FLAG_UNSIGNED);
+}
+
+Audio::AudioStream *PMVDecoder::PMVAudioTrack::getAudioStream() const {
+	return _audioStream;
 }
 
 void PMVDecoder::readChunk(uint32 &chunkType, uint32 &chunkSize) {
@@ -209,48 +237,6 @@ void PMVDecoder::readChunk(uint32 &chunkType, uint32 &chunkSize) {
 		(chunkType >> 24) & 0xFF, (chunkType >> 16) & 0xFF, (chunkType >> 8) & 0xFF, chunkType & 0xFF,
 		chunkSize);
 
-}
-
-void PMVDecoder::decompressPalette(byte *palData, byte *outPal, uint32 palDataSize) {
-	byte *palDataEnd = palData + palDataSize;
-	while (palData < palDataEnd) {
-		byte count = *palData++;
-		byte entry = *palData++;
-		if (count == 255 && entry == 255)
-			break;
-		memcpy(&outPal[entry * 3], palData, (count + 1) * 3);
-		palData += (count + 1) * 3;
-	}
-}
-
-uint32 PMVDecoder::getElapsedTime() const {
-	// FIXME: Using this A/V synced code cannot work properly. While it is correct in
-	// theory, PMV files do not have properly interleaving. For example, in the intro
-	// video, the first audio frame is 98ms while every frame is 101ms. This leads to
-	// audio underflow and the Mixer getting confused because it stops getting samples
-	// for ~3ms. This results in very choppy playback. The old code worked because
-	// its syncing calculation would *always* end up skipping the first frame.
-	//
-	// The syncing using only start time should be sufficient for now, and would only
-	// break if we decoded frames too quickly, which shouldn't happen if only
-	// needsUpdate() and getTimeToNextFrame() are used (which is normal operation
-	// anyway).
-	//
-	// In order to get better A/V sync, we can do one of the following things:
-	// 1) Ignore interleaving and do manual demuxing
-	// 2) Skip the first frame like the old code did (very hacky)
-	//
-	// IMO, neither are really worth it as this code works well enough.
-#if 1
-	return VideoDecoder::getElapsedTime();
-#else
-	if (!isVideoLoaded() || _curFrame < 0)
-		return 0;
-
-	// TODO: This is not working properly
-	// It sometimes jumps backwards in time. I can't explain it.
-	return g_system->getMixer()->getSoundElapsedTime(_audioStreamHandle);
-#endif
 }
 
 } // End of namespace Made

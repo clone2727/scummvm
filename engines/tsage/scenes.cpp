@@ -240,7 +240,7 @@ void SceneManager::listenerSynchronize(Serializer &s) {
 
 	if (s.isLoading()) {
 		changeScene(_sceneNumber);
-		
+
 		if (_nextSceneNumber != -1) {
 			sceneChange();
 			_nextSceneNumber = -1;
@@ -317,7 +317,7 @@ void Scene::loadSceneData(int sceneNum) {
 	_activeScreenNumber = sceneNum;
 
 	if (g_vm->getGameID() == GType_Ringworld2) {
-		// Most scenes in Ringworld 2 don't have a scene size resource, but rather just have 
+		// Most scenes in Ringworld 2 don't have a scene size resource, but rather just have
 		// a standard 320x200 size. Only read the scene size data for the specific few scenes
 		switch (sceneNum) {
 		case 700:
@@ -457,7 +457,7 @@ void Scene::refreshBackground(int xAmount, int yAmount) {
 						Rect destBounds(xSectionDest * 160, ySectionDest * 100,
 								(xSectionDest + 1) * 160, (ySectionDest + 1) * 100);
 						if (g_vm->getGameID() != GType_Ringworld) {
-							// For Blue Force and Return to Ringworld, if the scene has an interface area, 
+							// For Blue Force and Return to Ringworld, if the scene has an interface area,
 							// exclude it from the copy
 							srcBounds.bottom = MIN<int16>(srcBounds.bottom, BF_GLOBALS._interfaceY);
 							destBounds.bottom = MIN<int16>(destBounds.bottom, BF_GLOBALS._interfaceY);
@@ -569,17 +569,13 @@ void Game::quitGame() {
 }
 
 void Game::handleSaveLoad(bool saveFlag, int &saveSlot, Common::String &saveName) {
-	const EnginePlugin *plugin = 0;
-	EngineMan.findGame(g_vm->getGameId(), &plugin);
 	GUI::SaveLoadChooser *dialog;
 	if (saveFlag)
-		dialog = new GUI::SaveLoadChooser(_("Save game:"), _("Save"));
+		dialog = new GUI::SaveLoadChooser(_("Save game:"), _("Save"), saveFlag);
 	else
-		dialog = new GUI::SaveLoadChooser(_("Load game:"), _("Load"));
+		dialog = new GUI::SaveLoadChooser(_("Load game:"), _("Load"), saveFlag);
 
-	dialog->setSaveMode(saveFlag);
-
-	saveSlot = dialog->runModalWithPluginAndTarget(plugin, ConfMan.getActiveDomainName());
+	saveSlot = dialog->runModalWithCurrentTarget();
 	saveName = dialog->getResultString();
 
 	delete dialog;

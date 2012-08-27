@@ -40,16 +40,16 @@ Scene *Ringworld2Game::createScene(int sceneNumber) {
 
 	switch (sceneNumber) {
 	/* Scene group #0 */
-	case 50: 
+	case 50:
 		// Waking up cutscene
 		return new Scene50();
-	case 100: 
+	case 100:
 		// Quinn's room
 		return new Scene100();
-	case 125: 
+	case 125:
 		// Computer console
 		return new Scene125();
-	case 150: 
+	case 150:
 		// Empty Bedroom #1
 		return new Scene150();
 	case 160:
@@ -166,7 +166,7 @@ Scene *Ringworld2Game::createScene(int sceneNumber) {
 		// Ice Maze: Large empty room
 		return new Scene2400();
 	case 2425:
-		// Ice Maze: 
+		// Ice Maze:
 		return new Scene2425();
 	case 2430:
 		// Ice Maze: Bedroom
@@ -326,7 +326,7 @@ void SceneExt::postInit(SceneObjectList *OwnerList) {
 
 	int prevScene = R2_GLOBALS._sceneManager._previousScene;
 	int sceneNumber = R2_GLOBALS._sceneManager._sceneNumber;
-	if (((prevScene == -1) && (sceneNumber != 180) && (sceneNumber != 205) && (sceneNumber != 50)) 
+	if (((prevScene == -1) && (sceneNumber != 180) && (sceneNumber != 205) && (sceneNumber != 50))
 			|| (sceneNumber == 50)
 			|| ((prevScene == 205) && (sceneNumber == 100))
 			|| ((prevScene == 180) && (sceneNumber == 100))) {
@@ -549,7 +549,7 @@ void SceneExt::scalePalette(int RFactor, int GFactor, int BFactor) {
 			tmp += abs(tmpPal[(3 * j) + 2] - newB);
 			if (tmp >= varC)
 				continue;
-			
+
 			varC = tmp;
 			varD = j;
 		}
@@ -628,11 +628,11 @@ void SceneHandlerExt::setupPaletteMaps() {
 					diffSum += ABS(palP[pIndex2 * 3 + 1] - g);
 					if (diffSum >= threshold)
 						continue;
-					
+
 					diffSum += ABS(palP[pIndex2 * 3 + 2] - b);
 					if (diffSum >= threshold)
 						continue;
-					
+
 					threshold = diffSum;
 					foundIndex = pIndex2;
 				}
@@ -1257,12 +1257,12 @@ void SceneAreaObject::setDetails(int visage, int strip, int frameNumber, const C
 	_cursorNum = CURSOR_INVALID;
 	Scene500 *scene = (Scene500 *)R2_GLOBALS._sceneManager._scene;
 	scene->_sceneAreas.push_front(this);
-	
+
 	_insetCount = ++R2_GLOBALS._insetUp;
 }
 
 void SceneAreaObject::setDetails(int resNum, int lookLineNum, int talkLineNum, int useLineNum) {
-	((SceneHotspot *)(this))->setDetails(resNum, lookLineNum, talkLineNum, useLineNum, 
+	((SceneHotspot *)(this))->setDetails(resNum, lookLineNum, talkLineNum, useLineNum,
 		2, (SceneItem *)NULL);
 }
 
@@ -1306,7 +1306,7 @@ void UnkObject1200::sub51AE9(int arg1) {
 int UnkObject1200::sub51AF8(Common::Point pt) {
 	if (!_rect1.contains(pt))
 		return -1;
-	
+
 	int tmp1 = (pt.x - _rect1.left + _field2E) / _field2A;
 	int tmp2 = (pt.y - _rect1.top + _field30) / _field2C;
 
@@ -1358,7 +1358,7 @@ void UnkObject1200::sub9EDE8(Rect rect) {
 int UnkObject1200::sub9EE22(int &arg1, int &arg2) {
 	arg1 /= _field2A;
 	arg2 /= _field2C;
-	
+
 	if ((arg1 >= 0) && (arg2 >= 0) && (_field26 > arg1) && (_field28 > arg2)) {
 		return _field16[(((_field26 * arg2) + arg1) * 2)];
 	}
@@ -1368,13 +1368,13 @@ int UnkObject1200::sub9EE22(int &arg1, int &arg2) {
 
 void Scene1200::sub9DAD6(int indx) {
 	_object1.sub9EE22(R2_GLOBALS._v56AA2, R2_GLOBALS._v56AA4);
-	
+
 	switch (indx) {
 	case 0:
-		if ( ((_object1.sub51AF8(Common::Point(200, 50)) > 36) || (_object1.sub51AF8(Common::Point(200, 88)) > 36)) 
-			&& ( ((R2_GLOBALS._v56AA2 == 3) && (R2_GLOBALS._v56AA4 == 33) && (_field418 != 4)) 
-				|| ((R2_GLOBALS._v56AA2 == 13) && (R2_GLOBALS._v56AA4 == 21) && (_field418 != 2)) 
-				|| ((R2_GLOBALS._v56AA2 == 29) && (R2_GLOBALS._v56AA4 == 17) && (_field418 != 1)) 
+		if ( ((_object1.sub51AF8(Common::Point(200, 50)) > 36) || (_object1.sub51AF8(Common::Point(200, 88)) > 36))
+			&& ( ((R2_GLOBALS._v56AA2 == 3) && (R2_GLOBALS._v56AA4 == 33) && (_field418 != 4))
+				|| ((R2_GLOBALS._v56AA2 == 13) && (R2_GLOBALS._v56AA4 == 21) && (_field418 != 2))
+				|| ((R2_GLOBALS._v56AA2 == 29) && (R2_GLOBALS._v56AA4 == 17) && (_field418 != 1))
 				|| ((R2_GLOBALS._v56AA2 == 33) && (R2_GLOBALS._v56AA4 == 41)) )
 				)	{
 			R2_GLOBALS._player.disableControl();
@@ -1415,10 +1415,10 @@ void Scene1200::sub9DAD6(int indx) {
 		}
 		break;
 	case 1:
-		if ( ((_object1.sub51AF8(Common::Point(120, 50)) > 36) || (_object1.sub51AF8(Common::Point(120, 88)) > 36)) 
-			&& ( ((R2_GLOBALS._v56AA2 == 7) && (R2_GLOBALS._v56AA4 == 33) && (_field418 != 4)) 
-				|| ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 21) && (_field418 != 2)) 
-				|| ((R2_GLOBALS._v56AA2 == 33) && (R2_GLOBALS._v56AA4 == 17) && (_field418 != 1)) 
+		if ( ((_object1.sub51AF8(Common::Point(120, 50)) > 36) || (_object1.sub51AF8(Common::Point(120, 88)) > 36))
+			&& ( ((R2_GLOBALS._v56AA2 == 7) && (R2_GLOBALS._v56AA4 == 33) && (_field418 != 4))
+				|| ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 21) && (_field418 != 2))
+				|| ((R2_GLOBALS._v56AA2 == 33) && (R2_GLOBALS._v56AA4 == 17) && (_field418 != 1))
 				|| ((R2_GLOBALS._v56AA2 == 5) && (R2_GLOBALS._v56AA4 == 5)) )
 				)	{
 			R2_GLOBALS._player.disableControl();
@@ -1459,8 +1459,8 @@ void Scene1200::sub9DAD6(int indx) {
 		}
 		break;
 	case 2:
-		if ( ((_object1.sub51AF8(Common::Point(140, 110)) > 36) || (_object1.sub51AF8(Common::Point(178, 110)) > 36)) 
-			&& ( ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 5) && (_field418 != 3)) 
+		if ( ((_object1.sub51AF8(Common::Point(140, 110)) > 36) || (_object1.sub51AF8(Common::Point(178, 110)) > 36))
+			&& ( ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 5) && (_field418 != 3))
 				|| ((R2_GLOBALS._v56AA2 == 41) && (R2_GLOBALS._v56AA4 == 21)) )
 				)	{
 			R2_GLOBALS._player.disableControl();
@@ -1501,8 +1501,8 @@ void Scene1200::sub9DAD6(int indx) {
 		}
 		break;
 	case 3:
-		if ( ((_object1.sub51AF8(Common::Point(140, 30)) > 36) || (_object1.sub51AF8(Common::Point(178, 30)) > 36)) 
-			&& ( ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 9) && (_field418 != 3)) 
+		if ( ((_object1.sub51AF8(Common::Point(140, 30)) > 36) || (_object1.sub51AF8(Common::Point(178, 30)) > 36))
+			&& ( ((R2_GLOBALS._v56AA2 == 17) && (R2_GLOBALS._v56AA4 == 9) && (_field418 != 3))
 				|| ((R2_GLOBALS._v56AA2 == 35) && (R2_GLOBALS._v56AA4 == 17)) )
 				)	{
 			R2_GLOBALS._player.disableControl();
@@ -1551,24 +1551,88 @@ void Scene1200::sub9DAD6(int indx) {
 
 /*--------------------------------------------------------------------------*/
 
+void AnimationSlice::load(Common::File &f) {
+	f.skip(2);
+	_sliceOffset = f.readUint16LE();
+	f.skip(6);
+	_drawMode = f.readByte();
+	_secondaryIndex = f.readByte();
+}
+
+/*--------------------------------------------------------------------------*/
+
+AnimationSlices::AnimationSlices() {
+	_pixelData = NULL;
+}
+
+AnimationSlices::~AnimationSlices() {
+	delete[] _pixelData;
+}
+
+void AnimationSlices::load(Common::File &f) {
+	f.skip(4);
+	_dataSize = f.readUint32LE();
+	f.skip(8);
+	_dataSize2 = f.readUint32LE();
+	f.skip(28);
+
+	// Load the four slice indexes
+	for (int idx = 0; idx < 4; ++idx)
+		_slices[idx].load(f);
+}
+
+int AnimationSlices::loadPixels(Common::File &f, int slicesSize) {
+	delete[] _pixelData;
+	_pixelData = new byte[slicesSize];
+	return f.read(_pixelData, slicesSize);
+}
+
+/*--------------------------------------------------------------------------*/
+
+void AnimationPlayerSubData::load(Common::File &f) {
+	uint32 posStart = f.pos();
+
+	f.skip(6);
+	_duration = f.readUint32LE();
+	_frameRate = f.readUint16LE();
+	_framesPerSlices = f.readUint16LE();
+	_drawType = f.readUint16LE();
+	f.skip(2);
+	_sliceSize = f.readUint16LE();
+	_ySlices = f.readUint16LE();
+	_field16 = f.readUint32LE();
+	f.skip(2);
+	_palStart = f.readUint16LE();
+	_palSize = f.readUint16LE();
+	f.read(_palData, 768);
+	_totalSize = f.readSint32LE();
+	f.skip(12);
+	_slices.load(f);
+
+	uint32 posEnd = f.pos();
+	assert((posEnd - posStart) == 0x390);
+}
+
+/*--------------------------------------------------------------------------*/
+
 AnimationPlayer::AnimationPlayer(): EventHandler() {
 	_endAction = NULL;
-	
-	_fieldA = NULL;
-	_field16 = NULL;
-	
+
+	_animData1 = NULL;
+	_animData2 = NULL;
+
 	_screenBounds = R2_GLOBALS._gfxManagerInstance._bounds;
 	_rect1 = R2_GLOBALS._gfxManagerInstance._bounds;
-	_field3C = 0;
+	_paletteMode = ANIMPALMODE_REPLACE_PALETTE;
 	_field3A = 1;
-	_field5A = 0;
-	_field58 = 0;
+	_sliceHeight = 1;
+	_field58 = 1;
 	_endAction = NULL;
 }
 
 AnimationPlayer::~AnimationPlayer() {
-	if (!method3())
-		method4();
+	if (!isCompleted())
+		close();
 }
 
 void AnimationPlayer::synchronize(Serializer &s) {
@@ -1586,47 +1650,232 @@ void AnimationPlayer::remove() {
 void AnimationPlayer::process(Event &event) {
 	if ((event.eventType == EVENT_KEYPRESS) && (event.kbd.keycode == Common::KEYCODE_ESCAPE) &&
 			(_field3A)) {
-		_field90C = _field576;
-	} 
+		// Move the current position to the end
+		_position = _subData._duration;
+	}
 }
 
 void AnimationPlayer::dispatch() {
 	uint32 gameFrame = R2_GLOBALS._events.getFrameNumber();
-	uint32 gameDiff = (gameFrame > _gameFrame) ? gameFrame - _gameFrame : _gameFrame - gameFrame;
+	uint32 gameDiff = gameFrame - _gameFrame;
 
-	if (gameDiff >= _field910) {
-		drawFrame(_field904 % _field57C);
-		++_field904;
-		_field90C = _field904 / _field57C;
+	if (gameDiff >= _frameDelay) {
+		drawFrame(_playbackTick % _subData._framesPerSlices);
+		++_playbackTick;
+		_position = _playbackTick / _subData._framesPerSlices;
 
-		if (_field90C == _field90E)
-			method2();
+		if (_position == _nextSlicesPosition)
+			nextSlices();
 
-		_field908 = _field904;
+		_playbackTickPrior = _playbackTick;
 		_gameFrame = gameFrame;
 	}
 }
 
-bool AnimationPlayer::load(int rlbNum, Action *endAction) {
-	ResourceEntry resEntry;
-	if (!g_resourceManager->first().getSectionEntry(_resourceFile, RES_IMAGE, rlbNum, 0, resEntry)) {
-		warning("Couldn't find resource index");
-		// TODO: Complete animation loading
+bool AnimationPlayer::load(int animId, Action *endAction) {
+	// Open up the main resource file for access
+	TLib &libFile = g_resourceManager->first();
+	if (!_resourceFile.open(libFile.getFilename()))
+		error("Could not open resource");
+
+	// Get the offset of the given resource and seek to it in the player's file reference
+	ResourceEntry entry;
+	uint32 fileOffset = libFile.getResourceStart(RES_IMAGE, animId, 0, entry);
+	_resourceFile.seek(fileOffset);
+
+	// At this point, the file is pointing to the start of the resource data
+
+	// Set the end action
+	_endAction = endAction;
+
+	// Load the sub data block
+	_subData.load(_resourceFile);
+
+	// Set other properties
+	_playbackTickPrior = -1;
+	_playbackTick = 0;
+
+	// The final multiplication is used to deliberately slow down playback, since the original 
+	// was slowed down by the amount of time spent to decode and display the frames
+	_frameDelay = (60 / _subData._frameRate) * 8;
+	_gameFrame = R2_GLOBALS._events.getFrameNumber();
+
+	if (_subData._totalSize) {
+		_dataNeeded = _subData._totalSize;
+	} else {
+		int v = (_subData._sliceSize + 2) * _subData._ySlices * _subData._framesPerSlices;
+		_dataNeeded = (_subData._field16 / _subData._framesPerSlices) + v + 96;
+	}
+	
+	debugC(1, ktSageDebugGraphics, "Data needed %d", _dataNeeded);
+
+	// Set up animation data objects
+	_animData1 = new AnimationData();
+	_sliceCurrent = _animData1;
+
+	if (_subData._framesPerSlices <= 1) {
+		_animData2 = NULL;
+		_sliceNext = _sliceCurrent;
+	} else {
+		_animData2 = new AnimationData();
+		_sliceNext = _animData2;
 	}
 
-	_resourceFile.close();
-	return false;
+	_position = 0;
+	_nextSlicesPosition = 1;
+
+	// Load up the first slices set
+	_sliceCurrent->_dataSize = _subData._slices._dataSize;
+	_sliceCurrent->_slices = _subData._slices;
+	int slicesSize = _sliceCurrent->_dataSize - 96;
+	int readSize = _sliceCurrent->_slices.loadPixels(_resourceFile, slicesSize);
+	_sliceCurrent->_animSlicesSize = readSize + 96;
+
+	if (_sliceNext != _sliceCurrent) {
+		getSlices();
+	}
+
+	// Handle starting palette
+	switch (_paletteMode) {
+	case ANIMPALMODE_REPLACE_PALETTE:
+		// Use the palette provided with the animation directly
+		_palette.getPalette();
+		for (int idx = _subData._palStart; idx < (_subData._palStart + _subData._palSize); ++idx) {
+			byte r = _subData._palData[idx * 3];
+			byte g = _subData._palData[idx * 3 + 1];
+			byte b = _subData._palData[idx * 3 + 2];
+
+			R2_GLOBALS._scenePalette.setEntry(idx, r, g, b);
+		}
+
+		R2_GLOBALS._sceneManager._hasPalette = true;
+		break;
+	case ANIMPALMODE_NONE:
+		break;
+
+	default:
+		// ANIMPALMODE_CURR_PALETTE
+		// Use the closest matching colours in the currently active palette to those specified in the animation
+		for (int idx = _subData._palStart; idx < (_subData._palStart + _subData._palSize); ++idx) {
+			byte r = _subData._palData[idx * 3];
+			byte g = _subData._palData[idx * 3 + 1];
+			byte b = _subData._palData[idx * 3 + 2];
+		
+			int palIndex = R2_GLOBALS._scenePalette.indexOf(r, g, b);
+			_palIndexes[idx] = palIndex;
+		}
+		break;
+	}
+
+	++R2_GLOBALS._animationCtr;
+	_field38 = 1;
+	return true;
 }
 
-void AnimationPlayer::drawFrame(int frameIndex) {
-	uint32 v = READ_LE_UINT32(_dataP);
-warning("v = %d", v);
-//TODO
+void AnimationPlayer::drawFrame(int sliceIndex) {
+	assert(sliceIndex < 4);
+	AnimationSlices &slices = _sliceCurrent->_slices;
+	AnimationSlice &slice = _sliceCurrent->_slices._slices[sliceIndex];
 
-	// End check
-	if (_field56 == 42) {
+	byte *sliceDataStart = &slices._pixelData[slice._sliceOffset - 96];
+	byte *sliceData1 = sliceDataStart;
+
+	Rect playerBounds = _screenBounds;
+	int y = _screenBounds.top;
+	R2_GLOBALS._screenSurface.addDirtyRect(playerBounds);
+
+	Graphics::Surface surface = R2_GLOBALS._screenSurface.lockSurface();
+
+	// Handle different drawing modes
+	switch (slice._drawMode) {
+	case 0:
+		// Draw from uncompressed source
+		for (int sliceNum = 0; sliceNum < _subData._ySlices; ++sliceNum) {
+			for (int yIndex = 0; yIndex < _sliceHeight; ++yIndex) {
+				// TODO: Check of _subData._drawType was done for two different kinds of
+				// line slice drawing in original
+				const byte *pSrc = (const byte *)sliceDataStart + READ_LE_UINT16(sliceData1 + sliceNum * 2);
+				byte *pDest = (byte *)surface.getBasePtr(playerBounds.left, y++);
+
+				Common::copy(pSrc, pSrc + _subData._sliceSize, pDest);
+			}
+		}
+		break;
+
+	case 1:
+		switch (slice._secondaryIndex) {
+		case 0xfe:
+			// Draw from uncompressed source with optional skipped rows
+			for (int sliceNum = 0; sliceNum < _subData._ySlices; ++sliceNum) {
+				for (int yIndex = 0; yIndex < _sliceHeight; ++yIndex, playerBounds.top++) {
+					int offset = READ_LE_UINT16(sliceData1 + sliceNum * 2);
+
+					if (offset) {
+						const byte *pSrc = (const byte *)sliceDataStart + offset;
+						byte *pDest = (byte *)surface.getBasePtr(playerBounds.left, playerBounds.top);
+
+						//Common::copy(pSrc, pSrc + playerBounds.width(), pDest);
+						rleDecode(pSrc, pDest, playerBounds.width());
+					}
+				}
+			}
+			break;
+		case 0xff:
+			// Draw from RLE compressed source
+			for (int sliceNum = 0; sliceNum < _subData._ySlices; ++sliceNum) {
+				for (int yIndex = 0; yIndex < _sliceHeight; ++yIndex, playerBounds.top++) {
+					// TODO: Check of _subData._drawType was done for two different kinds of
+					// line slice drawing in original
+					const byte *pSrc = (const byte *)sliceDataStart + READ_LE_UINT16(sliceData1 + sliceNum * 2);
+					byte *pDest = (byte *)surface.getBasePtr(playerBounds.left, playerBounds.top);
+
+					rleDecode(pSrc, pDest, _subData._sliceSize);
+				}
+			}
+			break;
+		default: {
+			// Draw from two slice sets simultaneously
+			AnimationSlice &slice2 = _sliceCurrent->_slices._slices[slice._secondaryIndex];
+			byte *sliceData2 = &slices._pixelData[slice2._sliceOffset - 96];
+
+			for (int sliceNum = 0; sliceNum < _subData._ySlices; ++sliceNum) {
+				for (int yIndex = 0; yIndex < _sliceHeight; ++yIndex) {
+					const byte *pSrc1 = (const byte *)sliceDataStart + READ_LE_UINT16(sliceData2 + sliceNum * 2);
+					const byte *pSrc2 = (const byte *)sliceDataStart + READ_LE_UINT16(sliceData1 + sliceNum * 2);
+					byte *pDest = (byte *)surface.getBasePtr(playerBounds.left, y++);
+
+					if (slice2._drawMode == 0) {
+						// Uncompressed background, foreground compressed
+						Common::copy(pSrc1, pSrc1 + _subData._sliceSize, pDest);
+						rleDecode(pSrc2, pDest, _subData._sliceSize);
+					} else {
+						// Both background and foreground is compressed
+						rleDecode(pSrc1, pDest, _subData._sliceSize);
+						rleDecode(pSrc2, pDest, _subData._sliceSize);
+					}
+				}
+			}
+			break;
+		}
+		}
+	default:
+		break;
+	}
+
+	// Unlock the screen surface
+	R2_GLOBALS._screenSurface.unlockSurface();
+
+	if (_objectMode == 42) {
 		_screenBounds.expandPanes();
 
+		// Copy the drawn frame to the back surface
+		Rect srcRect = R2_GLOBALS._screenSurface.getBounds();
+		Rect destRect = srcRect;
+		destRect.translate(-g_globals->_sceneOffset.x, -g_globals->_sceneOffset.y);
+		R2_GLOBALS._sceneManager._scene->_backSurface.copyFrom(R2_GLOBALS._screenSurface,
+			srcRect, destRect);
+
+		// Draw any objects into the scene
 		R2_GLOBALS._sceneObjects->draw();
 	} else {
 		if (R2_GLOBALS._sceneManager._hasPalette) {
@@ -1636,24 +1885,45 @@ warning("v = %d", v);
 	}
 }
 
-void AnimationPlayer::method2() {
+/**
+ * Read the next frame's slice set
+ */
+void AnimationPlayer::nextSlices() {
+	_position = _nextSlicesPosition++;
+	_playbackTick = _position * _subData._framesPerSlices;
+	_playbackTickPrior = _playbackTick - 1;
 
+	if (_sliceNext == _sliceCurrent) {
+		int dataSize = _sliceCurrent->_slices._dataSize2;
+		_sliceCurrent->_dataSize = dataSize;
+		debugC(1, ktSageDebugGraphics, "Next frame size = %xh", dataSize);
+		if (dataSize == 0)
+			return;
+
+		dataSize -= 96;
+		assert(dataSize >= 0);
+		_sliceCurrent->_slices.load(_resourceFile);
+		_sliceCurrent->_animSlicesSize = _sliceCurrent->_slices.loadPixels(_resourceFile, dataSize);
+	} else {
+		SWAP(_sliceCurrent, _sliceNext);
+		getSlices();
+	}
 }
 
-bool AnimationPlayer::method3() {
-	return (_field90C >= _field576);
+bool AnimationPlayer::isCompleted() {
+	return (_position >= _subData._duration);
 }
 
-void AnimationPlayer::method4() {
+void AnimationPlayer::close() {
 	if (_field38) {
-		switch (_field3C) {
+		switch (_paletteMode) {
 		case 0:
 			R2_GLOBALS._scenePalette.replace(&_palette);
 			changePane();
 			R2_GLOBALS._sceneManager._hasPalette = true;
 			break;
 		case 2:
-			proc14();
+			closing();
 			break;
 		default:
 			changePane();
@@ -1661,7 +1931,62 @@ void AnimationPlayer::method4() {
 		}
 	}
 
-// TODO
+	// Close the resource file
+	_resourceFile.close();
+
+	if (_objectMode != 42) {
+		// flip screen in original
+	}
+
+	// Free animation objects
+	delete _animData1;
+	delete _animData2;
+	_animData1 = NULL;
+	_animData2 = NULL;
+
+	_field38 = 0;
+	if (g_globals != NULL)
+		R2_GLOBALS._animationCtr = MAX(R2_GLOBALS._animationCtr, 0);
+}
+
+void AnimationPlayer::rleDecode(const byte *pSrc, byte *pDest, int size) {
+	while (size > 0) {
+		byte v = *pSrc++;
+		if (!(v & 0x80)) {
+			// Following uncompressed set of bytes
+			Common::copy(pSrc, pSrc + v, pDest);
+			pSrc += v;
+			pDest += v;
+			size -= v;
+		} else {
+			int count = v & 0x3F;
+			size -= count;
+
+			if (!(v & 0x40)) {
+				// Skip over a number of bytes
+				pDest += count;
+			} else {
+				// Replicate a number of bytes
+				Common::fill(pDest, pDest + count, *pSrc++);
+				pDest += count;
+			}
+		}
+	}
+}
+
+void AnimationPlayer::getSlices() {
+	assert((_sliceNext == _animData1) || (_sliceNext == _animData2));
+	assert((_sliceCurrent == _animData1) || (_sliceCurrent == _animData2));
+
+	_sliceNext->_dataSize = _sliceCurrent->_slices._dataSize2;
+	if (_sliceNext->_dataSize) {
+		if (_sliceNext->_dataSize >= _dataNeeded)
+			error("Bogus dataNeeded == %d / %d", _sliceNext->_dataSize, _dataNeeded);
+	}
+
+	int dataSize = _sliceNext->_dataSize - 96;
+	_sliceNext->_slices.load(_resourceFile);
+	_sliceNext->_animSlicesSize = _sliceNext->_slices.loadPixels(_resourceFile, dataSize);
 }
 
 /*--------------------------------------------------------------------------*/

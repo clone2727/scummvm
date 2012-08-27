@@ -55,7 +55,7 @@ Screen_EoB::Screen_EoB(EoBCoreEngine *vm, OSystem *system) : Screen(vm, system, 
 	_egaPixelValueTable = 0;
 	_cgaMappingDefault = 0;
 	_cgaDitheringTables[0] = _cgaDitheringTables[1] = 0;
-	_useHiResEGADithering = false;
+	_useLoResEGA = _useHiResEGADithering = false;
 }
 
 Screen_EoB::~Screen_EoB() {
@@ -69,12 +69,8 @@ Screen_EoB::~Screen_EoB() {
 }
 
 bool Screen_EoB::init() {
-	return init(false);
-}
-
-bool Screen_EoB::init(bool useHiResEGADithering) {
 	// Define hi-res pages for EGA mode in EOB II
-	if (useHiResEGADithering) {
+	if (_vm->gameFlags().useHiRes) {
 		for (int i = 0; i < 8; i++)
 			_pageScaleFactor[i] = 2;
 	}
@@ -99,15 +95,16 @@ bool Screen_EoB::init(bool useHiResEGADithering) {
 
 		_dsTempPage = new uint8[12000];
 
-		if (_renderMode == Common::kRenderEGA) {
-			_useHiResEGADithering = useHiResEGADithering;
+		if (_vm->gameFlags().useHiRes && _renderMode == Common::kRenderEGA) {
+			_useHiResEGADithering = true;
 			_egaDitheringTable = new uint8[256];
 			_egaPixelValueTable = new uint8[256];
 			for (int i = 0; i < 256; i++) {
 				_egaDitheringTable[i] = i & 0x0f;
 				_egaPixelValueTable[i] = i & 0x0f;
 			}
-
+		} else if (_renderMode == Common::kRenderEGA) {
+			_useLoResEGA = true;
 		} else if (_renderMode == Common::kRenderCGA) {
 			_cgaMappingDefault = _vm->staticres()->loadRawData(kEoB1CgaMappingDefault, temp);
 			_cgaDitheringTables[0] = new uint16[256];
@@ -150,7 +147,7 @@ void Screen_EoB::setMouseCursor(int x, int y, const byte *shape, const uint8 *ov
 	uint8 *cursor = new uint8[mouseW * _pageScaleFactor[6] * mouseH * _pageScaleFactor[6]];
 	// We use memset and copyBlockToPage instead of fillRect to make sure that the
 	// color key 0xFF doesn't get converted into EGA color
-	memset (cursor, colorKey, mouseW * _pageScaleFactor[6] * mouseH * _pageScaleFactor[6]);
+	memset(cursor, colorKey, mouseW * _pageScaleFactor[6] * mouseH * _pageScaleFactor[6]);
 	copyBlockToPage(6, 0, 0, mouseW, mouseH, cursor);
 	drawShape(6, shape, 0, 0, 0, 2, ovl);
 	CursorMan.showMouse(false);
@@ -425,6 +422,21 @@ void Screen_EoB::setScreenPalette(const Palette &pal) {
 	}
 }
 
+void Screen_EoB::getRealPalette(int num, uint8 *dst) {
+	if (_renderMode == Common::kRenderCGA || _renderMode == Common::kRenderEGA) {
+		const uint8 *pal = _screenPalette->getData();
+		for (int i = 0; i < 16; ++i) {
+			dst[0] = (pal[0] << 2) | (pal[0] & 3);
+			dst[1] = (pal[1] << 2) | (pal[1] & 3);
+			dst[2] = (pal[2] << 2) | (pal[2] & 3);
+			dst += 3;
+			pal += 3;
+		}
+	} else {
+		Screen::getRealPalette(num, dst);
+	}
+}
+
 uint8 *Screen_EoB::encodeShape(uint16 x, uint16 y, uint16 w, uint16 h, bool encode8bit, const uint8 *cgaMapping) {
 	uint8 *shp = 0;
 	uint16 shapesize = 0;
@@ -432,7 +444,7 @@ uint8 *Screen_EoB::encodeShape(uint16 x, uint16 y, uint16 w, uint16 h, bool enco
 	uint8 *srcLineStart = getPagePtr(_curPage | 1) + y * 320 + (x << 3);
 	uint8 *src = srcLineStart;
 
-	if (_renderMode == Common::kRenderEGA && !_useHiResEGADithering)
+	if (_useLoResEGA)
 		encode8bit = false;
 
 	if (_renderMode == Common::kRenderCGA) {
@@ -556,7 +568,7 @@ uint8 *Screen_EoB::encodeShape(uint16 x, uint16 y, uint16 w, uint16 h, bool enco
 		*dst++ = (w & 0xff);
 		*dst++ = (h & 0xff);
 
-		if (_renderMode == Common::kRenderEGA && !_useHiResEGADithering) {
+		if (_useLoResEGA) {
 			for (int i = 0; i < 16; i++)
 				dst[i] = i;
 		} else {
@@ -595,7 +607,7 @@ uint8 *Screen_EoB::encodeShape(uint16 x, uint16 y, uint16 w, uint16 h, bool enco
 			srcLineStart += SCREEN_W;
 			src = srcLineStart;
 		}
-		delete [] colorMap;
+		delete[] colorMap;
 	}
 
 	return shp;
@@ -1538,6 +1550,7 @@ OldDOSFont::OldDOSFont(Common::RenderMode mode, bool useHiResEGADithering) : _re
 	_data = 0;
 	_width = _height = _numGlyphs = 0;
 	_bitmapOffsets = 0;
+	_useLoResEGA = (_renderMode == Common::kRenderEGA && !_useHiResEGADithering);
 
 	_numRef++;
 	if (!_cgaDitheringTable && _numRef == 1) {
@@ -1664,7 +1677,7 @@ void OldDOSFont::drawChar(uint16 c, byte *dst, int pitch) const {
 	uint16 cgaMask1 = cgaColorMask[color1 & 3];
 	uint16 cgaMask2 = cgaColorMask[color2 & 3];
 
-	if (_renderMode == Common::kRenderCGA || (_renderMode == Common::kRenderEGA && !_useHiResEGADithering)) {
+	if (_renderMode == Common::kRenderCGA || _useLoResEGA) {
 		color1 &= 0x0f;
 		color2 &= 0x0f;
 	}

@@ -263,7 +263,7 @@ protected:
 
 	// Main Menu, Intro, Finale
 	virtual int mainMenu() = 0;
-	virtual void seq_xdeath() {};
+	virtual void seq_xdeath() {}
 	virtual void seq_playFinale() = 0;
 	bool _playFinale;
 
@@ -845,6 +845,8 @@ protected:
 	const uint8 *_cgaMappingLevel[5];
 	const uint8 *_cgaLevelMappingIndex;
 
+	bool _useHiResDithering;
+
 	// Default parameters will import all present original save files and push them to the top of the save dialog.
 	bool importOriginalSaveFile(int destSlot, const char *sourceFile = 0);
 	Common::String readOriginalSaveFile(Common::String &file);
@@ -919,8 +921,8 @@ protected:
 	void usePotion(int charIndex, int weaponSlot);
 	void useWand(int charIndex, int weaponSlot);
 
-	virtual void turnUndeadAuto() {};
-	virtual void turnUndeadAutoHit() {};
+	virtual void turnUndeadAuto() {}
+	virtual void turnUndeadAutoHit() {}
 
 	void castSpell(int spell, int weaponSlot);
 	void removeCharacterEffect(int spell, int charIndex, int showWarning);

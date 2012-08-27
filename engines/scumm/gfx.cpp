@@ -680,11 +680,10 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 				srcPtr += vsPitch;
 				textPtr += _textSurface.pitch - width * m;
 			}
-		}
+		} else {
 #ifdef USE_ARM_GFX_ASM
-		asmDrawStripToScreen(height, width, text, src, _compositeBuf, vs->pitch, width, _textSurface.pitch);
+			asmDrawStripToScreen(height, width, text, src, _compositeBuf, vs->pitch, width, _textSurface.pitch);
 #else
-		else {
 			// We blit four pixels at a time, for improved performance.
 			const uint32 *src32 = (const uint32 *)src;
 			uint32 *dst32 = (uint32 *)_compositeBuf;
@@ -715,8 +714,8 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 				src32 += vsPitch;
 				text32 += textPitch;
 			}
-		}
 #endif
+		}
 		src = _compositeBuf;
 		pitch = width * vs->format.bytesPerPixel;
 
@@ -756,7 +755,7 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 					memset(blackbuf, 0, 16 * 240); // Prepare a buffer 16px wide and 240px high, to fit on a lateral strip
 
 					width = 240; // Fix right strip
-					_system->copyRectToScreen((const byte *)blackbuf, 16, 0, 0, 16, 240); // Fix left strip
+					_system->copyRectToScreen(blackbuf, 16, 0, 0, 16, 240); // Fix left strip
 				}
 			}
 
@@ -764,7 +763,7 @@ void ScummEngine::drawStripToScreen(VirtScreen *vs, int x, int width, int top, i
 	}
 
 	// Finally blit the whole thing to the screen
-	_system->copyRectToScreen((const byte *)src, pitch, x, y, width, height);
+	_system->copyRectToScreen(src, pitch, x, y, width, height);
 }
 
 // CGA

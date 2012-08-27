@@ -167,12 +167,12 @@ KyraEngine_LoK::~KyraEngine_LoK() {
 }
 
 Common::Error KyraEngine_LoK::init() {
-	if (_flags.platform == Common::kPlatformPC98 && _flags.useHiResOverlay && ConfMan.getBool("16_color"))
+	if (Common::parseRenderMode(ConfMan.get("render_mode")) == Common::kRenderPC9801)
 		_screen = new Screen_LoK_16(this, _system);
 	else
 		_screen = new Screen_LoK(this, _system);
 	assert(_screen);
-	_screen->setResolution(_flags.useHiResOverlay);
+	_screen->setResolution();
 
 	_debugger = new Debugger_LoK(this);
 	assert(_debugger);
@@ -454,10 +454,8 @@ void KyraEngine_LoK::mainLoop() {
 		if (_deathHandler != -1) {
 			snd_playWanderScoreViaMap(0, 1);
 			snd_playSoundEffect(49);
-			_screen->hideMouse();
 			_screen->setMouseCursor(1, 1, _shapes[0]);
 			removeHandItem();
-			_screen->showMouse();
 			_gui->buttonMenuCallback(0);
 			_deathHandler = -1;
 		}
@@ -706,7 +704,6 @@ int KyraEngine_LoK::processInputHelper(int xpos, int ypos) {
 	uint8 item = findItemAtPos(xpos, ypos);
 	if (item != 0xFF) {
 		if (_itemInHand == kItemNone) {
-			_screen->hideMouse();
 			_animator->animRemoveGameItem(item);
 			snd_playSoundEffect(53);
 			assert(_currentCharacter->sceneId < _roomTableSize);
@@ -717,7 +714,6 @@ int KyraEngine_LoK::processInputHelper(int xpos, int ypos) {
 			assert(_itemList && _takenList);
 			updateSentenceCommand(_itemList[getItemListIndex(item2)], _takenList[0], 179);
 			_itemInHand = item2;
-			_screen->showMouse();
 			clickEventHandler2();
 			return 1;
 		} else {
@@ -834,21 +830,17 @@ void KyraEngine_LoK::updateMousePointer(bool forceUpdate) {
 
 	if ((newMouseState && _mouseState != newMouseState) || (newMouseState && forceUpdate)) {
 		_mouseState = newMouseState;
-		_screen->hideMouse();
 		_screen->setMouseCursor(newX, newY, _shapes[shape]);
-		_screen->showMouse();
 	}
 
 	if (!newMouseState) {
 		if (_mouseState != _itemInHand || forceUpdate) {
 			if (mouse.y > 158 || (mouse.x >= 12 && mouse.x < 308 && mouse.y < 136 && mouse.y >= 12) || forceUpdate) {
 				_mouseState = _itemInHand;
-				_screen->hideMouse();
 				if (_itemInHand == kItemNone)
 					_screen->setMouseCursor(1, 1, _shapes[0]);
 				else
 					_screen->setMouseCursor(8, 15, _shapes[216 + _itemInHand]);
-				_screen->showMouse();
 			}
 		}
 	}
@@ -960,9 +952,6 @@ void KyraEngine_LoK::registerDefaultSettings() {
 	// Most settings already have sensible defaults. This one, however, is
 	// specific to the Kyra engine.
 	ConfMan.registerDefault("walkspeed", 2);
-
-	if (_flags.platform == Common::kPlatformPC98 && _flags.useHiResOverlay)
-		ConfMan.registerDefault("16_color", false);
 }
 
 void KyraEngine_LoK::readSettings() {

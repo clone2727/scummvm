@@ -20,6 +20,7 @@
  *
  */
 
+#include "dreamweb/sound.h"
 #include "dreamweb/dreamweb.h"
 
 namespace DreamWeb {
@@ -54,11 +55,11 @@ void DreamWebEngine::useMon() {
 	showIcon();
 	drawFloor();
 	getRidOfAll();
-	loadGraphicsFile(_monitorGraphics, "DREAMWEB.G03"); // mon. graphic name
+	loadGraphicsFile(_monitorGraphics, "G03"); // mon. graphic name
 	loadPersonal();
 	loadNews();
 	loadCart();
-	loadGraphicsFile(_monitorCharset, "DREAMWEB.C01"); // character set 2
+	loadGraphicsFile(_monitorCharset, "C01"); // character set 2
 	printOuterMon();
 	initialMonCols();
 	printLogo();
@@ -97,7 +98,7 @@ void DreamWebEngine::useMon() {
 	_textFile3.clear();
 
 	_getBack = 1;
-	playChannel1(26);
+	_sound->playChannel1(26);
 	_manIsOffScreen = 0;
 	restoreAll();
 	redrawMainScrn();
@@ -180,7 +181,7 @@ void DreamWebEngine::monitorLogo() {
 		printLogo();
 		//fadeUpMon(); // FIXME: Commented out in ASM
 		printLogo();
-		playChannel1(26);
+		_sound->playChannel1(26);
 		randomAccess(20);
 	} else {
 		printLogo();
@@ -202,7 +203,7 @@ void DreamWebEngine::input() {
 	_cursLocY = _monAdY;
 	while (true) {
 		printCurs();
-		vSync();
+		waitForVSync();
 		delCurs();
 		readKey();
 		if (_quitRequested)
@@ -288,7 +289,7 @@ void DreamWebEngine::scrollMonitor() {
 	printLogo();
 	printUnderMonitor();
 	workToScreen();
-	playChannel1(25);
+	_sound->playChannel1(25);
 }
 
 void DreamWebEngine::showCurrentFile() {
@@ -318,9 +319,9 @@ void DreamWebEngine::accessLightOff() {
 
 void DreamWebEngine::randomAccess(uint16 count) {
 	for (uint16 i = 0; i < count; ++i) {
-		vSync();
-		vSync();
-		uint16 v = randomNumber() & 15;
+		waitForVSync();
+		waitForVSync();
+		uint16 v = _rnd.getRandomNumber(15);
 		if (v < 10)
 			accessLightOff();
 		else
@@ -383,21 +384,21 @@ void DreamWebEngine::printOuterMon() {
 
 void DreamWebEngine::loadPersonal() {
 	if (_vars._location == 0 || _vars._location == 42)
-		loadTextFile(_textFile1, "DREAMWEB.T01"); // monitor file 1
+		loadTextFile(_textFile1, "T01"); // monitor file 1
 	else
-		loadTextFile(_textFile1, "DREAMWEB.T02"); // monitor file 2
+		loadTextFile(_textFile1, "T02"); // monitor file 2
 }
 
 void DreamWebEngine::loadNews() {
 	// textfile2 holds information accessible by anyone
 	if (_vars._newsItem == 0)
-		loadTextFile(_textFile2, "DREAMWEB.T10"); // monitor file 10
+		loadTextFile(_textFile2, "T10"); // monitor file 10
 	else if (_vars._newsItem == 1)
-		loadTextFile(_textFile2, "DREAMWEB.T11"); // monitor file 11
+		loadTextFile(_textFile2, "T11"); // monitor file 11
 	else if (_vars._newsItem == 2)
-		loadTextFile(_textFile2, "DREAMWEB.T12"); // monitor file 12
+		loadTextFile(_textFile2, "T12"); // monitor file 12
 	else
-		loadTextFile(_textFile2, "DREAMWEB.T13"); // monitor file 13
+		loadTextFile(_textFile2, "T13"); // monitor file 13
 }
 
 void DreamWebEngine::loadCart() {
@@ -408,15 +409,15 @@ void DreamWebEngine::loadCart() {
 		cartridgeId = getExAd(cartridgeIndex)->objId[3] + 1;
 
 	if (cartridgeId == 0)
-		loadTextFile(_textFile3, "DREAMWEB.T20"); // monitor file 20
+		loadTextFile(_textFile3, "T20"); // monitor file 20
 	else if (cartridgeId == 1)
-		loadTextFile(_textFile3, "DREAMWEB.T21"); // monitor file 21
+		loadTextFile(_textFile3, "T21"); // monitor file 21
 	else if (cartridgeId == 2)
-		loadTextFile(_textFile3, "DREAMWEB.T22"); // monitor file 22
+		loadTextFile(_textFile3, "T22"); // monitor file 22
 	else if (cartridgeId == 3)
-		loadTextFile(_textFile3, "DREAMWEB.T23"); // monitor file 23
+		loadTextFile(_textFile3, "T23"); // monitor file 23
 	else
-		loadTextFile(_textFile3, "DREAMWEB.T24"); // monitor file 24
+		loadTextFile(_textFile3, "T24"); // monitor file 24
 }
 
 void DreamWebEngine::showKeys() {
@@ -626,15 +627,12 @@ void DreamWebEngine::signOn() {
 	_monAdX = prevX;
 	_monAdY = prevY;
 
-	inputLine = (const char *)_inputLine;
-	inputLine.toUppercase();
-
 	// The entered line has zeroes in-between each character
 	uint32 len = strlen(monitorKeyEntries[foundIndex].password);
 	bool found = true;
 
 	for (uint32 i = 0; i < len; i++) {
-		if (monitorKeyEntries[foundIndex].password[i] != inputLine[i * 2]) {
+		if (monitorKeyEntries[foundIndex].password[i] != _inputLine[i * 2]) {
 			found = false;
 			break;
 		}

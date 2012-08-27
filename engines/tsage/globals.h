@@ -200,7 +200,7 @@ public:
 	int _v4CECC;
 	int8 _breakerBoxStatusArr[18];
 	int _hiddenDoorStatus;
-	int _v4CEE2;
+	int _nico910State;
 	int _v4CEE4;
 	int _v4CEE6;
 	int _v4CEE8;
@@ -260,6 +260,7 @@ public:
 	Rect _v5589E;
 	Rect _v558B6;
 	int _v558C2;
+	int _animationCtr;
 	int _v565E1;
 	int _v565E3;
 	int _v565E5;

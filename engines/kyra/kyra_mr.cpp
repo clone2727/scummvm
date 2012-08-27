@@ -203,7 +203,7 @@ KyraEngine_MR::~KyraEngine_MR() {
 Common::Error KyraEngine_MR::init() {
 	_screen = new Screen_MR(this, _system);
 	assert(_screen);
-	_screen->setResolution(_flags.useHiResOverlay);
+	_screen->setResolution();
 
 	_debugger = new Debugger_v2(this);
 	assert(_debugger);
@@ -1298,7 +1298,6 @@ bool KyraEngine_MR::updateScore(int scoreId, int strId) {
 	setNextIdleAnimTimer();
 	_scoreFlagTable[scoreIndex] |= (1 << scoreBit);
 
-	_screen->hideMouse();
 	strcpy(_stringBuffer, (const char *)getTableEntry(_scoreFile, strId));
 	strcat(_stringBuffer, ":        ");
 
@@ -1308,7 +1307,6 @@ bool KyraEngine_MR::updateScore(int scoreId, int strId) {
 	if (count > 0)
 		scoreIncrease(count, _stringBuffer);
 
-	_screen->showMouse();
 	setNextIdleAnimTimer();
 	return true;
 }

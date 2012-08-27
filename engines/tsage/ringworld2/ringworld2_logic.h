@@ -325,29 +325,86 @@ public:
 	virtual Common::String getClassName() { return "UnkObject1200"; }
 };
 
-class AnimationPlayer: public EventHandler {
-public:
-	Common::File _resourceFile;
-	void *_fieldA;
-	void *_field16;
+/*--------------------------------------------------------------------------*/
 
-	byte *_dataP;
+class AnimationSlice {
+public:
+	int _sliceOffset;
+	int _drawMode;
+	int _secondaryIndex;
+public:
+	void load(Common::File &f);
+};
+
+class AnimationSlices {
+public:
+	int _dataSize;
+	int _dataSize2;
+	AnimationSlice _slices[4];
+	byte *_pixelData;
+public:
+	AnimationSlices();
+	~AnimationSlices();
+
+	void load(Common::File &f);
+	int loadPixels(Common::File &f, int slicesSize);
+};
+
+class AnimationPlayerSubData {
+public:
+	int _duration;
+	int _frameRate;
+	int _framesPerSlices;
+	int _drawType;
+	int _sliceSize;
+	int _ySlices;
+	int _field16;
+	int _palStart;
+	int _palSize;
+	byte _palData[256 * 3];
+	int32 _totalSize;
+	AnimationSlices _slices;
+public:
+	void load(Common::File &f);
+};
+
+class AnimationData {
+public:
+	AnimationSlices _slices;
+	int _dataSize;
+	int _animSlicesSize;
+};
+
+enum AnimationPaletteMode { ANIMPALMODE_REPLACE_PALETTE = 0, ANIMPALMODE_CURR_PALETTE = 1,
+		ANIMPALMODE_NONE = 2 };
+
+class AnimationPlayer: public EventHandler {
+private:
+	void rleDecode(const byte *pSrc, byte *pDest, int size);
+
+	void drawFrame(int sliceIndex);
+	void nextSlices();
+	void getSlices();
+public:
+	AnimationData *_animData1, *_animData2;
+	AnimationData *_sliceCurrent;
+	AnimationData *_sliceNext;
+	Common::File _resourceFile;
 	Rect _rect1, _screenBounds;
 	int _field38;
-	int _field3A, _field3C;
-	int _field56;
-	int _field58, _field5A;
+	int _field3A, _paletteMode;
+	int _objectMode;
+	int _field58, _sliceHeight;
+	byte _palIndexes[256];
 	ScenePalette _palette;
-	byte _palData[256 * 3];
+	AnimationPlayerSubData _subData;
 	Action *_endAction;
-	int _field576;
-	int _field57C;
-	int _palStart, _palSize;
-	int _field904;
-	int _field908;
-	int _field90C;
-	int _field90E;
-	uint _field910;
+	int _dataNeeded;
+	int _playbackTick;
+	int _playbackTickPrior;
+	int _position;
+	int _nextSlicesPosition;
+	uint _frameDelay;
 	uint32 _gameFrame;
 public:
 	AnimationPlayer();
@@ -359,14 +416,11 @@ public:
 	virtual void dispatch();
 	virtual void flipPane() {}
 	virtual void changePane() {}
-	virtual void proc14() {}
+	virtual void closing() {}
 
-	bool load(int rlbNum, Action *endAction = NULL);
-	void drawFrame(int frameIndex);
-	void method2();
-	bool method3();
-	void method4();
-	void method5() {}
+	bool load(int animId, Action *endAction = NULL);
+	bool isCompleted();
+	void close();
 };
 
 class AnimationPlayerExt: public AnimationPlayer {
