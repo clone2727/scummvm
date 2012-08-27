@@ -48,7 +48,7 @@ void JMPEngine::init() {
 }
 
 void JMPEngine::playVideo(Common::String filename, uint16 x, uint16 y) {
-	Video::SeekableVideoDecoder *video = new Video::AviDecoder(_mixer);
+	Video::VideoDecoder *video = new Video::AVIDecoder();
 
 	if (!video->loadFile(filename)) {
 		delete video;
@@ -60,7 +60,7 @@ void JMPEngine::playVideo(Common::String filename, uint16 x, uint16 y) {
 }
 
 void JMPEngine::playVideoCentered(Common::String filename) {
-	Video::SeekableVideoDecoder *video = new Video::AviDecoder(_mixer);
+	Video::VideoDecoder *video = new Video::AVIDecoder();
 
 	if (!video->loadFile(filename)) {
 		delete video;
@@ -71,8 +71,10 @@ void JMPEngine::playVideoCentered(Common::String filename) {
 	delete video;
 }
 
-void JMPEngine::playVideo(Video::SeekableVideoDecoder *video, uint16 x, uint16 y) {
+void JMPEngine::playVideo(Video::VideoDecoder *video, uint16 x, uint16 y) {
 	bool continuePlaying = true;
+
+	video->start();
 
 	while (!shouldQuit() && !video->endOfVideo() && continuePlaying) {		
 		if (video->needsUpdate()) {
@@ -80,25 +82,8 @@ void JMPEngine::playVideo(Video::SeekableVideoDecoder *video, uint16 x, uint16 y
 			Graphics::Surface *convertedFrame = 0;
 
 			if (frame) {
-				if (frame->format.bytesPerPixel == 1) {
-					convertedFrame = new Graphics::Surface();
-					convertedFrame->create(frame->w, frame->h, _system->getScreenFormat());
-					const byte *palette = video->getPalette();
-					assert(palette);
-
-					for (uint16 j = 0; j < frame->h; j++) {
-						for (uint16 k = 0; k < frame->w; k++) {
-							byte palIndex = *((byte *)frame->getBasePtr(k, j));
-							byte r = palette[palIndex * 3];
-							byte g = palette[palIndex * 3 + 1];
-							byte b = palette[palIndex * 3 + 2];
-							if (_system->getScreenFormat().bytesPerPixel == 2)
-								*((uint16 *)convertedFrame->getBasePtr(k, j)) = _system->getScreenFormat().RGBToColor(r, g, b);
-							else
-								*((uint32 *)convertedFrame->getBasePtr(k, j)) = _system->getScreenFormat().RGBToColor(r, g, b);
-						}
-					}
-
+				if (frame->format != _system->getScreenFormat()) {
+					convertedFrame = frame->convertTo(_system->getScreenFormat(), video->getPalette());
 					frame = convertedFrame;
 				}
 

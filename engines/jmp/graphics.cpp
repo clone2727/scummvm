@@ -50,39 +50,12 @@ GraphicsManager::GraphicsManager(JMPEngine* vm) : _vm(vm) {
 	
 GraphicsManager::~GraphicsManager() {
 }
-
-// Windows cursor anyone?
-static const byte s_standardCursor[] = {
-	1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-	1, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	1, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-	1, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0,
-	1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0,
-	1, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0,
-	1, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0,
-	1, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0,
-	1, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0,
-	1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0,
-	1, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1,
-	1, 2, 2, 2, 1, 2, 2, 1, 0, 0, 0, 0,
-	1, 2, 2, 1, 1, 2, 2, 1, 0, 0, 0, 0,
-	1, 2, 1, 0, 1, 1, 2, 2, 1, 0, 0, 0,
-	1, 1, 0, 0, 0, 1, 2, 2, 1, 0, 0, 0,
-	1, 0, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0,
-	0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 0,
-	0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0
-};
-	
-static const byte s_standardCursorPalette[] = {
-	0x00, 0x00, 0x00,	// Black
-	0xFF, 0xFF, 0xFF	// White
-};
 	
 void GraphicsManager::useStandardCursor() {
-	CursorMan.replaceCursor(s_standardCursor, 12, 20, 0, 0, 0);
-	CursorMan.replaceCursorPalette(s_standardCursorPalette, 1, 2);
+	Graphics::Cursor *cursor = Graphics::makeDefaultWinCursor();
+	CursorMan.replaceCursor(cursor->getSurface(), cursor->getWidth(), cursor->getHeight(), cursor->getHotspotX(), cursor->getHotspotY(), cursor->getKeyColor());
+	CursorMan.replaceCursorPalette(cursor->getPalette(), cursor->getPaletteStartIndex(), cursor->getPaletteCount());
+	delete cursor;
 }
 
 void GraphicsManager::setCursor(uint16 id) {
@@ -98,9 +71,9 @@ void GraphicsManager::setCursor(uint16 id) {
 		cursorGroup = Graphics::WinCursorGroup::createCursorGroup(*_vm->_exeFiles[i], id);
 
 	if (cursorGroup) {
-		Graphics::WinCursor *cursor = cursorGroup->cursors[0].cursor;
+		Graphics::Cursor *cursor = cursorGroup->cursors[0].cursor;
 		CursorMan.replaceCursor(cursor->getSurface(), cursor->getWidth(), cursor->getHeight(), cursor->getHotspotX(), cursor->getHotspotY(), cursor->getKeyColor());
-		CursorMan.replaceCursorPalette(cursor->getPalette(), 0, 256);
+		CursorMan.replaceCursorPalette(cursor->getPalette(), cursor->getPaletteStartIndex(), cursor->getPaletteCount());
 		delete cursorGroup;
 	}
 }

@@ -37,7 +37,7 @@
 #include "jmp/sound.h"
 
 namespace Video {
-	class SeekableVideoDecoder;
+	class VideoDecoder;
 }
 
 namespace JMP {
@@ -94,7 +94,7 @@ protected:
 	void loadMandatoryEXE(Common::String filename);
 
 private:
-	void playVideo(Video::SeekableVideoDecoder *video, uint16 x, uint16 y);
+	void playVideo(Video::VideoDecoder *video, uint16 x, uint16 y);
 };
 
 } // End of namespace JMP
