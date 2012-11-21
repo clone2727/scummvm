@@ -1052,38 +1052,57 @@ int16 ScriptFunctions::sfIsSlowSystem(int16 argc, int16 *argv) {
 }
 
 int16 ScriptFunctions::sfMPEGUnk100(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk100: %d args", argc);
+	// Plays an MPEG video
+	// Called from objects 0x1141 and 0x2A
+	if (argc != 3)
+		error("sfMPEGUnk100: Invalid arg count %d", argc);
+
+	const char *fileName = _vm->_dat->getObjectString(argv[2]);
+
+	warning("STUB: sfMPEGUnk100: File '%s', Unk: %d, %d", fileName, argv[0], argv[1]);
 	return 0;
 }
 
 int16 ScriptFunctions::sfMPEGUnk101(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk101: %d args", argc);
+	// Called only from object 0x2B.
+	warning("STUB: sfMPEGUnk101: %d args", argc);
 	return 0;
 }
 
 int16 ScriptFunctions::sfMPEGUnk102(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk102: %d args", argc);
+	// Called only from object 0x2E.
+	warning("STUB: sfMPEGUnk102: %d args", argc);
 	return 0;
 }
 
 int16 ScriptFunctions::sfMPEGUnk103(int16 argc, int16 *argv) {
 	// Not sure what this is, but it needs to return non-zero
-	// in order to play the game.
+	// in order to play the game. I'm guessing this is testing
+	// for the presence of the ReelMagic card.
+
+	// This is called once at the beginning of the game from
+	// object 0x31.
 	return 1;
 }
 
 int16 ScriptFunctions::sfMPEGUnk104(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk104: %d args", argc);
+	// Appears to only be called when 103 returns 0. I'm guessing
+	// this is an error message when ReelMagic isn't present.
+
+	// This is called only from object 0x32.
+	warning("STUB: sfMPEGUnk104: %d args", argc);
 	return 0;
 }
 
 int16 ScriptFunctions::sfMPEGUnk105(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk105: %d args", argc);
+	// Called only from object 0x2F.
+	warning("STUB: sfMPEGUnk105: %d args", argc);
 	return 0;
 }
 
 int16 ScriptFunctions::sfMPEGUnk106(int16 argc, int16 *argv) {
-	warning("sfMPEGUnk106: %d args", argc);
+	// Called only from object 0x30.
+	warning("STUB: sfMPEGUnk106: %d args", argc);
 	return 0;
 }
 
