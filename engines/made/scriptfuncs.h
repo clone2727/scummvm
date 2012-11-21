@@ -53,7 +53,13 @@ public:
 	}
 
 	void setupExternalsTable();
-	const char* getFuncName(int index) { return _externalFuncNames[index]; }
+
+	const char *getFuncName(int index) {
+		if ((uint)index >= _externalFuncs.size())
+			error("ScriptFunctions::getFuncName() Invalid function index %d", index);
+		return _externalFuncNames[index];
+	}
+
 	int getCount() const { return _externalFuncs.size(); }
 	void stopSound();
 
@@ -175,6 +181,13 @@ protected:
 	int16 sfGetSynthType(int16 argc, int16 *argv);
 	int16 sfIsSlowSystem(int16 argc, int16 *argv);
 
+	int16 sfMPEGUnk100(int16 argc, int16 *argv);
+	int16 sfMPEGUnk101(int16 argc, int16 *argv);
+	int16 sfMPEGUnk102(int16 argc, int16 *argv);
+	int16 sfMPEGUnk103(int16 argc, int16 *argv);
+	int16 sfMPEGUnk104(int16 argc, int16 *argv);
+	int16 sfMPEGUnk105(int16 argc, int16 *argv);
+	int16 sfMPEGUnk106(int16 argc, int16 *argv);
 };
 
 } // End of namespace Made

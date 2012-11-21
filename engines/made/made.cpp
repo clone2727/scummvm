@@ -288,11 +288,21 @@ Common::Error MadeEngine::run() {
 			_dat->open("demo.dat");
 			_res->open("demo.prj");
 		} else if (getFeatures() & GF_CD) {
-			_dat->open("rtzcd.dat");
-			_res->open("rtzcd.prj");
+			if (getFeatures() & GF_MPEG) {
+				_dat->open("rtzrm.dat");
+				_res->open("rtzrm.prj");
+			} else {
+				_dat->open("rtzcd.dat");
+				_res->open("rtzcd.prj");
+			}
 		} else if (getFeatures() & GF_CD_COMPRESSED) {
-			_dat->openFromRed("rtzcd.red", "rtzcd.dat");
-			_res->open("rtzcd.prj");
+			if (getFeatures() & GF_MPEG) {
+				_dat->openFromRed("rtzrm.red", "rtzrm.dat");
+				_res->open("rtzrm.prj");
+			} else {
+				_dat->openFromRed("rtzcd.red", "rtzcd.dat");
+				_res->open("rtzcd.prj");
+			}
 		} else if (getFeatures() & GF_FLOPPY) {
 			_dat->open("rtz.dat");
 			_res->open("rtz.prj");

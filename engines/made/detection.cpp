@@ -372,6 +372,40 @@ static const MadeGameDescription gameDescriptions[] = {
 	},
 
 	{
+		// Return to Zork - English ReelMagic version 1.00 5/25/94 (installed)
+		{
+			"rtz",
+			"ReelMagic",
+			AD_ENTRY1s("rtzrm.red", "861470fa722260217127c7e5c1b1ff4a", 278708),
+			Common::EN_ANY,
+			Common::kPlatformDOS,
+			ADGF_CD,
+			GUIO0()
+		},
+		GID_RTZ,
+		0,
+		GF_CD_COMPRESSED | GF_MPEG,
+		3,
+	},
+
+	{
+		// Return to Zork - English ReelMagic version 1.00 5/25/94
+		{
+			"rtz",
+			"ReelMagic",
+			AD_ENTRY1s("rtzrm.dat", "2cb1a9fa63536cf56f104a729aa72a91", 506368),
+			Common::EN_ANY,
+			Common::kPlatformDOS,
+			ADGF_CD,
+			GUIO0()
+		},
+		GID_RTZ,
+		0,
+		GF_CD | GF_MPEG,
+		3,
+	},
+
+	{
 		// The Manhole: New and Enhanced
 		{
 			"manhole",

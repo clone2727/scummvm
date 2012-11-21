@@ -45,12 +45,19 @@ MusicPlayer::MusicPlayer(bool milesAudio) : _isGM(false),_milesAudioMode(false) 
 		switch (musicType) {
 		case MT_ADLIB:
 			_milesAudioMode = true;
+
+			// FIXME: Reorganize this so it's not checking both file names
+			// unconditionally
 			if (Common::File::exists("rtzcd.red")) {
 				// Installing Return to Zork produces both a SAMPLE.AD and
 				// a SAMPLE.OPL file, but they are identical. The resource
 				// file appears to only contain SAMPLE.AD.
 				adLibInstrumentStream = RedReader::loadFromRed("rtzcd.red", "SAMPLE.AD");
+			} else if (Common::File::exists("RTZRM.RED")) {
+				// ReelMagic variant
+				adLibInstrumentStream = RedReader::loadFromRed("RTZRM.RED", "SAMPLE.AD");
 			}
+
 			_driver = Audio::MidiDriver_Miles_AdLib_create("SAMPLE.AD", "SAMPLE.OPL", adLibInstrumentStream);
 			delete adLibInstrumentStream;
 			break;

@@ -172,8 +172,17 @@ void ScriptFunctions::setupExternalsTable() {
 		External(sfSetSoundVolume);
 		External(sfGetSynthType);
 		External(sfIsSlowSystem);
-	}
 
+		if (_vm->getFeatures() & GF_MPEG) {
+			External(sfMPEGUnk100);
+			External(sfMPEGUnk101);
+			External(sfMPEGUnk102);
+			External(sfMPEGUnk103);
+			External(sfMPEGUnk104);
+			External(sfMPEGUnk105);
+			External(sfMPEGUnk106);
+		}
+	}
 }
 #undef External
 
@@ -1039,6 +1048,42 @@ int16 ScriptFunctions::sfIsSlowSystem(int16 argc, int16 *argv) {
 	// There are 2 versions of each video: one with sound, and one without
 	// An example is FINTRO00.PMV (with sound) and FINTRO01.PMV (without sound)
 	// One could maybe think about returning 1 here on actually slower systems.
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk100(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk100: %d args", argc);
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk101(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk101: %d args", argc);
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk102(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk102: %d args", argc);
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk103(int16 argc, int16 *argv) {
+	// Not sure what this is, but it needs to return non-zero
+	// in order to play the game.
+	return 1;
+}
+
+int16 ScriptFunctions::sfMPEGUnk104(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk104: %d args", argc);
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk105(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk105: %d args", argc);
+	return 0;
+}
+
+int16 ScriptFunctions::sfMPEGUnk106(int16 argc, int16 *argv) {
+	warning("sfMPEGUnk106: %d args", argc);
 	return 0;
 }
 
