@@ -82,6 +82,10 @@ bool SoundManager::playSample(int id, Audio::Mixer::SoundType type, Audio::Sound
 	if (!_vm->_mixer->isReady())
 		return false;
 
+	// TODO: Implement Saturn sound
+	if (TinselV1Saturn)
+		return false;
+
 	Channel &curChan = _channels[kChannelTinsel1];
 
 	// stop any currently playing sample
@@ -102,7 +106,7 @@ bool SoundManager::playSample(int id, Audio::Mixer::SoundType type, Audio::Sound
 		error(FILE_IS_CORRUPT, _vm->getSampleFile(g_sampleLanguage));
 
 	// read the length of the sample
-	uint32 sampleLen = _sampleStream.readUint32LE();
+	uint32 sampleLen = TinselV1Saturn ? _sampleStream.readUint32BE() : _sampleStream.readUint32LE();
 	if (_sampleStream.eos() || _sampleStream.err())
 		error(FILE_IS_CORRUPT, _vm->getSampleFile(g_sampleLanguage));
 
@@ -510,12 +514,10 @@ void SoundManager::openSampleFiles() {
 		// convert file size to size in DWORDs
 		_sampleIndexLen /= sizeof(uint32);
 
-#ifdef SCUMM_BIG_ENDIAN
-		// Convert all ids from LE to native format
+		// Convert all ids to native format
 		for (int i = 0; i < _sampleIndexLen; ++i) {
-			_sampleIndex[i] = SWAP_BYTES_32(_sampleIndex[i]);
+			_sampleIndex[i] = FROM_32(_sampleIndex[i]);
 		}
-#endif
 
 		// Detect format of soundfile by looking at 1st sample-index
 		switch (TO_BE_32(_sampleIndex[0])) {

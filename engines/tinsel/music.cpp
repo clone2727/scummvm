@@ -138,7 +138,11 @@ bool PlayMidiSequence(uint32 dwFileOffset, bool bLoop) {
 	// TODO: The Macintosh version of DW1 does not use MIDI for music
 	if (TinselV1Mac)
 		return true;
-	
+
+	// TODO: Unimplemented Saturn MIDI
+	if (TinselV1Saturn)
+		return true;
+
 	SetMidiVolume(mute ? 0 : _vm->_config->_musicVolume);
 
 	// the index and length of the last tune loaded
@@ -287,6 +291,10 @@ void OpenMidiFiles() {
 
 	// TODO: The Macintosh version of DW1 does not use MIDI for music
 	if (TinselV1Mac)
+		return;
+
+	// TODO: Saturn MIDI not yet implemented
+	if (TinselV1Saturn)
 		return;
 
 	if (g_midiBuffer.pDat)
