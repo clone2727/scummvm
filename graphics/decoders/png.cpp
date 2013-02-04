@@ -191,6 +191,7 @@ bool PNGDecoder::loadStream(Common::SeekableReadStream &stream) {
 	}
 
 	// After the transformations have been registered, the image data is read again.
+	png_set_interlace_handling(pngPtr);
 	png_read_update_info(pngPtr, infoPtr);
 	png_get_IHDR(pngPtr, infoPtr, &w, &h, &bitDepth, &colorType, NULL, NULL, NULL);
 	width = w;
@@ -226,7 +227,7 @@ bool PNGDecoder::loadStream(Common::SeekableReadStream &stream) {
 	png_read_end(pngPtr, NULL);
 
 	// Destroy libpng structures
-	png_destroy_read_struct(&pngPtr, &infoPtr, NULL);
+	png_destroy_read_struct(&pngPtr, &infoPtr, &endInfo);
 
 	// We no longer need the file stream, thus close it here
 	_stream = 0;

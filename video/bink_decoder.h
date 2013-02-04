@@ -36,6 +36,8 @@
 
 #include "video/video_decoder.h"
 
+#include "graphics/surface.h"
+
 namespace Audio {
 class AudioStream;
 class QueuingAudioStream;
@@ -231,6 +233,8 @@ private:
 		int _frameCount;
 
 		Graphics::Surface _surface;
+		int _surfaceWidth; ///< The actual surface width
+		int _surfaceHeight; ///< The actual surface height
 
 		uint32 _id; ///< The BIK FourCC.
 

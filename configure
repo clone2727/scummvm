@@ -21,6 +21,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 #
 
+# NLS nuisances.
+LC_ALL=C
+export LC_ALL
+LANGUAGE=C
+export LANGUAGE
+
 # Save the current environment variables for next runs
 SAVED_CONFIGFLAGS=$@
 SAVED_LDFLAGS=$LDFLAGS
@@ -62,7 +68,7 @@ get_var() {
 	eval echo \$${1}
 }
 
-# Add an engine: id name build subengines
+# Add an engine: id name build subengines base-games dependencies
 add_engine() {
 	_engines="${_engines} ${1}"
 	if test "${3}" = "no" ; then
@@ -72,9 +78,20 @@ add_engine() {
 	set_var _engine_${1}_build "${3}"
 	set_var _engine_${1}_build_default "${3}"
 	set_var _engine_${1}_subengines "${4}"
+	set_var _engine_${1}_base "${5}"
+	set_var _engine_${1}_deps "${6}"
 	for sub in ${4}; do
 		set_var _engine_${sub}_sub "yes"
+		set_var _engine_${sub}_parent "${1}"
 	done
+}
+
+# Add a feature: id name settings-list
+add_feature() {
+	set_var _feature_${1}_name "${2}"
+	# This is a list of settings, where one must be "yes" for the feature to
+	# be enabled
+	set_var _feature_${1}_settings "${3}"
 }
 
 _srcdir=`dirname $0`
@@ -85,7 +102,7 @@ _srcdir=`dirname $0`
 #
 # Default settings
 #
-# Default lib behaviour yes/no/auto
+# Default lib behavior yes/no/auto
 _vorbis=auto
 _tremor=auto
 _tremolo=no
@@ -108,10 +125,11 @@ _freetype2=auto
 _taskbar=yes
 _updates=no
 _libunity=auto
-# Default option behaviour yes/no
+# Default option behavior yes/no
 _debug_build=auto
 _release_build=auto
 _optimizations=auto
+_use_cxx11=no
 _verbose_build=no
 _text_console=no
 _mt32emu=yes
@@ -161,6 +179,17 @@ _posix=no
 _endian=unknown
 _need_memalign=yes
 _have_x86=no
+
+# Add (virtual) features
+add_feature 16bit "16bit color" "_16bit"
+add_feature faad "libfaad" "_faad"
+add_feature flac "FLAC" "_flac"
+add_feature freetype2 "FreeType2" "_freetype2"
+add_feature mad "MAD" "_mad"
+add_feature png "PNG" "_png"
+add_feature theoradec "libtheoradec" "_theoradec"
+add_feature vorbis "Vorbis file support" "_vorbis _tremor"
+add_feature zlib "zlib" "_zlib"
 
 
 
@@ -439,6 +468,26 @@ Try \`$0 --help' for more information." >&2
 }
 
 
+#
+# Feature handling functions
+#
+
+# Get the name of the feature
+get_feature_name() {
+	get_var _feature_$1_name
+}
+
+# Check whether the feature is enabled
+get_feature_state() {
+	for i in `get_var _feature_$1_settings`; do
+		if test `get_var $i` = "yes"; then
+			echo "yes"
+			return
+		fi
+	done
+	echo "no"
+}
+
 
 #
 # Engine handling functions
@@ -464,6 +513,16 @@ get_engine_subengines() {
 	get_var _engine_$1_subengines
 }
 
+# Get the dependencies
+get_engine_dependencies() {
+	get_var _engine_$1_deps
+}
+
+# Get the base engine game support description
+get_engine_base() {
+	get_var _engine_$1_base
+}
+
 # Ask if this is a subengine
 get_engine_sub() {
 	sub=`get_var _engine_$1_sub`
@@ -471,6 +530,11 @@ get_engine_sub() {
 		sub=no
 	fi
 	echo $sub
+}
+
+# Get a subengine's parent (undefined for non-subengines)
+get_subengine_parent() {
+	get_var _engine_$1_parent
 }
 
 # Enable *all* engines
@@ -500,9 +564,15 @@ engine_enable() {
 	engine=`echo $eng | sed 's/-/_/g'`
 
 	# Filter the parameter for the subengines
-	if test "`get_engine_sub ${engine}`" != "no" -a "$opt" != "yes" ; then
-		subengine_option_error ${engine}
-		return
+	if test "`get_engine_sub ${engine}`" != "no" ; then
+		if test "$opt" != "yes" ; then
+			subengine_option_error ${engine}
+			return
+		fi
+		parent=`get_subengine_parent ${engine}`
+		if test `get_engine_build ${parent}` = "no" ; then
+			set_var _engine_${parent}_build "yes"
+		fi		
 	fi
 
 	if test "$opt" = "static" -o "$opt" = "dynamic" -o "$opt" = "yes" ; then
@@ -529,6 +599,29 @@ engine_disable() {
 		set_var _engine_${engine}_build "no"
 	else
 		engine_option_error ${engine}
+	fi
+}
+
+# Check whether the engine's dependencies are met
+# If that is not the case disable the engine
+check_engine_deps() {
+	unmet_deps=""
+
+	# Check whether the engine is enabled
+	if test `get_engine_build $1` != "no" ; then
+		# Collect unmet dependencies
+		for dep in `get_engine_dependencies $1`; do
+			if test `get_feature_state $dep` = "no"; then
+				feature_name=`get_feature_name $dep`
+				unmet_deps="${unmet_deps}${feature_name} "
+			fi
+		done
+
+		# Check whether there is any unmet dependency
+		if test -n "$unmet_deps"; then
+			echo "WARNING: Disabling engine "`get_engine_name $1`" because the following dependencies are unmet: "$unmet_deps
+			engine_disable $1
+		fi
 	fi
 }
 
@@ -574,27 +667,37 @@ prepare_engine_build_strings() {
 
 # Get the string about building an engine
 get_engine_build_string() {
+	engine=$1
+	request_status=$2
 	engine_string=""
 	engine_build=`get_engine_build $1`
-	engine_build_default=`get_engine_build_default $1`
+	engine_build_default=`get_engine_build_default $engine`
 	show=no
 
+	# Convert static/dynamic to yes to ease the check of subengines
+	if test $engine_build = no; then
+		subengine_filter=no
+	else
+		subengine_filter=yes
+	fi
+
 	# Check if the current engine should be shown for the current status
-	if test $engine_build = $2 ; then
+	if test $engine_build = $request_status ; then
 		show=yes
 	else
 		# Test for disabled sub-engines
-		if test $2 = no ; then
-			for subeng in `get_engine_subengines $1` ; do
+		if test $request_status = no ; then
+			for subeng in `get_engine_subengines $engine` ; do
 				if test `get_engine_build $subeng` = no ; then
-					engine_build=no
+					# In this case we to display _disabled_ subengines
+					subengine_filter=no
 					show=yes
 				fi
 			done
 		fi
 		# Test for enabled wip sub-engines
-		if test $2 = wip ; then
-			for subeng in `get_engine_subengines $1` ; do
+		if test $request_status = wip ; then
+			for subeng in `get_engine_subengines $engine` ; do
 				if test `get_engine_build $subeng` != no -a `get_engine_build_default $subeng` = no ; then
 					show=yes
 				fi
@@ -602,85 +705,82 @@ get_engine_build_string() {
 		fi
 	fi
 
-	# Convert static/dynamic to yes to ease the check of subengines
-	if test $engine_build != no ; then
-		engine_build=yes
-	fi
 
 	# Check if it is a wip engine
-	if test "$2" = "wip" -a "$engine_build" != "no" -a  "$engine_build_default" = no; then
+	if test "$request_status" = "wip" -a "$engine_build" != "no" -a  "$engine_build_default" = no; then
 		show=yes
 	fi
 
 	# The engine should be shown, build the string
 	if test $show = yes ; then
-		build_string_func=get_${1}_build_string
-		if ( type $build_string_func | grep function ) 2> /dev/null > /dev/null ; then
-			engine_string=`$build_string_func $1 $engine_build $2`
-		else
-			engine_string=`get_subengines_build_string $1 $engine_build "" $2`
-		fi
-
-		engine_string="`get_engine_name $1` $engine_string"
+		engine_string=`get_subengines_build_string $engine $subengine_filter $request_status`
+		engine_string="`get_engine_name $engine` $engine_string"
 	fi
 
-	echo $engine_string
+	echo "$engine_string"
 }
 
 # Get the string about building subengines
 get_subengines_build_string() {
-	all=yes
 	parent_engine=$1
-	subengine_string=$3
-	parent_status=$4
+	subengine_filter=$2
+	request_status=$3
 	parent_engine_build_default=`get_engine_build_default $parent_engine`
+	subengine_string=""
+
+	# If the base engine isn't built at all, no need to list subengines
+	# in any of the possible categories.
+	if test `get_engine_build $parent_engine` = no; then
+		return
+	fi
+
+	all=yes
+	# If there are no subengines, never display "[all games]" (for brevity).
+	if test -z "`get_engine_subengines $parent_engine`"; then
+		all=no
+	fi
+	# If the base engine does not fit the category we're displaying here
+	# (WIP or Skipped), we should never show "[all games]"
+	if test "$request_status" = wip; then
+		if test $parent_engine_build_default = yes; then
+			all=no
+		fi
+	fi
+	if test "$request_status" = no; then
+		# If we're here, the parent engine is built, so no need to check that.
+		all=no
+	fi
+
+
+	# In the static/dynamic categories, also display the engine's base games.
+	if test -n "`get_engine_subengines $parent_engine`" -a $request_status != no -a $request_status != wip; then
+		subengine_string="[`get_engine_base $parent_engine`]"
+	fi
 
 	for subeng in `get_engine_subengines $parent_engine` ; do
 		subengine_build=`get_engine_build $subeng`
 		subengine_build_default=`get_engine_build_default $subeng`
-		if test \( $subengine_build = $2 -a "$parent_status" != wip \) -o \( "$parent_status" = wip -a $subengine_build != no -a "$subengine_build_default" = no \) ; then
-			subengine_string="$subengine_string [`get_engine_name $subeng`]"
+
+		# Display this subengine if it matches the filter, unless it is
+		# a stable subengine in the WIP request.
+		if test $subengine_build = $subengine_filter -a \! \( "$request_status" = wip -a "$subengine_build_default" = yes \) ; then
+			s="[`get_engine_name $subeng`]"
+			if test -n "$subengine_string"; then
+				subengine_string="$subengine_string $s"
+			else
+				subengine_string="$s"
+			fi
 		else
 			all=no
 		fi
-
-		# handle engines that are on by default and have a single subengine that is off by default
-		if test "$parent_status" = wip ; then
-			if test $parent_engine_build_default = yes -a subengine ; then
-				all=no
-			fi
-		fi
-
 	done
 
-	if test $2 != no ; then
-		if test -n "$subengine_string" ; then
-			if test $all = yes ; then
-				subengine_string="[all games]"
-			fi
-		fi
+	# Summarize the full list, where applicable
+	if test $all = yes ; then
+		subengine_string="[all games]"
 	fi
 
-	echo $subengine_string
-}
-
-# Engine specific build strings
-get_scumm_build_string() {
-	if test `get_engine_build $1` != no ; then
-		if test $2 != no -a "$3" != wip ; then
-			base="[v0-v6 games]"
-		fi
-		get_subengines_build_string $1 $2 "$base" $3
-	fi
-}
-
-get_saga_build_string() {
-	if test `get_engine_build $1` != no ; then
-		if test $2 != no -a "$3" != wip; then
-			base="[ITE]"
-		fi
-		get_subengines_build_string $1 $2 "$base" $3
-	fi
+	echo "$subengine_string"
 }
 
 #
@@ -777,6 +877,7 @@ Game engines:
     The values of <engine name> for these options are as follows:
 $engines_help
 Optional Features:
+  --enable-c++11           build as C++11 if the compiler allows that
   --disable-debug          disable building with debugging symbols
   --enable-Werror          treat warnings as errors
   --enable-release         enable building in release mode (this activates
@@ -1015,6 +1116,12 @@ for ac_option in $@; do
 		;;
 	--backend=*)
 		_backend=`echo $ac_option | cut -d '=' -f 2`
+		;;
+	--enable-c++11)
+		_use_cxx11=yes
+		;;
+	--disable-c++11)
+		_use_cxx11=no
 		;;
 	--enable-debug)
 		_debug_build=yes
@@ -1602,21 +1709,36 @@ if test "$cxx_verc_fail" = yes ; then
 fi
 
 #
+# Check whether the compiler supports C++11
+#
+have_cxx11=no
+cat > $TMPC << EOF
+int main(int argc, char *argv[]) { if (argv == nullptr) return -1; else return 0; }
+EOF
+cc_check -std=c++11 && have_cxx11=yes
+if test "$_use_cxx11" = "yes" ; then
+	_use_cxx11=$have_cxx11
+fi
+
+#
 # Setup compiler specific CXXFLAGS now that we know the compiler version.
 # Foremost, this means enabling various warnings.
 # In addition, we set CXX_UPDATE_DEP_FLAG for GCC >= 3.0 and for ICC.
 #
 if test "$have_gcc" = yes ; then
 	if test "$_cxx_major" -ge "3" ; then
-		case $_host_os in
-		# newlib-based system include files suppress non-C89 function
-		# declarations under __STRICT_ANSI__
-		amigaos* | android | bada | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | ps3 | wii | wince )
-			;;
-		*)
-			CXXFLAGS="$CXXFLAGS -ansi"
-			;;
-		esac
+		# Try to use ANSI mode when C++11 is disabled.
+		if test "$_use_cxx11" = "no" ; then
+			case $_host_os in
+			# newlib-based system include files suppress non-C89 function
+			# declarations under __STRICT_ANSI__
+			amigaos* | android | bada | dreamcast | ds | gamecube | mingw* | n64 | psp | ps2 | ps3 | wii | wince )
+				;;
+			*)
+				CXXFLAGS="$CXXFLAGS -ansi"
+				;;
+			esac
+		fi
 		CXXFLAGS="$CXXFLAGS -W -Wno-unused-parameter"
 		add_line_to_config_mk 'HAVE_GCC3 = 1'
 		add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
@@ -1631,6 +1753,15 @@ if test "$have_gcc" = yes ; then
 elif test "$have_icc" = yes ; then
 	add_line_to_config_mk 'CXX_UPDATE_DEP_FLAG = -MMD -MF "$(*D)/$(DEPDIR)/$(*F).d" -MQ "$@" -MP'
 fi;
+
+#
+# Update status about C++11 mode
+#
+echo_n "Building as C++11... "
+if test "$_use_cxx11" = "yes" ; then
+	CXXFLAGS="$CXXFLAGS -std=c++11"
+fi
+echo $_use_cxx11
 
 # By default, we add -pedantic to the CXXFLAGS to catch some potentially
 # non-portable constructs, like use of GNU extensions.
@@ -1811,7 +1942,7 @@ cc_check_clean tmp_find_type_with_size.cpp
 # for the smaller sizes.
 echo_n "Alignment required... "
 case $_host_cpu in
-	i[3-6]86 | x86_64 | ppc*)
+	i[3-6]86 | amd64 | x86_64 | ppc*)
 		# Unaligned access should work
 		_need_memalign=no
 		;;
@@ -1839,7 +1970,9 @@ case $_host_cpu in
 		define_in_config_if_yes yes 'USE_ARM_SOUND_ASM'
 		define_in_config_if_yes yes 'USE_ARM_SMUSH_ASM'
 		define_in_config_if_yes yes 'USE_ARM_GFX_ASM'
-		define_in_config_if_yes yes 'USE_ARM_COSTUME_ASM'
+		# FIXME: The following feature exhibits a bug during the intro scene of Indy 4
+		# (on Pandora and iPhone at least)
+		#define_in_config_if_yes yes 'USE_ARM_COSTUME_ASM'
 
 		DEFINES="$DEFINES -DARM_TARGET"
 		;;
@@ -1856,7 +1989,7 @@ case $_host_cpu in
 		echo "PowerPC"
 		DEFINES="$DEFINES -DPPC_TARGET"
 		;;
-	x86_64)
+	amd64 | x86_64)
 		echo "x86_64"
 		;;
 	*)
@@ -2430,10 +2563,13 @@ if test -n "$_host"; then
 				# Use -O3 on the OpenPandora for non-debug builds.
 				_optimization_level=-O3
 			fi
+			define_in_config_if_yes yes 'USE_ARM_NEON_ASPECT_CORRECTOR'
 			CXXFLAGS="$CXXFLAGS -march=armv7-a"
 			CXXFLAGS="$CXXFLAGS -mtune=cortex-a8"
+			CXXFLAGS="$CXXFLAGS -mfloat-abi=softfp"
 			CXXFLAGS="$CXXFLAGS -mfpu=neon"
-			ASFLAGS="$ASFLAGS -mfloat-abi=soft"
+			CXXFLAGS="$CXXFLAGS -fsingle-precision-constant"
+			ASFLAGS="$ASFLAGS -mfloat-abi=softfp"
 			_backend="openpandora"
 			_build_hq_scalers=yes
 			_vkeybd=no
@@ -2442,6 +2578,16 @@ if test -n "$_host"; then
 			_port_mk="backends/platform/openpandora/op-bundle.mk"
 			;;
 		ppc-amigaos)
+			# Only static builds link successfully on buildbot
+			LDFLAGS=`echo $LDFLAGS | sed 's/-use-dynld//'`
+			LDFLAGS="$LDFLAGS -static"
+
+			# toolchain binaries prefixed by host
+			_ranlib=$_host-ranlib
+			_strip=$_host-strip
+			_ar="$_host-ar cru"
+			_as="$_host-as"
+			_windres=$_host-windres
 			;;
 		ps2)
 			DEFINES="$DEFINES -DDISABLE_TEXT_CONSOLE"
@@ -2882,7 +3028,7 @@ PLUGIN_LDFLAGS		+= -Wl,-T$(srcdir)/backends/plugins/ds/plugin.ld -mthumb-interwo
 	freebsd*)
 		_plugin_prefix="lib"
 		_plugin_suffix=".so"
-		CXXFLAGS="$CXXFLAGS -fpic"
+		CXXFLAGS="$CXXFLAGS -fPIC"
 _mak_plugins='
 PLUGIN_EXTRA_DEPS =
 PLUGIN_LDFLAGS  += -shared
@@ -2926,7 +3072,7 @@ POST_OBJS_FLAGS := -Wl,-no-whole-archive
 	linux*)
 		_plugin_prefix="lib"
 		_plugin_suffix=".so"
-		CXXFLAGS="$CXXFLAGS -fpic"
+		CXXFLAGS="$CXXFLAGS -fPIC"
 		LIBS="$LIBS -ldl"
 _mak_plugins='
 PLUGIN_EXTRA_DEPS =
@@ -3202,11 +3348,6 @@ fi
 define_in_config_if_yes "$_png" 'USE_PNG'
 echo "$_png"
 
-if test `get_engine_build sword25` = yes && test ! "$_png" = yes ; then
-	echo "...disabling Broken Sword 2.5 engine. PNG is required"
-	engine_disable sword25
-fi
-
 #
 # Check for Theora Decoder
 #
@@ -3316,11 +3457,6 @@ if test "$_zlib" = yes ; then
 fi
 define_in_config_if_yes "$_zlib" 'USE_ZLIB'
 echo "$_zlib"
-
-if test `get_engine_build sword25` = yes && test ! "$_zlib" = yes ; then
-	echo "...disabling Broken Sword 2.5 engine. ZLib is required"
-	engine_disable sword25
-fi
 
 #
 # Check for Sparkle if updates support is enabled
@@ -3868,6 +4004,9 @@ sh -c "
 	fi" 2>/dev/null &
 
 for engine in $_engines; do
+	# Check whether all dependencies are available
+	check_engine_deps $engine
+
 	if test "`get_engine_sub $engine`" = "no" ; then
 		# It's a main engine
 		if test `get_engine_build $engine` = no ; then
@@ -3893,9 +4032,6 @@ for engine in $_engines; do
 				isbuilt=STATIC_PLUGIN
 			fi
 		fi
-
-		# Prepare the information to be shown
-		prepare_engine_build_strings $engine
 	else
 		# It's a subengine, just say yes or no
 		if test "`get_engine_build $engine`" = "no" ; then
@@ -3911,6 +4047,14 @@ for engine in $_engines; do
 		add_line_to_config_mk "# $defname"
 	else
 		add_line_to_config_mk "$defname = $isbuilt"
+	fi
+done
+
+# Prepare the information to be shown
+for engine in $_engines; do
+	if test "`get_engine_sub $engine`" = "no" ; then
+		# It's a main engine
+		prepare_engine_build_strings $engine
 	fi
 done
 
@@ -3941,28 +4085,28 @@ fi
 echo
 if test -n "$_engines_built_static" ; then
 	echo "Engines (builtin):"
-	echo $_engines_built_static | sed 's/@/\
+	echo "$_engines_built_static" | sed 's/@/\
 /g
 s/#/    /g'
 fi
 
 if test -n "$_engines_built_dynamic" ; then
 	echo "Engines (plugins):"
-	echo $_engines_built_dynamic | sed 's/@/\
+	echo "$_engines_built_dynamic" | sed 's/@/\
 /g
 s/#/    /g'
 fi
 
 if test -n "$_engines_skipped" ; then
 	echo "Engines Skipped:"
-	echo $_engines_skipped | sed 's/@/\
+	echo "$_engines_skipped" | sed 's/@/\
 /g
 s/#/    /g'
 fi
 
 if test -n "$_engines_built_wip" ; then
 	echo "WARNING: This ScummVM build contains the following UNSTABLE engines:"
-	echo $_engines_built_wip | sed 's/@/\
+	echo "$_engines_built_wip" | sed 's/@/\
 /g
 s/#/    /g'
 fi

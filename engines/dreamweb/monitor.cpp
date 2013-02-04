@@ -149,6 +149,13 @@ bool DreamWebEngine::execCommand() {
 		return true;
 	case 1:
 		monMessage(6);
+		// An extra addition in ScummVM: available commands.
+		// Since the reference to the game manual is a form of copy protection,
+		// this extra text is wrapped around the common copy protection check,
+		// to keep it faithful to the original, if requested.
+		if (!_copyProtection) {
+			monPrint("VALID COMMANDS ARE EXIT, HELP, LIST, READ, LOGON, KEYS");
+		}
 		break;
 	case 2:
 		dirCom();
@@ -194,7 +201,7 @@ void DreamWebEngine::printLogo() {
 }
 
 void DreamWebEngine::input() {
-	memset(_inputLine, 0, 64);
+	memset(_inputLine, 0, sizeof(_inputLine));
 	_curPos = 0;
 	printChar(_monitorCharset, _monAdX, _monAdY, '>', 0, NULL, NULL);
 	multiDump(_monAdX, _monAdY, 6, 8);
@@ -366,7 +373,7 @@ void DreamWebEngine::lockLightOff() {
 }
 
 void DreamWebEngine::turnOnPower() {
-	for (size_t i = 0; i < 3; ++i) {
+	for (uint i = 0; i < 3; ++i) {
 		powerLightOn();
 		hangOn(30);
 		powerLightOff();
@@ -665,7 +672,7 @@ void DreamWebEngine::searchForFiles(const char *filesString) {
 const char *DreamWebEngine::parser() {
 	char *output = _operand1;
 
-	memset(output, 0, 14);
+	memset(output, 0, sizeof(_operand1));
 
 	*output++ = '=';
 
