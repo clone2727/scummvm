@@ -116,7 +116,7 @@ void SoundCommandParser::processInitSound(reg_t obj) {
 	newSound->resourceId = resourceId;
 	newSound->soundObj = obj;
 	newSound->loop = readSelectorValue(_segMan, obj, SELECTOR(loop));
-	newSound->priority = readSelectorValue(_segMan, obj, SELECTOR(pri)) & 0xFF;
+	newSound->priority = readSelectorValue(_segMan, obj, SELECTOR(priority)) & 0xFF;
 	if (_soundVersion >= SCI_VERSION_1_EARLY)
 		newSound->volume = CLIP<int>(readSelectorValue(_segMan, obj, SELECTOR(vol)), 0, MUSIC_VOLUME_MAX);
 	newSound->reverb = -1;	// initialize to SCI invalid, it'll be set correctly in soundInitSnd() below
@@ -340,6 +340,12 @@ reg_t SoundCommandParser::kDoSoundMasterVolume(int argc, reg_t *argv, reg_t acc)
 reg_t SoundCommandParser::kDoSoundFade(int argc, reg_t *argv, reg_t acc) {
 	reg_t obj = argv[0];
 
+	// The object can be null in several SCI0 games (e.g. Camelot, KQ1, KQ4, MUMG).
+	// Check bugs #3035149, #3036942 and #3578335.
+	// In this case, we just ignore the call.
+	if (obj.isNull() && argc == 1)
+		return acc;
+
 	MusicEntry *musicSlot = _music->getSlot(obj);
 	if (!musicSlot) {
 		debugC(kDebugLevelSound, "kDoSound(fade): Slot not found (%04x:%04x)", PRINT_REG(obj));
@@ -435,7 +441,7 @@ reg_t SoundCommandParser::kDoSoundUpdate(int argc, reg_t *argv, reg_t acc) {
 	int16 objVol = CLIP<int>(readSelectorValue(_segMan, obj, SELECTOR(vol)), 0, 255);
 	if (objVol != musicSlot->volume)
 		_music->soundSetVolume(musicSlot, objVol);
-	uint32 objPrio = readSelectorValue(_segMan, obj, SELECTOR(pri));
+	uint32 objPrio = readSelectorValue(_segMan, obj, SELECTOR(priority));
 	if (objPrio != musicSlot->priority)
 		_music->soundSetPriority(musicSlot, objPrio);
 	return acc;
