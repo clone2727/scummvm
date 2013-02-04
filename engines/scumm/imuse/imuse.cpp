@@ -164,7 +164,7 @@ bool IMuseInternal::isMT32(int sound) {
 		return true;
 
 	case MKTAG('M', 'A', 'C', ' '): // Occurs in the Mac version of FOA and MI2
-		return true;
+		return false;
 
 	case MKTAG('G', 'M', 'D', ' '):
 		return false;
@@ -207,6 +207,45 @@ bool IMuseInternal::isMIDI(int sound) {
 
 	case MKTAG('M', 'A', 'C', ' '): // Occurs in the Mac version of FOA and MI2
 		return true;
+
+	case MKTAG('G', 'M', 'D', ' '):
+	case MKTAG('M', 'I', 'D', 'I'): // Occurs in Sam & Max
+		return true;
+	}
+
+	// Old style 'RO' has equivalent properties to 'ROL'
+	if (ptr[0] == 'R' && ptr[1] == 'O')
+		return true;
+	// Euphony tracks show as 'SO' and have equivalent properties to 'ADL'
+	// FIXME: Right now we're pretending it's GM.
+	if (ptr[4] == 'S' && ptr[5] == 'O')
+		return true;
+
+	error("Unknown music type: '%c%c%c%c'", (char)tag >> 24, (char)tag >> 16, (char)tag >> 8, (char)tag);
+
+	return false;
+}
+
+bool IMuseInternal::supportsPercussion(int sound) {
+	byte *ptr = g_scumm->_res->_types[rtSound][sound]._address;
+	if (ptr == NULL)
+		return false;
+
+	uint32 tag = READ_BE_UINT32(ptr);
+	switch (tag) {
+	case MKTAG('A', 'D', 'L', ' '):
+	case MKTAG('A', 'S', 'F', 'X'): // Special AD class for old AdLib sound effects
+	case MKTAG('S', 'P', 'K', ' '):
+		return false;
+
+	case MKTAG('A', 'M', 'I', ' '):
+	case MKTAG('R', 'O', 'L', ' '):
+		return true;
+
+	case MKTAG('M', 'A', 'C', ' '): // Occurs in the Mac version of FOA and MI2
+		// This is MIDI, i.e. uses MIDI style program changes, but without a
+		// special percussion channel.
+		return false;
 
 	case MKTAG('G', 'M', 'D', ' '):
 	case MKTAG('M', 'I', 'D', 'I'): // Occurs in Sam & Max
@@ -324,7 +363,7 @@ void IMuseInternal::pause(bool paused) {
 	_paused = paused;
 }
 
-int IMuseInternal::save_or_load(Serializer *ser, ScummEngine *scumm) {
+int IMuseInternal::save_or_load(Serializer *ser, ScummEngine *scumm, bool fixAfterLoad) {
 	Common::StackLock lock(_mutex, "IMuseInternal::save_or_load()");
 	const SaveLoadEntry mainEntries[] = {
 		MKLINE(IMuseInternal, _queue_end, sleUint8, VER(8)),
@@ -401,7 +440,16 @@ int IMuseInternal::save_or_load(Serializer *ser, ScummEngine *scumm) {
 	for (i = 0; i < 8; ++i)
 		ser->saveLoadEntries(0, volumeFaderEntries);
 
-	if (ser->isLoading()) {
+	// Normally, we have to fix up the data structures after loading a
+	// saved game. But there are cases where we don't. For instance, The
+	// Macintosh version of Monkey Island 1 used to convert the Mac0 music
+	// resources to General MIDI and play it through iMUSE as a rough
+	// approximation. Now it has its own player, but old savegame still
+	// have the iMUSE data in them. We have to skip that data, using a
+	// dummy iMUSE object, but since the resource is no longer recognizable
+	// to iMUSE, the fixup fails hard. So yes, this is a bit of a hack.
+
+	if (ser->isLoading() && fixAfterLoad) {
 		// Load all sounds that we need
 		fix_players_after_load(scumm);
 		fix_parts_after_load();
