@@ -220,44 +220,44 @@ const uint8 EoBCoreEngine::_wallOfForceShapeDefs[] = {
 	0x0C, 0x00, 0x05, 0x10
 };
 
-const int16 EoBCoreEngine::_buttonList1[] = {
+const uint8 EoBCoreEngine::_buttonList1[] = {
 	58, 0, 1, 2, 3, 90, 91, 4, 5, 6, 7, 8, 9, 10, 11, 12, 78, 79, 13, 14,  15,  16,
-	80, 81, 17, 18, 19, 20, 82, 83, 49, 50, 51, 52, 53, 54, 56, 57, -1
+	80, 81, 17, 18, 19, 20, 82, 83, 49, 50, 51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList2[] = {
+const uint8 EoBCoreEngine::_buttonList2[] = {
 	58, 61, 62, 63, 64, 65, 93, 94, 66, 67, 68, 69, 70, 71, 76, 77, 88, 0, 1, 2, 3,
 	90, 91,  4,  5, 6, 7, 8, 9, 10, 11, 12, 78, 79, 13, 14, 15, 16, 80, 81, 17, 18,
-	19, 20, 82, 83, 49, 50, 51, 52, 53, 54, 56, 57, -1
+	19, 20, 82, 83, 49, 50, 51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList3[] = {
+const uint8 EoBCoreEngine::_buttonList3[] = {
 	58, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39,
 	40, 41, 42, 43, 44, 45, 84, 85, 46, 47, 48, 60, 59, 92, 4, 5, 6, 7, 8, 49,  50,
-	51, 52, 53, 54, 56, 57, -1
+	51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList4[] = {
-	58, 47, 48, 60, 59, 92, 4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, -1
+const uint8 EoBCoreEngine::_buttonList4[] = {
+	58, 47, 48, 60, 59, 92, 4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList5[] = {
+const uint8 EoBCoreEngine::_buttonList5[] = {
 	58, 61, 62, 63, 64, 65, 93, 66, 67, 68, 69, 70, 71, 88, 21, 22, 23, 24, 25, 26,
 	27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 84,
-	85, 46, 47, 48, 60, 59, 92, 4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, -1
+	85, 46, 47, 48, 60, 59, 92, 4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList6[] = {
+const uint8 EoBCoreEngine::_buttonList6[] = {
 	58, 61, 62, 63, 64, 65, 93, 66, 67, 68, 69, 70, 71, 88, 46, 47, 48, 60, 59, 92,
-	4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, -1
+	4, 5, 6, 7, 8, 49, 50, 51, 52, 53, 54, 56, 57, 255
 };
 
-const int16 EoBCoreEngine::_buttonList7[] = {
-	17, 18, 19, 20, 82, 83, 55, -1
+const uint8 EoBCoreEngine::_buttonList7[] = {
+	17, 18, 19, 20, 82, 83, 55, 255
 };
 
-const int16 EoBCoreEngine::_buttonList8[] = {
-	72, 73, 74, 75, 86, 87, 89, -1
+const uint8 EoBCoreEngine::_buttonList8[] = {
+	72, 73, 74, 75, 86, 87, 89, 255
 };
 
 const uint8 EoBCoreEngine::_clock2Timers[] = {
@@ -1118,10 +1118,10 @@ void EoBEngine::initSpells() {
 		{ 0x0000, 0x000000, 0x00 }, // dummy
 		{ 0x0033, 0x000001, 0x00 }, // armor
 		{ 0x0100, 0x000000, 0x21 }, // burning hands
-		{ 0x004c, 0x000002, 0x00 }, // detect magic
+		{ 0x004C, 0x000002, 0x00 }, // detect magic
 		{ 0x0100, 0x000000, 0x01 }, // magic missile
 		{ 0x0000, 0x000000, 0x00 }, // dummy
-		{ 0x008b, 0x000008, 0x00 }, // shield
+		{ 0x008B, 0x000008, 0x00 }, // shield
 		{ 0x0488, 0x000000, 0x03 }, // shocking grasp
 		{ 0x0021, 0x000040, 0x00 }, // invisibility
 		{ 0x0000, 0x000000, 0x00 }, // dummy
@@ -1141,10 +1141,10 @@ void EoBEngine::initSpells() {
 		{ 0x0000, 0x000000, 0x00 }, // CLOUD KILL
 		{ 0x0100, 0x000000, 0x41 }, // cone of cold
 		{ 0x0100, 0x000000, 0x00 }, // hold monster
-		{ 0x005c, 0x000400, 0x00 }, // bless
+		{ 0x005C, 0x000400, 0x00 }, // bless
 		{ 0x0020, 0x000000, 0x00 }, // cure light wounds
 		{ 0x0100, 0x000000, 0x01 }, // cause light wounds
-		{ 0x004c, 0x000002, 0x00 }, // detect magic
+		{ 0x004C, 0x000002, 0x00 }, // detect magic
 		{ 0x0029, 0x000800, 0x00 }, // prot from evil
 		{ 0x0039, 0x000000, 0x00 }, // aid
 		{ 0x2408, 0x000000, 0x21 }, // flame blade
@@ -1153,7 +1153,7 @@ void EoBEngine::initSpells() {
 		{ 0x0040, 0x000000, 0x00 }, // create food
 		{ 0x1000, 0x000000, 0x00 }, // dispel magic
 		{ 0x0099, 0x004000, 0x00 }, // magical vestment
-		{ 0x004c, 0x008000, 0x00 }, // prayer
+		{ 0x004C, 0x008000, 0x00 }, // prayer
 		{ 0x0040, 0x000000, 0x00 }, // remove paralysis
 		{ 0x0020, 0x000000, 0x00 }, // cure serious
 		{ 0x0100, 0x000000, 0x01 }, // cause serious

@@ -336,9 +336,9 @@ private:
 	static const char *const _charPreviewNamesDefault[];
 	static const char *const _charPreviewNamesRussianFloppy[];
 
-	// PC98 specific data
+	// PC98/FM-TOWNS specific data
 	static const uint16 _charPosXPC98[];
-	static const uint8 _charNamesPC98[][11];
+	static const char *const _charNamesJapanese[];
 
 	WSAMovie_v2 *_chargenWSA;
 	static const uint8 _chargenFrameTableTalkie[];
@@ -558,14 +558,14 @@ private:
 	int clickedStatusIcon(Button *button);
 
 	const LoLButtonDef *_buttonData;
-	const int16 *_buttonList1;
-	const int16 *_buttonList2;
-	const int16 *_buttonList3;
-	const int16 *_buttonList4;
-	const int16 *_buttonList5;
-	const int16 *_buttonList6;
-	const int16 *_buttonList7;
-	const int16 *_buttonList8;
+	const uint8 *_buttonList1;
+	const uint8 *_buttonList2;
+	const uint8 *_buttonList3;
+	const uint8 *_buttonList4;
+	const uint8 *_buttonList5;
+	const uint8 *_buttonList6;
+	const uint8 *_buttonList7;
+	const uint8 *_buttonList8;
 
 	// text
 	int characterSays(int track, int charId, bool redraw);
@@ -1137,7 +1137,11 @@ private:
 	uint16 _monsterCurBlock;
 	int _objectLastDirection;
 
-	const uint16 *_monsterModifiers;
+	const uint16 *_monsterModifiers1;
+	const uint16 *_monsterModifiers2;
+	const uint16 *_monsterModifiers3;
+	const uint16 *_monsterModifiers4;
+
 	const int8 *_monsterShiftOffs;
 	const uint8 *_monsterDirFlags;
 	const uint8 *_monsterScaleX;

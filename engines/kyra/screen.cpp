@@ -56,6 +56,7 @@ Screen::Screen(KyraEngine_v1 *vm, OSystem *system, const ScreenDim *dimTable, co
 		_pageMapping[i] = i & ~1;
 
 	_renderMode = Common::kRenderDefault;
+	_sjisMixedFontMode = false;
 
 	_currentFont = FID_8_FNT;
 	_paletteChanged = true;
@@ -124,6 +125,7 @@ bool Screen::init() {
 	if (_useOverlays) {
 		_useSJIS = (_vm->gameFlags().lang == Common::JA_JPN);
 		_sjisInvisibleColor = (_vm->game() == GI_KYRA1) ? 0x80 : 0xF6;
+		_sjisMixedFontMode = !_use16ColorMode;
 
 		for (int i = 0; i < SCREEN_OVLS_NUM; ++i) {
 			if (!_sjisOverlayPtrs[i]) {
@@ -139,7 +141,7 @@ bool Screen::init() {
 			if (!font)
 				error("Could not load any SJIS font, neither the original nor ScummVM's 'SJIS.FNT'");
 
-			_fonts[FID_SJIS_FNT] = new SJISFont(font, _sjisInvisibleColor, _use16ColorMode, !_use16ColorMode);
+			_fonts[FID_SJIS_FNT] = new SJISFont(font, _sjisInvisibleColor, _use16ColorMode, !_use16ColorMode && _vm->game() != GI_LOL, _vm->game() == GI_LOL ? 1 : 0);
 		}
 	}
 
@@ -1246,11 +1248,16 @@ int Screen::getCharWidth(uint16 c) const {
 	return width + ((_currentFont != FID_SJIS_FNT) ? _charWidth : 0);
 }
 
-int Screen::getTextWidth(const char *str) const {
+int Screen::getTextWidth(const char *str) {
 	int curLineLen = 0;
 	int maxLineLen = 0;
 
+	FontId curFont = _currentFont;
+
 	while (1) {
+		if (_sjisMixedFontMode)
+			setFont(*str < 0 ? FID_SJIS_FNT : curFont);
+
 		uint c = fetchChar(str);
 
 		if (c == 0) {
@@ -1274,7 +1281,7 @@ void Screen::printText(const char *str, int x, int y, uint8 color1, uint8 color2
 	cmap[1] = color1;
 	setTextColor(cmap, 0, 1);
 
-	const uint8 charHeightFnt = getFontHeight();
+	FontId curFont = _currentFont;
 
 	if (x < 0)
 		x = 0;
@@ -1288,6 +1295,11 @@ void Screen::printText(const char *str, int x, int y, uint8 color1, uint8 color2
 		return;
 
 	while (1) {
+		if (_sjisMixedFontMode)
+			setFont(*str < 0 ? FID_SJIS_FNT : curFont);
+
+		uint8 charHeightFnt = getFontHeight();
+
 		uint c = fetchChar(str);
 
 		if (c == 0) {
@@ -1490,7 +1502,7 @@ void Screen::drawShape(uint8 pageNum, const uint8 *shapeData, int x, int y, int 
 
 	int scaleCounterV = 0;
 
-	const int drawFunc = flags & 0x0f;
+	const int drawFunc = flags & 0x0F;
 	_dsProcessMargin = dsMarginFunc[drawFunc];
 	_dsScaleSkip = dsSkipFunc[drawFunc];
 	_dsProcessLine = dsLineFunc[drawFunc];
@@ -1747,7 +1759,7 @@ int Screen::drawShapeMarginScaleUpwind(uint8 *&dst, const uint8 *&src, int &cnt)
 	_dsTmpWidth += cnt;
 
 	int i = (_dsOffscreenLeft - cnt) * _dsScaleW;
-	int res = i & 0xff;
+	int res = i & 0xFF;
 	i >>= 8;
 	i -= _dsOffscreenScaleVal2;
 	dst += i;
@@ -1773,7 +1785,7 @@ int Screen::drawShapeMarginScaleDownwind(uint8 *&dst, const uint8 *&src, int &cn
 	_dsTmpWidth += cnt;
 
 	int i = (_dsOffscreenLeft - cnt) * _dsScaleW;
-	int res = i & 0xff;
+	int res = i & 0xFF;
 	i >>= 8;
 	i -= _dsOffscreenScaleVal2;
 	dst -= i;
@@ -1862,7 +1874,7 @@ void Screen::drawShapeProcessLineScaleUpwind(uint8 *&dst, const uint8 *&src, int
 				int r = c * _dsScaleW + scaleState;
 				dst += (r >> 8);
 				cnt -= (r >> 8);
-				scaleState = r & 0xff;
+				scaleState = r & 0xFF;
 			}
 		} else if (scaleState) {
 			(this->*_dsPlot)(dst++, c);
@@ -1890,7 +1902,7 @@ void Screen::drawShapeProcessLineScaleDownwind(uint8 *&dst, const uint8 *&src, i
 				int r = c * _dsScaleW + scaleState;
 				dst -= (r >> 8);
 				cnt -= (r >> 8);
-				scaleState = r & 0xff;
+				scaleState = r & 0xFF;
 			}
 		} else {
 			(this->*_dsPlot)(dst--, c);
@@ -1938,9 +1950,9 @@ void Screen::drawShapePlotType5(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType6(uint8 *dst, uint8 cmd) {
 	int t = _drawShapeVar4 + _drawShapeVar5;
-	if (t & 0xff00) {
+	if (t & 0xFF00) {
 		cmd = dst[_drawShapeVar3];
-		t &= 0xff;
+		t &= 0xFF;
 	} else {
 		cmd = _dsTable2[cmd];
 	}
@@ -1951,7 +1963,7 @@ void Screen::drawShapePlotType6(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType8(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 	if (_dsDrawLayer < t)
 		cmd = _shapePages[1][relOffs];
 
@@ -1960,7 +1972,7 @@ void Screen::drawShapePlotType8(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType9(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 	if (_dsDrawLayer < t) {
 		cmd = _shapePages[1][relOffs];
 	} else {
@@ -1974,7 +1986,7 @@ void Screen::drawShapePlotType9(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType11_15(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 
 	if (_dsDrawLayer < t) {
 		cmd = _shapePages[1][relOffs];
@@ -1990,7 +2002,7 @@ void Screen::drawShapePlotType11_15(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType12(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 	if (_dsDrawLayer < t) {
 		cmd = _shapePages[1][relOffs];
 	} else {
@@ -2002,7 +2014,7 @@ void Screen::drawShapePlotType12(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType13(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 	if (_dsDrawLayer < t) {
 		cmd = _shapePages[1][relOffs];
 	} else {
@@ -2017,14 +2029,14 @@ void Screen::drawShapePlotType13(uint8 *dst, uint8 cmd) {
 
 void Screen::drawShapePlotType14(uint8 *dst, uint8 cmd) {
 	uint32 relOffs = dst - _dsDstPage;
-	int t = (_shapePages[0][relOffs] & 0x7f) & 0x87;
+	int t = (_shapePages[0][relOffs] & 0x7F) & 0x87;
 	if (_dsDrawLayer < t) {
 		cmd = _shapePages[1][relOffs];
 	} else {
 		t = _drawShapeVar4 + _drawShapeVar5;
-		if (t & 0xff00) {
+		if (t & 0xFF00) {
 			cmd = dst[_drawShapeVar3];
-			t &= 0xff;
+			t &= 0xFF;
 		} else {
 			cmd = _dsTable2[cmd];
 		}
@@ -2118,7 +2130,7 @@ void Screen::decodeFrame1(const uint8 *src, uint8 *dst, uint32 size) {
 	uint8 nib = 0;
 
 	uint16 code = decodeEGAGetCode(src, nib);
-	uint8 last = code & 0xff;
+	uint8 last = code & 0xFF;
 
 	uint8 *dstPrev = dst;
 	uint16 count = 1;
@@ -2131,7 +2143,7 @@ void Screen::decodeFrame1(const uint8 *src, uint8 *dst, uint32 size) {
 		uint8 cmd = code >> 8;
 
 		if (cmd--) {
-			code = (cmd << 8) | (code & 0xff);
+			code = (cmd << 8) | (code & 0xFF);
 			uint8 *tmpDst = dst;
 
 			if (code < numPatterns) {
@@ -2159,7 +2171,7 @@ void Screen::decodeFrame1(const uint8 *src, uint8 *dst, uint32 size) {
 			count = countPrev;
 
 		} else {
-			*dst++ = last = (code & 0xff);
+			*dst++ = last = (code & 0xFF);
 
 			if (numPatterns < 3840) {
 				patterns[numPatterns].pos = dstPrev;
@@ -2180,7 +2192,7 @@ uint16 Screen::decodeEGAGetCode(const uint8 *&pos, uint8 &nib) {
 		res >>= 4;
 	} else {
 		pos++;
-		res &= 0xfff;
+		res &= 0xFFF;
 	}
 	return res;
 }
@@ -3566,11 +3578,11 @@ void AMIGAFont::unload() {
 	memset(_chars, 0, sizeof(_chars));
 }
 
-SJISFont::SJISFont(Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool outlineSize)
-    : _colorMap(0), _font(font), _invisColor(invisColor), _is16Color(is16Color) {
+SJISFont::SJISFont(Graphics::FontSJIS *font, const uint8 invisColor, bool is16Color, bool drawOutline, int extraSpacing)
+    : _colorMap(0), _font(font), _invisColor(invisColor), _is16Color(is16Color), _drawOutline(drawOutline), _sjisWidthOffset(extraSpacing) {
 	assert(_font);
 
-	_font->setDrawingMode(outlineSize ? Graphics::FontSJIS::kOutlineMode : Graphics::FontSJIS::kDefaultMode);
+	_font->setDrawingMode(_drawOutline ? Graphics::FontSJIS::kOutlineMode : Graphics::FontSJIS::kDefaultMode);
 
 	_sjisWidth = _font->getMaxFontWidth() >> 1;
 	_fontHeight = _font->getFontHeight() >> 1;
@@ -3587,14 +3599,14 @@ int SJISFont::getHeight() const {
 }
 
 int SJISFont::getWidth() const {
-	return _sjisWidth;
+	return _sjisWidth + _sjisWidthOffset;
 }
 
 int SJISFont::getCharWidth(uint16 c) const {
 	if (c <= 0x7F || (c >= 0xA1 && c <= 0xDF))
 		return _asciiWidth;
 	else
-		return _sjisWidth;
+		return _sjisWidth + _sjisWidthOffset;
 }
 
 void SJISFont::setColorMap(const uint8 *src) {
@@ -3604,7 +3616,7 @@ void SJISFont::setColorMap(const uint8 *src) {
 		if (_colorMap[0] == _invisColor)
 			_font->setDrawingMode(Graphics::FontSJIS::kDefaultMode);
 		else
-			_font->setDrawingMode(Graphics::FontSJIS::kOutlineMode);
+			_font->setDrawingMode(_drawOutline ? Graphics::FontSJIS::kOutlineMode : Graphics::FontSJIS::kDefaultMode);
 	}
 }
 
@@ -3643,7 +3655,7 @@ void Palette::loadVGAPalette(Common::ReadStream &stream, int startIndex, int col
 
 	uint8 *pos = _palData + startIndex * 3;
 	for (int i = 0 ; i < colors * 3; i++)
-		*pos++ = stream.readByte() & 0x3f;
+		*pos++ = stream.readByte() & 0x3F;
 }
 
 void Palette::loadEGAPalette(Common::ReadStream &stream, int startIndex, int colors) {

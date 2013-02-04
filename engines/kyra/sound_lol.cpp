@@ -60,7 +60,7 @@ bool LoLEngine::snd_playCharacterSpeech(int id, int8 speaker, int) {
 	Common::String pattern2 = Common::String::format("%02d", id & 0x4000 ? 0 : _curTlkFile);
 
 	if (id & 0x4000) {
-		pattern1 = Common::String::format("%03X", id & 0x3fff);
+		pattern1 = Common::String::format("%03X", id & 0x3FFF);
 	} else if (id < 1000) {
 		pattern1 = Common::String::format("%03d", id);
 	} else {
@@ -164,7 +164,7 @@ void LoLEngine::snd_playSoundEffect(int track, int volume) {
 	if (track == -1 || track >= _ingameSoundListSize)
 		return;
 
-	volume &= 0xff;
+	volume &= 0xFF;
 	int16 prIndex = (int16)READ_LE_UINT16(&_ingameSoundIndex[track * 2 + 1]);
 	uint16 priority = (prIndex > 0) ? (prIndex * volume) >> 8 : -prIndex;
 
@@ -214,8 +214,8 @@ bool LoLEngine::snd_processEnvironmentalSoundEffect(int soundId, int block) {
 		uint16 cbl = _currentBlock;
 
 		for (int i = 3; i > 0; i--) {
-			int dir = calcMonsterDirection(cbl & 0x1f, cbl >> 5, block & 0x1f, block >> 5);
-			cbl = (cbl + blockShiftTable[dir]) & 0x3ff;
+			int dir = calcMonsterDirection(cbl & 0x1F, cbl >> 5, block & 0x1F, block >> 5);
+			cbl = (cbl + blockShiftTable[dir]) & 0x3FF;
 			if (cbl != block) {
 				if (testWallFlag(cbl, 0, 1))
 					_environmentSfxVol >>= 1;
@@ -247,7 +247,7 @@ void LoLEngine::snd_playQueuedEffects() {
 
 void LoLEngine::snd_loadSoundFile(int track) {
 	if (_sound->musicEnabled()) {
-		if (_flags.platform != Common::kPlatformPC98) {
+		if (_flags.platform == Common::kPlatformPC) {
 			int t = (track - 250) * 3;
 			if (_curMusicFileIndex != _musicTrackMap[t] || _curMusicFileExt != (char)_musicTrackMap[t + 1]) {
 				snd_stopMusic();
@@ -269,12 +269,12 @@ int LoLEngine::snd_playTrack(int track) {
 	_lastMusicTrack = track;
 
 	if (_sound->musicEnabled()) {
-		if (_flags.platform == Common::kPlatformPC98) {
-			_sound->playTrack(track - 249);
-		} else {
+		if (_flags.platform == Common::kPlatformPC) {
 			snd_loadSoundFile(track);
 			int t = (track - 250) * 3;
 			_sound->playTrack(_musicTrackMap[t + 2]);
+		} else {
+			_sound->playTrack(track - 249);
 		}
 	}
 

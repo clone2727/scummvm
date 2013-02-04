@@ -30,10 +30,13 @@ namespace MT32Emu {
 static Bit8u biasLevelToAmpSubtractionCoeff[13] = {255, 187, 137, 100, 74, 54, 40, 29, 21, 15, 10, 5, 0};
 
 TVA::TVA(const Partial *usePartial, LA32Ramp *useAmpRamp) :
-	partial(usePartial), ampRamp(useAmpRamp), system_(&usePartial->getSynth()->mt32ram.system) {
+	partial(usePartial), ampRamp(useAmpRamp), system_(&usePartial->getSynth()->mt32ram.system), phase(TVA_PHASE_DEAD) {
 }
 
 void TVA::startRamp(Bit8u newTarget, Bit8u newIncrement, int newPhase) {
+	if (newPhase != phase) {
+		partial->getSynth()->partialStateChanged(partial, phase, newPhase);
+	}
 	target = newTarget;
 	phase = newPhase;
 	ampRamp->startRamp(newTarget, newIncrement);
@@ -43,6 +46,9 @@ void TVA::startRamp(Bit8u newTarget, Bit8u newIncrement, int newPhase) {
 }
 
 void TVA::end(int newPhase) {
+	if (newPhase != phase) {
+		partial->getSynth()->partialStateChanged(partial, phase, newPhase);
+	}
 	phase = newPhase;
 	playing = false;
 #if MT32EMU_MONITOR_TVA >= 1
@@ -274,7 +280,7 @@ void TVA::nextPhase() {
 	}
 
 	int newTarget;
-	int newIncrement = 0;
+	int newIncrement = 0; // Initialised to please compilers
 	int envPointIndex = phase;
 
 	if (!allLevelsZeroFromNowOn) {

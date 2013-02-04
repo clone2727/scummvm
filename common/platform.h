@@ -76,6 +76,6 @@ extern const char *getPlatformCode(Platform id);
 extern const char *getPlatformAbbrev(Platform id);
 extern const char *getPlatformDescription(Platform id);
 
-}	// End of namespace Common
+} // End of namespace Common
 
 #endif

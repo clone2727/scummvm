@@ -85,6 +85,7 @@ void Partial::deactivate() {
 			pair->pair = NULL;
 		}
 	}
+	synth->partialStateChanged(this, tva->getPhase(), TVA_PHASE_DEAD);
 #if MT32EMU_MONITOR_PARTIALS > 2
 	synth->printDebug("[+%lu] [Partial %d] Deactivated", sampleNum, debugPartialNum);
 	synth->printPartialUsage(sampleNum);
@@ -232,12 +233,12 @@ unsigned long Partial::generateSamples(float *partialBuf, unsigned long length) 
 
 #if MT32EMU_ACCURATE_WG == 1
 		float amp = EXP2F((32772 - ampRampVal / 2048) / -2048.0f);
-		float freq = EXP2F(pitch / 4096.0f - 16.0f) * 32000.0f;
+		float freq = EXP2F(pitch / 4096.0f - 16.0f) * SAMPLE_RATE;
 #else
 		static const float ampFactor = EXP2F(32772 / -2048.0f);
 		float amp = EXP2I(ampRampVal >> 10) * ampFactor;
 
-		static const float freqFactor = EXP2F(-16.0f) * 32000.0f;
+		static const float freqFactor = EXP2F(-16.0f) * SAMPLE_RATE;
 		float freq = EXP2I(pitch) * freqFactor;
 #endif
 
@@ -251,7 +252,7 @@ unsigned long Partial::generateSamples(float *partialBuf, unsigned long length) 
 				break;
 			}
 			Bit32u pcmAddr = pcmWave->addr;
-			float positionDelta = freq * 2048.0f / synth->myProp.sampleRate;
+			float positionDelta = freq * 2048.0f / SAMPLE_RATE;
 
 			// Linear interpolation
 			float firstSample = synth->pcmROMData[pcmAddr + intPCMPosition];
@@ -283,8 +284,12 @@ unsigned long Partial::generateSamples(float *partialBuf, unsigned long length) 
 			// res corresponds to a value set in an LA32 register
 			Bit8u res = patchCache->srcPartial.tvf.resonance + 1;
 
-			// Using tiny exact table for computation of EXP2F(1.0f - (32 - res) / 4.0f)
-			float resAmp = tables.resAmpMax[res];
+			float resAmp;
+			{
+				// resAmp = EXP2F(1.0f - (32 - res) / 4.0f);
+				static const float resAmpFactor = EXP2F(-7);
+				resAmp = EXP2I(res << 10) * resAmpFactor;
+			}
 
 			// The cutoffModifier may not be supposed to be directly added to the cutoff -
 			// it may for example need to be multiplied in some way.
@@ -296,7 +301,7 @@ unsigned long Partial::generateSamples(float *partialBuf, unsigned long length) 
 			}
 
 			// Wave length in samples
-			float waveLen = synth->myProp.sampleRate / freq;
+			float waveLen = SAMPLE_RATE / freq;
 
 			// Init cosineLen
 			float cosineLen = 0.5f * waveLen;
@@ -316,23 +321,26 @@ unsigned long Partial::generateSamples(float *partialBuf, unsigned long length) 
 				relWavePos -= waveLen;
 			}
 
+			// Ratio of positive segment to wave length
 			float pulseLen = 0.5f;
 			if (pulseWidthVal > 128) {
-				pulseLen += tables.pulseLenFactor[pulseWidthVal - 128];
+				// pulseLen = EXP2F((64 - pulseWidthVal) / 64);
+				static const float pulseLenFactor = EXP2F(-192 / 64);
+				pulseLen = EXP2I((256 - pulseWidthVal) << 6) * pulseLenFactor;
 			}
 			pulseLen *= waveLen;
 
-			float lLen = pulseLen - cosineLen;
+			float hLen = pulseLen - cosineLen;
 
 			// Ignore pulsewidths too high for given freq
-			if (lLen < 0.0f) {
-				lLen = 0.0f;
+			if (hLen < 0.0f) {
+				hLen = 0.0f;
 			}
 
 			// Ignore pulsewidths too high for given freq and cutoff
-			float hLen = waveLen - lLen - 2 * cosineLen;
-			if (hLen < 0.0f) {
-				hLen = 0.0f;
+			float lLen = waveLen - hLen - 2 * cosineLen;
+			if (lLen < 0.0f) {
+				lLen = 0.0f;
 			}
 
 			// Correct resAmp for cutoff in range 50..66

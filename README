@@ -264,10 +264,14 @@ Other Games:
      Discworld 2: Missing Presumed ...!?         [dw2]
      Dragon History                              [draci]
      Drascula: The Vampire Strikes Back          [drascula]
+     Eye of the Beholder                         [eob]
+     Eye of the Beholder II: The Legend of
+         Darkmoon                                [eob2]
      Flight of the Amazon Queen                  [queen]
      Future Wars                                 [fw]
      Inherit the Earth: Quest for the Orb        [ite]
      Nippon Safes Inc.                           [nippon]
+     Lands of Lore: The Throne of Chaos          [lol]
      The Legend of Kyrandia                      [kyra1]
      The Legend of Kyrandia: The Hand of Fate    [kyra2]
      The Legend of Kyrandia: Malcolm's Revenge   [kyra3]
@@ -2161,8 +2165,11 @@ keywords:
 
 The 7th Guest adds the following non-standard keyword:
 
-    t7g_speed          string   Video playback speed (normal, tweaked,
-                                im_an_ios)
+    fast_movie_speed   bool     If true, movies are played at an increased
+                                speed, matching the speed of the iOS version.
+                                Movies without sound are still played at their
+                                normal speed, to avoid music synchronization
+                                issues
 
 
 8.2) Custom game options that can be toggled via the GUI

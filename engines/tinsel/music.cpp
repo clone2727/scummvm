@@ -135,9 +135,9 @@ bool PlayMidiSequence(uint32 dwFileOffset, bool bLoop) {
 	if (ConfMan.hasKey("mute"))
 		mute = ConfMan.getBool("mute");
 
-	// TODO: The Macintosh version of DW1 does not use MIDI for music
+	// The Macintosh version of DW1 uses raw PCM for music
 	if (TinselV1Mac)
-		return true;
+		return _vm->_sound->playDW1MacMusic(dwFileOffset);
 
 	// TODO: Unimplemented Saturn MIDI
 	if (TinselV1Saturn)
@@ -289,7 +289,8 @@ void OpenMidiFiles() {
 	if (TinselV0 || TinselV2)
 		return;
 
-	// TODO: The Macintosh version of DW1 does not use MIDI for music
+	// The Macintosh version of DW1 does not use MIDI for music.
+	// It uses PCM music instead, which is quite big to be preloaded here.
 	if (TinselV1Mac)
 		return;
 

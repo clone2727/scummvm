@@ -639,9 +639,15 @@ void PegasusEngine::writeContinueStream(Common::WriteStream *stream) {
 	delete[] data;
 }
 
+Common::StringArray PegasusEngine::listSaveFiles() {
+	Common::StringArray fileNames = g_system->getSavefileManager()->listSavefiles("pegasus-*.sav");
+	Common::sort(fileNames.begin(), fileNames.end());
+	return fileNames;
+}
+
 Common::Error PegasusEngine::loadGameState(int slot) {
-	Common::StringArray filenames = _saveFileMan->listSavefiles("pegasus-*.sav");
-	Common::InSaveFile *loadFile = _saveFileMan->openForLoading(filenames[slot]);
+	Common::StringArray fileNames = listSaveFiles();
+	Common::InSaveFile *loadFile = _saveFileMan->openForLoading(fileNames[slot]);
 	if (!loadFile)
 		return Common::kUnknownError;
 
@@ -651,7 +657,23 @@ Common::Error PegasusEngine::loadGameState(int slot) {
 	return valid ? Common::kNoError : Common::kUnknownError;
 }
 
+static bool isValidSaveFileChar(char c) {
+	// Limit it to letters, digits, and a few other characters that should be safe
+	return Common::isAlnum(c) || c == ' ' || c == '_' || c == '+' || c == '-' || c == '.';
+}
+
+static bool isValidSaveFileName(const Common::String &desc) {
+	for (uint32 i = 0; i < desc.size(); i++)
+		if (!isValidSaveFileChar(desc[i]))
+			return false;
+
+	return true;
+}
+
 Common::Error PegasusEngine::saveGameState(int slot, const Common::String &desc) {
+	if (!isValidSaveFileName(desc))
+		return Common::Error(Common::kCreatingFileFailed, _("Invalid save file name"));
+
 	Common::String output = Common::String::format("pegasus-%s.sav", desc.c_str());
 	Common::OutSaveFile *saveFile = _saveFileMan->openForSaving(output, false);
 	if (!saveFile)
@@ -1428,6 +1450,10 @@ void PegasusEngine::switchGameMode(const GameMode newMode, const GameMode oldMod
 }
 
 bool PegasusEngine::canSwitchGameMode(const GameMode newMode, const GameMode oldMode) {
+	// WORKAROUND: Don't allow game mode switches when the interface is not set up.
+	// Prevents segfaults when pressing 'i' when in the space chase.
+	if (!g_interface)
+		return false;
 	if (newMode == kModeInventoryPick && oldMode == kModeBiochipPick)
 		return false;
 	if (newMode == kModeBiochipPick && oldMode == kModeInventoryPick)

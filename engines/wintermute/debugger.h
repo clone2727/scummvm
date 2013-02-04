@@ -8,38 +8,36 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  *
  */
 
-/*
- * This file is based on WME Lite.
- * http://dead-code.org/redir.php?target=wmelite
- * Copyright (c) 2011 Jan Nedoma
- */
+#ifndef WINTERMUTE_DEBUGGER_H
+#define WINTERMUTE_DEBUGGER_H
 
-#ifndef WINTERMUTE_BASE_RESOURCES_H
-#define WINTERMUTE_BASE_RESOURCES_H
-
-#include "common/stream.h"
-#include "common/str.h"
+#include "gui/debugger.h"
 
 namespace Wintermute {
 
-class BaseResources {
+class WintermuteEngine;
+class Console : public GUI::Debugger {
 public:
-	static Common::SeekableReadStream *getFile(const Common::String &filename);
-	static bool hasFile(const Common::String &filename);
+	Console(WintermuteEngine *vm);
+	virtual ~Console();
+	
+	bool Cmd_ShowFps(int argc, const char **argv);
+private:
+	WintermuteEngine *_engineRef;
 };
 
-} // end of namespace Wintermute
+}
 
-#endif
+#endif // WINTERMUTE_DEBUGGER_H

@@ -20,7 +20,9 @@
 
 namespace MT32Emu {
 
-// Sample rate to use in mixing
+// Sample rate to use in mixing. With the progress of development, we've found way too many thing dependent.
+// In order to achieve further advance in emulation accuracy, sample rate made fixed throughout the emulator.
+// The output from the synth is supposed to be resampled to convert the sample rate.
 const unsigned int SAMPLE_RATE = 32000;
 
 const int MIDDLEC = 60;
@@ -55,8 +57,6 @@ public:
 	Bit8u pulseWidth100To255[101];
 
 	float exp2[4096];
-	float pulseLenFactor[128];
-	float resAmpMax[32];
 	float resAmpFadeFactor[8];
 	float sinf10[5120];
 };

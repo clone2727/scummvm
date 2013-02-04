@@ -42,7 +42,6 @@ MODULE_OBJS := \
 	base/file/base_file.o \
 	base/file/base_file_entry.o \
 	base/file/base_package.o \
-	base/file/base_resources.o \
 	base/file/base_save_thumb_file.o \
 	base/font/base_font_bitmap.o \
 	base/font/base_font_truetype.o \
@@ -53,6 +52,7 @@ MODULE_OBJS := \
 	base/gfx/base_surface.o \
 	base/gfx/osystem/base_surface_osystem.o \
 	base/gfx/osystem/base_render_osystem.o \
+	base/gfx/osystem/render_ticket.o \
 	base/particles/part_particle.o \
 	base/particles/part_emitter.o \
 	base/particles/part_force.o \
@@ -109,6 +109,7 @@ MODULE_OBJS := \
 	utils/utils.o \
 	video/video_player.o \
 	video/video_theora_player.o \
+	debugger.o \
 	wintermute.o \
 	persistent.o
  
