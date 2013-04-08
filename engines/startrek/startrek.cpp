@@ -89,9 +89,14 @@ Common::Error StarTrekEngine::run() {
 #if 1
 	if (getGameType() == GType_ST25) {
 		if (getPlatform() == Common::kPlatformMacintosh) {
-			playMovie("Voice Data/Additional Audio/Intro Movie");
-			_gfx->setPalette("BRIDGES.PAL");
-			_gfx->drawImage("BRIDGE0.BMP");
+			if (getFeatures() & GF_DEMO) {
+				_gfx->setPalette("BRIDGE.PAL");
+				_gfx->drawImage("BRIDGE.BMP");
+			} else {
+				playMovie("Voice Data/Additional Audio/Intro Movie");
+				_gfx->setPalette("BRIDGES.PAL");
+				_gfx->drawImage("BRIDGE0.BMP");
+			}
 		} else {
 			_gfx->setPalette("BRIDGE.PAL");
 			//_gfx->loadEGAData("BRIDGE.EGA");
@@ -166,11 +171,11 @@ Common::SeekableReadStream *StarTrekEngine::openFile(Common::String filename) {
 				testfile += c;
 		}
 		testfile += '.';
-	
+
 		for (byte i = 0; i < 3; i++)
 			testfile += indexFile->readByte();
-		
-		if (getFeatures() & GF_DEMO) {
+
+		if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformPC) {
 			indexFile->readByte(); // Always 0?
 			fileCount = indexFile->readUint16LE(); // Always 1
 			indexOffset = indexFile->readUint32LE();
@@ -190,15 +195,15 @@ Common::SeekableReadStream *StarTrekEngine::openFile(Common::String filename) {
 				fileCount = 1;
 			}
 		}
-		
+
 		if (filename.matchString(testfile)) {
 			foundData = true;
 			break;
 		}		
 	}
-	
+
 	delete indexFile;
-	
+
 	if (!foundData)
 		error ("Could not find file \'%s\'", filename.c_str());
 
@@ -217,10 +222,10 @@ Common::SeekableReadStream *StarTrekEngine::openFile(Common::String filename) {
 		if (!dataFile)
 			error("Could not open data.001");
 	}
-		
+
 	dataFile->seek(indexOffset);
-	
-	if (getFeatures() & GF_DEMO) {
+
+	if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformPC) {
 		assert(fileCount == 1); // Sanity check...
 		Common::SeekableReadStream *stream = dataFile->readStream(uncompressedSize);
 		delete dataFile;
