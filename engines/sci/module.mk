@@ -73,6 +73,7 @@ MODULE_OBJS := \
 	sound/drivers/cms.o \
 	sound/drivers/fb01.o \
 	sound/drivers/fmtowns.o \
+	sound/drivers/macsci1.o \
 	sound/drivers/midi.o \
 	sound/drivers/pcjr.o \
 	video/seq_decoder.o

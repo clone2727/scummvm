@@ -128,6 +128,7 @@ extern MidiPlayer *MidiPlayer_AmigaMac_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_PCJr_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_PCSpeaker_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_CMS_create(SciVersion version);
+extern MidiPlayer *MidiPlayer_MacSci1_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_Midi_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_Fb01_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_FMTowns_create(SciVersion version);
