@@ -34,8 +34,6 @@
 
 namespace Sci {
 
-#define DISABLE_VOICE_MAPPING
-
 static const byte envSpeedToStep[32] = {
 	0x40, 0x32, 0x24, 0x18, 0x14, 0x0f, 0x0d, 0x0b, 0x09, 0x08, 0x07, 0x06, 0x05, 0x0a, 0x04, 0x03,
 	0x05, 0x02, 0x03, 0x0b, 0x05, 0x09, 0x09, 0x01, 0x02, 0x03, 0x07, 0x05, 0x04, 0x03, 0x03, 0x02
@@ -1603,6 +1601,8 @@ void MidiDriver_MacSci1::releaseVoices(int8 channel, byte voices) {
 
 		for (int i = 0; i < kVoices; i++) {
 			if (_voiceChannel[i] == channel) {
+				// The original code seems to be broken here. It reads a word value from
+				// byte array _voiceSustained.
 				uint16 ticks = _voiceReleaseTicks[i];
 				if (ticks > 0)
 					ticks += 0x8000;
@@ -1878,13 +1878,12 @@ void MidiDriver_MacSci1::generateSampleChunk(int16 *data, int len) {
 	const byte *samples[kVoices];
 
 	for (uint i = 0; i < kVoices; ++i)
-		samples[i] = _voiceWave[i] + 0x7fe8 + WAVE_SIZEOF;
+		samples[i] = _voiceWave[i] + WAVE_SIZEOF;
 
 	frac_t offset[kVoices];
 
-	for (uint i = 0; i < kVoices; ++i) {
-		offset[i] = _voicePos[i] - intToFrac(0x7fe8);
-	}
+	for (uint i = 0; i < kVoices; ++i)
+		offset[i] = _voicePos[i];
 
 	for (uint i = 0; i < kVoices; ++i) {
 		if (!_voiceOn[i]) {
@@ -1896,18 +1895,19 @@ void MidiDriver_MacSci1::generateSampleChunk(int16 *data, int len) {
 
 	// Mix
 
-	assert(len <= 186 /* && kVoices == 4*/);
+	assert(len <= 186);
 
 	for (int i = 0; i < len; i++) {
 		uint16 mix = 0;
 		for (int v = 0; v < kVoices; v++) {
-			int16 curOffset = fracToInt(offset[v]);
+			uint16 curOffset = fracToInt(offset[v]);
 			byte sample = samples[v][curOffset];
 			sample = _voiceVelocityAdjust[v][sample];
 			mix += sample;
 			offset[v] += _voiceStep[v];
 		}
 
+		// This is the original 4-voice mixer
 		// mix = mix4[mix];
 
 		// Convert to 16-bit signed
@@ -1920,19 +1920,16 @@ void MidiDriver_MacSci1::generateSampleChunk(int16 *data, int len) {
 
 	// Loop
 
-	for (uint i = 0; i < kVoices; ++i)
-		offset[i] += intToFrac(0x7fe8);
-
 	for (uint i = 0; i < kVoices; ++i) {
 		if (_voiceOn[i]) {
-			uint16 endOffset = READ_BE_UINT16(samples[i] - 0x8000 + WAVE_PHASE2_END);
+			uint16 endOffset = READ_BE_UINT16(_voiceWave[i] + WAVE_PHASE2_END);
 
 			if (endOffset == 0)
-				endOffset = READ_BE_UINT16(samples[i] - 0x8000 + WAVE_PHASE1_END);
+				endOffset = READ_BE_UINT16(_voiceWave[i] + WAVE_PHASE1_END);
 
 			if ((uint16)fracToInt(offset[i]) > endOffset) {
-				if (READ_BE_UINT16(samples[i] - 0x8000 + WAVE_PHASE2_END) != 0 && _voiceNoteRange[i][NOTE_RANGE_LOOP] == 0) {
-					uint16 loopSize = endOffset - READ_BE_UINT16(samples[i] - 0x8000 + WAVE_PHASE2_START) + 1;
+				if (READ_BE_UINT16(_voiceWave[i] + WAVE_PHASE2_END) != 0 && _voiceNoteRange[i][NOTE_RANGE_LOOP] == 0) {
+					uint16 loopSize = endOffset - READ_BE_UINT16(_voiceWave[i] + WAVE_PHASE2_START) + 1;
 					do {
 						offset[i] -= intToFrac(loopSize);
 					} while ((uint16)fracToInt(offset[i]) > endOffset);
