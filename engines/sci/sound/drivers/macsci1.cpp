@@ -1730,14 +1730,14 @@ frac_t MidiDriver_MacSci1::calcStep(int8 note, byte voice, byte *noteRange, byte
 
 	int16 transpose = READ_BE_UINT16(noteRange + NOTE_RANGE_TRANSPOSE);
 	if (transpose > 0) {
-		uint32 delta = READ_BE_UINT32(stepTable + (noteAdj << 4) + offset + 16) - step;
+		frac_t delta = READ_BE_UINT32(stepTable + (noteAdj << 4) + offset + 16) - step;
 		delta >>= 4;
 		delta >>= octave;
 		delta *= transpose;
 		step >>= octave;
 		step += delta;
 	} else if (transpose < 0) {
-		uint32 delta = step - READ_BE_UINT32(stepTable + (noteAdj << 4) + offset + 16);
+		frac_t delta = step - READ_BE_UINT32(stepTable + (noteAdj << 4) + offset - 16);
 		delta >>= 4;
 		delta >>= octave;
 		delta *= -transpose;
