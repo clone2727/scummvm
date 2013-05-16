@@ -353,6 +353,16 @@ void MidiParser_SCI::sendInitCommands() {
 	// Set initial voice count
 	if (_pSnd) {
 		if (_soundVersion <= SCI_VERSION_0_LATE) {
+			// Notify driver of used channels
+			uint16 channels = 0;
+			for (uint i = 0; i < 15; ++i) {
+				if (_channelUsed[i])
+					channels |= 1 << i;
+			}
+			static_cast<MidiPlayer *>(_driver)->onNewSound(channels);
+
+			// Notify driver of initial channel voice counts
+
 			for (int i = 0; i < 15; ++i) {
 				byte voiceCount = 0;
 				if (_channelUsed[i]) {

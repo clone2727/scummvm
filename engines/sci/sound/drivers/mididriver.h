@@ -106,6 +106,8 @@ public:
 		return _driver ? _driver->property(MIDI_PROP_MASTER_VOLUME, 0xffff) : 0;
 	}
 
+	virtual void onNewSound(uint16 channels) { }
+
 	// Returns the current reverb, or -1 when no reverb is active
 	int8 getReverb() const { return _reverb; }
 	// Sets the current reverb, used mainly in MT-32
@@ -128,6 +130,7 @@ extern MidiPlayer *MidiPlayer_AmigaMac_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_PCJr_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_PCSpeaker_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_CMS_create(SciVersion version);
+extern MidiPlayer *MidiPlayer_MacSci0_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_MacSci1_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_Midi_create(SciVersion version);
 extern MidiPlayer *MidiPlayer_Fb01_create(SciVersion version);
