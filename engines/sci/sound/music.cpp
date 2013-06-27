@@ -103,9 +103,12 @@ void SciMusic::init() {
 				_pMidiDrv = MidiPlayer_MacSci0_create(_soundVersion);
 			else
 				_pMidiDrv = MidiPlayer_MacSci1_create(_soundVersion);
-		} else if (g_sci->getPlatform() == Common::kPlatformAmiga)
-			_pMidiDrv = MidiPlayer_AmigaMac_create(_soundVersion);
-		else
+		} else if (g_sci->getPlatform() == Common::kPlatformAmiga) {
+			if (getSciVersion() <= SCI_VERSION_0_LATE)
+				_pMidiDrv = MidiPlayer_AmigaSci0_create(_soundVersion);
+			else
+				_pMidiDrv = MidiPlayer_AmigaMac_create(_soundVersion);
+		} else
 			_pMidiDrv = MidiPlayer_AdLib_create(_soundVersion);
 		break;
 	case MT_PCJR:
