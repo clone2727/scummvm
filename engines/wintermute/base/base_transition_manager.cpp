@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -28,6 +28,7 @@
 
 #include "engines/wintermute/base/base_transition_manager.h"
 #include "engines/wintermute/base/base_game.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/gfx/base_renderer.h"
 
 namespace Wintermute {
@@ -103,7 +104,7 @@ bool BaseTransitionMgr::update() {
 		uint32 time = g_system->getMillis() - _lastTime;
 		int alpha = (int)(255 - (float)time / (float)FADE_DURATION * 255);
 		alpha = MIN(255, MAX(alpha, 0));
-		_gameRef->_renderer->fade((uint16)alpha);
+		BaseEngine::getRenderer()->fade((uint16)alpha);
 
 		if (time > FADE_DURATION) {
 			_state = TRANS_MGR_READY;
@@ -115,7 +116,7 @@ bool BaseTransitionMgr::update() {
 		uint32 time = g_system->getMillis() - _lastTime;
 		int alpha = (int)((float)time / (float)FADE_DURATION * 255);
 		alpha = MIN(255, MAX(alpha, 0));
-		_gameRef->_renderer->fade((uint16)alpha);
+		BaseEngine::getRenderer()->fade((uint16)alpha);
 
 		if (time > FADE_DURATION) {
 			_state = TRANS_MGR_READY;
@@ -134,4 +135,4 @@ bool BaseTransitionMgr::update() {
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

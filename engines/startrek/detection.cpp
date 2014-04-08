@@ -80,7 +80,7 @@ static const StarTrekGameDescription gameDescriptions[] = {
 			"",
 			AD_ENTRY1("data.001", "57040928a0f374281aa86ba4e7db8444"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO0()
 		},
@@ -155,7 +155,7 @@ static const StarTrekGameDescription gameDescriptions[] = {
 			"Demo",
 			AD_ENTRY1("data.001", "f68126e7e36ce6286c4c8575f8b594f5"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO0()
 		},
@@ -185,7 +185,7 @@ static const StarTrekGameDescription gameDescriptions[] = {
 			"",
 			AD_ENTRY1("data.001", "1c8de3c02f69c07c582d59d3c29e4dd9"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO0()
 		},

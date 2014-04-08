@@ -37,7 +37,7 @@ namespace StarTrek {
 // Main Sound Functions
 
 Sound::Sound(StarTrekEngine *vm) : _vm(vm) {
-	if (_vm->getPlatform() == Common::kPlatformPC || _vm->getPlatform() == Common::kPlatformMacintosh) {
+	if (_vm->getPlatform() == Common::kPlatformDOS || _vm->getPlatform() == Common::kPlatformMacintosh) {
 		// The main PC versions use XMIDI. ST25 Demo and Macintosh versions use SMF.
 		if ((_vm->getGameType() == GType_ST25 && _vm->getFeatures() & GF_DEMO) || _vm->getPlatform() == Common::kPlatformMacintosh)
 			_midiParser = MidiParser::createParser_SMF();

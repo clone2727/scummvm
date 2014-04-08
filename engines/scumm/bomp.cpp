@@ -8,11 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -231,7 +232,10 @@ void drawBomp(const BompDrawData &bd) {
 	}
 
 	src = bd.src;
-	dst = (byte *)bd.dst.pixels + bd.y * bd.dst.pitch + (bd.x + clip.left);
+	// FIXME: This gets passed a const destination Surface. Intuitively this
+	// should never get written to. But sadly it does... For now we simply
+	// cast the const qualifier away.
+	dst = (byte *)const_cast<void *>(bd.dst.getBasePtr((bd.x + clip.left), bd.y));
 
 	const byte maskbit = revBitMask((bd.x + clip.left) & 7);
 

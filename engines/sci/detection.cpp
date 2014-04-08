@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -105,9 +105,8 @@ static const PlainGameDescriptor s_sciGameTitles[] = {
 	// === SCI2.1 games ========================================================
 	{"chest",           "Inside the Chest"},	// aka Behind the Developer's Shield
 	{"gk2",             "The Beast Within: A Gabriel Knight Mystery"},
-	// TODO: Inside The Chest/Behind the Developer's Shield
 	{"kq7",             "King's Quest VII: The Princeless Bride"},
-	// TODO: King's Questions
+	{"kquestions",      "King's Questions"},
 	{"lsl6hires",       "Leisure Suit Larry 6: Shape Up or Slip Out!"},
 	{"mothergoosehires","Mixed-Up Mother Goose Deluxe"},
 	{"phantasmagoria",  "Phantasmagoria"},
@@ -161,6 +160,7 @@ static const GameIdStrToEnum s_gameIdStrToEnum[] = {
 	{ "kq5",             GID_KQ5 },
 	{ "kq6",             GID_KQ6 },
 	{ "kq7",             GID_KQ7 },
+	{ "kquestions",      GID_KQUESTIONS },
 	{ "laurabow",        GID_LAURABOW },
 	{ "laurabow2",       GID_LAURABOW2 },
 	{ "lighthouse",      GID_LIGHTHOUSE },
@@ -242,6 +242,7 @@ static const OldNewIdTableEntry s_oldNewTable[] = {
 	// kq5 is the same
 	// kq6 is the same
 	{ "kq7cd",		"kq7",				SCI_VERSION_NONE     },
+	{ "quizgame-demo", "kquestions",    SCI_VERSION_NONE     },
 	{ "mm1",		"laurabow",			SCI_VERSION_NONE     },
 	{ "cb1",		"laurabow",			SCI_VERSION_NONE     },
 	{ "lb2",		"laurabow2",		SCI_VERSION_NONE     },
@@ -452,7 +453,7 @@ static ADGameDescription s_fallbackDesc = {
 	"",
 	AD_ENTRY1(0, 0), // This should always be AD_ENTRY1(0, 0) in the fallback descriptor
 	Common::UNK_LANG,
-	Common::kPlatformPC,
+	Common::kPlatformDOS,
 	ADGF_NO_FLAGS,
 	GUIO3(GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI)
 };
@@ -514,7 +515,7 @@ const ADGameDescription *SciMetaEngine::fallbackDetect(const FileMap &allFiles, 
 	s_fallbackDesc.extra = "";
 	s_fallbackDesc.language = Common::EN_ANY;
 	s_fallbackDesc.flags = ADGF_NO_FLAGS;
-	s_fallbackDesc.platform = Common::kPlatformPC;	// default to PC platform
+	s_fallbackDesc.platform = Common::kPlatformDOS;	// default to PC platform
 	s_fallbackDesc.gameid = "sci";
 	s_fallbackDesc.guioptions = GUIO3(GAMEOPTION_PREFER_DIGITAL_SFX, GAMEOPTION_ORIGINAL_SAVELOAD, GAMEOPTION_FB01_MIDI);
 

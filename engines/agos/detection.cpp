@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -28,6 +28,7 @@
 #include "common/savefile.h"
 #include "common/system.h"
 #include "common/textconsole.h"
+#include "common/installshield_cab.h"
 
 #include "agos/intern.h"
 #include "agos/agos.h"
@@ -53,12 +54,12 @@ static const Engines::ObsoleteGameID obsoleteGameIDsTable[] = {
 	{"simon1acorn", "simon1", Common::kPlatformAcorn},
 	{"simon1amiga", "simon1", Common::kPlatformAmiga},
 	{"simon1cd32", "simon1", Common::kPlatformAmiga},
-	{"simon1demo", "simon1", Common::kPlatformPC},
-	{"simon1dos", "simon1", Common::kPlatformPC},
-	{"simon1talkie", "simon1", Common::kPlatformPC},
+	{"simon1demo", "simon1", Common::kPlatformDOS},
+	{"simon1dos", "simon1", Common::kPlatformDOS},
+	{"simon1talkie", "simon1", Common::kPlatformDOS},
 	{"simon1win", "simon1", Common::kPlatformWindows},
-	{"simon2dos", "simon2", Common::kPlatformPC},
-	{"simon2talkie", "simon2", Common::kPlatformPC},
+	{"simon2dos", "simon2", Common::kPlatformDOS},
+	{"simon2talkie", "simon2", Common::kPlatformDOS},
 	{"simon2mac", "simon2", Common::kPlatformMacintosh},
 	{"simon2win", "simon2", Common::kPlatformWindows},
 	{0, 0, Common::kPlatformUnknown}
@@ -269,8 +270,12 @@ void AGOSEngine::loadArchives() {
 
 	if (getFeatures() & GF_PACKED) {
 		for (ag = _gameDescription->desc.filesDescriptions; ag->fileName; ag++) {
-			if (!_archives.hasArchive(ag->fileName))
-				_archives.registerArchive(ag->fileName, ag->fileType);
+			if (!SearchMan.hasArchive(ag->fileName)) {
+				Common::SeekableReadStream *stream = SearchMan.createReadStreamForMember(ag->fileName);
+
+				if (stream)
+					SearchMan.add(ag->fileName, Common::makeInstallShieldArchive(stream, DisposeAfterUse::YES), ag->fileType);
+			}
 		}
 	}
 }

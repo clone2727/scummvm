@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/archive.h"
@@ -96,10 +97,14 @@ TestExitStatus MidiTests::playMidiMusic() {
 		Common::String errMsg = MidiDriver::getErrorName(errCode);
 		Testsuite::writeOnScreen(errMsg, Common::Point(0, 100));
 		Testsuite::logPrintf("Error! %s", errMsg.c_str());
+
+		delete smfParser;
+		delete driver;
+
 		return kTestFailed;
 	}
 
-	Testsuite::logDetailedPrintf("Info! Midi: Succesfully opened the driver\n");
+	Testsuite::logDetailedPrintf("Info! Midi: Successfully opened the driver\n");
 
 	Common::MemoryWriteStreamDynamic ws(DisposeAfterUse::YES);
 	loadMusicInMemory(&ws);

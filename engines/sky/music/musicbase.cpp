@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -44,9 +44,9 @@ MusicBase::~MusicBase() {
 }
 
 void MusicBase::loadSection(uint8 pSection) {
-	Common::StackLock lock(_mutex);
 	if (_currentMusic)
 		stopMusicInternal();
+	Common::StackLock lock(_mutex);
 	free(_musicData);
 	_currentSection = pSection;
 	_musicData = _skyDisk->loadFile(_driverFileBase + FILES_PER_SECTION * pSection);
@@ -70,12 +70,13 @@ bool MusicBase::musicIsPlaying() {
 }
 
 void MusicBase::stopMusic() {
-	Common::StackLock lock(_mutex);
 	stopMusicInternal();
 }
 
 void MusicBase::stopMusicInternal() {
 	_mixer->stopHandle(_musicHandle);
+
+	Common::StackLock lock(_mutex);
 
 	for (uint8 cnt = 0; cnt < _numberOfChannels; cnt++)
 		delete _channels[cnt];

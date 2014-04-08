@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/scummsys.h"
@@ -80,7 +81,7 @@ DefaultTimerManager::~DefaultTimerManager() {
 void DefaultTimerManager::handler() {
 	Common::StackLock lock(_mutex);
 
-	const uint32 curTime = g_system->getMillis();
+	uint32 curTime = g_system->getMillis(true);
 
 	// Repeat as long as there is a TimerSlot that is scheduled to fire.
 	TimerSlot *slot = _head->next;

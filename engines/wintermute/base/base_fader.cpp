@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,7 +27,8 @@
  */
 
 #include "engines/wintermute/base/base_fader.h"
-#include "engines/wintermute/base/base_game.h"
+#include "engines/wintermute/base/base_engine.h"
+#include "engines/wintermute/base/timer.h"
 #include "engines/wintermute/base/gfx/base_renderer.h"
 #include "common/util.h"
 
@@ -71,7 +72,7 @@ bool BaseFader::update() {
 	if (_system) {
 		time = g_system->getMillis() - _startTime;
 	} else {
-		time = _gameRef->_timer - _startTime;
+		time = BaseEngine::getTimer()->getTime() - _startTime;
 	}
 
 	if (time >= _duration) {
@@ -97,7 +98,7 @@ bool BaseFader::display() {
 	}
 
 	if (_currentAlpha > 0x00) {
-		_gameRef->_renderer->fadeToColor(_red, _green, _blue, _currentAlpha);
+		BaseEngine::getRenderer()->fadeToColor(_red, _green, _blue, _currentAlpha);
 	}
 	return STATUS_OK;
 }
@@ -129,7 +130,7 @@ bool BaseFader::fadeIn(uint32 sourceColor, uint32 duration, bool system) {
 	if (_system) {
 		_startTime = g_system->getMillis();
 	} else {
-		_startTime = _gameRef->_timer;
+		_startTime = BaseEngine::getTimer()->getTime();
 	}
 
 	return STATUS_OK;
@@ -155,7 +156,7 @@ bool BaseFader::fadeOut(uint32 targetColor, uint32 duration, bool system) {
 	if (_system) {
 		_startTime = g_system->getMillis();
 	} else {
-		_startTime = _gameRef->_timer;
+		_startTime = BaseEngine::getTimer()->getTime();
 	}
 
 
@@ -174,16 +175,16 @@ uint32 BaseFader::getCurrentColor() const {
 bool BaseFader::persist(BasePersistenceManager *persistMgr) {
 	BaseObject::persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_active));
-	persistMgr->transfer(TMEMBER(_blue));
-	persistMgr->transfer(TMEMBER(_currentAlpha));
-	persistMgr->transfer(TMEMBER(_duration));
-	persistMgr->transfer(TMEMBER(_green));
-	persistMgr->transfer(TMEMBER(_red));
-	persistMgr->transfer(TMEMBER(_sourceAlpha));
-	persistMgr->transfer(TMEMBER(_startTime));
-	persistMgr->transfer(TMEMBER(_targetAlpha));
-	persistMgr->transfer(TMEMBER(_system));
+	persistMgr->transferBool(TMEMBER(_active));
+	persistMgr->transferByte(TMEMBER(_blue));
+	persistMgr->transferByte(TMEMBER(_currentAlpha));
+	persistMgr->transferUint32(TMEMBER(_duration));
+	persistMgr->transferByte(TMEMBER(_green));
+	persistMgr->transferByte(TMEMBER(_red));
+	persistMgr->transferByte(TMEMBER(_sourceAlpha));
+	persistMgr->transferUint32(TMEMBER(_startTime));
+	persistMgr->transferByte(TMEMBER(_targetAlpha));
+	persistMgr->transferBool(TMEMBER(_system));
 
 	if (_system && !persistMgr->getIsSaving()) {
 		_startTime = 0;
@@ -192,4 +193,4 @@ bool BaseFader::persist(BasePersistenceManager *persistMgr) {
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

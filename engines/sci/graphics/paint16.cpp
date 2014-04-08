@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -41,8 +41,14 @@
 
 namespace Sci {
 
-GfxPaint16::GfxPaint16(ResourceManager *resMan, SegManager *segMan, Kernel *kernel, GfxCache *cache, GfxPorts *ports, GfxCoordAdjuster *coordAdjuster, GfxScreen *screen, GfxPalette *palette, GfxTransitions *transitions, AudioPlayer *audio)
-	: _resMan(resMan), _segMan(segMan), _kernel(kernel), _cache(cache), _ports(ports), _coordAdjuster(coordAdjuster), _screen(screen), _palette(palette), _transitions(transitions), _audio(audio) {
+GfxPaint16::GfxPaint16(ResourceManager *resMan, SegManager *segMan, GfxCache *cache, GfxPorts *ports, GfxCoordAdjuster *coordAdjuster, GfxScreen *screen, GfxPalette *palette, GfxTransitions *transitions, AudioPlayer *audio)
+	: _resMan(resMan), _segMan(segMan), _cache(cache), _ports(ports),
+	  _coordAdjuster(coordAdjuster), _screen(screen), _palette(palette),
+	  _transitions(transitions), _audio(audio), _EGAdrawingVisualize(false) {
+
+	// _animate and _text16 will be initialized later on
+	_animate = NULL;
+	_text16 = NULL;
 }
 
 GfxPaint16::~GfxPaint16() {
@@ -51,8 +57,6 @@ GfxPaint16::~GfxPaint16() {
 void GfxPaint16::init(GfxAnimate *animate, GfxText16 *text16) {
 	_animate = animate;
 	_text16 = text16;
-
-	_EGAdrawingVisualize = false;
 }
 
 void GfxPaint16::debugSetEGAdrawingVisualize(bool state) {

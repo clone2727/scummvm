@@ -38,7 +38,7 @@ Graphics::Graphics(StarTrekEngine *vm) : _vm(vm), _egaMode(false) {
 	if (ConfMan.hasKey("render_mode"))
 		_egaMode = (Common::parseRenderMode(ConfMan.get("render_mode").c_str()) == Common::kRenderEGA) && (_vm->getGameType() != GType_STJR) && !(_vm->getFeatures() & GF_DEMO);
 
-	if (_vm->getGameType() == GType_ST25 && _vm->getPlatform() == Common::kPlatformPC)
+	if (_vm->getGameType() == GType_ST25 && _vm->getPlatform() == Common::kPlatformDOS)
 		_font = new Font(_vm);
 }
 
@@ -57,7 +57,7 @@ void Graphics::setPalette(const char *paletteFile) {
 	palStream->read(palette, 256 * 3);
 
 	// Expand color components
-	if (_vm->getPlatform() == Common::kPlatformPC || _vm->getPlatform() == Common::kPlatformMacintosh)
+	if (_vm->getPlatform() == Common::kPlatformDOS || _vm->getPlatform() == Common::kPlatformMacintosh)
 		for (uint16 i = 0; i < 256 * 3; i++)
 			palette[i] <<= 2;
 

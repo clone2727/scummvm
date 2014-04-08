@@ -1,24 +1,24 @@
 /* ScummVM - Graphic Adventure Engine
-*
-* ScummVM is the legal property of its developers, whose names
-* are too numerous to list here. Please refer to the COPYRIGHT
-* file distributed with this source distribution.
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*/
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 
 #include "common/system.h"
 #include "common/events.h"
@@ -184,10 +184,10 @@ void ToonEngine::parseInput() {
 	Common::Event event;
 	while (_event->pollEvent(event)) {
 
-		bool hasModifier = event.kbd.hasFlags(Common::KBD_ALT|Common::KBD_CTRL|Common::KBD_SHIFT);
+		const bool hasModifier = (event.kbd.flags & Common::KBD_NON_STICKY) != 0;
 		switch (event.type) {
 		case Common::EVENT_KEYDOWN:
-			if ((event.kbd.ascii == 27 || event.kbd.ascii == 32) && !hasModifier) {
+			if ((event.kbd.keycode == Common::KEYCODE_ESCAPE || event.kbd.keycode == Common::KEYCODE_SPACE) && !hasModifier) {
 				_audioManager->stopCurrentVoice();
 			}
 			if (event.kbd.keycode == Common::KEYCODE_F5 && !hasModifier) {
@@ -198,21 +198,21 @@ void ToonEngine::parseInput() {
 				if (canLoadGameStateCurrently())
 					loadGame(-1);
 			}
-			if (event.kbd.ascii == 't' && !hasModifier) {
+			if (event.kbd.keycode == Common::KEYCODE_t && !hasModifier) {
 				_showConversationText = !_showConversationText;
 			}
-			if (event.kbd.ascii == 'm' && !hasModifier) {
+			if (event.kbd.keycode == Common::KEYCODE_m && !hasModifier) {
 				_audioManager->muteMusic(!_audioManager->isMusicMuted());
 			}
-			if (event.kbd.ascii == 'd' && !hasModifier) {
+			if (event.kbd.keycode == Common::KEYCODE_d && !hasModifier) {
 				_audioManager->muteVoice(!_audioManager->isVoiceMuted());
 			}
-			if (event.kbd.ascii == 's' && !hasModifier) {
+			if (event.kbd.keycode == Common::KEYCODE_s && !hasModifier) {
 				_audioManager->muteSfx(!_audioManager->isSfxMuted());
 			}
 
 			if (event.kbd.flags & Common::KBD_ALT) {
-				int slotNum = event.kbd.ascii - '0';
+				int slotNum = event.kbd.keycode - (event.kbd.keycode >= Common::KEYCODE_KP0 ? Common::KEYCODE_KP0 : Common::KEYCODE_0);
 				if (slotNum >= 0 && slotNum <= 9 && canSaveGameStateCurrently()) {
 					if (saveGame(slotNum, "")) {
 						// ok
@@ -229,7 +229,7 @@ void ToonEngine::parseInput() {
 			}
 
 			if (event.kbd.flags & Common::KBD_CTRL) {
-				int slotNum = event.kbd.ascii - '0';
+				int slotNum = event.kbd.keycode - (event.kbd.keycode >= Common::KEYCODE_KP0 ? Common::KEYCODE_KP0 : Common::KEYCODE_0);
 				if (slotNum >= 0 && slotNum <= 9 && canLoadGameStateCurrently()) {
 					if (loadGame(slotNum)) {
 						// ok
@@ -466,8 +466,7 @@ void ToonEngine::doMagnifierEffect() {
 		int32 cy = CLIP<int32>(posY + y, 0, TOON_BACKBUFFER_HEIGHT-1);
 		for (int32 x = -12; x <= 12; x++) {
 			int32 cx = CLIP<int32>(posX + x, 0, TOON_BACKBUFFER_WIDTH-1);
-			int32 destPitch = surface.pitch;
-			uint8 *curRow = (uint8 *)surface.pixels + cy * destPitch + cx;
+			uint8 *curRow = (uint8 *)surface.getBasePtr(cx, cy);
 			tempBuffer[(y + 12) * 25 + x + 12] = *curRow;
 		}
 	}
@@ -479,8 +478,7 @@ void ToonEngine::doMagnifierEffect() {
 			if (dist > 144)
 				continue;
 			int32 cx = CLIP<int32>(posX + x, 0, TOON_BACKBUFFER_WIDTH-1);
-			int32 destPitch = surface.pitch;
-			uint8 *curRow = (uint8 *)surface.pixels + cy * destPitch + cx;
+			uint8 *curRow = (uint8 *)surface.getBasePtr(cx, cy);
 			int32 lerp = (512 + intSqrt[dist] * 256 / 12);
 			*curRow = tempBuffer[(y * lerp / 1024 + 12) * 25 + x * lerp / 1024 + 12];
 		}
@@ -501,7 +499,7 @@ void ToonEngine::copyToVirtualScreen(bool updateScreen) {
 
 	if (_dirtyAll || _gameState->_currentScrollValue != lastScroll) {
 		// we have to refresh everything in case of scrolling.
-		_system->copyRectToScreen((byte *)_mainSurface->pixels + state()->_currentScrollValue, TOON_BACKBUFFER_WIDTH, 0, 0, TOON_SCREEN_WIDTH, TOON_SCREEN_HEIGHT);
+		_system->copyRectToScreen((byte *)_mainSurface->getPixels() + state()->_currentScrollValue, TOON_BACKBUFFER_WIDTH, 0, 0, TOON_SCREEN_WIDTH, TOON_SCREEN_HEIGHT);
 	} else {
 
 		int32 offX = 0;
@@ -517,7 +515,7 @@ void ToonEngine::copyToVirtualScreen(bool updateScreen) {
 			}
 			rect.clip(TOON_SCREEN_WIDTH, TOON_SCREEN_HEIGHT);
 			if (rect.left >= 0 && rect.top >= 0 && rect.right - rect.left > 0 && rect.bottom - rect.top > 0) {
-				_system->copyRectToScreen((byte *)_mainSurface->pixels + _oldDirtyRects[i].left + offX + _oldDirtyRects[i].top * TOON_BACKBUFFER_WIDTH, TOON_BACKBUFFER_WIDTH, rect.left , rect.top, rect.right - rect.left, rect.bottom - rect.top);
+				_system->copyRectToScreen((byte *)_mainSurface->getBasePtr(_oldDirtyRects[i].left + offX, _oldDirtyRects[i].top), TOON_BACKBUFFER_WIDTH, rect.left , rect.top, rect.right - rect.left, rect.bottom - rect.top);
 			}
 		}
 
@@ -533,7 +531,7 @@ void ToonEngine::copyToVirtualScreen(bool updateScreen) {
 			}
 			rect.clip(TOON_SCREEN_WIDTH, TOON_SCREEN_HEIGHT);
 			if (rect.left >= 0 && rect.top >= 0 && rect.right - rect.left > 0 && rect.bottom - rect.top > 0) {
-				_system->copyRectToScreen((byte *)_mainSurface->pixels + _dirtyRects[i].left + offX + _dirtyRects[i].top * TOON_BACKBUFFER_WIDTH, TOON_BACKBUFFER_WIDTH, rect.left , rect.top, rect.right - rect.left, rect.bottom - rect.top);
+				_system->copyRectToScreen((byte *)_mainSurface->getBasePtr(_dirtyRects[i].left + offX, _dirtyRects[i].top), TOON_BACKBUFFER_WIDTH, rect.left , rect.top, rect.right - rect.left, rect.bottom - rect.top);
 			}
 		}
 	}
@@ -636,7 +634,6 @@ bool ToonEngine::showMainmenu(bool &loadedGame) {
 
 	bool doExit = false;
 	bool exitGame = false;
-	int clickingOn, clickRelease;
 	int menuMask = MAINMENUMASK_BASE;
 	Common::SeekableReadStream *mainmenuMusicFile = NULL;
 	AudioStreamInstance *mainmenuMusic = NULL;
@@ -646,8 +643,8 @@ bool ToonEngine::showMainmenu(bool &loadedGame) {
 	dirtyAllScreen();
 
 	while (!doExit) {
-		clickingOn = MAINMENUHOTSPOT_NONE;
-		clickRelease = false;
+		int clickingOn = MAINMENUHOTSPOT_NONE;
+		int clickRelease = false;
 
 		if (!musicPlaying) {
 			mainmenuMusicFile = resources()->openFile("BR091013.MUS");
@@ -924,6 +921,48 @@ ToonEngine::ToonEngine(OSystem *syst, const ADGameDescription *gameDescription)
 		_gameVariant = 0;
 		break;
 	}
+
+	for (int i = 0; i < 64; i++) {
+		_sceneAnimationScripts[i]._lastTimer = 0;
+		_sceneAnimationScripts[i]._frozen = false;
+		_sceneAnimationScripts[i]._frozenForConversation = false;
+		_sceneAnimationScripts[i]._active = false;
+	}
+
+	_lastProcessedSceneScript = 0;
+	_animationSceneScriptRunFlag = false;
+	_updatingSceneScriptRunFlag = false;
+	_dirtyAll = false;
+	_cursorOffsetX = 0;
+	_cursorOffsetY = 0;
+	_currentTextLine = 0;
+	_currentTextLineId = 0;
+	_currentTextLineX = 0;
+	_currentTextLineY = 0;
+	_currentTextLineCharacterId = -1;
+	_oldScrollValue = 0;
+	_drew = nullptr;
+	_flux = nullptr;
+	_currentHotspotItem = 0;
+	_shouldQuit = false;
+	_scriptStep = 0;
+	_oldTimer = 0;
+	_oldTimer2 = 0;
+	_lastRenderTime = 0;
+	_firstFrame = false;
+	_needPaletteFlush = true;
+
+	_numVariant = 0;
+	_currentCutaway = nullptr;
+	for (int i = 0; i < 4; i++) {
+		_scriptState[i].ip = nullptr;
+		_scriptState[i].dataPtr = nullptr;
+		_scriptState[i].retValue = 0;
+		_scriptState[i].bp = 0;
+		_scriptState[i].sp = 0;
+		_scriptState[i].running = false;
+	}
+	_currentScriptRegion = 0;
 }
 
 ToonEngine::~ToonEngine() {
@@ -2882,7 +2921,7 @@ void ToonEngine::getTextPosition(int32 characterId, int32 *retX, int32 *retY) {
 		if (character && !_gameState->_inCutaway) {
 			if (character->getAnimationInstance()) {
 				if (character->getX() >= _gameState->_currentScrollValue && character->getX() <= _gameState->_currentScrollValue + TOON_SCREEN_WIDTH) {
-					int16 x1, y1, x2, y2;
+					int16 x1= 0, y1 = 0, x2 = 0, y2 = 0;
 					character->getAnimationInstance()->getRect(&x1, &y1, &x2, &y2);
 					*retX = (x1 + x2) / 2;
 					*retY = y1;
@@ -3575,7 +3614,7 @@ int32 ToonEngine::handleInventoryOnInventory(int32 itemDest, int32 itemSrc) {
 			createMouseItem(21);
 			rearrangeInventory();
 			return 1;
-		} else if (itemSrc == 0x6b || itemSrc == 0x6c || itemSrc == 0x6f || itemSrc == 108 || itemSrc == 112) {
+		} else if (itemSrc == 0x6b || itemSrc == 0x6c || itemSrc == 0x6f || itemSrc == 0x70) {
 			sayLines(2, 1292);
 			return 1;
 		}
@@ -4577,15 +4616,13 @@ void ToonEngine::unloadToonDat() {
 }
 
 char **ToonEngine::loadTextsVariants(Common::File &in) {
-	int  numTexts;
-	int  entryLen;
 	int  len;
 	char **res = 0;
 	char *pos = 0;
 
 	for (int varnt = 0; varnt < _numVariant; varnt++) {
-		numTexts = in.readUint16BE();
-		entryLen = in.readUint16BE();
+		int numTexts = in.readUint16BE();
+		int entryLen = in.readUint16BE();
 		pos = (char *)malloc(entryLen);
 		if (varnt == _gameVariant) {
 			res = (char **)malloc(sizeof(char *) * numTexts);

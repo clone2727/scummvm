@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -605,11 +605,7 @@ void OSystem_N64::updateScreen() {
 }
 
 Graphics::Surface *OSystem_N64::lockScreen() {
-	_framebuffer.pixels = _offscreen_pal;
-	_framebuffer.w = _gameWidth;
-	_framebuffer.h = _gameHeight;
-	_framebuffer.pitch = _screenWidth;
-	_framebuffer.format = Graphics::PixelFormat::createFormatCLUT8();
+	_framebuffer.init(_gameWidth, _gameHeight, _screenWidth, _offscreen_pal, Graphics::PixelFormat::createFormatCLUT8());
 
 	return &_framebuffer;
 }
@@ -810,7 +806,7 @@ void OSystem_N64::setMouseCursor(const void *buf, uint w, uint h, int hotspotX, 
 	return;
 }
 
-uint32 OSystem_N64::getMillis() {
+uint32 OSystem_N64::getMillis(bool skipRecord) {
 	return getMilliTick();
 }
 

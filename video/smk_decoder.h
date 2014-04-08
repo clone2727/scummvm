@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -69,6 +69,8 @@ public:
 
 protected:
 	void readNextPacket();
+	bool supportsAudioTrackSwitching() const { return true; }
+	AudioTrack *getAudioTrack(int index);
 
 	virtual void handleAudioTrack(byte track, uint32 chunkSize, uint32 unpackedSize);
 
@@ -122,7 +124,6 @@ protected:
 
 	Common::SeekableReadStream *_fileStream;
 
-private:
 	enum AudioCompression {
 		kCompressionNone,
 		kCompressionDPCM,
@@ -151,6 +152,10 @@ private:
 		uint32 dummy;
 	} _header;
 
+	uint32 *_frameSizes;
+
+private:
+
 	class SmackerAudioTrack : public AudioTrack {
 	public:
 		SmackerAudioTrack(const AudioInfo &audioInfo, Audio::Mixer::SoundType soundType);
@@ -173,7 +178,6 @@ private:
 		AudioInfo _audioInfo;
 	};
 
-	uint32 *_frameSizes;
 	// The FrameTypes section of a Smacker file contains an array of bytes, where
 	// the 8 bits of each byte describe the contents of the corresponding frame.
 	// The highest 7 bits correspond to audio frames (bit 7 is track 6, bit 6 track 5

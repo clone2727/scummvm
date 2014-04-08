@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -513,10 +513,7 @@ AgiBase::AgiBase(OSystem *syst, const AGIGameDescription *gameDesc) : Engine(sys
 AgiBase::~AgiBase() {
 	delete _rnd;
 
-	if (_sound) {
-		_sound->deinitSound();
-		delete _sound;
-	}
+	delete _sound;
 }
 
 void AgiBase::initRenderMode() {
@@ -588,6 +585,21 @@ AgiEngine::AgiEngine(OSystem *syst, const AGIGameDescription *gameDesc) : AgiBas
 	setupOpcodes();
 	_game._curLogic = NULL;
 	_timerHack = 0;
+
+	_lastSaveTime = 0;
+	_lastTick = 0;
+
+	memset(_keyQueue, 0, sizeof(_keyQueue));
+	memset(_predictiveResult, 0, sizeof(_predictiveResult));
+
+	_sprites = NULL;
+	_picture = NULL;
+	_loader = NULL;
+	_console = NULL;
+
+	_egoHoldKey = false;
+
+
 }
 
 void AgiEngine::initialize() {
@@ -650,7 +662,6 @@ void AgiEngine::initialize() {
 	_game.sbuf     = _game.sbuf16c; // Make sbuf point to the 16 color (+control line & priority info) AGI screen by default
 
 	_gfx->initVideo();
-	_sound->initSound();
 
 	_lastSaveTime = 0;
 

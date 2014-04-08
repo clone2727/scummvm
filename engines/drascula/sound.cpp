@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -36,9 +36,9 @@ namespace Drascula {
 
 void DrasculaEngine::updateVolume(Audio::Mixer::SoundType soundType, int prevVolume) {
 	int vol = _mixer->getVolumeForSoundType(soundType) / 16;
-	if (mouseY < prevVolume && vol < 15)
+	if (_mouseY < prevVolume && vol < 15)
 		vol++;
-	if (mouseY > prevVolume && vol > 0)
+	if (_mouseY > prevVolume && vol > 0)
 		vol--;
 	_mixer->setVolumeForSoundType(soundType, vol * 16);
 }
@@ -78,23 +78,23 @@ void DrasculaEngine::volumeControls() {
 		while (getScan())
 			;
 
-		if (rightMouseButton == 1) {
+		if (_rightMouseButton == 1) {
 			// Clear this to avoid going straight to the inventory
-			rightMouseButton = 0;
+			_rightMouseButton = 0;
 			delay(100);
 			break;
 		}
-		if (leftMouseButton == 1) {
+		if (_leftMouseButton == 1) {
 			delay(100);
-			if (mouseX > 80 && mouseX < 121) {
+			if (_mouseX > 80 && _mouseX < 121) {
 				updateVolume(Audio::Mixer::kPlainSoundType, masterVolumeY);
 			}
 
-			if (mouseX > 136 && mouseX < 178) {
+			if (_mouseX > 136 && _mouseX < 178) {
 				updateVolume(Audio::Mixer::kSpeechSoundType, voiceVolumeY);
 			}
 
-			if (mouseX > 192 && mouseX < 233) {
+			if (_mouseX > 192 && _mouseX < 233) {
 				updateVolume(Audio::Mixer::kMusicSoundType, musicVolumeY);
 			}
 		}

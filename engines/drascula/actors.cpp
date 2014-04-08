@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -135,7 +135,7 @@ void DrasculaEngine::startWalking() {
 		else
 			characterMoved = 0;
 	}
-	startTime = getTime();
+	_startTime = getTime();
 }
 
 void DrasculaEngine::moveCharacters() {
@@ -239,7 +239,7 @@ void DrasculaEngine::moveCharacters() {
 									factor_red[curY + curHeight], frontSurface, screenSurface);
 		}
 	} else if (characterMoved == 1) {
-		curPos[0] = _frameX[num_frame];
+		curPos[0] = _frameX[_characterFrame];
 		curPos[1] = frame_y + DIF_MASK_HARE;
 		curPos[2] = curX;
 		curPos[3] = curY;
@@ -369,13 +369,11 @@ void DrasculaEngine::quadrant_4() {
 }
 
 void DrasculaEngine::increaseFrameNum() {
-	timeDiff = getTime() - startTime;
-
-	if (timeDiff >= 6) {
-		startTime = getTime();
-		num_frame++;
-		if (num_frame == 6)
-			num_frame = 0;
+	if (getTime() - _startTime >= 6) {
+		_startTime = getTime();
+		_characterFrame++;
+		if (_characterFrame == 6)
+			_characterFrame = 0;
 
 		if (curDirection == kDirectionUp) {
 			curX -= stepX;

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -994,7 +994,7 @@ byte AkosRenderer::codec1(int xmoveCur, int ymoveCur) {
 	if (_draw_bottom < rect.bottom)
 		_draw_bottom = rect.bottom;
 
-	v1.destptr = (byte *)_out.pixels + v1.y * _out.pitch + v1.x * _vm->_bytesPerPixel;
+	v1.destptr = (byte *)_out.getBasePtr(v1.x, v1.y);
 
 	codec1_genericDecode(v1);
 
@@ -1288,7 +1288,7 @@ byte AkosRenderer::codec16(int xmoveCur, int ymoveCur) {
 	int32 numskip_before = skip_x + (skip_y * _width);
 	int32 numskip_after = _width - cur_x;
 
-	byte *dst = (byte *)_out.pixels + height_unk * _out.pitch + width_unk * _vm->_bytesPerPixel;
+	byte *dst = (byte *)_out.getBasePtr(width_unk, height_unk);
 
 	akos16Decompress(dst, _out.pitch, _srcptr, cur_x, out_height, dir, numskip_before, numskip_after, transparency, clip.left, clip.top, _zbuf);
 	return 0;
@@ -1358,7 +1358,7 @@ byte AkosRenderer::codec32(int xmoveCur, int ymoveCur) {
 		palPtr = _vm->_hePalettes + _vm->_hePaletteSlot + 768;
 	}
 
-	byte *dstPtr = (byte *)_out.pixels + dst.top * _out.pitch + dst.left * _vm->_bytesPerPixel;
+	byte *dstPtr = (byte *)_out.getBasePtr(dst.left, dst.top);
 	if (_shadow_mode == 3) {
 		Wiz::decompressWizImage<kWizXMap>(dstPtr, _out.pitch, kDstScreen, _srcptr, src, 0, palPtr, xmap, _vm->_bytesPerPixel);
 	} else {

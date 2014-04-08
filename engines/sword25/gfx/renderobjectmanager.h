@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -47,11 +47,28 @@
 #include "sword25/gfx/renderobjectptr.h"
 #include "sword25/kernel/persistable.h"
 
+#include "sword25/gfx/microtiles.h"
+
 namespace Sword25 {
 
 class Kernel;
 class RenderObject;
 class TimedRenderObject;
+class RenderObjectManager;
+
+struct RenderObjectQueueItem {
+	RenderObject *_renderObject;
+	Common::Rect _bbox;
+	int _version;
+	RenderObjectQueueItem(RenderObject *renderObject, const Common::Rect &bbox, int version)
+		: _renderObject(renderObject), _bbox(bbox), _version(version) {}
+};
+
+class RenderObjectQueue : public Common::List<RenderObjectQueueItem> {
+public:
+	void add(RenderObject *renderObject);
+	bool exists(const RenderObjectQueueItem &renderObjectQueueItem);
+};
 
 /**
     @brief Diese Klasse ist für die Verwaltung von BS_RenderObjects zuständig.
@@ -113,6 +130,9 @@ private:
 	bool _frameStarted;
 	typedef Common::Array<RenderObjectPtr<TimedRenderObject> > RenderObjectList;
 	RenderObjectList _timedRenderObjects;
+
+	MicroTileArray *_uta;
+	RenderObjectQueue *_currQueue, *_prevQueue;
 
 	// RenderObject-Tree Variablen
 	// ---------------------------

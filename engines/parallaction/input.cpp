@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -478,7 +478,7 @@ void Input::initCursors() {
 		break;
 
 	case GType_BRA:
-		if (_vm->getPlatform() == Common::kPlatformPC) {
+		if (_vm->getPlatform() == Common::kPlatformDOS) {
 			_dinoCursor = _vm->_disk->loadPointer("pointer1");
 			_dougCursor = _vm->_disk->loadPointer("pointer2");
 			_donnaCursor = _vm->_disk->loadPointer("pointer3");
@@ -499,7 +499,7 @@ void Input::initCursors() {
 			// TODO: scale mouse cursor (see staticres.cpp)
 			Graphics::Surface *surf2 = new Graphics::Surface;
 			surf2->create(32, 16, Graphics::PixelFormat::createFormatCLUT8());
-			memcpy(surf2->pixels, _resMouseArrow_BR_Amiga, 32*16);
+			memcpy(surf2->getPixels(), _resMouseArrow_BR_Amiga, 32*16);
 			_mouseArrow = new SurfaceToFrames(surf2);
 		}
 		break;
@@ -551,8 +551,12 @@ void Input::setInventoryCursor(ItemName name) {
 	case GType_BRA: {
 		byte *src = _mouseArrow->getData(0);
 		byte *dst = _comboArrow->getData(0);
-		memcpy(dst, src, _comboArrow->getSize(0));
 		// FIXME: destination offseting is not clear
+		Common::Rect srcRect, dstRect;
+		_mouseArrow->getRect(0, srcRect);
+		_comboArrow->getRect(0, dstRect);
+		for (uint y = 0; y < (uint)srcRect.height(); y++)
+			memcpy(dst + y * dstRect.width(), src + y * srcRect.width(), srcRect.width());
 		_vm->_inventoryRenderer->drawItem(name, dst + _mouseComboProps_BR._yOffset * _mouseComboProps_BR._width + _mouseComboProps_BR._xOffset, _mouseComboProps_BR._width);
 		CursorMan.replaceCursor(dst, _mouseComboProps_BR._width, _mouseComboProps_BR._height, 0, 0, 0);
 		break;

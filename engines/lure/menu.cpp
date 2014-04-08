@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -31,7 +31,7 @@
 #include "lure/events.h"
 #include "lure/lure.h"
 
-#if defined(_WIN32_WCE) || defined(__SYMBIAN32__) || defined(WEBOS)
+#if defined(_WIN32_WCE) || defined(__SYMBIAN32__) || defined(WEBOS) || defined(__ANDROID__) || defined(__WII__)
 #define LURE_CLICKABLE_MENUS
 #endif
 
@@ -47,6 +47,7 @@ MenuRecord::MenuRecord(const MenuRecordBounds *bounds, int numParams, ...) {
 	va_start(params, numParams);
 	for (int index = 0; index < _numEntries; ++index)
 		_entries[index] = va_arg(params, const char *);
+	va_end(params);
 
 	// Store position data
 	_hsxstart = bounds->left; _hsxend = bounds->right;
@@ -458,7 +459,7 @@ Action PopupMenu::Show(int numEntries, Action *actions) {
 		strList[index] = stringList.getString(*actionPtr++);
 	uint16 result = Show(numEntries, strList);
 
-	delete strList;
+	Memory::dealloc(strList);
 	if (result == 0xffff) return NONE;
 	else return actions[result];
 }

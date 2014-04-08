@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -55,8 +55,8 @@ public:
 	float _rotation;
 	float _angVelocity;
 
-	int _alpha1;
-	int _alpha2;
+	int32 _alpha1;
+	int32 _alpha2;
 
 	Rect32 _border;
 	Vector2 _pos;
@@ -65,7 +65,7 @@ public:
 	float _scale;
 	BaseSprite *_sprite;
 	uint32 _creationTime;
-	int _lifeTime;
+	int32 _lifeTime;
 	bool _isDead;
 	TParticleState _state;
 
@@ -80,11 +80,11 @@ public:
 	bool persist(BasePersistenceManager *PersistMgr);
 private:
 	uint32 _fadeStart;
-	int _fadeTime;
-	int _currentAlpha;
-	int _fadeStartAlpha;
+	int32 _fadeTime;
+	int32 _currentAlpha;
+	int32 _fadeStartAlpha;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

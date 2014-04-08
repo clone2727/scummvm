@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -87,27 +87,27 @@ public:
 	ScValue *_valRef;
 private:
 	bool _valBool;
-	int _valInt;
+	int32 _valInt;
 	double _valFloat;
 	char *_valString;
 public:
 	TValType _type;
 	ScValue(BaseGame *inGame);
 	ScValue(BaseGame *inGame, bool Val);
-	ScValue(BaseGame *inGame, int Val);
+	ScValue(BaseGame *inGame, int32 Val);
 	ScValue(BaseGame *inGame, double Val);
 	ScValue(BaseGame *inGame, const char *Val);
 	virtual ~ScValue();
 	Common::HashMap<Common::String, ScValue *> _valObject;
 	Common::HashMap<Common::String, ScValue *>::iterator _valIter;
 
-	bool setProperty(const char *propName, int value);
+	bool setProperty(const char *propName, int32 value);
 	bool setProperty(const char *propName, const char *value);
 	bool setProperty(const char *propName, double value);
 	bool setProperty(const char *propName, bool value);
 	bool setProperty(const char *propName);
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -51,7 +51,7 @@ bool DrasculaEngine::isCursorVisible() {
 
 void DrasculaEngine::selectVerbFromBar() {
 	for (int n = 0; n < 7; n++) {
-		if (mouseX > _verbBarX[n] && mouseX < _verbBarX[n + 1] && n > 0) {
+		if (_mouseX > _verbBarX[n] && _mouseX < _verbBarX[n + 1] && n > 0) {
 			selectVerb(n);
 			return;
 		}
@@ -121,10 +121,8 @@ bool DrasculaEngine::confirmExit() {
 
 void DrasculaEngine::showMenu() {
 	int h, n, x;
-	char textIcon[13];
 	byte *srcSurface = (currentChapter == 6) ? tableSurface : frontSurface;
 	x = whichObject();
-	strcpy(textIcon, iconName[x]);
 
 	for (n = 1; n < ARRAYSIZE(inventoryObjects); n++) {
 		h = inventoryObjects[n];
@@ -138,14 +136,14 @@ void DrasculaEngine::showMenu() {
 	}
 
 	if (x < 7)
-		print_abc(textIcon, _itemLocations[x].x - 2, _itemLocations[x].y - 7);
+		print_abc(iconName[x], _itemLocations[x].x - 2, _itemLocations[x].y - 7);
 }
 
 void DrasculaEngine::clearMenu() {
 	int n, verbActivated = 1;
 
 	for (n = 0; n < 7; n++) {
-		if (mouseX > _verbBarX[n] && mouseX < _verbBarX[n + 1])
+		if (_mouseX > _verbBarX[n] && _mouseX < _verbBarX[n + 1])
 			verbActivated = 0;
 		copyRect(OBJWIDTH * n, OBJHEIGHT * verbActivated, _verbBarX[n], 2,
 						OBJWIDTH, OBJHEIGHT, cursorSurface, screenSurface);
@@ -167,8 +165,8 @@ void DrasculaEngine::showMap() {
 	_hasName = false;
 
 	for (int l = 0; l < numRoomObjs; l++) {
-		if (mouseX > _objectX1[l] && mouseY > _objectY1[l]
-				&& mouseX < _objectX2[l] && mouseY < _objectY2[l]
+		if (_mouseX > _objectX1[l] && _mouseY > _objectY1[l]
+				&& _mouseX < _objectX2[l] && _mouseY < _objectY2[l]
 				&& visible[l] == 1) {
 			strcpy(textName, objName[l]);
 			_hasName = true;

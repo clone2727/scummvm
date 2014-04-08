@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -33,6 +33,7 @@
 #include "engines/wintermute/base/scriptables/script_ext_string.h"
 #include "engines/wintermute/base/scriptables/script_ext_array.h"
 #include "engines/wintermute/utils/string_util.h"
+#include "common/str.h"
 #include "common/tokenizer.h"
 
 namespace Wintermute {
@@ -269,7 +270,7 @@ bool SXString::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack
 		ScValue *val = stack->pop();
 		char separators[MAX_PATH_LENGTH] = ",";
 		if (!val->isNULL()) {
-			strcpy(separators, val->getString());
+			Common::strlcpy(separators, val->getString(), MAX_PATH_LENGTH);
 		}
 
 		SXArray *array = new SXArray(_gameRef);
@@ -295,30 +296,20 @@ bool SXString::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack
 
 		Common::Array<WideString> parts;
 
-
-
-		Common::StringTokenizer tokenizer(str, delims);
-		while (!tokenizer.empty()) {
-			Common::String str2 = tokenizer.nextToken();
-			parts.push_back(str2);
+		uint32 start = 0;
+		for(uint32 i = 0; i < str.size() + 1; i++) {
+			// The [] operator doesn't allow access to the zero code terminator
+			// (bug #6531)
+			uint32 ch = (i == str.size()) ? '\0' : str[i];
+			if (ch =='\0' || delims.contains(ch)) {
+				if (i != start) {
+					parts.push_back(WideString(str.c_str() + start, i - start + 1));
+				} else {
+					parts.push_back(WideString());
+				}
+				start = i + 1;
+			}
 		}
-		// TODO: Clean this up
-		/*do {
-		    pos = StringUtil::IndexOf(Common::String(str.c_str() + start), delims, start);
-		    //pos = str.find_first_of(delims, start);
-		    if (pos == start) {
-		        start = pos + 1;
-		    } else if (pos == str.size()) {
-		        parts.push_back(Common::String(str.c_str() + start));
-		        break;
-		    } else {
-		        parts.push_back(Common::String(str.c_str() + start, pos - start));
-		        start = pos + 1;
-		    }
-		    //start = str.find_first_not_of(delims, start);
-		    start = StringUtil::LastIndexOf(Common::String(str.c_str() + start), delims, start) + 1;
-
-		} while (pos != str.size());*/
 
 		for (Common::Array<WideString>::iterator it = parts.begin(); it != parts.end(); ++it) {
 			WideString &part = (*it);
@@ -409,7 +400,7 @@ bool SXString::persist(BasePersistenceManager *persistMgr) {
 
 	BaseScriptable::persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_capacity));
+	persistMgr->transferSint32(TMEMBER(_capacity));
 
 	if (persistMgr->getIsSaving()) {
 		if (_capacity > 0) {
@@ -433,4 +424,4 @@ int SXString::scCompare(BaseScriptable *val) {
 	return strcmp(_string, ((SXString *)val)->_string);
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

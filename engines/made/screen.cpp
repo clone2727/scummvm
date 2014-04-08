@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -344,12 +344,12 @@ void Screen::drawSpriteChannels(const ClipInfo &clipInfo, int16 includeStateMask
 void Screen::updateSprites() {
 	// TODO: This needs some more work, dirty rectangles are currently not used
 
-	memcpy(_workScreen->pixels, _backgroundScreen->pixels, 64000);
+	memcpy(_workScreen->getPixels(), _backgroundScreen->getPixels(), 64000);
 
 	drawSpriteChannels(_backgroundScreenDrawCtx, 3, 0);
 	drawSpriteChannels(_workScreenDrawCtx, 1, 2);
 
-	_vm->_system->copyRectToScreen(_workScreen->pixels, _workScreen->pitch, 0, 0, _workScreen->w, _workScreen->h);
+	_vm->_system->copyRectToScreen(_workScreen->getPixels(), _workScreen->pitch, 0, 0, _workScreen->w, _workScreen->h);
 	_vm->_screen->updateScreenAndWait(10);
 }
 
@@ -593,7 +593,7 @@ void Screen::show() {
 		return;
 
 	drawSpriteChannels(_backgroundScreenDrawCtx, 3, 0);
-	memcpy(_workScreen->pixels, _backgroundScreen->pixels, 64000);
+	memcpy(_workScreen->getPixels(), _backgroundScreen->getPixels(), 64000);
 	drawSpriteChannels(_workScreenDrawCtx, 1, 2);
 
 	_fx->run(_visualEffectNum, _workScreen, _palette, _newPalette, _paletteColorCount);
@@ -775,7 +775,7 @@ void Screen::unlockScreen() {
 }
 
 void Screen::showWorkScreen() {
-	_vm->_system->copyRectToScreen(_workScreen->pixels, _workScreen->pitch, 0, 0, _workScreen->w, _workScreen->h);
+	_vm->_system->copyRectToScreen(_workScreen->getPixels(), _workScreen->pitch, 0, 0, _workScreen->w, _workScreen->h);
 }
 
 void Screen::copyRectToScreen(const void *buf, int pitch, int x, int y, int w, int h) {

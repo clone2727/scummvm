@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1031,12 +1031,12 @@ uint16 Hotspots::updateInput(uint16 xPos, uint16 yPos, uint16 width, uint16 heig
 				// Delete the character to the left
 				_vm->_util->cutFromStr(str, pos - 1, 1);
 				pos--;
-				continue;
 			} else {
 				if (pos < strlen(str))
 					// Delete the character to the right
 					_vm->_util->cutFromStr(str, pos, 1);
 			}
+			continue;
 
 		case kKeyDelete:
 			if (pos >= strlen(str))
@@ -1995,6 +1995,7 @@ bool Hotspots::leaveNthPlain(uint16 n, uint16 startIndex, int16 timeVal, const u
 		// Call the leave and time it
 		startTime = _vm->_util->getTimeKey();
 		call(spot.funcLeave);
+		_vm->_inter->animPalette();
 		callTime = _vm->_util->getTimeKey() - startTime;
 
 		// Remove the time it took from the time we have available

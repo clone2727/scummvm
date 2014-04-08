@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -40,7 +40,7 @@ namespace Sword25 {
 
 bool Screenshot::saveToFile(Graphics::Surface *data, Common::WriteStream *stream) {
 	// Convert the RGBA data to RGB
-	const byte *pSrc = (const byte *)data->getBasePtr(0, 0);
+	const byte *pSrc = (const byte *)data->getPixels();
 
 	// Write our own custom header
 	stream->writeUint32BE(MKTAG('S','C','R','N'));	// SCRN, short for "Screenshot"
@@ -85,7 +85,7 @@ Common::SeekableReadStream *Screenshot::createThumbnail(Graphics::Surface *data)
 	uint x, y;
 	x = y = 0;
 
-	for (byte *pDest = (byte *)thumbnail.pixels; pDest < ((byte *)thumbnail.pixels + thumbnail.pitch * thumbnail.h); ) {
+	for (byte *pDest = (byte *)thumbnail.getPixels(); pDest < ((byte *)thumbnail.getBasePtr(0, thumbnail.h)); ) {
 		// Get an average over a 4x4 pixel block in the source image
 		int alpha, red, green, blue;
 		alpha = red = green = blue = 0;

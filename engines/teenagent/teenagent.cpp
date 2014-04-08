@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/config-manager.h"
@@ -399,7 +400,7 @@ bool TeenAgentEngine::showLogo() {
 				return true;
 			}
 
-			_system->copyRectToScreen(s.pixels, s.w, s.x, s.y, s.w, s.h);
+			_system->copyRectToScreen(s.getPixels(), s.w, s.x, s.y, s.w, s.h);
 			_system->updateScreen();
 
 			_system->delayMillis(100);

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -31,7 +31,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("ring.rlb", "466f0e6492d9d0f34d35c5cd088de90f", 37847618),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -45,7 +45,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("ring.rlb", "cb8bba91b30cd172712371d7123bd763", 7427980),
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -59,7 +59,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"Floppy",
 			AD_ENTRY1s("ring.rlb", "7b7f0c5b37b58fa5ec06ebb2ca0d0d9d", 8438770),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -73,7 +73,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"Floppy Demo",
 			AD_ENTRY1s("tsage.rlb", "3b3604a97c06c91f3735d3e9d341f63f", 833453),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -88,7 +88,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"Floppy Demo",
 			AD_ENTRY1s("demoring.rlb", "64050e1806203b15bb03876140eb4f56", 832206),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -104,7 +104,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"Floppy",
 			AD_ENTRY1s("blue.rlb", "17c3993415e8a2cf93040eef7e88ec93", 1156508),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -119,7 +119,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"",
 			AD_ENTRY1s("blue.rlb", "17eabb456cb1546c66baf1aff387ba6a", 10032614),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -133,7 +133,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("blue.rlb", "99983f48cb218f1f3760cf2f9a7ef11d", 63863322),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -149,7 +149,7 @@ static const tSageGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("blue.rlb", "5b2b35c51b62e82d82b0791540bfae2d", 10082565),
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD | ADGF_UNSTABLE,
 			GUIO2(GUIO_NOSPEECH, GUIO_NOSFX)
 		},
@@ -164,14 +164,27 @@ static const tSageGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("r2rw.rlb", "df6c25622387007788ca36d99362c1f0", 47586928),
 			Common::EN_ANY,
-			Common::kPlatformPC,
-			ADGF_CD | ADGF_UNSTABLE,
+			Common::kPlatformDOS,
+			ADGF_CD | ADGF_TESTING,
 			GUIO0()
 		},
 		GType_Ringworld2,
 		GF_CD | GF_ALT_REGIONS
 	},
-
+	// Return to Ringworld - Demo
+	{
+		{
+			"ringworld2",
+			"CD Demo",
+			AD_ENTRY1s("r2rw.rlb", "c8e1a82c67c3caf57368eadde13dc15f", 32384464),
+			Common::EN_ANY,
+			Common::kPlatformDOS,
+			ADGF_CD | ADGF_TESTING,
+			GUIO0()
+		},
+		GType_Ringworld2,
+		GF_CD | GF_ALT_REGIONS | GF_DEMO
+	},
 	{ AD_TABLE_END_MARKER, 0, 0 }
 };
 

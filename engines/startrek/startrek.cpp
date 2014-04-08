@@ -175,7 +175,7 @@ Common::SeekableReadStream *StarTrekEngine::openFile(Common::String filename) {
 		for (byte i = 0; i < 3; i++)
 			testfile += indexFile->readByte();
 
-		if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformPC) {
+		if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformDOS) {
 			indexFile->readByte(); // Always 0?
 			fileCount = indexFile->readUint16LE(); // Always 1
 			indexOffset = indexFile->readUint32LE();
@@ -225,7 +225,7 @@ Common::SeekableReadStream *StarTrekEngine::openFile(Common::String filename) {
 
 	dataFile->seek(indexOffset);
 
-	if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformPC) {
+	if (getFeatures() & GF_DEMO && getPlatform() == Common::kPlatformDOS) {
 		assert(fileCount == 1); // Sanity check...
 		Common::SeekableReadStream *stream = dataFile->readStream(uncompressedSize);
 		delete dataFile;
@@ -300,7 +300,7 @@ void StarTrekEngine::playMovieMac(Common::String filename) {
 
 			if (frame) {
 				::Graphics::Surface *convertedFrame = frame->convertTo(_system->getScreenFormat());
-				_system->copyRectToScreen((byte *)convertedFrame->pixels, convertedFrame->pitch, 0, 0, convertedFrame->w, convertedFrame->h);
+				_system->copyRectToScreen(convertedFrame->getPixels(), convertedFrame->pitch, 0, 0, convertedFrame->w, convertedFrame->h);
 				_system->updateScreen();
 				convertedFrame->free();
 				delete convertedFrame;

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -35,8 +35,6 @@ namespace Sci {
 
 Kernel::Kernel(ResourceManager *resMan, SegManager *segMan)
 	: _resMan(resMan), _segMan(segMan), _invalid("<invalid>") {
-	loadSelectorNames();
-	mapSelectors();      // Map a few special selectors for later use
 }
 
 Kernel::~Kernel() {
@@ -51,6 +49,11 @@ Kernel::~Kernel() {
 		}
 		delete[] it->signature;
 	}
+}
+
+void Kernel::init() {
+	loadSelectorNames();
+	mapSelectors();      // Map a few special selectors for later use
 }
 
 uint Kernel::getSelectorNamesSize() const {
@@ -104,6 +107,11 @@ int Kernel::findSelector(const char *selectorName) const {
 	return -1;
 }
 
+// used by Script patcher to figure out, if it's okay to initialize signature/patch-table
+bool Kernel::selectorNamesAvailable() {
+	return !_selectorNames.empty();
+}
+
 void Kernel::loadSelectorNames() {
 	Resource *r = _resMan->findResource(ResourceId(kResourceTypeVocab, VOCAB_RESOURCE_SELECTORS), 0);
 	bool oldScriptHeader = (getSciVersion() == SCI_VERSION_0_EARLY);
@@ -132,7 +140,7 @@ void Kernel::loadSelectorNames() {
 		return;
 	}
 
-	int count = isBE ? READ_BE_UINT16(r->data) : READ_LE_UINT16(r->data) + 1; // Counter is slightly off
+	int count = (isBE ? READ_BE_UINT16(r->data) : READ_LE_UINT16(r->data)) + 1; // Counter is slightly off
 
 	for (int i = 0; i < count; i++) {
 		int offset = isBE ? READ_BE_UINT16(r->data + 2 + i * 2) : READ_LE_UINT16(r->data + 2 + i * 2);
@@ -536,7 +544,7 @@ void Kernel::mapFunctions() {
 	SciVersion myVersion = getSciVersion();
 
 	switch (g_sci->getPlatform()) {
-	case Common::kPlatformPC:
+	case Common::kPlatformDOS:
 	case Common::kPlatformFMTowns:
 		platformMask = SIGFOR_DOS;
 		break;
@@ -584,6 +592,17 @@ void Kernel::mapFunctions() {
 			_kernelFuncs[id].function = kDummy;
 			continue;
 		}
+
+#ifdef ENABLE_SCI32
+		// HACK: Phantasmagoria Mac uses a modified kDoSound (which *nothing*
+		// else seems to use)!
+		if (g_sci->getPlatform() == Common::kPlatformMacintosh && g_sci->getGameId() == GID_PHANTASMAGORIA && kernelName == "DoSound") {
+			_kernelFuncs[id].function = kDoSoundPhantasmagoriaMac;
+			_kernelFuncs[id].signature = parseKernelSignature("DoSoundPhantasmagoriaMac", "i.*");
+			_kernelFuncs[id].name = "DoSoundPhantasmagoriaMac";
+			continue;
+		}
+#endif
 
 		// If the name is known, look it up in s_kernelMap. This table
 		// maps kernel func names to actual function (pointers).

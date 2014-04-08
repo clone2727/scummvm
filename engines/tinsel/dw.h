@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -91,7 +91,7 @@ typedef int HPOLYGON;
 #define MAX_SAVED_ALIVES 512	// Saves actors'lives
 #define MAX_SAVED_ACTOR_Z 512	// Saves actors' Z-ness
 
-// Legal non-existant entrance number for LoadScene()
+// Legal non-existent entrance number for LoadScene()
 #define NO_ENTRY_NUM	(-3458)	// Magic unlikely number
 
 

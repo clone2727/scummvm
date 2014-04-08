@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_PLATFORM_H
@@ -35,7 +36,7 @@ class String;
  * game in question.
  */
 enum Platform {
-	kPlatformPC,
+	kPlatformDOS,
 	kPlatformAmiga,
 	kPlatformAtariST,
 	kPlatformMacintosh,
@@ -55,6 +56,8 @@ enum Platform {
 	kPlatformPSX,
 	kPlatformCDi,
 	kPlatformIOS,
+	kPlatformOS2,
+	kPlatformBeOS,
 
 	kPlatformUnknown = -1
 };

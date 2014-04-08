@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef SCUMM_IMUSE_INTERNAL
@@ -390,7 +391,6 @@ class IMuseInternal : public IMuse {
 protected:
 	bool _native_mt32;
 	bool _enable_gs;
-	bool _sc55;
 	MidiDriver *_midi_adlib;
 	MidiDriver *_midi_native;
 	TimerCallbackInfo _timer_info_adlib;

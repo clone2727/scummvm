@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -190,6 +190,7 @@ Common::Rect CalculateBoundingBox(const VectorImageElement &vectorImageElement) 
 		ArtVpath *vec = art_bez_path_to_vec(bez, 0.5);
 
 		if (vec[0].code == ART_END) {
+			free(vec);
 			continue;
 		} else {
 			x0 = x1 = vec[0].x;
@@ -602,7 +603,8 @@ bool VectorImage::blit(int posX, int posY,
                        int flipping,
                        Common::Rect *pPartRect,
                        uint color,
-                       int width, int height) {
+                       int width, int height,
+					   RectangleList *updateRects) {
 	static VectorImage *oldThis = 0;
 	static int              oldWidth = -2;
 	static int              oldHeight = -2;
@@ -623,7 +625,7 @@ bool VectorImage::blit(int posX, int posY,
 	RenderedImage *rend = new RenderedImage();
 
 	rend->replaceContent(_pixelData, width, height);
-	rend->blit(posX, posY, flipping, pPartRect, color, width, height);
+	rend->blit(posX, posY, flipping, pPartRect, color, width, height, updateRects);
 
 	delete rend;
 

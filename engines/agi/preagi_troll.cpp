@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -190,6 +190,7 @@ void TrollEngine::inventory() {
 		break;
 	case IDI_TRO_MAX_TREASURE:
 		drawStr(3, 17, kColorDefault, IDS_TRO_TREASURE_2);
+		break;
 	default:
 		sprintf(tmp, IDS_TRO_TREASURE_4, _treasuresLeft);
 		drawStr(20, 10, kColorDefault, tmp);
@@ -219,6 +220,7 @@ void TrollEngine::waitAnyKeyIntro() {
 		switch (iMsg) {
 		case 200:
 			iMsg = 0;
+			// fall through
 		case 0:
 			drawStr(22, 3, kColorDefault, IDS_TRO_INTRO_2);
 			_gfx->doUpdate();

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -239,6 +239,24 @@ static const MohawkGameDescription gameDescriptions[] = {
 		0,
 	},
 
+	// Myst Masterpiece Edition
+	// Polish Windows
+	// From pykman (Included in "Myst: Antologia")
+	{
+		{
+			"myst",
+			"Masterpiece Edition",
+			AD_ENTRY1("MYST.DAT", "4a05771b60f4a69869838d01e85c9e80"),
+			Common::PL_POL,
+			Common::kPlatformWindows,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NOASPECT)
+		},
+		GType_MYST,
+		GF_ME,
+		0,
+	},
+
 	// Riven: The Sequel to Myst
 	// Version 1.0 (5CD)
 	// From clone2727
@@ -338,6 +356,24 @@ static const MohawkGameDescription gameDescriptions[] = {
 			"",
 			AD_ENTRY1("a_Data.MHK", "aff2a384aaa9a0e0ec51010f708c5c04"),
 			Common::FR_FRA,
+			Common::kPlatformWindows,
+			ADGF_UNSTABLE,
+			GUIO1(GUIO_NOASPECT)
+		},
+		GType_RIVEN,
+		GF_DVD,
+		0,
+	},
+
+	// Riven: The Sequel to Myst
+	// Version 1.02 (DVD, From "Myst: Antologia")
+	// From pykman
+	{
+		{
+			"riven",
+			"",
+			AD_ENTRY1("a_Data.MHK", "733a710cf5f848b441ec72d988ab8a3d"),
+			Common::PL_POL,
 			Common::kPlatformWindows,
 			ADGF_UNSTABLE,
 			GUIO1(GUIO_NOASPECT)
@@ -1323,6 +1359,23 @@ static const MohawkGameDescription gameDescriptions[] = {
 		GType_LIVINGBOOKSV1,
 		GF_LB_10,
 		"GRANDMA.EXE"
+	},
+
+	// Just Grandma and Me 1.1 Mac
+	// From eisnerguy1 in bug#3610725
+	{
+		{
+			"grandma",
+			"v1.1",
+			AD_ENTRY1("BookOutline", "76eb265ec5fe42bc5b07f2bb418bd871"),
+			Common::EN_ANY,
+			Common::kPlatformMacintosh,
+			ADGF_NO_FLAGS,
+			GUIO1(GUIO_NOASPECT)
+		},
+		GType_LIVINGBOOKSV1,
+		GF_LB_10,
+		0
 	},
 
 	// from jjnryan in bug #3389857

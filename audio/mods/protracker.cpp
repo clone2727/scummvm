@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -89,6 +89,14 @@ private:
 
 public:
 	ProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo);
+
+	Modules::Module *getModule() {
+		// Ordinarily, the Module is not meant to be seen outside of
+		// this class, but occasionally, it's useful to be able to
+		// manipulate it directly. The Hopkins engine uses this to
+		// repair a broken song.
+		return &_module;
+	}
 
 private:
 	void interrupt();
@@ -462,8 +470,12 @@ void ProtrackerStream::interrupt() {
 
 namespace Audio {
 
-AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo) {
-	return new Modules::ProtrackerStream(stream, offs, rate, stereo);
+AudioStream *makeProtrackerStream(Common::SeekableReadStream *stream, int offs, int rate, bool stereo, Modules::Module **module) {
+	Modules::ProtrackerStream *protrackerStream = new Modules::ProtrackerStream(stream, offs, rate, stereo);
+	if (module) {
+		*module = protrackerStream->getModule();
+	}
+	return (AudioStream *)protrackerStream;
 }
 
 } // End of namespace Audio

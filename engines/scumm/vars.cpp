@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -714,6 +714,12 @@ void ScummEngine_v99he::resetScummVars() {
 		VAR(140) = 0;
 #endif
 	}
+	
+	if (_game.id == GID_PUTTZOO && _game.heversion == 100 && _game.platform == Common::kPlatformWindows) {
+		// Specific to Nimbus Games version.
+		VAR(156) = 1;
+		VAR(157) = 0;
+	}
 }
 #endif
 
@@ -741,7 +747,7 @@ void ScummEngine::resetScummVars() {
 			break;
 		default:
 			if ((_game.id == GID_MONKEY_EGA || _game.id == GID_MONKEY_VGA || (_game.id == GID_LOOM && _game.version == 3))
-			   &&  (_game.platform == Common::kPlatformPC)) {
+			   &&  (_game.platform == Common::kPlatformDOS)) {
 				VAR(VAR_SOUNDCARD) = 4;
 			} else {
 				VAR(VAR_SOUNDCARD) = 3;
@@ -770,7 +776,7 @@ void ScummEngine::resetScummVars() {
 			// Set screen size for the Macintosh version of Indy3/Loom
 			VAR(39) = 320;
 		}
-		if (_game.platform == Common::kPlatformPC && _game.id == GID_LOOM && _game.version == 3) {
+		if (_game.platform == Common::kPlatformDOS && _game.id == GID_LOOM && _game.version == 3) {
 			// Set number of sound resources
 			VAR(39) = 80;
 		}

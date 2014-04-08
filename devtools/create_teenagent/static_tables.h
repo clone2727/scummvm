@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -15148,7 +15148,7 @@ const static char* dialog_162[] = {
 };
 
 // Note:
-// The usage of this in the engine overlaps the previous dialog i.e. the 
+// The usage of this in the engine overlaps the previous dialog i.e. the
 // starting offset used is two bytes early, thus implicitly changing the
 // first command of this dialog from NEW_LINE to CHANGE_CHARACTER.
 const static char* dialog_163[] = {

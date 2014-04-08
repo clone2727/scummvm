@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -47,7 +47,7 @@ class AdActor : public AdTalkHolder {
 public:
 	TDirection angleToDirection(int angle);
 	DECLARE_PERSISTENT(AdActor, AdTalkHolder)
-	virtual int getHeight();
+	virtual int32 getHeight() override;
 	BaseSprite *getTalkStance(const char *stance);
 	virtual void goTo(int x, int y, TDirection afterWalkDir = DI_NONE);
 	BasePoint *_targetPoint;
@@ -57,7 +57,7 @@ public:
 	AdActor(BaseGame *inGame/*=nullptr*/);
 	virtual ~AdActor();
 	bool loadFile(const char *filename);
-	bool loadBuffer(byte *buffer, bool complete = true);
+	bool loadBuffer(char *buffer, bool complete = true);
 
 
 private:
@@ -83,26 +83,26 @@ private:
 	AdSpriteSet *getAnimByName(const Common::String &animName);
 
 	// scripting interface
-	virtual ScValue *scGetProperty(const Common::String &name);
-	virtual bool scSetProperty(const char *name, ScValue *value);
-	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name);
-	virtual const char *scToString();
+	virtual ScValue *scGetProperty(const Common::String &name) override;
+	virtual bool scSetProperty(const char *name, ScValue *value) override;
+	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
+	virtual const char *scToString() override;
 
 	bool setDefaultAnimNames();
 	BaseSprite *getTalkStanceOld(const char *stance);
 	bool mergeAnims(const char *animsFilename);
 	BaseSprite *_animSprite2;
 
-	void initLine(BasePoint startPt, BasePoint endPt);
+	void initLine(const BasePoint &startPt, const BasePoint &endPt);
 	void getNextStep();
 	void followPath();
 	double _pFStepX;
 	double _pFStepY;
 	double _pFX;
 	double _pFY;
-	int _pFCount;
+	int32 _pFCount;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

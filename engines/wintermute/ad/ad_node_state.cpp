@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -29,7 +29,6 @@
 #include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/ad/ad_node_state.h"
 #include "engines/wintermute/ad/ad_entity.h"
-#include "engines/wintermute/base/base_string_table.h"
 #include "engines/wintermute/base/base_sprite.h"
 #include "engines/wintermute/utils/utils.h"
 #include "engines/wintermute/platform_osystem.h"
@@ -94,15 +93,15 @@ void AdNodeState::setCursor(const char *filename) {
 
 //////////////////////////////////////////////////////////////////////////
 bool AdNodeState::persist(BasePersistenceManager *persistMgr) {
-	persistMgr->transfer(TMEMBER(_gameRef));
+	persistMgr->transferPtr(TMEMBER_PTR(_gameRef));
 
-	persistMgr->transfer(TMEMBER(_active));
-	persistMgr->transfer(TMEMBER(_name));
-	persistMgr->transfer(TMEMBER(_filename));
-	persistMgr->transfer(TMEMBER(_cursor));
-	persistMgr->transfer(TMEMBER(_alphaColor));
+	persistMgr->transferBool(TMEMBER(_active));
+	persistMgr->transferCharPtr(TMEMBER(_name));
+	persistMgr->transferCharPtr(TMEMBER(_filename));
+	persistMgr->transferCharPtr(TMEMBER(_cursor));
+	persistMgr->transferUint32(TMEMBER(_alphaColor));
 	for (int i = 0; i < 7; i++) {
-		persistMgr->transfer(TMEMBER(_caption[i]));
+		persistMgr->transferCharPtr(TMEMBER(_caption[i]));
 	}
 
 	return STATUS_OK;
@@ -122,7 +121,7 @@ void AdNodeState::setCaption(const char *caption, int caseVal) {
 	_caption[caseVal - 1] = new char[strlen(caption) + 1];
 	if (_caption[caseVal - 1]) {
 		strcpy(_caption[caseVal - 1], caption);
-		_gameRef->_stringTable->expand(&_caption[caseVal - 1]);
+		_gameRef->expandStringByStringTable(&_caption[caseVal - 1]);
 	}
 }
 
@@ -193,4 +192,4 @@ bool AdNodeState::transferEntity(AdEntity *entity, bool includingSprites, bool s
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

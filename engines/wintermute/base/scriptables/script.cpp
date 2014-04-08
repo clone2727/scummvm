@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -461,6 +461,7 @@ void ScScript::cleanup() {
 	_parentScript = nullptr; // ref only
 
 	delete _scriptStream;
+	_scriptStream = nullptr;
 }
 
 
@@ -1194,7 +1195,7 @@ bool ScScript::sleep(uint32 duration) {
 		_waitTime = g_system->getMillis() + duration;
 		_waitFrozen = true;
 	} else {
-		_waitTime = _gameRef->_timer + duration;
+		_waitTime = _gameRef->getTimer()->getTime() + duration;
 		_waitFrozen = false;
 	}
 	return STATUS_OK;
@@ -1243,20 +1244,20 @@ void ScScript::runtimeError(const char *fmt, ...) {
 //////////////////////////////////////////////////////////////////////////
 bool ScScript::persist(BasePersistenceManager *persistMgr) {
 
-	persistMgr->transfer(TMEMBER(_gameRef));
+	persistMgr->transferPtr(TMEMBER_PTR(_gameRef));
 
 	// buffer
 	if (persistMgr->getIsSaving()) {
 		if (_state != SCRIPT_PERSISTENT && _state != SCRIPT_FINISHED && _state != SCRIPT_THREAD_FINISHED) {
-			persistMgr->transfer(TMEMBER(_bufferSize));
+			persistMgr->transferUint32(TMEMBER(_bufferSize));
 			persistMgr->putBytes(_buffer, _bufferSize);
 		} else {
 			// don't save idle/finished scripts
-			int bufferSize = 0;
-			persistMgr->transfer(TMEMBER(bufferSize));
+			int32 bufferSize = 0;
+			persistMgr->transferSint32(TMEMBER(bufferSize));
 		}
 	} else {
-		persistMgr->transfer(TMEMBER(_bufferSize));
+		persistMgr->transferUint32(TMEMBER(_bufferSize));
 		if (_bufferSize > 0) {
 			_buffer = new byte[_bufferSize];
 			persistMgr->getBytes(_buffer, _bufferSize);
@@ -1268,33 +1269,33 @@ bool ScScript::persist(BasePersistenceManager *persistMgr) {
 		}
 	}
 
-	persistMgr->transfer(TMEMBER(_callStack));
-	persistMgr->transfer(TMEMBER(_currentLine));
-	persistMgr->transfer(TMEMBER(_engine));
-	persistMgr->transfer(TMEMBER(_filename));
-	persistMgr->transfer(TMEMBER(_freezable));
-	persistMgr->transfer(TMEMBER(_globals));
-	persistMgr->transfer(TMEMBER(_iP));
-	persistMgr->transfer(TMEMBER(_scopeStack));
-	persistMgr->transfer(TMEMBER(_stack));
-	persistMgr->transfer(TMEMBER_INT(_state));
-	persistMgr->transfer(TMEMBER(_operand));
-	persistMgr->transfer(TMEMBER_INT(_origState));
-	persistMgr->transfer(TMEMBER(_owner));
-	persistMgr->transfer(TMEMBER(_reg1));
-	persistMgr->transfer(TMEMBER(_thread));
-	persistMgr->transfer(TMEMBER(_threadEvent));
-	persistMgr->transfer(TMEMBER(_thisStack));
-	persistMgr->transfer(TMEMBER(_timeSlice));
-	persistMgr->transfer(TMEMBER(_waitObject));
-	persistMgr->transfer(TMEMBER(_waitScript));
-	persistMgr->transfer(TMEMBER(_waitTime));
-	persistMgr->transfer(TMEMBER(_waitFrozen));
+	persistMgr->transferPtr(TMEMBER_PTR(_callStack));
+	persistMgr->transferSint32(TMEMBER(_currentLine));
+	persistMgr->transferPtr(TMEMBER_PTR(_engine));
+	persistMgr->transferCharPtr(TMEMBER(_filename));
+	persistMgr->transferBool(TMEMBER(_freezable));
+	persistMgr->transferPtr(TMEMBER_PTR(_globals));
+	persistMgr->transferUint32(TMEMBER(_iP));
+	persistMgr->transferPtr(TMEMBER_PTR(_scopeStack));
+	persistMgr->transferPtr(TMEMBER_PTR(_stack));
+	persistMgr->transferSint32(TMEMBER_INT(_state));
+	persistMgr->transferPtr(TMEMBER_PTR(_operand));
+	persistMgr->transferSint32(TMEMBER_INT(_origState));
+	persistMgr->transferPtr(TMEMBER_PTR(_owner));
+	persistMgr->transferPtr(TMEMBER_PTR(_reg1));
+	persistMgr->transferBool(TMEMBER(_thread));
+	persistMgr->transferCharPtr(TMEMBER(_threadEvent));
+	persistMgr->transferPtr(TMEMBER_PTR(_thisStack));
+	persistMgr->transferUint32(TMEMBER(_timeSlice));
+	persistMgr->transferPtr(TMEMBER_PTR(_waitObject));
+	persistMgr->transferPtr(TMEMBER_PTR(_waitScript));
+	persistMgr->transferUint32(TMEMBER(_waitTime));
+	persistMgr->transferBool(TMEMBER(_waitFrozen));
 
-	persistMgr->transfer(TMEMBER(_methodThread));
-	persistMgr->transfer(TMEMBER(_methodThread));
-	persistMgr->transfer(TMEMBER(_unbreakable));
-	persistMgr->transfer(TMEMBER(_parentScript));
+	persistMgr->transferBool(TMEMBER(_methodThread));
+	persistMgr->transferBool(TMEMBER(_methodThread)); // TODO-SAVE: Deduplicate.
+	persistMgr->transferBool(TMEMBER(_unbreakable));
+	persistMgr->transferPtr(TMEMBER_PTR(_parentScript));
 
 	if (!persistMgr->getIsSaving()) {
 		_tracingMode = false;
@@ -1464,4 +1465,4 @@ void ScScript::afterLoad() {
 	}
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

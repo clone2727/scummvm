@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -29,7 +29,7 @@
 #include "common/system.h"
 #include "common/textconsole.h"
 #include "common/translation.h"
-
+#include "gui/EventRecorder.h"
 #include "engines/advancedDetector.h"
 #include "engines/obsolete.h"
 
@@ -78,7 +78,7 @@ static Common::String generatePreferredTarget(const Common::String &id, const AD
 		res = res + "-cd";
 	}
 
-	if (desc->platform != Common::kPlatformPC && desc->platform != Common::kPlatformUnknown) {
+	if (desc->platform != Common::kPlatformDOS && desc->platform != Common::kPlatformUnknown && !(desc->flags & ADGF_DROPPLATFORM)) {
 		res = res + "-" + getPlatformAbbrev(desc->platform);
 	}
 
@@ -301,6 +301,7 @@ Common::Error AdvancedMetaEngine::createInstance(OSystem *syst, Engine **engine)
 		return Common::kUserCanceled;
 
 	debug(2, "Running %s", gameDescriptor.description().c_str());
+	initSubSystems(agdDesc);
 	if (!createInstance(syst, engine, agdDesc))
 		return Common::kNoGameDataFoundError;
 	else
@@ -605,4 +606,12 @@ AdvancedMetaEngine::AdvancedMetaEngine(const void *descs, uint descItemSize, con
 	_guioptions = GUIO_NONE;
 	_maxScanDepth = 1;
 	_directoryGlobs = NULL;
+}
+
+void AdvancedMetaEngine::initSubSystems(const ADGameDescription *gameDesc) const {
+#ifdef ENABLE_EVENTRECORDER
+	if (gameDesc) {
+		g_eventRec.processGameDescription(gameDesc);
+	}
+#endif
 }

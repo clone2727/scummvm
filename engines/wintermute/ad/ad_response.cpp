@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -131,16 +131,48 @@ bool AdResponse::persist(BasePersistenceManager *persistMgr) {
 
 	BaseObject::persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_icon));
-	persistMgr->transfer(TMEMBER(_iconHover));
-	persistMgr->transfer(TMEMBER(_iconPressed));
-	persistMgr->transfer(TMEMBER(_iD));
-	persistMgr->transfer(TMEMBER(_text));
-	persistMgr->transfer(TMEMBER(_textOrig));
-	persistMgr->transfer(TMEMBER_INT(_responseType));
-	persistMgr->transfer(TMEMBER(_font));
+	persistMgr->transferPtr(TMEMBER_PTR(_icon));
+	persistMgr->transferPtr(TMEMBER_PTR(_iconHover));
+	persistMgr->transferPtr(TMEMBER_PTR(_iconPressed));
+	persistMgr->transferSint32(TMEMBER(_iD));
+	persistMgr->transferCharPtr(TMEMBER(_text));
+	persistMgr->transferCharPtr(TMEMBER(_textOrig));
+	persistMgr->transferSint32(TMEMBER_INT(_responseType));
+	persistMgr->transferPtr(TMEMBER_PTR(_font));
 
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+void AdResponse::setID(int32 id) {
+	_iD = id;
+}
+
+BaseSprite *AdResponse::getIcon() const {
+	return _icon;
+}
+
+BaseSprite *AdResponse::getIconHover() const {
+	return _iconHover;
+}
+
+BaseSprite *AdResponse::getIconPressed() const {
+	return _iconPressed;
+}
+
+BaseFont *AdResponse::getFont() const {
+	return _font;
+}
+
+int32 AdResponse::getID() const {
+	return _iD;
+}
+
+const char *AdResponse::getText() const {
+	return _text;
+}
+
+const char *AdResponse::getTextOrig() const {
+	return _textOrig;
+}
+
+} // End of namespace Wintermute

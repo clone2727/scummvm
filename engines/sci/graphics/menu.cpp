@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -46,6 +46,7 @@ GfxMenu::GfxMenu(EventManager *event, SegManager *segMan, GfxPorts *ports, GfxPa
 	_menuSaveHandle = NULL_REG;
 	_barSaveHandle = NULL_REG;
 	_oldPort = NULL;
+	_mouseOldState = false;
 
 	reset();
 }
@@ -314,7 +315,7 @@ void GfxMenu::kernelSetAttribute(uint16 menuId, uint16 itemId, uint16 attributeI
 reg_t GfxMenu::kernelGetAttribute(uint16 menuId, uint16 itemId, uint16 attributeId) {
 	GuiMenuItemEntry *itemEntry = findItem(menuId, itemId);
 	if (!itemEntry)
-		error("Tried to getAttribute() on non-existant menu-item %d:%d", menuId, itemId);
+		error("Tried to getAttribute() on non-existent menu-item %d:%d", menuId, itemId);
 	switch (attributeId) {
 	case SCI_MENU_ATTRIBUTE_ENABLED:
 		if (itemEntry->enabled)

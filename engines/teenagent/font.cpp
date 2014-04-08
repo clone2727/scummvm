@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "teenagent/font.h"
@@ -65,7 +66,7 @@ uint Font::render(Graphics::Surface *surface, int x, int y, char c, byte color) 
 	byte *glyph = _data + READ_LE_UINT16(_data + idx * 2);
 
 	int h = glyph[0], w = glyph[1];
-	if (surface == NULL || surface->pixels == NULL || y + h <= 0 || y >= kScreenHeight || x + w <= 0 || x >= kScreenWidth)
+	if (surface == NULL || surface->getPixels() == NULL || y + h <= 0 || y >= kScreenHeight || x + w <= 0 || x >= kScreenWidth)
 		return w - _widthPack;
 
 	int i0 = 0, j0 = 0;

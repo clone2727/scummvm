@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -202,7 +202,7 @@ void AGOSEngine_Simon2::drawIcon(WindowBlock *window, uint icon, uint x, uint y)
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels;
+	dst = (byte *)screen->getPixels();
 
 	dst += 110;
 	dst += x;
@@ -228,7 +228,7 @@ void AGOSEngine_Simon1::drawIcon(WindowBlock *window, uint icon, uint x, uint y)
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels;
+	dst = (byte *)screen->getPixels();
 
 	dst += (x + window->x) * 8;
 	dst += (y * 25 + window->y) * screen->pitch;
@@ -256,7 +256,7 @@ void AGOSEngine_Waxworks::drawIcon(WindowBlock *window, uint icon, uint x, uint 
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels;
+	dst = (byte *)screen->getPixels();
 
 	dst += (x + window->x) * 8;
 	dst += (y * 20 + window->y) * screen->pitch;
@@ -284,7 +284,7 @@ void AGOSEngine_Elvira2::drawIcon(WindowBlock *window, uint icon, uint x, uint y
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels;
+	dst = (byte *)screen->getPixels();
 
 	dst += (x + window->x) * 8;
 	dst += (y * 8 + window->y) * screen->pitch;
@@ -312,7 +312,7 @@ void AGOSEngine_Elvira1::drawIcon(WindowBlock *window, uint icon, uint x, uint y
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels;
+	dst = (byte *)screen->getPixels();
 
 	dst += (x + window->x) * 8;
 	dst += (y * 8 + window->y) * screen->pitch;
@@ -339,7 +339,7 @@ void AGOSEngine::drawIcon(WindowBlock *window, uint icon, uint x, uint y) {
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	dst = (byte *)screen->pixels + y * screen->pitch + x * 8;
+	dst = (byte *)screen->getBasePtr(x * 8, y);
 	src = _iconFilePtr + icon * 146;
 
 	if (icon == 0xFF) {
@@ -951,7 +951,7 @@ void AGOSEngine::drawArrow(uint16 x, uint16 y, int8 dir) {
 	}
 
 	Graphics::Surface *screen = _system->lockScreen();
-	byte *dst = (byte *)screen->pixels + y * screen->pitch + x * 8;
+	byte *dst = (byte *)screen->getBasePtr(x * 8, y);
 
 	for (h = 0; h < 19; h++) {
 		for (w = 0; w < 16; w++) {
@@ -1042,9 +1042,9 @@ static const byte hitBarData[12 * 7] = {
 // Personal Nightmare specific
 void AGOSEngine_PN::drawIconHitBar() {
 	Graphics::Surface *screen = _system->lockScreen();
-	byte *dst = (byte *)screen->pixels + 3 * screen->pitch + 6 * 8;
+	byte *dst = (byte *)screen->getBasePtr(6 * 8, 3);
 	const byte *src = hitBarData;
-	uint8 color = (getPlatform() == Common::kPlatformPC) ? 7 : 15;
+	uint8 color = (getPlatform() == Common::kPlatformDOS) ? 7 : 15;
 
 	for (int h = 0; h < 7; h++) {
 		for (int w = 0; w < 12; w++) {
@@ -1089,15 +1089,15 @@ bool AGOSEngine_PN::ifObjectInInv(uint16 a) {
 }
 
 bool AGOSEngine_PN::testContainer(uint16 a) {
-	return 	bitextract(_quickptr[1] + a * _quickshort[1], 0) != 0;
+	return bitextract(_quickptr[1] + a * _quickshort[1], 0) != 0;
 }
 
 bool AGOSEngine_PN::testObvious(uint16 a) {
-	return 	bitextract(_quickptr[1] + a * _quickshort[1], 4) != 0;
+	return bitextract(_quickptr[1] + a * _quickshort[1], 4) != 0;
 }
 
 bool AGOSEngine_PN::testSeen(uint16 a) {
-	return 	bitextract(_quickptr[1] + a * _quickshort[1], 3) != 0;
+	return bitextract(_quickptr[1] + a * _quickshort[1], 3) != 0;
 }
 
 void AGOSEngine_PN::printIcon(HitArea *ha, uint8 i, uint8 r) {

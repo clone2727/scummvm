@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -37,7 +37,6 @@
 #include "engines/wintermute/base/base_frame.h"
 #include "engines/wintermute/base/base_sprite.h"
 #include "engines/wintermute/base/base_file_manager.h"
-#include "engines/wintermute/platform_osystem.h"
 
 namespace Wintermute {
 
@@ -76,20 +75,20 @@ void BaseFontBitmap::drawText(const byte *text, int x, int y, int width, TTextAl
 
 
 //////////////////////////////////////////////////////////////////////
-int BaseFontBitmap::getTextHeight(byte *text, int width) {
+int BaseFontBitmap::getTextHeight(const byte *text, int width) {
 	return textHeightDraw(text, 0, 0, width, TAL_LEFT, false);
 }
 
 
 //////////////////////////////////////////////////////////////////////
-int BaseFontBitmap::getTextWidth(byte *text, int maxLength) {
+int BaseFontBitmap::getTextWidth(const byte *text, int maxLength) {
 	AnsiString str;
 
 	if (_gameRef->_textEncoding == TEXT_UTF8) {
-		WideString wstr = StringUtil::utf8ToWide(Utf8String((char *)text));
+		WideString wstr = StringUtil::utf8ToWide(Utf8String((const char *)text));
 		str = StringUtil::wideToAnsi(wstr);
 	} else {
-		str = AnsiString((char *)text);
+		str = AnsiString((const char *)text);
 	}
 
 	if (maxLength >= 0 && str.size() > (uint32)maxLength) {
@@ -253,7 +252,7 @@ void BaseFontBitmap::drawChar(byte c, int x, int y) {
 		tileWidth = _widths[c];
 	}
 
-	BasePlatform::setRect(&rect, col * _tileWidth, row * _tileHeight, col * _tileWidth + tileWidth, (row + 1)*_tileHeight);
+	rect.setRect(col * _tileWidth, row * _tileHeight, col * _tileWidth + tileWidth, (row + 1) * _tileHeight);
 	bool handled = false;
 	if (_sprite) {
 		_sprite->getCurrentFrame();
@@ -272,7 +271,7 @@ void BaseFontBitmap::drawChar(byte c, int x, int y) {
 
 //////////////////////////////////////////////////////////////////////
 bool BaseFontBitmap::loadFile(const Common::String &filename) {
-	byte *buffer = BaseFileManager::getEngineInstance()->readWholeFile(filename);
+	char *buffer = (char *)BaseFileManager::getEngineInstance()->readWholeFile(filename);
 	if (buffer == nullptr) {
 		_gameRef->LOG(0, "BaseFontBitmap::LoadFile failed for file '%s'", filename.c_str());
 		return STATUS_FAILED;
@@ -311,7 +310,7 @@ TOKEN_DEF(WIDTHS_FRAME)
 TOKEN_DEF(PAINT_WHOLE_CELL)
 TOKEN_DEF_END
 //////////////////////////////////////////////////////////////////////
-bool BaseFontBitmap::loadBuffer(byte *buffer) {
+bool BaseFontBitmap::loadBuffer(char *buffer) {
 	TOKEN_TABLE_START(commands)
 	TOKEN_TABLE(FONTEXT_FIX)
 	TOKEN_TABLE(FONT)
@@ -335,11 +334,11 @@ bool BaseFontBitmap::loadBuffer(byte *buffer) {
 	int cmd;
 	BaseParser parser;
 
-	if (parser.getCommand((char **)&buffer, commands, (char **)&params) != TOKEN_FONT) {
+	if (parser.getCommand(&buffer, commands, &params) != TOKEN_FONT) {
 		_gameRef->LOG(0, "'FONT' keyword expected.");
 		return STATUS_FAILED;
 	}
-	buffer = (byte *)params;
+	buffer = params;
 
 	int widths[300];
 	int num = 0, defaultWidth = 8;
@@ -354,15 +353,15 @@ bool BaseFontBitmap::loadBuffer(byte *buffer) {
 	int spaceWidth = 0;
 	int expandWidth = 0;
 
-	while ((cmd = parser.getCommand((char **)&buffer, commands, (char **)&params)) > 0) {
+	while ((cmd = parser.getCommand(&buffer, commands, &params)) > 0) {
 
 		switch (cmd) {
 		case TOKEN_IMAGE:
-			surfaceFile = (char *)params;
+			surfaceFile = params;
 			break;
 
 		case TOKEN_SPRITE:
-			spriteFile = (char *)params;
+			spriteFile = params;
 			break;
 
 		case TOKEN_TRANSPARENT:
@@ -418,7 +417,7 @@ bool BaseFontBitmap::loadBuffer(byte *buffer) {
 			break;
 
 		case TOKEN_EDITOR_PROPERTY:
-			parseEditorProperty((byte *)params, false);
+			parseEditorProperty(params, false);
 			break;
 		}
 
@@ -478,7 +477,7 @@ bool BaseFontBitmap::loadBuffer(byte *buffer) {
 			_widths[spaceChar] = spaceWidth;
 		} else {
 			if (_widths[spaceChar] == expandWidth || _widths[spaceChar] == 0) {
-				_widths[spaceChar] = (_widths['m'] + _widths['i']) / 2;
+				_widths[spaceChar] = (_widths[(uint)'m'] + _widths[(uint)'i']) / 2;
 			}
 		}
 	} else {
@@ -496,13 +495,13 @@ bool BaseFontBitmap::loadBuffer(byte *buffer) {
 bool BaseFontBitmap::persist(BasePersistenceManager *persistMgr) {
 
 	BaseFont::persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_numColumns));
+	persistMgr->transferSint32(TMEMBER(_numColumns));
 
-	persistMgr->transfer(TMEMBER(_subframe));
-	persistMgr->transfer(TMEMBER(_tileHeight));
-	persistMgr->transfer(TMEMBER(_tileWidth));
-	persistMgr->transfer(TMEMBER(_sprite));
-	persistMgr->transfer(TMEMBER(_widthsFrame));
+	persistMgr->transferPtr(TMEMBER_PTR(_subframe));
+	persistMgr->transferSint32(TMEMBER(_tileHeight));
+	persistMgr->transferSint32(TMEMBER(_tileWidth));
+	persistMgr->transferPtr(TMEMBER_PTR(_sprite));
+	persistMgr->transferSint32(TMEMBER(_widthsFrame));
 
 	if (persistMgr->getIsSaving()) {
 		persistMgr->putBytes(_widths, sizeof(_widths));
@@ -511,8 +510,8 @@ bool BaseFontBitmap::persist(BasePersistenceManager *persistMgr) {
 	}
 
 
-	persistMgr->transfer(TMEMBER(_fontextFix));
-	persistMgr->transfer(TMEMBER(_wholeCell));
+	persistMgr->transferBool(TMEMBER(_fontextFix));
+	persistMgr->transferBool(TMEMBER(_wholeCell));
 
 
 	return STATUS_OK;
@@ -587,4 +586,4 @@ int BaseFontBitmap::getLetterHeight() {
 	return _tileHeight;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

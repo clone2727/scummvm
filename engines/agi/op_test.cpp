@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -82,7 +82,7 @@ void condIsSet(AgiGame *state, uint8 *p) {
 }
 
 void condIsSetV(AgiGame *state, uint8 *p) {
-	state->testResult = testIsSet(getvar(p[1]));
+	state->testResult = testIsSet(getvar(p[0]));
 }
 
 void condIsSetV1(AgiGame *state, uint8 *p) {
@@ -259,7 +259,12 @@ uint8 AgiEngine::testKeypressed() {
 		InputMode mode = _game.inputMode;
 
 		_game.inputMode = INPUT_NONE;
-		mainCycle();
+		// Only check for events here, without updating the game cycle,
+		// otherwise the animations in some games are drawn too quickly
+		// like, for example, Manannan's lightnings in the intro of KQ3
+		// and the bullets opened in the logo of PQ1, during its intro.
+		// Fixes bug #3600733
+		mainCycle(true);
 		_game.inputMode = mode;
 	}
 

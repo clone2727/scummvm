@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "teenagent/resources.h"
@@ -160,7 +161,7 @@ void Resources::loadOff(Graphics::Surface &surface, byte *palette, int id) {
 	off.read(id, buf, bufferSize);
 
 	byte *src = buf;
-	byte *dst = (byte *)surface.pixels;
+	byte *dst = (byte *)surface.getPixels();
 	memcpy(dst, src, 64000);
 	memcpy(palette, buf + 64000, 768);
 
@@ -206,16 +207,19 @@ Common::SeekableReadStream *Resources::loadLan000(uint32 id) const {
 		if (dseg.get_byte(dsAddr_birdOnBarRadioAntennaFlag) == 1) {
 			return lan500.getStream(380);
 		}
+		break;
 
 	case 30:
 		if (dseg.get_byte(dsAddr_birdOnBarRadioAntennaFlag) == 1) {
 			return lan500.getStream(381);
 		}
+		break;
 
 	case 42:
 		if (dseg.get_byte(dsAddr_johnNotyOutsideMansionDoorFlag) == 1) {
 			return lan500.getStream(400);
 		}
+		break;
 	}
 	return lan000.getStream(id);
 }

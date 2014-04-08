@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1262,7 +1262,7 @@ bool ValueTableData::isKnownField(uint16 fieldIndex) {
 }
 
 uint16 ValueTableData::getField(uint16 fieldIndex) {
-	if (fieldIndex > NUM_VALUE_FIELDS)
+	if (fieldIndex >= NUM_VALUE_FIELDS)
 		error("Invalid field index specified %d", fieldIndex);
 //	if (!isKnownField(fieldIndex))
 //		warning("Unknown field index %d in GET_FIELD opcode", fieldIndex);
@@ -1274,7 +1274,7 @@ uint16 ValueTableData::getField(FieldName fieldName) {
 }
 
 void ValueTableData::setField(uint16 fieldIndex, uint16 value) {
-	if (fieldIndex > NUM_VALUE_FIELDS)
+	if (fieldIndex >= NUM_VALUE_FIELDS)
 		error("Invalid field index specified %d", fieldIndex);
 	_fieldList[fieldIndex] = value;
 //	if (!isKnownField(fieldIndex))

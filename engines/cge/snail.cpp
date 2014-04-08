@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -493,7 +493,15 @@ void CGEEngine::snGame(Sprite *spr, int num) {
 		_sprK2->step(newRandom(6));
 		_sprK3->step(newRandom(6));
 
+		// check the ALT key as it's the solution of the puzzle
+		// the test has been restricted to some specific OSes
+		// in order to avoid some obvious issues (like Android, iOS, NDS, N64...)
+		// Not perfect, but at least better than nothing.
+#if defined(WIN32) || defined(UNIX) || defined(MACOSX) || defined(MOTOEZX) || defined(LINUPY) || defined(LINUXMOTO_SDL)
 		if (spr->_ref == 1 && _keyboard->_keyAlt) {
+#else
+		if (spr->_ref == 1 && _gameCase2Cpt > 1) {
+#endif
 			_sprK1->step(5);
 			_sprK2->step(5);
 			_sprK3->step(5);
@@ -649,6 +657,9 @@ void CGEEngine::selectPocket(int n) {
  */
 void CGEEngine::pocFul() {
 	debugC(1, kCGEDebugEngine, "CGEEngine::pocFul()");
+
+	if (!_hero)
+		error("pocFul - Unexpected null _hero");
 
 	_hero->park();
 	_commandHandler->addCommand(kCmdWait, -1, -1, _hero);
@@ -1191,6 +1202,8 @@ void CGEEngine::snFlash(bool on) {
 			}
 			_vga->setColors(pal, 64);
 		}
+
+		free(pal);
 	} else
 		_vga->setColors(_vga->_sysPal, 64);
 	_dark = false;

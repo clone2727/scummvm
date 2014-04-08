@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -288,11 +288,14 @@ public:
 	 * to the EventDispatcher, thus it will be deleted
 	 * with "delete", when EventDispatcher is destroyed.
 	 *
-	 * Note there is only one mapper per EventDispatcher
-	 * possible, thus when this method is called twice,
-	 * the former mapper will be destroied.
+	 * @param autoFree	Destroy previous mapper [default]
+	 *         		Normally we allow only one event mapper to exists,
+	 *			However Event Recorder must intervent into normal
+	 *			event flow without altering its semantics. Thus during
+	 *			Event Recorder playback and recording we allow
+	 *			two mappers.
 	 */
-	void registerMapper(EventMapper *mapper);
+	void registerMapper(EventMapper *mapper, bool autoFree = true);
 
 	/**
 	 * Queries the setup event mapper.
@@ -326,6 +329,7 @@ public:
 	 */
 	void unregisterObserver(EventObserver *obs);
 private:
+	bool _autoFreeMapper;
 	EventMapper *_mapper;
 
 	struct Entry {
