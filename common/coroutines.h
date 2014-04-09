@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_COROUTINES_H
@@ -128,7 +129,7 @@ public:
  */
 #define CORO_BEGIN_CONTEXT  \
 	struct CoroContextTag : Common::CoroBaseContext { \
-		CoroContextTag() : CoroBaseContext(SCUMMVM_CURRENT_FUNCTION) {} \
+ CoroContextTag() : CoroBaseContext(SCUMMVM_CURRENT_FUNCTION) { DUMMY = 0; } \
 		int DUMMY
 
 /**
@@ -146,6 +147,7 @@ public:
 #define CORO_BEGIN_CODE(x) \
 	if (&coroParam == &Common::nullContext) assert(!Common::nullContext); \
 	if (!x) { coroParam = x = new CoroContextTag(); } \
+	x->DUMMY = 0; \
 	Common::CoroContextHolder tmpHolder(coroParam); \
 	switch (coroParam->_line) { case 0:;
 

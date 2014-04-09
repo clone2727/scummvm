@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -535,7 +535,7 @@ Common::Error LoLEngine::go() {
 		_sound->loadSoundFile("sound.dat");
 
 	_sound->selectAudioResourceSet(kMusicIngame);
-	if (_flags.platform != Common::kPlatformPC)
+	if (_flags.platform != Common::kPlatformDOS)
 		_sound->loadSoundFile(0);
 
 	_tim = new TIMInterpreter_LoL(this, _screen, _system);
@@ -1363,7 +1363,7 @@ void LoLEngine::setCharacterMagicOrHitPoints(int charNum, int type, int points, 
 		{ 0x21, 0xAA, 0x99, 0x00, 0x4253 }
 	};
 
-	if (charNum > 3)
+	if (charNum > 2)
 		return;
 
 	LoLCharacter *c = &_characters[charNum];
@@ -1851,7 +1851,7 @@ int LoLEngine::playCharacterScriptChat(int charId, int mode, int restorePortrait
 	} else if (charId > 0) {
 		int i = 0;
 
-		for (; i < 4; i++) {
+		for (; i < 3; i++) {
 			if (_characters[i].id != charId || !(_characters[i].flags & 1))
 				continue;
 			if (charId == ch)

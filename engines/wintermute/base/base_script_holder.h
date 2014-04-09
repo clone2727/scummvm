@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -53,17 +53,17 @@ public:
 	bool applyEvent(const char *eventName, bool unbreakable = false);
 	void setFilename(const char *filename);
 	const char *getFilename() { return _filename; }
-	bool parseProperty(byte *buffer, bool complete = true);
+	bool parseProperty(char *buffer, bool complete = true);
 	bool _freezable;
 	bool _ready;
 
 	BaseArray<ScScript *> _scripts;
 	// scripting interface
-	virtual ScValue *scGetProperty(const Common::String &name);
-	virtual bool scSetProperty(const char *name, ScValue *value);
-	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name);
-	virtual const char *scToString();
-	virtual void scDebuggerDesc(char *buf, int bufSize);
+	virtual ScValue *scGetProperty(const Common::String &name) override;
+	virtual bool scSetProperty(const char *name, ScValue *value) override;
+	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
+	virtual const char *scToString() override;
+	virtual void scDebuggerDesc(char *buf, int bufSize) override;
 	// IWmeObject
 private:
 	char *_filename;
@@ -71,6 +71,6 @@ public:
 	virtual bool sendEvent(const char *eventName);
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

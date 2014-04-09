@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1031,7 +1031,7 @@ void BMVPlayer::CopyMovieToScreen() {
 	// The movie surface is slightly less high than the output screen (429 rows versus 432).
 	// Because of this, there's some extra line clearing above and below the displayed area
 	int yStart = (SCREEN_HEIGHT - SCREEN_HIGH) / 2;
-	memset(_vm->screen().getBasePtr(0, 0), 0, yStart * SCREEN_WIDTH);
+	memset(_vm->screen().getPixels(), 0, yStart * SCREEN_WIDTH);
 	memcpy(_vm->screen().getBasePtr(0, yStart), ScreenBeg, SCREEN_WIDTH * SCREEN_HIGH);
 	memset(_vm->screen().getBasePtr(0, yStart + SCREEN_HIGH), 0,
 		(SCREEN_HEIGHT - SCREEN_HIGH - yStart) * SCREEN_WIDTH);

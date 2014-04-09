@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -34,6 +34,8 @@ static const TinselGameDescription gameDescriptions[] = {
 	// TINSEL_V2: The Discworld 2 game used this updated version of the Tinsel 1 engine,
 	//   and as far as we know there aren't any variations of this engine.
 
+	// ==== Discworld 1 early (TinselV0) entries ==============================
+
 	{	// Floppy Demo V0 from http://www.adventure-treff.de/specials/dl_demos.php
 		{
 			"dw",
@@ -41,7 +43,7 @@ static const TinselGameDescription gameDescriptions[] = {
 			AD_ENTRY1s("dw.gra", "ce1b57761ba705221bcf70955b827b97", 441192),
 			//AD_ENTRY1s("dw.scn", "ccd72f02183d0e96b6e7d8df9492cda8", 23308),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO3(GUIO_NOSPEECH, GUIO_NOSFX, GUIO_NOMUSIC)
 		},
@@ -50,6 +52,8 @@ static const TinselGameDescription gameDescriptions[] = {
 		0,
 		TINSEL_V0,
 	},
+
+	// ==== Discworld 1 entries ===============================================
 
 	{	// CD Demo V1 version, with *.gra files
 		{
@@ -60,7 +64,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{"english.smp", 0, NULL, -1},
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO | ADGF_CD,
 			GUIO0()
 		},
@@ -104,7 +108,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -127,7 +131,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -150,7 +154,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -173,7 +177,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -189,7 +193,7 @@ static const TinselGameDescription gameDescriptions[] = {
 			"Floppy",
 			AD_ENTRY1s("dw.gra", "c8808ccd988d603dd35dff42013ae7fd", 781656),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -208,7 +212,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{"english.smp", 0, NULL, -1},
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -227,7 +231,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{"english.smp", 0, NULL, -1},
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO_NONE
 		},
@@ -243,7 +247,7 @@ static const TinselGameDescription gameDescriptions[] = {
 			"Floppy",
 			AD_ENTRY1s("dw.gra", "ef05bbd2a754bd11a2e87bcd84ab5ccf", 781864),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO_NOSPEECH
 		},
@@ -265,7 +269,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO0()
 		},
@@ -290,7 +294,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO0()
 		},
@@ -314,8 +318,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
-			ADGF_DROPLANGUAGE,
+			Common::kPlatformDOS,
+			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO0()
 		},
 		GID_DW1,
@@ -337,7 +341,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO0()
 		},
@@ -360,7 +364,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO0()
 		},
@@ -380,7 +384,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -400,7 +404,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::HE_ISR,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -484,6 +488,26 @@ static const TinselGameDescription gameDescriptions[] = {
 		TINSEL_V1,
 	},
 
+	{	// Mac English CD, see tracker #3614864
+		{
+			"dw",
+			"CD",
+			{
+				{"dw.scn", 0, "114643df0d1f1530a0a9c5d4e38917bc", 1268553},
+				{"english.smp", 0, NULL, -1},
+				{NULL, 0, NULL, 0}
+			},
+			Common::EN_ANY,
+			Common::kPlatformMacintosh,
+			ADGF_CD,
+			GUIO0()
+		},
+		GID_DW1,
+		0,
+		GF_SCNFILES | GF_ENHANCED_AUDIO_SUPPORT,
+		TINSEL_V1,
+	},
+
 	{	// Mac multilanguage CD
 		{
 			"dw",
@@ -500,7 +524,7 @@ static const TinselGameDescription gameDescriptions[] = {
 		},
 		GID_DW1,
 		0,
-		GF_SCNFILES,
+		GF_SCNFILES | GF_ENHANCED_AUDIO_SUPPORT,
 		TINSEL_V1,
 	},
 
@@ -511,7 +535,7 @@ static const TinselGameDescription gameDescriptions[] = {
 			"CD",
 			AD_ENTRY1s("dw.scn", "6182c7986eaec893c62fb6ea13a9f225", 774556),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -532,7 +556,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -553,7 +577,7 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::PL_POL,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO_NONE
 		},
@@ -562,6 +586,9 @@ static const TinselGameDescription gameDescriptions[] = {
 		GF_SCNFILES | GF_ENHANCED_AUDIO_SUPPORT,
 		TINSEL_V1,
 	},
+
+	// ==== Discworld 2 entries ===============================================
+	// Note: All Discworld 2 versions are CD only, therefore we don't add the ADGF_CD flag
 
 	{	// English Discworld 2 demo
 		{
@@ -573,8 +600,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
-			ADGF_DEMO | ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_DEMO,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -593,8 +620,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::EN_GRB,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -613,8 +640,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::EN_USA,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -633,8 +660,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -653,8 +680,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -674,8 +701,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -694,8 +721,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::ES_ESP,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,
@@ -715,8 +742,8 @@ static const TinselGameDescription gameDescriptions[] = {
 				{NULL, 0, NULL, 0}
 			},
 			Common::RU_RUS,
-			Common::kPlatformPC,
-			ADGF_CD,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
 		GID_DW2,

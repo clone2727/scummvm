@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "teenagent/teenagent.h"
@@ -294,7 +295,7 @@ bool TeenAgentEngine::fnRobotSafeAlreadyUnlockedCheck() {
 }
 
 void TeenAgentEngine::fnRobotSafeUnlockCheck() {
-	if (CHECK_FLAG(dsAddr_MansionRobotSafeVoiceTestPassedFlag, 1) && 
+	if (CHECK_FLAG(dsAddr_MansionRobotSafeVoiceTestPassedFlag, 1) &&
 	    CHECK_FLAG(dsAddr_MansionRobotSafeScentTestPassedFlag, 1) &&
 	    CHECK_FLAG(dsAddr_MansionRobotSafeViewTestPassedFlag, 1)) {
 		waitLanAnimationFrame(1, 1);
@@ -546,7 +547,7 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 		break;
 
 	case 0x4056:
-		// FIXME - This is the bird use callback in the first act at 
+		// FIXME - This is the bird use callback in the first act at
 		//         the mudpool. Current Code based on behaviour. Need to analyse cseg data.
 		dialog->popMark(scene, dsAddr_dialogStackMudpoolBird);
 		break;
@@ -1603,7 +1604,7 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 		break;
 
 	case 0x5b44:
-		// FIXME - This is the doorbell use callback on House #2 
+		// FIXME - This is the doorbell use callback on House #2
 		// i.e. Granny and Anne's House. Need to analyse cseg data properly.
 		// Current code inferred from behaviour.
 		// FIXME - Add animation call for Ego pushing doorbell.
@@ -1805,6 +1806,10 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 		break;
 
 	case 0x6635:
+		displayMessage(dsAddr_uninterestingHaystackMsg); // "I don't see anything interesting about this haystack"
+		break;
+
+	case 0x6663:
 		displayMessage(dsAddr_uninterestingHaystackMsg); // "I don't see anything interesting about this haystack"
 		break;
 
@@ -2380,6 +2385,10 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 
 	case csAddr_egoDefaultPosition:
 		fnEgoDefaultPosition();
+		break;
+
+	case 0x5634:
+		displayMessage(dsAddr_pullObjMsg2); // "I can't reach it"
 		break;
 
 	case 0x563b:
@@ -3320,6 +3329,10 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 
 		inventory->remove(kInvItemGrapplingHook);
 		fnMansionIntrusionAttempt();
+		break;
+
+	case 0x830b:
+		displayMessage(dsAddr_noChainsawFuelMsg); // "There's no fuel in the chainsaw"
 		break;
 
 	case 0x8312: // hedgehog + plastic apple
@@ -4611,7 +4624,7 @@ bool TeenAgentEngine::processCallback(uint16 addr) {
 						SET_FLAG(dsAddr_mansionVCRPlayedTapeBeforeFlag, 1);
 					}
 				} else
-					displayMessage(dsAddr_tvOffMsg); // "I just realised that the TV is off"
+					displayMessage(dsAddr_tvOffMsg); // "I just realized that the TV is off"
 			} else {
 				SET_FLAG(dsAddr_mansionVCRPlayingTapeFlag, 0);
 				if (CHECK_FLAG(dsAddr_mansionTVOnFlag, 1)) {

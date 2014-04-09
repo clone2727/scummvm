@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -45,6 +45,8 @@
 #include "sword25/gfx/graphicengine.h"
 
 namespace Sword25 {
+
+class RectangleList;
 
 class Image {
 public:
@@ -129,7 +131,8 @@ public:
 	                  int flipping = FLIP_NONE,
 	                  Common::Rect *pPartRect = NULL,
 	                  uint color = BS_ARGB(255, 255, 255, 255),
-	                  int width = -1, int height = -1) = 0;
+	                  int width = -1, int height = -1,
+					  RectangleList *updateRects = 0) = 0;
 
 	/**
 	    @brief fills a rectangular section of the image with a color.
@@ -202,6 +205,8 @@ public:
 	    @brief Returns true, if the content of the BS_Image is allowed to be replaced by call of SetContent().
 	*/
 	virtual bool isSetContentAllowed() const = 0;
+
+	virtual bool isSolid() const { return false; }
 
 	//@}
 };

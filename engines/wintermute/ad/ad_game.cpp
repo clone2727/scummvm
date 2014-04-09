@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -43,7 +43,6 @@
 #include "engines/wintermute/base/base_object.h"
 #include "engines/wintermute/base/base_parser.h"
 #include "engines/wintermute/base/sound/base_sound.h"
-#include "engines/wintermute/base/base_string_table.h"
 #include "engines/wintermute/base/base_surface_storage.h"
 #include "engines/wintermute/base/base_transition_manager.h"
 #include "engines/wintermute/base/base_sprite.h"
@@ -520,9 +519,14 @@ bool AdGame::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, 
 		if (_responseBox) {
 			AdResponse *res = new AdResponse(_gameRef);
 			if (res) {
-				res->_iD = id;
-				res->setText(text);
-				_stringTable->expand(&res->_text);
+				res->setID(id);
+
+				char *expandedText = new char[strlen(text) + 1];
+				Common::strlcpy(expandedText, text, strlen(text) + 1);
+				expandStringByStringTable(&expandedText);
+				res->setText(expandedText);
+				delete[] expandedText;
+
 				if (!val1->isNULL()) {
 					res->setIcon(val1->getString());
 				}
@@ -850,10 +854,10 @@ bool AdGame::scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, 
 		int height = stack->pop()->getInt();
 
 		if (width <= 0) {
-			width = _renderer->_width;
+			width = _renderer->getWidth();
 		}
 		if (height <= 0) {
-			height = _renderer->_height;
+			height = _renderer->getHeight();
 		}
 
 		if (!_sceneViewport) {
@@ -1241,7 +1245,7 @@ bool AdGame::showCursor() {
 
 //////////////////////////////////////////////////////////////////////////
 bool AdGame::loadFile(const char *filename) {
-	byte *buffer = BaseFileManager::getEngineInstance()->readWholeFile(filename);
+	char *buffer = (char *)BaseFileManager::getEngineInstance()->readWholeFile(filename);
 	if (buffer == nullptr) {
 		_gameRef->LOG(0, "AdGame::LoadFile failed for file '%s'", filename);
 		return STATUS_FAILED;
@@ -1277,7 +1281,7 @@ TOKEN_DEF(STARTUP_SCENE)
 TOKEN_DEF(DEBUG_STARTUP_SCENE)
 TOKEN_DEF_END
 //////////////////////////////////////////////////////////////////////////
-bool AdGame::loadBuffer(byte *buffer, bool complete) {
+bool AdGame::loadBuffer(char *buffer, bool complete) {
 	TOKEN_TABLE_START(commands)
 	TOKEN_TABLE(GAME)
 	TOKEN_TABLE(AD_GAME)
@@ -1291,14 +1295,14 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 	TOKEN_TABLE(DEBUG_STARTUP_SCENE)
 	TOKEN_TABLE_END
 
-	byte *params;
-	byte *params2;
+	char *params;
+	char *params2;
 	int cmd = 1;
 	BaseParser parser;
 
 	bool itemFound = false, itemsFound = false;
 
-	while (cmd > 0 && (cmd = parser.getCommand((char **)&buffer, commands, (char **)&params)) > 0) {
+	while (cmd > 0 && (cmd = parser.getCommand(&buffer, commands, &params)) > 0) {
 		switch (cmd) {
 		case TOKEN_GAME:
 			if (DID_FAIL(BaseGame::loadBuffer(params, false))) {
@@ -1307,12 +1311,12 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 			break;
 
 		case TOKEN_AD_GAME:
-			while (cmd > 0 && (cmd = parser.getCommand((char **)&params, commands, (char **)&params2)) > 0) {
+			while (cmd > 0 && (cmd = parser.getCommand(&params, commands, &params2)) > 0) {
 				switch (cmd) {
 				case TOKEN_RESPONSE_BOX:
 					delete _responseBox;
 					_responseBox = new AdResponseBox(_gameRef);
-					if (_responseBox && !DID_FAIL(_responseBox->loadFile((char *)params2))) {
+					if (_responseBox && !DID_FAIL(_responseBox->loadFile(params2))) {
 						registerObject(_responseBox);
 					} else {
 						delete _responseBox;
@@ -1324,7 +1328,7 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 				case TOKEN_INVENTORY_BOX:
 					delete _inventoryBox;
 					_inventoryBox = new AdInventoryBox(_gameRef);
-					if (_inventoryBox && !DID_FAIL(_inventoryBox->loadFile((char *)params2))) {
+					if (_inventoryBox && !DID_FAIL(_inventoryBox->loadFile(params2))) {
 						registerObject(_inventoryBox);
 					} else {
 						delete _inventoryBox;
@@ -1335,7 +1339,7 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 
 				case TOKEN_ITEMS:
 					itemsFound = true;
-					BaseUtils::setString(&_itemsFile, (char *)params2);
+					BaseUtils::setString(&_itemsFile, params2);
 					if (DID_FAIL(loadItemsFile(_itemsFile))) {
 						delete[] _itemsFile;
 						_itemsFile = nullptr;
@@ -1344,9 +1348,9 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 					break;
 
 				case TOKEN_TALK_SKIP_BUTTON:
-					if (scumm_stricmp((char *)params2, "right") == 0) {
+					if (scumm_stricmp(params2, "right") == 0) {
 						_talkSkipButton = TALK_SKIP_RIGHT;
-					} else if (scumm_stricmp((char *)params2, "both") == 0) {
+					} else if (scumm_stricmp(params2, "both") == 0) {
 						_talkSkipButton = TALK_SKIP_BOTH;
 					} else {
 						_talkSkipButton = TALK_SKIP_LEFT;
@@ -1355,7 +1359,7 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 
 				case TOKEN_SCENE_VIEWPORT: {
 					Rect32 rc;
-					parser.scanStr((char *)params2, "%d,%d,%d,%d", &rc.left, &rc.top, &rc.right, &rc.bottom);
+					parser.scanStr(params2, "%d,%d,%d,%d", &rc.left, &rc.top, &rc.right, &rc.bottom);
 					if (!_sceneViewport) {
 						_sceneViewport = new BaseViewport(_gameRef);
 					}
@@ -1370,11 +1374,11 @@ bool AdGame::loadBuffer(byte *buffer, bool complete) {
 					break;
 
 				case TOKEN_STARTUP_SCENE:
-					BaseUtils::setString(&_startupScene, (char *)params2);
+					BaseUtils::setString(&_startupScene, params2);
 					break;
 
 				case TOKEN_DEBUG_STARTUP_SCENE:
-					BaseUtils::setString(&_debugStartupScene, (char *)params2);
+					BaseUtils::setString(&_debugStartupScene, params2);
 					break;
 				}
 			}
@@ -1409,45 +1413,45 @@ bool AdGame::persist(BasePersistenceManager *persistMgr) {
 	_dlgPendingBranches.persist(persistMgr);
 
 	_inventories.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_inventoryBox));
+	persistMgr->transferPtr(TMEMBER_PTR(_inventoryBox));
 
 	_objects.persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_prevSceneName));
-	persistMgr->transfer(TMEMBER(_prevSceneFilename));
+	persistMgr->transferCharPtr(TMEMBER(_prevSceneName));
+	persistMgr->transferCharPtr(TMEMBER(_prevSceneFilename));
 
-	persistMgr->transfer(TMEMBER(_responseBox));
+	persistMgr->transferPtr(TMEMBER_PTR(_responseBox));
 	_responsesBranch.persist(persistMgr);
 	_responsesGame.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_scene));
+	persistMgr->transferPtr(TMEMBER_PTR(_scene));
 	_sceneStates.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_scheduledFadeIn));
-	persistMgr->transfer(TMEMBER(_scheduledScene));
-	persistMgr->transfer(TMEMBER(_selectedItem));
-	persistMgr->transfer(TMEMBER_INT(_talkSkipButton));
+	persistMgr->transferBool(TMEMBER(_scheduledFadeIn));
+	persistMgr->transferCharPtr(TMEMBER(_scheduledScene));
+	persistMgr->transferPtr(TMEMBER_PTR(_selectedItem));
+	persistMgr->transferSint32(TMEMBER_INT(_talkSkipButton));
 
 	_sentences.persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_sceneViewport));
-	persistMgr->transfer(TMEMBER_INT(_stateEx));
-	persistMgr->transfer(TMEMBER(_initialScene));
-	persistMgr->transfer(TMEMBER(_debugStartupScene));
+	persistMgr->transferPtr(TMEMBER_PTR(_sceneViewport));
+	persistMgr->transferSint32(TMEMBER_INT(_stateEx));
+	persistMgr->transferBool(TMEMBER(_initialScene));
+	persistMgr->transferCharPtr(TMEMBER(_debugStartupScene));
 
-	persistMgr->transfer(TMEMBER(_invObject));
-	persistMgr->transfer(TMEMBER(_inventoryOwner));
-	persistMgr->transfer(TMEMBER(_tempDisableSaveState));
+	persistMgr->transferPtr(TMEMBER_PTR(_invObject));
+	persistMgr->transferPtr(TMEMBER_PTR(_inventoryOwner));
+	persistMgr->transferBool(TMEMBER(_tempDisableSaveState));
 	_items.persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_itemsFile));
+	persistMgr->transferCharPtr(TMEMBER(_itemsFile));
 
 	_speechDirs.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_smartItemCursor));
+	persistMgr->transferBool(TMEMBER(_smartItemCursor));
 
 	if (!persistMgr->getIsSaving()) {
 		_initialScene = false;
 	}
 
-	persistMgr->transfer(TMEMBER(_startupScene));
+	persistMgr->transferCharPtr(TMEMBER(_startupScene));
 
 
 	return STATUS_OK;
@@ -1498,7 +1502,7 @@ bool AdGame::scheduleChangeScene(const char *filename, bool fadeIn) {
 
 
 //////////////////////////////////////////////////////////////////////////
-bool AdGame::getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *extMinor) {
+bool AdGame::getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *extMinor) const {
 	BaseGame::getVersion(verMajor, verMinor, nullptr, nullptr);
 
 	if (extMajor) {
@@ -1514,7 +1518,7 @@ bool AdGame::getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *ex
 
 //////////////////////////////////////////////////////////////////////////
 bool AdGame::loadItemsFile(const char *filename, bool merge) {
-	byte *buffer = BaseFileManager::getEngineInstance()->readWholeFile(filename);
+	char *buffer = (char *)BaseFileManager::getEngineInstance()->readWholeFile(filename);
 	if (buffer == nullptr) {
 		_gameRef->LOG(0, "AdGame::LoadItemsFile failed for file '%s'", filename);
 		return STATUS_FAILED;
@@ -1537,12 +1541,12 @@ bool AdGame::loadItemsFile(const char *filename, bool merge) {
 
 
 //////////////////////////////////////////////////////////////////////////
-bool AdGame::loadItemsBuffer(byte *buffer, bool merge) {
+bool AdGame::loadItemsBuffer(char *buffer, bool merge) {
 	TOKEN_TABLE_START(commands)
 	TOKEN_TABLE(ITEM)
 	TOKEN_TABLE_END
 
-	byte *params;
+	char *params;
 	int cmd;
 	BaseParser parser;
 
@@ -1552,7 +1556,7 @@ bool AdGame::loadItemsBuffer(byte *buffer, bool merge) {
 		}
 	}
 
-	while ((cmd = parser.getCommand((char **)&buffer, commands, (char **)&params)) > 0) {
+	while ((cmd = parser.getCommand(&buffer, commands, &params)) > 0) {
 		switch (cmd) {
 		case TOKEN_ITEM: {
 			AdItem *item = new AdItem(_gameRef);
@@ -1633,7 +1637,7 @@ bool AdGame::windowLoadHook(UIWindow *win, char **buffer, char **params) {
 	switch (cmd) {
 	case TOKEN_ENTITY_CONTAINER: {
 		UIEntity *ent = new UIEntity(_gameRef);
-		if (!ent || DID_FAIL(ent->loadBuffer((byte *)*params, false))) {
+		if (!ent || DID_FAIL(ent->loadBuffer(*params, false))) {
 			delete ent;
 			ent = nullptr;
 			cmd = PARSERR_GENERIC;
@@ -1743,7 +1747,7 @@ bool AdGame::endDlgBranch(const char *branchName, const char *scriptName, const 
 //////////////////////////////////////////////////////////////////////////
 bool AdGame::clearBranchResponses(char *name) {
 	for (uint32 i = 0; i < _responsesBranch.size(); i++) {
-		if (scumm_stricmp(name, _responsesBranch[i]->_context) == 0) {
+		if (scumm_stricmp(name, _responsesBranch[i]->getContext()) == 0) {
 			delete _responsesBranch[i];
 			_responsesBranch.remove_at(i);
 			i--;
@@ -1767,11 +1771,11 @@ bool AdGame::addBranchResponse(int id) {
 
 
 //////////////////////////////////////////////////////////////////////////
-bool AdGame::branchResponseUsed(int id) {
+bool AdGame::branchResponseUsed(int id) const {
 	char *context = _dlgPendingBranches.size() > 0 ? _dlgPendingBranches[_dlgPendingBranches.size() - 1] : nullptr;
 	for (uint32 i = 0; i < _responsesBranch.size(); i++) {
 		if (_responsesBranch[i]->_id == id) {
-			if ((context == nullptr && _responsesBranch[i]->_context == nullptr) || scumm_stricmp(context, _responsesBranch[i]->_context) == 0) {
+			if ((context == nullptr && _responsesBranch[i]->getContext() == nullptr) || scumm_stricmp(context, _responsesBranch[i]->getContext()) == 0) {
 				return true;
 			}
 		}
@@ -1794,12 +1798,12 @@ bool AdGame::addGameResponse(int id) {
 
 
 //////////////////////////////////////////////////////////////////////////
-bool AdGame::gameResponseUsed(int id) {
+bool AdGame::gameResponseUsed(int id) const {
 	char *context = _dlgPendingBranches.size() > 0 ? _dlgPendingBranches[_dlgPendingBranches.size() - 1] : nullptr;
 	for (uint32 i = 0; i < _responsesGame.size(); i++) {
-		AdResponseContext *respContext = _responsesGame[i];
+		const AdResponseContext *respContext = _responsesGame[i];
 		if (respContext->_id == id) {
-			if ((context == nullptr && respContext->_context == nullptr) || ((context != nullptr && respContext->_context != nullptr) && scumm_stricmp(context, respContext->_context) == 0)) {
+			if ((context == nullptr && respContext->getContext() == nullptr) || ((context != nullptr && respContext->getContext() != nullptr) && scumm_stricmp(context, respContext->getContext()) == 0)) {
 				return true;
 			}
 		}
@@ -1814,7 +1818,7 @@ bool AdGame::resetResponse(int id) {
 
 	for (uint32 i = 0; i < _responsesGame.size(); i++) {
 		if (_responsesGame[i]->_id == id) {
-			if ((context == nullptr && _responsesGame[i]->_context == nullptr) || scumm_stricmp(context, _responsesGame[i]->_context) == 0) {
+			if ((context == nullptr && _responsesGame[i]->getContext() == nullptr) || scumm_stricmp(context, _responsesGame[i]->getContext()) == 0) {
 				delete _responsesGame[i];
 				_responsesGame.remove_at(i);
 				break;
@@ -1824,7 +1828,7 @@ bool AdGame::resetResponse(int id) {
 
 	for (uint32 i = 0; i < _responsesBranch.size(); i++) {
 		if (_responsesBranch[i]->_id == id) {
-			if ((context == nullptr && _responsesBranch[i]->_context == nullptr) || scumm_stricmp(context, _responsesBranch[i]->_context) == 0) {
+			if ((context == nullptr && _responsesBranch[i]->getContext() == nullptr) || scumm_stricmp(context, _responsesBranch[i]->getContext()) == 0) {
 				delete _responsesBranch[i];
 				_responsesBranch.remove_at(i);
 				break;
@@ -1959,7 +1963,7 @@ bool AdGame::isItemTaken(char *itemName) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-AdItem *AdGame::getItemByName(const char *name) {
+AdItem *AdGame::getItemByName(const char *name) const {
 	for (uint32 i = 0; i < _items.size(); i++) {
 		if (scumm_stricmp(_items[i]->getName(), name) == 0) {
 			return _items[i];
@@ -2156,7 +2160,6 @@ bool AdGame::onMouseLeftDown() {
 		_gameRef->_capturedObject = _gameRef->_activeObject;
 	}
 	_mouseLeftDown = true;
-	BasePlatform::setCapture(/*_renderer->_window*/);
 
 	return STATUS_OK;
 }
@@ -2167,7 +2170,6 @@ bool AdGame::onMouseLeftUp() {
 		_activeObject->handleMouse(MOUSE_RELEASE, MOUSE_BUTTON_LEFT);
 	}
 
-	BasePlatform::releaseCapture();
 	_capturedObject = nullptr;
 	_mouseLeftDown = false;
 
@@ -2260,10 +2262,10 @@ bool AdGame::displayDebugInfo() {
 	char str[100];
 	if (_gameRef->_debugDebugMode) {
 		sprintf(str, "Mouse: %d, %d (scene: %d, %d)", _mousePos.x, _mousePos.y, _mousePos.x + _scene->getOffsetLeft(), _mousePos.y + _scene->getOffsetTop());
-		_systemFont->drawText((byte *)str, 0, 90, _renderer->_width, TAL_RIGHT);
+		_systemFont->drawText((byte *)str, 0, 90, _renderer->getWidth(), TAL_RIGHT);
 
 		sprintf(str, "Scene: %s (prev: %s)", (_scene && _scene->getName()) ? _scene->getName() : "???", _prevSceneName ? _prevSceneName : "???");
-		_systemFont->drawText((byte *)str, 0, 110, _renderer->_width, TAL_RIGHT);
+		_systemFont->drawText((byte *)str, 0, 110, _renderer->getWidth(), TAL_RIGHT);
 	}
 	return BaseGame::displayDebugInfo();
 }
@@ -2278,4 +2280,4 @@ bool AdGame::onScriptShutdown(ScScript *script) {
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -227,7 +227,10 @@ Header *ResMan::lockScript(uint32 scrID) {
 #else
 	openScriptResourceLittleEndian(scrID);
 #endif
-	return (Header *)resHandle(scrID)->data;
+	MemHandle *handle = resHandle(scrID);
+	if (!handle)
+		error("Script resource handle %d not found", scrID);
+	return (Header *)handle->data;
 }
 
 void ResMan::unlockScript(uint32 scrID) {
@@ -343,8 +346,8 @@ MemHandle *ResMan::resHandle(uint32 id) {
 	uint8 cluster = (uint8)((id >> 24) - 1);
 	uint8 group = (uint8)(id >> 16);
 
-	// There is a know case of reading beyond array boundaries when trying to use
-	// portuguese subtitles (cluster file 2, group 6) with a version that do not
+	// There is a known case of reading beyond array boundaries when trying to use
+	// portuguese subtitles (cluster file 2, group 6) with a version that does not
 	// contain subtitles for this languages (i.e. has only 6 languages and not 7).
 	if (cluster >= _prj.noClu || group >= _prj.clu[cluster].noGrp)
 		return NULL;

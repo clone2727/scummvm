@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -85,6 +85,10 @@ void EoBCoreEngine::loadLevel(int level, int sub) {
 		p->assignedObjects = READ_LE_UINT16(pos);
 		pos += 2;
 	}
+
+	// WORKAROUND for bug #3596547 (EOB1: Door Buttons Don't Work)
+	if (_flags.gameID == GI_EOB1 && level == 7 && _levelBlockProperties[0x035C].assignedObjects == 0x0E89)
+		_levelBlockProperties[0x035C].assignedObjects = 0x0E8D;
 
 	loadVcnData(gfxFile.c_str(), (_flags.gameID == GI_EOB1) ? _cgaMappingLevel[_cgaLevelMappingIndex[level - 1]] : 0);
 	_screen->loadEoBBitmap("INVENT", _cgaMappingInv, 5, 3, 2);
@@ -259,7 +263,7 @@ Common::String EoBCoreEngine::initLevelData(int sub) {
 	}
 
 	if (_flags.gameID == GI_EOB2)
-		pos = initScriptTimers(pos);
+		initScriptTimers(pos);
 
 	return _curGfxFile;
 }

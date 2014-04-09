@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -91,28 +91,29 @@ static const int enhancedAudioGRAVersion[] = {
 };
 
 static const int enhancedAudioSCNVersion[] = {
-	 301, 302,   2,    1,   1, 301, 302,   3,   3,   4,	//   1-10
-	   4,   5,   6,    1,   7,   8,   9,  10,   8,  11,	//  11-20
-	  11,  12,  13,   13,  13,  13,  13,  14,  13,  13,	//  21-30
-	  15,  16,  17,   15,  18,  19,  20, 338,  21,  21,	//  31-40
-	 341, 342,  22,   22,  23,  24,  25,  26,  27,  28,	//  41-50
-	  29,  30,  31,   32,  33,  34,  35,  35,  36,  37,	//  51-60
-	  38,  39,  39,   39,  39,  40,  39,  41,  41,  42,	//  61-70
-	  43,  42,  44,   45,  41,  46,  48,  47,  48,  49,	//  71-80
-	  50,  51,  52,   53,  54,  55,  56,  57,  58,  59,	//  81-90
-	  60,  61,  62,   63,  61,  64,  65,  66,  67,  68,	//  91-100
-	  69,  70,  68,   71,  72,  73,  74,  75,  12,  76,	// 101-110
-	  77,  78,  79,   80,   4,   4,  82,  83,  77,   4,	// 111-120
-	  84,  85,  86, 3124,  88,  89,  90,  88,   2,   2,	// 121-130
-	   2,   2,   2,    2,   2,   2,   2,   2,   2,   2,	// 131-140
-	3142,  91,  92,   93,  94,  94,  95,  96,  52,   4,	// 141-150
-	  97,  98,  99,   99                             	// 151-154
+	 301, 302,   2,    1,   1, 301, 302,   3,   3,   4, //   1-10
+	   4,   5,   6,    1,   7,   8,   9,  10,   8,  11, //  11-20
+	  11,  12,  13,   13,  13,  13,  13,  14,  13,  13, //  21-30
+	  15,  16,  17,   15,  18,  19,  20, 338,  21,  21, //  31-40
+	 341, 342,  22,   22,  23,  24,  25,  26,  27,  28, //  41-50
+	  29,  30,  31,   32,  33,  34,  35,  35,  36,  37, //  51-60
+	  38,  39,  39,   39,  39,  40,  39,  41,  41,  42, //  61-70
+	  43,  42,  44,   45,  41,  46,  48,  47,  48,  49, //  71-80
+	  50,  51,  52,   53,  54,  55,  56,  57,  58,  59, //  81-90
+	  60,  61,  62,   63,  61,  64,  65,  66,  67,  68, //  91-100
+	  69,  70,  68,   71,  72,  73,  74,  75,  12,  76, // 101-110
+	  77,  78,  79,   80,   4,   4,  82,  83,  77,   4, // 111-120
+	  84,  85,  86, 3124,  88,  89,  90,  88,   2,   2, // 121-130
+	   2,   2,   2,    2,   2,   2,   2,   2,   2,   2, // 131-140
+	3142,  91,  92,   93,  94,  94,  95,  96,  52,   4, // 141-150
+	  97,  98,  99,   99                                // 151-154
 };
 
 int GetTrackNumber(SCNHANDLE hMidi) {
-	for (int i = 0; i < ARRAYSIZE(g_midiOffsets); i++)
+	for (int i = 0; i < ARRAYSIZE(g_midiOffsets); i++) {
 		if (g_midiOffsets[i] == hMidi)
 			return i;
+	}
 
 	return -1;
 }
@@ -134,10 +135,6 @@ bool PlayMidiSequence(uint32 dwFileOffset, bool bLoop) {
 	bool mute = false;
 	if (ConfMan.hasKey("mute"))
 		mute = ConfMan.getBool("mute");
-
-	// The Macintosh version of DW1 uses raw PCM for music
-	if (TinselV1Mac)
-		return _vm->_sound->playDW1MacMusic(dwFileOffset);
 
 	// TODO: Unimplemented Saturn MIDI
 	if (TinselV1Saturn)
@@ -195,43 +192,48 @@ bool PlayMidiSequence(uint32 dwFileOffset, bool bLoop) {
 	// move to correct position in the file
 	midiStream.seek(dwFileOffset, SEEK_SET);
 
-	// read the length of the sequence
-	dwSeqLen = midiStream.readUint32LE();
+	if (TinselV1Mac) {
+		// The Macintosh version of DW1 uses raw PCM for music
+		dwSeqLen = midiStream.readUint32BE();
+		_vm->_sound->playDW1MacMusic(midiStream, dwSeqLen);
+	} else {
+		dwSeqLen = midiStream.readUint32LE();
 
-	// make sure buffer is large enough for this sequence
-	assert(dwSeqLen > 0 && dwSeqLen <= g_midiBuffer.size);
+		// make sure buffer is large enough for this sequence
+		assert(dwSeqLen > 0 && dwSeqLen <= g_midiBuffer.size);
 
-	// stop any currently playing tune
-	_vm->_midiMusic->stop();
+		// stop any currently playing tune
+		_vm->_midiMusic->stop();
 
-	// read the sequence. This needs to be read again before playSEQ() is
-	// called even if the music is restarting, as playSEQ() reads the file
-	// name off the buffer itself. However, that function adds SMF headers
-	// to the buffer, thus if it's read again, the SMF headers will be read
-	// and the filename will always be 'MThd'.
-	if (midiStream.read(g_midiBuffer.pDat, dwSeqLen) != dwSeqLen)
-		error(FILE_IS_CORRUPT, MIDI_FILE);
+		// read the sequence. This needs to be read again before playSEQ() is
+		// called even if the music is restarting, as playSEQ() reads the file
+		// name off the buffer itself. However, that function adds SMF headers
+		// to the buffer, thus if it's read again, the SMF headers will be read
+		// and the filename will always be 'MThd'.
+		if (midiStream.read(g_midiBuffer.pDat, dwSeqLen) != dwSeqLen)
+			error(FILE_IS_CORRUPT, MIDI_FILE);
 
-	midiStream.close();
+		// WORKAROUND for bug #2820054 "DW1: No intro music at first start on Wii",
+		// which actually affects all ports, since it's specific to the GRA version.
+		//
+		// The GRA version does not seem to set the channel volume at all for the first
+		// intro track, thus we need to do that here. We only initialize the channels
+		// used in that sequence. And we are using 127 as default channel volume.
+		//
+		// Only in the GRA version dwFileOffset can be "38888", just to be sure, we
+		// check for the SCN files feature flag not being set though.
+		if (_vm->getGameID() == GID_DW1 && dwFileOffset == 38888 && !(_vm->getFeatures() & GF_SCNFILES)) {
+			_vm->_midiMusic->send(0x7F07B0 |  3);
+			_vm->_midiMusic->send(0x7F07B0 |  5);
+			_vm->_midiMusic->send(0x7F07B0 |  8);
+			_vm->_midiMusic->send(0x7F07B0 | 10);
+			_vm->_midiMusic->send(0x7F07B0 | 13);
+		}
 
-	// WORKAROUND for bug #2820054 "DW1: No intro music at first start on Wii",
-	// which actually affects all ports, since it's specific to the GRA version.
-	//
-	// The GRA version does not seem to set the channel volume at all for the first
-	// intro track, thus we need to do that here. We only initialize the channels
-	// used in that sequence. And we are using 127 as default channel volume.
-	//
-	// Only in the GRA version dwFileOffset can be "38888", just to be sure, we
-	// check for the SCN files feature flag not being set though.
-	if (_vm->getGameID() == GID_DW1 && dwFileOffset == 38888 && !(_vm->getFeatures() & GF_SCNFILES)) {
-		_vm->_midiMusic->send(0x7F07B0 |  3);
-		_vm->_midiMusic->send(0x7F07B0 |  5);
-		_vm->_midiMusic->send(0x7F07B0 |  8);
-		_vm->_midiMusic->send(0x7F07B0 | 10);
-		_vm->_midiMusic->send(0x7F07B0 | 13);
+		_vm->_midiMusic->playMIDI(dwSeqLen, bLoop);
 	}
 
-	_vm->_midiMusic->playMIDI(dwSeqLen, bLoop);
+	midiStream.close();
 
 	return true;
 }
@@ -285,72 +287,91 @@ void SetMidiVolume(int vol) {
 void OpenMidiFiles() {
 	Common::File midiStream;
 
-	// Demo version has no midi file
-	if (TinselV0 || TinselV2)
-		return;
+	if (TinselV0) {
+		// The early demo version of DW1 doesn't have MIDI
+	} else if (TinselV2) {
+		// DW2 uses a different music mechanism
+	} else if (TinselV1Saturn) {
+		// TODO: Saturn MIDI not yet implemented
+	} else if (TinselV1Mac) {
+		// open MIDI sequence file in binary mode
+		if (!midiStream.open(MIDI_FILE))
+			error(CANNOT_FIND_FILE, MIDI_FILE);
 
-	// The Macintosh version of DW1 does not use MIDI for music.
-	// It uses PCM music instead, which is quite big to be preloaded here.
-	if (TinselV1Mac)
-		return;
+		uint32 curTrack = 1;
+		uint32 songLength = 0;
+		int32 fileSize = midiStream.size();
 
-	// TODO: Saturn MIDI not yet implemented
-	if (TinselV1Saturn)
-		return;
+		// Init
+		for (int i = 0; i < ARRAYSIZE(g_midiOffsets); i++)
+			g_midiOffsets[i] = 0;
 
-	if (g_midiBuffer.pDat)
-		// already allocated
-		return;
+		midiStream.skip(4);	// skip file header
 
-	// open MIDI sequence file in binary mode
-	if (!midiStream.open(MIDI_FILE))
-		error(CANNOT_FIND_FILE, MIDI_FILE);
+		while (!midiStream.eos() && !midiStream.err() && midiStream.pos() != fileSize) {
+			assert(curTrack < ARRAYSIZE(g_midiOffsets));
+			g_midiOffsets[curTrack] = midiStream.pos();
+			//debug("%d: %d", curTrack, g_midiOffsets[curTrack]);
 
-	// gen length of the largest sequence
-	g_midiBuffer.size = midiStream.readUint32LE();
-	if (midiStream.eos() || midiStream.err())
-		error(FILE_IS_CORRUPT, MIDI_FILE);
+			songLength = midiStream.readUint32BE();
+			midiStream.skip(songLength);
 
-	if (g_midiBuffer.size) {
-		// allocate a buffer big enough for the largest MIDI sequence
-		if ((g_midiBuffer.pDat = (uint8 *)malloc(g_midiBuffer.size)) != NULL) {
-			// clear out the buffer
-			memset(g_midiBuffer.pDat, 0, g_midiBuffer.size);
-//			VMM_lock(midiBuffer.pDat, midiBuffer.size);
-		} else {
-			//mSeqHandle = NULL;
+			curTrack++;
 		}
+
+		midiStream.close();
+	} else {
+		if (g_midiBuffer.pDat)
+			// already allocated
+			return;
+
+		// open MIDI sequence file in binary mode
+		if (!midiStream.open(MIDI_FILE))
+			error(CANNOT_FIND_FILE, MIDI_FILE);
+
+		// get length of the largest sequence
+		g_midiBuffer.size = midiStream.readUint32LE();
+		if (midiStream.eos() || midiStream.err())
+			error(FILE_IS_CORRUPT, MIDI_FILE);
+
+		if (g_midiBuffer.size) {
+			// allocate a buffer big enough for the largest MIDI sequence
+			if ((g_midiBuffer.pDat = (uint8 *)malloc(g_midiBuffer.size)) != NULL) {
+				// clear out the buffer
+				memset(g_midiBuffer.pDat, 0, g_midiBuffer.size);
+			}
+		}
+
+		// Now scan through the contents of the MIDI file to find the offset
+		// of each individual track, in order to create a mapping from MIDI
+		// offset to track number, for the enhanced MIDI soundtrack.
+		// The first song is always at position 4. The subsequent ones are
+		// calculated dynamically.
+		uint32 curOffset = 4;
+		uint32 curTrack = 0;
+		uint32 songLength = 0;
+
+		// Init
+		for (int i = 0; i < ARRAYSIZE(g_midiOffsets); i++)
+			g_midiOffsets[i] = 0;
+
+		while (!midiStream.eos() && !midiStream.err()) {
+			if (curOffset + (4 * curTrack) >= (uint32)midiStream.size())
+				break;
+
+			assert(curTrack < ARRAYSIZE(g_midiOffsets));
+			g_midiOffsets[curTrack] = curOffset + (4 * curTrack);
+			//debug("%d: %d", curTrack, midiOffsets[curTrack]);
+
+			songLength = midiStream.readUint32LE();
+			curOffset += songLength;
+			midiStream.skip(songLength);
+
+			curTrack++;
+		}
+
+		midiStream.close();
 	}
-
-	// Now scan through the contents of the MIDI file to find the offset
-	// of each individual track, in order to create a mapping from MIDI
-	// offset to track number, for the enhanced MIDI soundtrack.
-	// The first song is always at position 4. The subsequent ones are
-	// calculated dynamically.
-	uint32 curOffset = 4;
-	uint32 curTrack = 0;
-	uint32 songLength = 0;
-
-	// Init
-	for (int i = 0; i < ARRAYSIZE(g_midiOffsets); i++)
-		g_midiOffsets[i] = 0;
-
-	while (!midiStream.eos() && !midiStream.err()) {
-		if (curOffset + (4 * curTrack) >= (uint32)midiStream.size())
-			break;
-
-		assert(curTrack < ARRAYSIZE(g_midiOffsets));
-		g_midiOffsets[curTrack] = curOffset + (4 * curTrack);
-		//debug("%d: %d", curTrack, midiOffsets[curTrack]);
-
-		songLength = midiStream.readUint32LE();
-		curOffset += songLength;
-		midiStream.skip(songLength);
-
-		curTrack++;
-	}
-
-	midiStream.close();
 }
 
 void DeleteMidiBuffer() {

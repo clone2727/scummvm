@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -32,6 +32,8 @@
 #include "common/util.h"
 
 #include "engines/engine.h"
+#include "gui/debugger.h"
+
 #include "tinsel/debugger.h"
 #include "tinsel/graphics.h"
 #include "tinsel/sound.h"
@@ -151,6 +153,7 @@ class TinselEngine : public Engine {
 	Common::Point _mousePos;
 	uint8 _dosPlayerDir;
 	Console *_console;
+	GUI::Debugger *getDebugger() { return _console; }
 
 	static const char *const _sampleIndices[][3];
 	static const char *const _sampleFiles[][3];
@@ -159,6 +162,7 @@ class TinselEngine : public Engine {
 protected:
 
 	// Engine APIs
+	virtual void initializePath(const Common::FSNode &gamePath);
 	virtual Common::Error run();
 	virtual bool hasFeature(EngineFeature f) const;
 	Common::Error loadGameState(int slot);
@@ -186,7 +190,7 @@ public:
 	Common::Platform getPlatform() const;
 	bool isBigEndian() const;
 	bool getIsADGFDemo() const;
-	bool isCD() const;
+	bool isV1CD() const;
 
 	const char *getSampleIndex(LANGUAGE lang);
 	const char *getSampleFile(LANGUAGE lang);
@@ -228,7 +232,11 @@ public:
 	Graphics::Surface &screen() { return _screenSurface; }
 
 	Common::Point getMousePosition() const { return _mousePos; }
-	void setMousePosition(const Common::Point &pt) {
+	void setMousePosition(Common::Point pt) {
+		// Clip mouse position to be within the screen coordinates
+		pt.x = CLIP<int16>(pt.x, 0, SCREEN_WIDTH - 1);
+		pt.y = CLIP<int16>(pt.y, 0, SCREEN_HEIGHT - 1);
+
 		int yOffset = TinselV2 ? (g_system->getHeight() - _screenSurface.h) / 2 : 0;
 		g_system->warpMouse(pt.x, pt.y + yOffset);
 		_mousePos = pt;

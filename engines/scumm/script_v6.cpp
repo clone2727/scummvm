@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -394,7 +394,7 @@ ScummEngine_v6::ArrayHeader *ScummEngine_v6::getArray(int array) {
 int ScummEngine_v6::readArray(int array, int idx, int base) {
 	ArrayHeader *ah = getArray(array);
 
-	if (ah == NULL || ah->data == NULL)
+	if (!ah)
 		error("readArray: invalid array %d (%d)", array, readVar(array));
 
 	// WORKAROUND bug #645711. This is clearly a script bug, as this script
@@ -2510,7 +2510,7 @@ void ScummEngine_v7::o6_kernelSetFunctions() {
 					_disableFadeInEffect = true;
 				}
 			} else if (_game.id == GID_FT && !_skipVideo) {
-				const int insaneVarNum = ((_game.features & GF_DEMO) && (_game.platform == Common::kPlatformPC))
+				const int insaneVarNum = ((_game.features & GF_DEMO) && (_game.platform == Common::kPlatformDOS))
 					? 232 : 233;
 
 				_insane->setSmushParams(_smushFrameRate);

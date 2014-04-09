@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -98,7 +98,7 @@ void WagProperty::setDefaults() {
 }
 
 void WagProperty::deleteData() {
-	delete _propData;
+	delete[] _propData;
 	_propData = NULL;
 }
 
@@ -178,7 +178,7 @@ bool WagFileParser::parse(const Common::FSNode &node) {
 	_parsedOk = false; // We haven't parsed the file yet
 
 	stream = node.createReadStream(); // Open the file
-	if (stream) { // Check that opening the file was succesful
+	if (stream) { // Check that opening the file was successful
 		if (checkWagVersion(*stream)) { // Check that WinAGI version string is valid
 			// It seems we've got a valid *.wag file so let's parse its properties from the start.
 			stream->seek(0); // Rewind the stream

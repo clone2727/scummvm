@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -29,6 +29,7 @@
 #include "engines/wintermute/base/base_active_rect.h"
 #include "engines/wintermute/base/gfx/base_renderer.h"
 #include "engines/wintermute/base/gfx/base_surface.h"
+#include "engines/wintermute/base/gfx/base_image.h"
 #include "engines/wintermute/base/base_sub_frame.h"
 #include "engines/wintermute/base/base_region.h"
 #include "engines/wintermute/platform_osystem.h"
@@ -64,7 +65,7 @@ BaseRenderer::BaseRenderer(BaseGame *inGame) : BaseClass(inGame) {
 	_loadImageX = _loadImageY = 0;
 
 	_width = _height = _bPP = 0;
-	BasePlatform::setRectEmpty(&_monitorRect);
+	_monitorRect.setEmpty();
 
 	_realWidth = _realHeight = 0;
 	_drawOffsetX = _drawOffsetY = 0;
@@ -112,15 +113,21 @@ void BaseRenderer::setIndicatorVal(int value) {
 }
 
 void BaseRenderer::setLoadingScreen(const char *filename, int x, int y) {
-	// TODO: Handle NULL
-	_loadImageName = filename;
+	if (filename == nullptr) {
+		_saveImageName = "";
+	} else {
+		_loadImageName = filename;
+	}
 	_loadImageX = x;
 	_loadImageY = y;
 }
 
 void BaseRenderer::setSaveImage(const char *filename, int x, int y) {
-	// TODO: Handle NULL
-	_saveImageName = filename;
+	if (filename == nullptr) {
+		_saveImageName = "";
+	} else {
+		_saveImageName = filename;
+	}
 	_saveImageX = x;
 	_saveImageY = y;
 }
@@ -166,12 +173,12 @@ void BaseRenderer::endSaveLoad() {
 }
 
 void BaseRenderer::persistSaveLoadImages(BasePersistenceManager *persistMgr) {
-	persistMgr->transfer(TMEMBER(_loadImageName));
-	persistMgr->transfer(TMEMBER(_saveImageName));
-	persistMgr->transfer(TMEMBER(_saveImageX));
-	persistMgr->transfer(TMEMBER(_saveImageY));
-	persistMgr->transfer(TMEMBER(_loadImageX));
-	persistMgr->transfer(TMEMBER(_loadImageY));
+	persistMgr->transferString(TMEMBER(_loadImageName));
+	persistMgr->transferString(TMEMBER(_saveImageName));
+	persistMgr->transferSint32(TMEMBER(_saveImageX));
+	persistMgr->transferSint32(TMEMBER(_saveImageY));
+	persistMgr->transferSint32(TMEMBER(_loadImageX));
+	persistMgr->transferSint32(TMEMBER(_loadImageY));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -344,6 +351,22 @@ void BaseRenderer::addRectToList(BaseActiveRect *rect) {
 	_rectList.push_back(rect);
 }
 
+bool BaseRenderer::saveScreenShot(const Common::String &filename, int sizeX, int sizeY) {
+	BaseImage *image = takeScreenshot();
+	if (image) {
+		if (sizeX != 0 && sizeY != 0) {
+			if (!DID_SUCCEED(image->resize(sizeX, sizeY))) {
+				delete image;
+				return false;
+			}
+		}
+		image->saveBMPFile(filename);
+		delete image;
+		return true;
+	}
+	return false;
+}
+
 //////////////////////////////////////////////////////////////////////////
 bool BaseRenderer::displayIndicator() {
 	if (!_indicatorDisplay || !_indicatorProgress) {
@@ -351,7 +374,7 @@ bool BaseRenderer::displayIndicator() {
 	}
 	if (_saveLoadImage && !_hasDrawnSaveLoadImage) {
 		Rect32 rc;
-		BasePlatform::setRect(&rc, 0, 0, _saveLoadImage->getWidth(), _saveLoadImage->getHeight());
+		rc.setRect(0, 0, _saveLoadImage->getWidth(), _saveLoadImage->getHeight());
 		if (_loadInProgress) {
 			_saveLoadImage->displayTrans(_loadImageX, _loadImageY, rc);
 		} else {
@@ -378,4 +401,4 @@ bool BaseRenderer::displayIndicator() {
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

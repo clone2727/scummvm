@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,8 +27,8 @@
  */
 
 #include "engines/wintermute/base/base_parser.h"
-#include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/base/base_engine.h"
+#include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/platform_osystem.h"
 #include "common/str.h"
 #include "common/util.h"
@@ -250,10 +250,10 @@ Common::String BaseParser::getToken(char **buf) {
 		*t++ = 0;
 	} else if (*b == 0) {
 		*buf = b;
-		return nullptr;
+		return Common::String();
 	} else {
 		// Error.
-		return nullptr;
+		return Common::String();
 	}
 
 	*buf = b;
@@ -275,7 +275,7 @@ float BaseParser::getTokenFloat(char **buf) {
 
 
 //////////////////////////////////////////////////////////////////////
-int BaseParser::getTokenInt(char **buf) {
+int32 BaseParser::getTokenInt(char **buf) {
 	Common::String token = getToken(buf);
 	const char *t = token.c_str();
 	if (!((*t >= '0' && *t <= '9') || *t == '-')) {
@@ -298,11 +298,11 @@ void BaseParser::skipToken(char **buf, char *tok, char * /*msg*/) {
 
 
 //////////////////////////////////////////////////////////////////////
-int BaseParser::scanStr(const char *in, const char *format, ...) {
+int32 BaseParser::scanStr(const char *in, const char *format, ...) {
 	va_list arg;
 	va_start(arg, format);
 
-	int num = 0;
+	int32 num = 0;
 	in += strspn(in, " \t\n\f");
 
 	while (*format && *in) {
@@ -464,4 +464,4 @@ int BaseParser::scanStr(const char *in, const char *format, ...) {
 	return num;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -34,7 +34,7 @@ class Screen;
  */
 class GfxCompare {
 public:
-	GfxCompare(SegManager *segMan, Kernel *kernel, GfxCache *cache, GfxScreen *screen, GfxCoordAdjuster *coordAdjuster);
+	GfxCompare(SegManager *segMan, GfxCache *cache, GfxScreen *screen, GfxCoordAdjuster *coordAdjuster);
 	~GfxCompare();
 
 	uint16 kernelOnControl(byte screenMask, const Common::Rect &rect);
@@ -42,12 +42,11 @@ public:
 	reg_t kernelCanBeHere(reg_t curObject, reg_t listReference);
 	bool kernelIsItSkip(GuiResourceId viewId, int16 loopNo, int16 celNo, Common::Point position);
 	void kernelBaseSetter(reg_t object);
-	Common::Rect getNSRect(reg_t object, bool fixRect = false);
+	Common::Rect getNSRect(reg_t object);
 	void setNSRect(reg_t object, Common::Rect nsRect);
 
 private:
 	SegManager *_segMan;
-	Kernel *_kernel;
 	GfxCache *_cache;
 	GfxScreen *_screen;
 	GfxCoordAdjuster *_coordAdjuster;

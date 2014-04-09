@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -52,7 +52,7 @@ void PspRtc::init() {						// init our starting ticks
 
 // Note that after we fill up 32 bits ie 50 days we'll loop back to 0, which may cause
 // unpredictable results
-uint32 PspRtc::getMillis() {
+uint32 PspRtc::getMillis(bool skipRecord) {
 	uint32 ticks[2];
 
 	sceRtcGetCurrentTick((u64 *)ticks);		// can introduce weird thread delays

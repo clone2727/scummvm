@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/system.h"
@@ -91,6 +92,9 @@ ListWidget::ListWidget(Dialog *boss, int x, int y, int w, int h, const char *too
 
 	// FIXME: This flag should come from widget definition
 	_editable = true;
+
+	_quickSelect = true;
+	_editColor = ThemeEngine::kFontColorNormal;
 }
 
 ListWidget::~ListWidget() {
@@ -206,6 +210,7 @@ void ListWidget::scrollTo(int item) {
 
 	if (_currentPos != item) {
 		_currentPos = item;
+		checkBounds();
 		scrollBarRecalc();
 	}
 }
@@ -467,6 +472,7 @@ void ListWidget::handleCommand(CommandSender *sender, uint32 cmd, uint32 data) {
 	case kSetPositionCmd:
 		if (_currentPos != (int)data) {
 			_currentPos = data;
+			checkBounds();
 			draw();
 
 			// Scrollbar actions cause list focus (which triggers a redraw)
@@ -536,7 +542,7 @@ void ListWidget::drawWidget() {
 }
 
 Common::Rect ListWidget::getEditRect() const {
-	Common::Rect r(_hlLeftPadding, 0, _w - _hlLeftPadding - _hlRightPadding, kLineHeight - 1);
+	Common::Rect r(_hlLeftPadding, 0, _w - _hlLeftPadding - _hlRightPadding, kLineHeight - 2);
 	const int offset = (_selectedItem - _currentPos) * kLineHeight + _topPadding;
 	r.top += offset;
 	r.bottom += offset;
@@ -550,6 +556,13 @@ Common::Rect ListWidget::getEditRect() const {
 	return r;
 }
 
+void ListWidget::checkBounds() {
+	if (_currentPos < 0 || _entriesPerPage > (int)_list.size())
+		_currentPos = 0;
+	else if (_currentPos + _entriesPerPage > (int)_list.size())
+		_currentPos = _list.size() - _entriesPerPage;
+}
+
 void ListWidget::scrollToCurrent() {
 	// Only do something if the current item is not in our view port
 	if (_selectedItem < _currentPos) {
@@ -560,11 +573,7 @@ void ListWidget::scrollToCurrent() {
 		_currentPos = _selectedItem - _entriesPerPage + 1;
 	}
 
-	if (_currentPos < 0 || _entriesPerPage > (int)_list.size())
-		_currentPos = 0;
-	else if (_currentPos + _entriesPerPage > (int)_list.size())
-		_currentPos = _list.size() - _entriesPerPage;
-
+	checkBounds();
 	_scrollBar->_currentPos = _currentPos;
 	_scrollBar->recalc();
 }

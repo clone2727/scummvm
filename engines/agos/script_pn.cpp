@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -370,7 +370,7 @@ void AGOSEngine_PN::opn_opcode30() {
 
 void AGOSEngine_PN::opn_opcode31() {
 	int a, slot = 0;
-	char bf[60];
+	Common::String bf;
 
 	if ((a = varval()) > 2) {
 		setScriptReturn(false);
@@ -381,10 +381,10 @@ void AGOSEngine_PN::opn_opcode31() {
 		case 0:
 			getFilename();
 			slot = matchSaveGame(_saveFile, countSaveGames());
-			strcpy(bf, genSaveName(slot));
+			bf = genSaveName(slot);
 			break;
 		case 1:
-			strcpy(bf, "pn.sav");
+			bf = "pn.sav";
 			break;
 		case 2:
 			// NOTE: Is this case ever used?
@@ -404,7 +404,7 @@ void AGOSEngine_PN::opn_opcode31() {
 }
 
 void AGOSEngine_PN::opn_opcode32() {
-	char bf[60];
+	Common::String bf;
 	int a, slot;
 
 	a = varval();
@@ -419,12 +419,12 @@ void AGOSEngine_PN::opn_opcode32() {
 			getFilename();
 			slot = matchSaveGame(_saveFile, curSlot);
 			if (slot != -1)
-				strcpy(bf, genSaveName(slot));
+				bf = genSaveName(slot);
 			else
-				strcpy(bf, genSaveName(curSlot));
+				bf = genSaveName(curSlot);
 			break;
 		case 1:
-			strcpy(bf, "pn.sav");
+			bf = "pn.sav";
 			break;
 		case 2:
 			// NOTE: Is this case ever used?

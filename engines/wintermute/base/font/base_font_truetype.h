@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -46,19 +46,18 @@ private:
 	class BaseCachedTTFontText {
 	public:
 		WideString _text;
-		int _width;
+		int32 _width;
 		TTextAlign _align;
-		int _maxHeight;
-		int _maxLength;
+		int32 _maxHeight;
+		int32 _maxLength;
 		BaseSurface *_surface;
-		int _priority;
-		int _textOffset;
+		int32 _priority;
+		int32 _textOffset;
 		bool _marked;
 		uint32 _lastUsed;
 
-		BaseCachedTTFontText() {
+		BaseCachedTTFontText() : _text() {
 			//_text = L"";
-			_text = "";
 			_width = _maxHeight = _maxLength = -1;
 			_align = TAL_LEFT;
 			_surface = nullptr;
@@ -84,14 +83,14 @@ public:
 		}
 
 		bool persist(BasePersistenceManager *persistMgr) {
-			persistMgr->transfer(TMEMBER(_offsetX));
-			persistMgr->transfer(TMEMBER(_offsetY));
-			persistMgr->transfer(TMEMBER(_color));
+			persistMgr->transferSint32(TMEMBER(_offsetX));
+			persistMgr->transferSint32(TMEMBER(_offsetY));
+			persistMgr->transferUint32(TMEMBER(_color));
 			return STATUS_OK;
 		}
 
-		int _offsetX;
-		int _offsetY;
+		int32 _offsetX;
+		int32 _offsetY;
 		uint32 _color;
 	};
 
@@ -100,12 +99,12 @@ public:
 	BaseFontTT(BaseGame *inGame);
 	virtual ~BaseFontTT(void);
 
-	virtual int getTextWidth(byte *text, int maxLength = -1);
-	virtual int getTextHeight(byte *text, int width);
-	virtual void drawText(const byte *text, int x, int y, int width, TTextAlign align = TAL_LEFT, int max_height = -1, int maxLength = -1);
-	virtual int getLetterHeight();
+	virtual int getTextWidth(const byte *text, int maxLength = -1) override;
+	virtual int getTextHeight(const byte *text, int width) override;
+	virtual void drawText(const byte *text, int x, int y, int width, TTextAlign align = TAL_LEFT, int max_height = -1, int maxLength = -1) override;
+	virtual int getLetterHeight() override;
 
-	bool loadBuffer(byte *buffer);
+	bool loadBuffer(char *buffer);
 	bool loadFile(const Common::String &filename);
 
 	float getLineHeight() const {
@@ -116,7 +115,7 @@ public:
 	void initLoop();
 
 private:
-	bool parseLayer(BaseTTFontLayer *layer, byte *buffer);
+	bool parseLayer(BaseTTFontLayer *layer, char *buffer);
 
 	void measureText(const WideString &text, int maxWidth, int maxHeight, int &textWidth, int &textHeight);
 
@@ -135,12 +134,12 @@ private:
 	size_t _maxCharWidth;
 	size_t _maxCharHeight;
 
-public:
+private:
 	bool _isBold;
 	bool _isItalic;
 	bool _isUnderline;
 	bool _isStriked;
-	int _fontHeight;
+	int32 _fontHeight;
 	char *_fontFile;
 
 	BaseArray<BaseTTFontLayer *> _layers;
@@ -148,6 +147,6 @@ public:
 
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -75,7 +75,7 @@ SoundManager::~SoundManager() {
 // playSample for DiscWorld 1
 bool SoundManager::playSample(int id, Audio::Mixer::SoundType type, Audio::SoundHandle *handle) {
 	// Floppy version has no sample file.
-	if (!_vm->isCD())
+	if (!_vm->isV1CD())
 		return false;
 
 	// no sample driver?
@@ -181,15 +181,7 @@ bool SoundManager::playSample(int id, Audio::Mixer::SoundType type, Audio::Sound
 	return true;
 }
 
-bool SoundManager::playDW1MacMusic(int dwFileOffset) {
-	Common::File s;
-	
-	if (!s.open("midi.dat"))
-		error(CANNOT_FIND_FILE, "midi.dat");
-
-	s.seek(dwFileOffset);
-	uint32 length = s.readUint32BE();
-
+void SoundManager::playDW1MacMusic(Common::File &s, uint32 length) {
 	// TODO: It's a bad idea to load the music track in a buffer.
 	// We should use a SubReadStream instead, and keep midi.dat open.
 	// However, the track lengths aren't that big (about 1-4MB),
@@ -199,37 +191,25 @@ bool SoundManager::playDW1MacMusic(int dwFileOffset) {
 
 	// read all of the sample
 	if (s.read(soundData, length) != length)
-		error(FILE_IS_CORRUPT, "midi.dat");
+		error(FILE_IS_CORRUPT, MIDI_FILE);
 
 	Common::SeekableReadStream *memStream = new Common::MemoryReadStream(soundData, length);
 
 	Audio::SoundHandle *handle = &_channels[kChannelDW1MacMusic].handle;
-	//_channels[kChannelDW1MacMusic].sampleNum = dwFileOffset;
 
 	// Stop any previously playing music track
 	_vm->_mixer->stopHandle(*handle);
-
-	// FIXME: Should set this in a different place ;)
-	_vm->_mixer->setVolumeForSoundType(Audio::Mixer::kMusicSoundType, _vm->_config->_musicVolume);
 
 	// TODO: Compression support (MP3/OGG/FLAC) for midi.dat in DW1 Mac
 	Audio::RewindableAudioStream *musicStream = Audio::makeRawStream(memStream, 22050, Audio::FLAG_UNSIGNED, DisposeAfterUse::YES);
 
 	if (musicStream)
 		_vm->_mixer->playStream(Audio::Mixer::kMusicSoundType, handle, Audio::makeLoopingAudioStream(musicStream, 0));
-
-	s.close();
-
-	return true;
 }
 
 // playSample for DiscWorld 2
 bool SoundManager::playSample(int id, int sub, bool bLooped, int x, int y, int priority,
 		Audio::Mixer::SoundType type, Audio::SoundHandle *handle) {
-
-	// Floppy version has no sample file
-	if (!_vm->isCD())
-		return false;
 
 	// no sample driver?
 	if (!_vm->_mixer->isReady())
@@ -293,7 +273,7 @@ bool SoundManager::playSample(int id, int sub, bool bLooped, int x, int y, int p
 	uint32 dwSampleIndex = _sampleIndex[id];
 
 	if (dwSampleIndex == 0) {
-		warning("Tinsel2 playSample, non-existant sample %d", id);
+		warning("Tinsel2 playSample, non-existent sample %d", id);
 		return false;
 	}
 
@@ -521,8 +501,8 @@ void SoundManager::showSoundError(const char *errorMsg, const char *soundFile) {
  * Opens and inits all sound sample files.
  */
 void SoundManager::openSampleFiles() {
-	// Floppy and demo versions have no sample files, except for the Discworld 2 demo
-	if (!_vm->isCD())
+	// V1 Floppy and V0 demo versions have no sample files
+	if (TinselV0 || (TinselV1 && !_vm->isV1CD()))
 		return;
 
 	TinselFile f;

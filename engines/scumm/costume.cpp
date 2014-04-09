@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -293,7 +293,7 @@ byte ClassicCostumeRenderer::mainRoutine(int xmoveCur, int ymoveCur) {
 		return 2;
 	}
 
-	v1.destptr = (byte *)_out.pixels + v1.y * _out.pitch + v1.x * _vm->_bytesPerPixel;
+	v1.destptr = (byte *)_out.getBasePtr(v1.x, v1.y);
 
 	v1.mask_ptr = _vm->getMaskBuffer(0, v1.y, _zbuf);
 
@@ -826,7 +826,7 @@ byte NESCostumeRenderer::drawLimb(const Actor *a, int limb) {
 				int my = _actorY + y + ty;
 				int mx = _actorX + x + tx;
 				if (!(_zbuf && (maskBuf[my * _numStrips + mx / 8] & revBitMask(mx & 7))))
-					*((byte *)_out.pixels + my * _out.pitch + mx) = palette[c];
+					*((byte *)_out.getBasePtr(mx, my)) = palette[c];
 			}
 		}
 	}
@@ -1238,7 +1238,7 @@ byte V0CostumeRenderer::drawLimb(const Actor *a, int limb) {
 			int destY = ypos + y;
 
 			if (destY >= 0 && destY < _out.h && destX >= 0 && destX < _out.w) {
-				byte *dst = (byte *)_out.pixels + destY * _out.pitch + destX;
+				byte *dst = (byte *)_out.getBasePtr(destX, destY);
 				byte *mask = _vm->getMaskBuffer(0, destY, _zbuf);
 				if (a0->_limb_flipped[limb]) {
 					LINE(0, 0); LINE(2, 2); LINE(4, 4); LINE(6, 6);

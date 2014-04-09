@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -130,10 +130,10 @@ void MoviePlayer::update() {
 				assert(s->format.bytesPerPixel == 4);
 
 #ifdef THEORA_INDIRECT_RENDERING
-				const byte *frameData = (const byte *)s->getBasePtr(0, 0);
+				const byte *frameData = (const byte *)s->getPixels();
 				_outputBitmap->setContent(frameData, s->pitch * s->h, 0, s->pitch);
 #else
-				g_system->copyRectToScreen(s->getBasePtr(0, 0), s->pitch, _outX, _outY, MIN(s->w, _backSurface->w), MIN(s->h, _backSurface->h));
+				g_system->copyRectToScreen(s->getPixels(), s->pitch, _outX, _outY, MIN(s->w, _backSurface->w), MIN(s->h, _backSurface->h));
 				g_system->updateScreen();
 #endif
 			}

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -76,7 +76,7 @@ void AGOSEngine::vc45_setWindowPalette() {
 	uint8 height = vlut[3];
 
 	if (num == 4) {
-		byte *dst = (byte *)_window4BackScn->pixels;
+		byte *dst = (byte *)_window4BackScn->getPixels();
 
 		for (uint8 h = 0; h < height; h++) {
 			for (uint8 w = 0; w < width; w++) {
@@ -223,11 +223,11 @@ void AGOSEngine::vc53_dissolveIn() {
 	uint16 count = dissolveCheck * 2;
 	while (count--) {
 		Graphics::Surface *screen = _system->lockScreen();
-		byte *dstPtr = (byte *)screen->pixels + x + y * screen->pitch;
+		byte *dstPtr = (byte *)screen->getBasePtr(x, y);
 
 		yoffs = _rnd.getRandomNumber(dissolveY);
 		dst = dstPtr + yoffs * screen->pitch;
-		src = (byte *)_window4BackScn->pixels + yoffs * _window4BackScn->pitch;
+		src = (byte *)_window4BackScn->getBasePtr(0, yoffs);
 
 		xoffs = _rnd.getRandomNumber(dissolveX);
 		dst += xoffs;
@@ -296,7 +296,7 @@ void AGOSEngine::vc54_dissolveOut() {
 	uint16 count = dissolveCheck * 2;
 	while (count--) {
 		Graphics::Surface *screen = _system->lockScreen();
-		byte *dstPtr = (byte *)screen->pixels + x + y * screen->pitch;
+		byte *dstPtr = (byte *)screen->getBasePtr(x, y);
 		color |= dstPtr[0] & 0xF0;
 
 		yoffs = _rnd.getRandomNumber(dissolveY);
@@ -378,7 +378,7 @@ void AGOSEngine::fullFade() {
 
 void AGOSEngine::vc56_fullScreen() {
 	Graphics::Surface *screen = _system->lockScreen();
-	byte *dst = (byte *)screen->pixels;
+	byte *dst = (byte *)screen->getPixels();
 	byte *src = _curVgaFile2 + 800;
 
 	for (int i = 0; i < _screenHeight; i++) {

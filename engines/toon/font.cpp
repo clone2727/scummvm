@@ -1,24 +1,24 @@
 /* ScummVM - Graphic Adventure Engine
-*
-* ScummVM is the legal property of its developers, whose names
-* are too numerous to list here. Please refer to the COPYRIGHT
-* file distributed with this source distribution.
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*/
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 
 #include "common/debug.h"
 #include "common/rect.h"
@@ -32,6 +32,8 @@ FontRenderer::FontRenderer(ToonEngine *vm) : _vm(vm) {
 	_currentFontColor[1] = 0xc8;
 	_currentFontColor[2] = 0xcb;
 	_currentFontColor[3] = 0xce;
+
+	_currentFont = nullptr;
 }
 
 FontRenderer::~FontRenderer() {
@@ -116,15 +118,15 @@ void FontRenderer::computeSize(const Common::String &origText, int16 *retX, int1
 	const byte *text = (const byte *)origText.c_str();
 	while (*text) {
 		byte curChar = *text;
-		if (curChar < 32) {
-			text++;
-			continue;
-		} else if (curChar == 13) {
+		if (curChar == 13) {
 			totalWidth = MAX(totalWidth, lineWidth);
 			totalHeight += lineHeight;
 			lineHeight = 0;
 			lineWidth = 0;
 			lastLineHeight = 0;
+		} else if (curChar < 32) {
+			text++;
+			continue;
 		} else {
 			curChar = textToFont(curChar);
 			int16 charWidth = _currentFont->getFrameWidth(curChar) - 1;
@@ -195,8 +197,7 @@ void FontRenderer::renderMultiLineText(int16 x, int16 y, const Common::String &o
 	// divide the text in several lines
 	// based on number of characters or size of lines.
 	byte text[1024];
-	strncpy((char *)text, origText.c_str(), 1023);
-	text[1023] = 0;
+	Common::strlcpy((char *)text, origText.c_str(), 1024);
 
 	byte *lines[16];
 	int32 lineSize[16];

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/textconsole.h"
@@ -29,7 +30,7 @@
 namespace GUI {
 
 GuiObject::GuiObject(const Common::String &name)
-	: _x(-1000), _y(-1000), _w(0), _h(0), _name(name), _firstWidget(0) {
+	: _x(-1000), _y(-1000), _w(0), _h(0), _name(name), _firstWidget(0), _textDrawableArea(Common::Rect(0, 0, 0, 0)) {
 	reflowLayout();
 }
 

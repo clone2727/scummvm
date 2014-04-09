@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -316,7 +316,7 @@ int AgiEngine::loadGame(const Common::String &fileName, bool checkId) {
 		return errBadFileOpen;
 	}
 
-	strncpy(_game.id, loadId, 8);
+	Common::strlcpy(_game.id, loadId, 8);
 
 	if (saveVersion >= 5) {
 		char md5[32 + 1];
@@ -678,7 +678,7 @@ int AgiEngine::selectSlot() {
 			switch (key) {
 			case KEY_ENTER:
 				rc = active;
-				strncpy(_game.strings[MAX_STRINGS], desc[i], MAX_STRINGLEN);
+				Common::strlcpy(_game.strings[MAX_STRINGS], desc[i], MAX_STRINGLEN);
 				debugC(8, kDebugLevelMain | kDebugLevelInput, "Button pressed: %d", rc);
 				exitSelectSlot = true;
 				break;

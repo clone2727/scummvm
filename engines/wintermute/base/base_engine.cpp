@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -44,10 +44,11 @@ BaseEngine::BaseEngine() {
 	_classReg = nullptr;
 	_rnd = nullptr;
 	_gameId = "";
+	_language = Common::UNK_LANG;
 }
 
-void BaseEngine::init(Common::Language lang) {
-	_fileManager = new BaseFileManager(lang);
+void BaseEngine::init() {
+	_fileManager = new BaseFileManager(_language);
 	// Don't forget to register your random source
 	_rnd = new Common::RandomSource("Wintermute");
 	_classReg = new SystemClassRegistry();
@@ -60,9 +61,11 @@ BaseEngine::~BaseEngine() {
 	delete _classReg;
 }
 
-void BaseEngine::createInstance(const Common::String &gameid, Common::Language lang) {
-	instance()._gameId = gameid;
-	instance().init(lang);
+void BaseEngine::createInstance(const Common::String &targetName, const Common::String &gameId, Common::Language lang) {
+	instance()._targetName = targetName;
+	instance()._gameId = gameId;
+	instance()._language = lang;
+	instance().init();
 }
 
 void BaseEngine::LOG(bool res, const char *fmt, ...) {
@@ -90,4 +93,36 @@ uint32 BaseEngine::randInt(int from, int to) {
 	return _rnd->getRandomNumberRng(from, to);
 }
 
-} // end of namespace Wintermute
+BaseSoundMgr *BaseEngine::getSoundMgr() {
+	if (instance()._gameRef) {
+		return _gameRef->_soundMgr;
+	} else {
+		return nullptr;
+	}
+}
+
+BaseRenderer *BaseEngine::getRenderer() {
+	if (instance()._gameRef) {
+		return instance()._gameRef->_renderer;
+	} else {
+		return nullptr;
+	}
+}
+
+const Timer *BaseEngine::getTimer() {
+	if (instance()._gameRef) {
+		return instance()._gameRef->getTimer();
+	} else {
+		return nullptr;
+	}
+}
+
+const Timer *BaseEngine::getLiveTimer() {
+	if (instance()._gameRef) {
+		return instance()._gameRef->getLiveTimer();
+	} else {
+		return nullptr;
+	}
+}
+
+} // End of namespace Wintermute

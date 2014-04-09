@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "audio/fmopl.h"
@@ -137,7 +138,7 @@ OPL *Config::create(DriverId driver, OplType type) {
 			return new MAME::OPL();
 		else
 			warning("MAME OPL emulator only supports OPL2 emulation");
-			return 0;
+		return 0;
 
 #ifndef DISABLE_DOSBOX_OPL
 	case kDOSBox:

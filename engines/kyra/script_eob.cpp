@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -216,15 +216,25 @@ bool EoBInfProcessor::preventRest() const {
 
 void EoBInfProcessor::loadState(Common::SeekableSubReadStreamEndian &in, bool origFile) {
 	_preventRest = (_vm->game() == GI_EOB1 && origFile) ? 0 : in.readByte();
-	int numFlags = (_vm->game() == GI_EOB1 && origFile) ? 13 : 18;
+	int numFlags = (_vm->game() == GI_EOB1 && origFile) ? 12 : 18;
 	for (int i = 0; i < numFlags; i++)
 		_flagTable[i] = in.readUint32();
+	if (_vm->game() == GI_EOB1 && origFile)
+		setFlags(in.readUint32());
 }
 
-void EoBInfProcessor::saveState(Common::OutSaveFile *out) {
-	out->writeByte(_preventRest);
-	for (int i = 0; i < 18; i++)
-		out->writeUint32BE(_flagTable[i]);
+void EoBInfProcessor::saveState(Common::OutSaveFile *out, bool origFile) {
+	if (_vm->game() == GI_EOB2 || !origFile)
+		out->writeByte(_preventRest);
+	int numFlags = (_vm->game() == GI_EOB1 && origFile) ? 12 : 18;
+	for (int i = 0; i < numFlags; i++) {
+		if (origFile)
+			out->writeUint32LE(_flagTable[i]);
+		else
+			out->writeUint32BE(_flagTable[i]);
+	}
+	if (_vm->game() == GI_EOB1 && origFile)
+		out->writeUint32LE(_flagTable[17]);
 }
 
 void EoBInfProcessor::reset() {

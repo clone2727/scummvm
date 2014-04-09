@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -71,8 +71,6 @@ static VIDEO_DAC_Q *g_pDAChead;
 
 /** the translucent palette lookup table */
 uint8 g_transPalette[MAX_COLORS];	// used in graphics.cpp
-
-uint8 g_ghostPalette[MAX_COLORS];
 
 static int g_translucentIndex	= 228;
 
@@ -152,7 +150,7 @@ void PalettesToVideoDAC() {
 			// we are using a palette handle
 
 			// get hardware palette pointer
-			pPalette = (const PALETTE *)LockMem(FROM_32(pDACtail->pal.hRGBarray));
+			pPalette = (const PALETTE *)LockMem(pDACtail->pal.hRGBarray);
 
 			// get RGB pointer
 			pColors = pPalette->palRGB;
@@ -170,10 +168,14 @@ void PalettesToVideoDAC() {
 			pal[i * 3 + 2] = TINSEL_GetBValue(pColors[i]);
 		}
 
-		// In DW1 Mac, color 254 should be black, like in the PC version.
-		// We fix it here.
+		// Swap black/white colors in the Mac version.
+		// We need to swap the current black/white values so that screen fade
+		// in/out is done correctly.
 		if (TinselV1Mac) {
-			pal[254 * 3 + 0] = pal[254 * 3 + 1] = pal[254 * 3 + 2] = 0;
+			byte macWhite = pal[  0 * 3 + 0];
+			byte macBlack = pal[254 * 3 + 0];
+			pal[254 * 3 + 0] = pal[254 * 3 + 1] = pal[254 * 3 + 2] = macWhite;
+			pal[  0 * 3 + 0] = pal[  0 * 3 + 1] = pal[  0 * 3 + 2] = macBlack;
 		}
 
 		// update the system palette
@@ -304,7 +306,7 @@ PALQ *AllocPalette(SCNHANDLE hNewPal) {
 	PALETTE *pNewPal;
 
 	// get pointer to new palette
-	pNewPal = (PALETTE *)LockMem(FROM_32(hNewPal));
+	pNewPal = (PALETTE *)LockMem(hNewPal);
 
 	// search all structs in palette allocator - see if palette already allocated
 	for (p = g_palAllocData; p < g_palAllocData + NUM_PALETTES; p++) {
@@ -552,7 +554,8 @@ void CreateTranslucentPalette(SCNHANDLE hPalette) {
 	// leave background color alone
 	g_transPalette[0] = 0;
 
-	for (uint i = 0; i < FROM_32(pPal->numColors); i++) {
+	int32 numColors = FROM_32(pPal->numColors);
+	for (int32 i = 0; i < numColors; i++) {
 		// get the RGB color model values
 		uint8 red   = TINSEL_GetRValue(pPal->palRGB[i]);
 		uint8 green = TINSEL_GetGValue(pPal->palRGB[i]);
@@ -564,39 +567,11 @@ void CreateTranslucentPalette(SCNHANDLE hPalette) {
 
 		// map the Value field to one of the 4 colors reserved for the translucent palette
 		val /= 63;
-		g_transPalette[i + 1] = (uint8)((val == 0) ? 0 : val +
+		byte blackColorIndex = (!TinselV1Mac) ? 0 : 255;
+		g_transPalette[i + 1] = (uint8)((val == 0) ? blackColorIndex : val +
 			(TinselV2 ? TranslucentColor() : COL_HILIGHT) - 1);
 	}
 }
-
-/**
- * Creates the ghost palette
- */
-void CreateGhostPalette(SCNHANDLE hPalette) {
-	// get a pointer to the palette
-	PALETTE *pPal = (PALETTE *)LockMem(hPalette);
-	int i;
-
-	// leave background color alone
-	g_ghostPalette[0] = 0;
-
-	for (i = 0; i < (int)FROM_32(pPal->numColors); i++) {
-		// get the RGB color model values
-		uint8 red   = TINSEL_GetRValue(pPal->palRGB[i]);
-		uint8 green = TINSEL_GetGValue(pPal->palRGB[i]);
-		uint8 blue  = TINSEL_GetBValue(pPal->palRGB[i]);
-
-		// calculate the Value field of the HSV color model
-		unsigned val = (red > green) ? red : green;
-		val = (val > blue) ? val : blue;
-
-		// map the Value field to one of the 4 colors reserved for the translucent palette
-		val /= 64;
-		assert(/*val >= 0 &&*/ val <= 3);
-		g_ghostPalette[i + 1] = (uint8)(val + SysVar(ISV_GHOST_BASE));
-	}
-}
-
 
 /**
  * Returns an adjusted color RGB

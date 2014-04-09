@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -159,7 +159,7 @@ void ANIFile::loadAnimation(Animation &animation, FrameArray &frames,
 		area.left  = area.top    =  0x7FFF;
 		area.right = area.bottom = -0x7FFF;
 
-		for (ChunkList::const_iterator c = frame.begin(); c != frame.end(); c++) {
+		for (ChunkList::const_iterator c = frame.begin(); c != frame.end(); ++c) {
 			uint16 cL, cT, cR, cB;
 
 			if (!getCoordinates(c->layer, c->part, cL, cT, cR, cB))

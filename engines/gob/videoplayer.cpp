@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -734,7 +734,11 @@ bool VideoPlayer::copyFrame(int slot, Surface &dest,
 	if (!surface)
 		return false;
 
-	Surface src(surface->w, surface->h, surface->format.bytesPerPixel, (byte *)surface->pixels);
+	// FIXME? This currently casts away const from the pixel data. However, it
+	// is only used read-only in this case (as far as I can tell). Not casting
+	// the const qualifier away will lead to an additional allocation and copy
+	// of the frame data which is undesirable.
+	Surface src(surface->w, surface->h, surface->format.bytesPerPixel, (byte *)const_cast<void *>(surface->getPixels()));
 
 	dest.blit(src, left, top, left + width - 1, top + height - 1, x, y, transp);
 	return true;

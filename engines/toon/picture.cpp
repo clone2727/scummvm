@@ -1,24 +1,24 @@
 /* ScummVM - Graphic Adventure Engine
-*
-* ScummVM is the legal property of its developers, whose names
-* are too numerous to list here. Please refer to the COPYRIGHT
-* file distributed with this source distribution.
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*/
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 
 #include "toon/picture.h"
 #include "toon/tools.h"
@@ -134,6 +134,11 @@ bool Picture::loadPicture(const Common::String &file) {
 Picture::Picture(ToonEngine *vm) : _vm(vm) {
 	_data = NULL;
 	_palette = NULL;
+
+	_width = 0;
+	_height = 0;
+	_paletteEntries = 0;
+	_useFullPalette = false;
 }
 
 Picture::~Picture() {
@@ -170,7 +175,7 @@ void Picture::drawMask(Graphics::Surface &surface, int16 x, int16 y, int16 dx, i
 	int32 destPitch = surface.pitch;
 	int32 srcPitch = _width;
 	uint8 *c = _data + _width * dy + dx;
-	uint8 *curRow = (uint8 *)surface.pixels + y * destPitch + x;
+	uint8 *curRow = (uint8 *)surface.getBasePtr(x, y);
 
 	for (int16 yy = 0; yy < ry; yy++) {
 		uint8 *curSrc = c;
@@ -205,7 +210,7 @@ void Picture::drawWithRectList(Graphics::Surface& surface, int16 x, int16 y, int
 		int16 fillRy = MIN<int32>(ry, rect.bottom - rect.top);
 
 		uint8 *c = _data + _width * (dy + rect.top) + (dx + rect.left);
-		uint8 *curRow = (uint8 *)surface.pixels + (y + rect.top) * destPitch + (x + rect.left);
+		uint8 *curRow = (uint8 *)surface.getBasePtr(x + rect.left, y + rect.top);
 
 		for (int16 yy = 0; yy < fillRy; yy++) {
 			uint8 *curSrc = c;
@@ -233,7 +238,7 @@ void Picture::draw(Graphics::Surface &surface, int16 x, int16 y, int16 dx, int16
 	int32 destPitch = surface.pitch;
 	int32 srcPitch = _width;
 	uint8 *c = _data + _width * dy + dx;
-	uint8 *curRow = (uint8 *)surface.pixels + y * destPitch + x;
+	uint8 *curRow = (uint8 *)surface.getBasePtr(x, y);
 
 	for (int16 yy = 0; yy < ry; yy++) {
 		uint8 *curSrc = c;
@@ -263,15 +268,14 @@ void Picture::floodFillNotWalkableOnMask(int16 x, int16 y) {
 	// Stack-based floodFill algorithm based on
 	// http://student.kuleuven.be/~m0216922/CG/files/floodfill.cpp
 	Common::Stack<Common::Point> stack;
-	bool spanLeft, spanRight;
 	stack.push(Common::Point(x, y));
 	while (!stack.empty()) {
 		Common::Point pt = stack.pop();
 		while (_data[pt.x + pt.y * _width] & 0x1F && pt.y >= 0)
 			pt.y--;
 		pt.y++;
-		spanLeft = false;
-		spanRight = false;
+		bool spanLeft = false;
+		bool spanRight = false;
 		while (_data[pt.x + pt.y * _width] & 0x1F && pt.y < _height) {
 			_data[pt.x + pt.y * _width] &= 0xE0;
 			if (!spanLeft && pt.x > 0 && _data[pt.x - 1 + pt.y * _width] & 0x1F) {

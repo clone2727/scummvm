@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -51,7 +51,7 @@ class RewindableAudioStream;
 // http://wiki.multimedia.cx/index.php?title=Category:ADPCM_Audio_Codecs
 // Usually, if the audio stream we're trying to play has the FourCC header
 // string intact, it's easy to discern which encoding is used
-enum typesADPCM {
+enum ADPCMType {
 	kADPCMOki,                 // Dialogic/Oki ADPCM (aka VOX)
 	kADPCMMSIma,               // Microsoft IMA ADPCM
 	kADPCMMS,                  // Microsoft ADPCM
@@ -76,9 +76,9 @@ enum typesADPCM {
 RewindableAudioStream *makeADPCMStream(
     Common::SeekableReadStream *stream,
     DisposeAfterUse::Flag disposeAfterUse,
-    uint32 size, typesADPCM type,
-    int rate = 22050,
-    int channels = 2,
+    uint32 size, ADPCMType type,
+    int rate,
+    int channels,
     uint32 blockAlign = 0);
 
 } // End of namespace Audio

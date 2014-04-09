@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/scummsys.h"
@@ -62,7 +63,8 @@ protected:
 
 	// Callback for debug messages, in vprintf() format
 	void printDebug(const char *fmt, va_list list) {
-		debug(4, fmt, list);
+		Common::String out = Common::String::vformat(fmt, list);
+		debug(4, "%s", out.c_str());
 	}
 
 	// Callbacks for reporting various errors and information
@@ -79,15 +81,6 @@ protected:
 	void showLCDMessage(const char *message) {
 		g_system->displayMessageOnOSD(message);
 	}
-	void onDeviceReset() {}
-	void onDeviceReconfig() {}
-	void onNewReverbMode(Bit8u /* mode */) {}
-	void onNewReverbTime(Bit8u /* time */) {}
-	void onNewReverbLevel(Bit8u /* level */) {}
-	void onPartStateChanged(int /* partNum */, bool /* isActive */) {}
-	void onPolyStateChanged(int /* partNum */) {}
-	void onPartialStateChanged(int /* partialNum */, int /* oldPartialPhase */, int /* newPartialPhase */) {}
-	void onProgramChanged(int /* partNum */, char * /* patchName */) {}
 };
 
 }	// end of namespace MT32Emu
@@ -147,15 +140,17 @@ MidiDriver_MT32::MidiDriver_MT32(Audio::Mixer *mixer) : MidiDriver_Emulated(mixe
 	}
 	_reportHandler = NULL;
 	_synth = NULL;
-	// A higher baseFreq reduces the length used in generateSamples(),
-	// and means that the timer callback will be called more often.
-	// That results in more accurate timing.
-	_baseFreq = 10000;
 	// Unfortunately bugs in the emulator cause inaccurate tuning
 	// at rates other than 32KHz, thus we produce data at 32KHz and
 	// rely on Mixer to convert.
 	_outputRate = 32000; //_mixer->getOutputRate();
 	_initializing = false;
+
+	// Initialized in open()
+	_controlROM = NULL;
+	_pcmROM = NULL;
+	_controlFile = NULL;
+	_pcmFile = NULL;
 }
 
 MidiDriver_MT32::~MidiDriver_MT32() {
@@ -204,11 +199,11 @@ int MidiDriver_MT32::open() {
 	_initializing = true;
 	debug(4, _s("Initializing MT-32 Emulator"));
 	_controlFile = new Common::File();
-	if (!_controlFile->open("MT32_CONTROL.ROM"))
-		error("Error opening MT32_CONTROL.ROM");
+	if (!_controlFile->open("MT32_CONTROL.ROM") && !_controlFile->open("CM32L_CONTROL.ROM"))
+		error("Error opening MT32_CONTROL.ROM / CM32L_CONTROL.ROM");
 	_pcmFile = new Common::File();
-	if (!_pcmFile->open("MT32_PCM.ROM"))
-		error("Error opening MT32_PCM.ROM");
+	if (!_pcmFile->open("MT32_PCM.ROM") && !_pcmFile->open("CM32L_PCM.ROM"))
+		error("Error opening MT32_PCM.ROM / CM32L_PCM.ROM");
 	_controlROM = MT32Emu::ROMImage::makeROMImage(_controlFile);
 	_pcmROM = MT32Emu::ROMImage::makeROMImage(_pcmFile);
 	if (!_synth->open(*_controlROM, *_pcmROM))
@@ -227,7 +222,7 @@ int MidiDriver_MT32::open() {
 
 	g_system->updateScreen();
 
-	_mixer->playStream(Audio::Mixer::kSFXSoundType, &_mixerSoundHandle, this, -1, Audio::Mixer::kMaxChannelVolume, 0, DisposeAfterUse::NO, true);
+	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, Audio::Mixer::kMaxChannelVolume, 0, DisposeAfterUse::NO, true);
 
 	return 0;
 }
@@ -457,9 +452,6 @@ bool MT32EmuMusicPlugin::checkDevice(MidiDriver::DeviceHandle) const {
 }
 
 Common::Error MT32EmuMusicPlugin::createInstance(MidiDriver **mididriver, MidiDriver::DeviceHandle) const {
-	if (ConfMan.hasKey("extrapath"))
-		SearchMan.addDirectory("extrapath", ConfMan.get("extrapath"));
-
 	*mididriver = new MidiDriver_MT32(g_system->getMixer());
 
 	return Common::kNoError;

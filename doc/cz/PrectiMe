@@ -1,7 +1,8 @@
 PŘEČTIMĚ ScummVM
 ------------------------------------------------------------------------
 
-Pro více informací, seznamy kompatibility, podrobnosti o dotacích, nejnovější verze, novinky o vývoji a další, prosím navštivte domovskou stránku ScummVM na: http://www.scummvm.org/
+Pro více informací, seznamy kompatibility, podrobnosti o dotacích, nejnovější verze,
+novinky o vývoji a další, prosím navštivte domovskou stránku ScummVM na: http://www.scummvm.org/
 
 
 Obsah:
@@ -31,7 +32,8 @@ Obsah:
  * 3.17 Poznámky k Winnie the Pooh
  * 3.18 Poznámky k Troll's Tale
  * 3.19 Poznámky k Dračí Historie
- * 3.20 Známé problémy
+ * 3.20 Titulky a hlasy souběžně v hrách Sierra SCI 
+ * 3.21 Známé problémy
 4.0) Podporované platformy
 5.0) Spuštění ScummVM
  * 5.1 Možnosti příkazového řádku
@@ -210,10 +212,15 @@ Další hry:
      Discworld 2: Missing Presumed ...!?         [dw2]
      Dragon History                              [draci]
      Drascula: The Vampire Strikes Back          [drascula]
+     Eye of the Beholder                         [eob]
+     Eye of the Beholder II: The Legend of 
+         Darkmoon                                [eob2]
      Flight of the Amazon Queen                  [queen]
      Future Wars                                 [fw]
      Inherit the Earth: Quest for the Orb        [ite]
      Nippon Safes Inc.                           [nippon]
+     Lands of Lore: The Throne of Chaos          [lol]
+     The Journeyman Project: Pegasus Prime       [pegasus]
      The Legend of Kyrandia                      [kyra1]
      The Legend of Kyrandia: The Hand of Fate    [kyra2]
      The Legend of Kyrandia: Malcolm's Revenge   [kyra3]
@@ -315,21 +322,24 @@ V některých případech ScummVM přesto zobrazí obrazovku ochrany proti kop�
 
 ScummVM přeskakuje ochranu v následujících hrách:
 
-  * Maniac Mansion
-  * Zak McKracken and the Alien Mindbenders
-  * Loom (EGA)
-  * The Secret of Monkey Island (VGA)
-  * Monkey Island 2: LeChuck's Revenge
   * Beneath a Steel Sky
       -- potlačeno s laskavým svolením Revolution Software.
+  * Dreamweb
+      -- seznam dostupných příkazů v terminálech ve hře je nyní zobrazen
+         když hráč použije příkaz 'help'
   * Inherit the Earth: Quest for the Orb (Floppy version)
       -- potlačeno s laskavým svolením Wyrmkeep Entertainment,
          protože byla potlačena ve všech vydáních hry na CD.
+  * Loom (EGA DOS)
+  * Maniac Mansion
+  * Monkey Island 2: LeChuck's Revenge
   * Simon the Sorcerer 1 (Floppy version)
   * Simon the Sorcerer 2 (Floppy version)
       -- potlačeno s laskavým svolením from Adventure Soft,
          protože byla potlačena ve všech vydáních hry na CD.
+  * The Secret of Monkey Island (VGA)
   * Waxworks
+  * Zak McKracken and the Alien Mindbenders
 
 
 3.2) Poznámky ke hrám Commodore64:
@@ -546,8 +556,53 @@ Pro tuto hru existuje nepovinný český dabing. Z důvodu velikosti si ho mů�
 Všechny herní soubory a návody můžou být stáhnuty z
 http://www.ucw.cz/draci-historie/index-en.html
 
+3.20) Titulky a hlasy souběžně v hrách Sierra SCI:
+----- --------------------------------------------
+Určité CD verze her Sierra SCI mají textová i hlasová data.
+Některé z nich mají volbu pro přepínání mezi nimi, ale existují případy
+kde není možnost povolit oba najednou. Ve ScummVM je možné si užít tento
+kombinovaný režim, kde jsou zvuk i text zobrazeny současně. Tento režim
+může být povolen v nastavení zvuku ScummVM, ale každá hra se chová jinak
+vzhledem k povolení textu a hlasu.
 
-3.20) Známé Problémy:
+Hry na CD, kde zvuk i titulky lze zobrazit současně:
+  EcoQuest 1 CD
+  Freddy Pharkas CD
+  King's Quest 6 CD
+  Laura Bow 2 CD
+  Leisure Suit Larry 6 CD
+  Space Quest 4 CD
+
+EcoQuest 1 CD:
+    Hlas i text lze zapnout pomocí volby "Mode" v okně nastavení, 
+    nebo přes nastavení zvuku ScummVM.
+
+Freddy Pharkas CD:
+    Ve hře neexistuje možnost pro povolení hlasu a textu. Pro tuto funkci
+    je třeba použít nastavení zvuku ve ScummVM. Některé mluvené dialogy
+    chybí v textech hry.
+
+King's Quest 6 CD
+    Hlas i text lze zapnout pomocí volby "Mode" v okně nastavení (kde je ve
+    ScummVM přidána dodatečná volba "Dual"), nebo pomocí nastavení 
+    zvuku ve ScummVM.
+
+Laura Bow 2 CD
+    Hlas i text lze zapnout pomocí volby "Mode" v okně nastavení (kde je ve
+    ScummVM přidána dodatečná volba "Dual"), nebo pomocí nastavení 
+    zvuku ve ScummVM.
+
+Leisure Suit Larry 6 CD
+    Ve hře lze povolit buď hlas, nebo hlas a text. Neexistuje možnost pro
+    povolení textu. Pouze nastavení zvuku ve ScummVM lze použít pro 
+    zobrazení jen titulků.
+
+Space Quest 4 CD:
+    Hlas a text lze povolit pomocí tlačítka "Display Mode" v
+    nastavení hry, nebo pomocí nastavení zvuku ve ScummVM.
+    
+
+3.21) Známé Problémy:
 ----- ---------------
 Toto vydání má následující známé problémy. Není třeba je ohlašovat, i když záplaty pro jejich opravu jsou vítány. Pokud objevíte chybu, která není zde v seznamu, ani není v seznamu kompatibility na internetové stránce, prohlédněte si, prosím, část o hlášení chyb.
 
@@ -1513,7 +1568,7 @@ Jsou rozpoznávána následující klíčová slova:
     output_rate        číslo    Který výstupní vzorkovací kmitočet použít v Hz. Rozumné hodnoty jsou 11025, 22050 a 44100.
     alsa_port          řetězec  Který port použít pro výstup při použití hudebního ovladače ALSA.
     music_volume       číslo    Nastavení hlasitosti hudby (0-255)
-    multi_midi         boolean  Pokud true, je povoleno smíšený AdLib a přirozený MIDI.
+    multi_midi         boolean  Pokud true, jsou povoleny smíšený AdLib a původní MIDI.
     soundfont          řetězec  Který SoundFont použít pro přehrávání MIDI. (Podporováno pouze některými ovladači MIDI.)
     native_mt32        boolean  Pokud true, zakáže emulaci GM a předpokládá, že je dostupný pravý Roland MT-32.
     enable_gs          boolean  Pokud true, povolí funkce určené pro Roland GS ke zlepšení emulace GM. Pokud je native_mt32 také nastaven na true, zařízení GS zvolí mapu MT-32 pro přehrávání správných instrumentů.
@@ -1548,6 +1603,9 @@ Flight of the Amazon Queen přidává následující nestandardní klíčová sl
 
     music_mute         boolean  Pokud true, hudba je ztlumena
     sfx_mute           boolean  Pokud true, zvukové efekty jsou ztlumeny
+    
+Hopkins FBI přidává následující nestandardní klíčové slovo:
+    enable_gore        boolean  Pokud true, povolí některé nepivnné krvavé scény ve hře
 
 Jones in the Fast Lane přidává následující nestandardní klíčové slovo:
 
@@ -1570,20 +1628,44 @@ Simon the Sorcerer 1 a 2 přidává následující nestandardní klíčová slov
 
     music_mute         boolean  Pokud true, hudba je ztlumena
     sfx_mute           boolean  Pokud true, zvukové efekty jsou ztlumeny
+    
+Soltys přidává následující nestandardní klíčové slovo:
+    enable_color_blind bool     Pokud true, jsou původní barvy nahrazeny odstíny šedi
 
 The Legend of Kyrandia přidává následující nestandardní klíčové slovo:
 
     walkspeed          celé číslo      Rychlost chůze (0-4)
+
+The Legend of Kyrandia: The Hand of Fate přidává následující nestandardní klíčové slovo:
+
+    walkspeed          číslo    Rychlost chůze (3 nebo 5, což znamená
+                                rychle nebo pomalu)
     
 The Legend of Kyrandia: Malcolm's Revenge přidává následující nestandardní klíčová slova:
 
+    walkspeed          číslo    Rychlost chůze (3 nebo 5, což znamená
+                                rychle nebo pomalu)
     studio_audience    boolean  Pokud true, je slyšet potlesk a smích kdykoliv Malcolm provede něco vtipného
     skip_support       boolean  Pokud true, hráč může přeskakovat text a scény hry
     helium_mode        boolean  Pokud true, lidé znějí tak, jakoby se nadýchali hélia
+    
+The Neverhood přidává následující nestandardní klíčová slova:
+
+    originalsaveload   boolean  Pokud true, jsou použity původní obrazovky pro 
+                                načítání/ukládání místo obrazovek ScummVM
+    skiphallofrecordsscenes     boolean
+                                Pokud true, umožní hráči přeskočit
+                                obrazovky v Síni záznamů
+    scalemakingofvideos boolean Pokud true, je změněno rozlišení dokumentu o
+                                vytváření hry tak, aby zaplnilo celou obrazovku
 
 The 7th Guest přidává následující nestandardní klíčové slovo:
 
-    t7g_speed          řetězec   Rychlost přehrávání videa (normal - normální, tweaked - upravená, im_an_ios - jsem na ios)
+    fast_movie_speed   boolean  Pokud true, jsou videa přehrávána při zvýšené
+                                rychlosti, stejné jako ve verzi pro iOS.
+                                Videa bez zvuku jsou stále přehrávána při
+                                normální rychlosti, aby nedošlo k desynchronizaci
+                                hudby
 
 8.2) Vlastní herní volby, které mohou být přepínány pomoci grafického 
 ---- ----------------------------------------------------------------
@@ -1662,6 +1744,7 @@ Hodně Štěstí a Šťastné Adventurování!
 Tým ScummVM.
 http://www.scummvm.org/
 ------------------------------------------------------------------------
+
 
 
 

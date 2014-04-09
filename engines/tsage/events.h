@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -90,7 +90,7 @@ enum CursorType {
 	R2_ATTRACTOR_UNIT = 5, R2_SENSOR_PROBE = 6, R2_SONIC_STUNNER = 7,
 	R2_CABLE_HARNESS = 8, R2_COM_SCANNER = 9, R2_SPENT_POWER_CAPSULE = 10,
 	R2_CHARGED_POWER_CAPSULE = 11, R2_AEROSOL = 12, R2_REMOTE_CONTROL = 13,
-	R2_OPTICAL_FIBRE = 14, R2_CLAMP = 15, R2_ATTRACTOR_CABLE_HARNESS = 16,
+	R2_OPTICAL_FIBER = 14, R2_CLAMP = 15, R2_ATTRACTOR_CABLE_HARNESS = 16,
 	R2_FUEL_CELL = 17, R2_GYROSCOPE = 18, R2_AIRBAG = 19, R2_REBREATHER_TANK = 20,
 	R2_RESERVE_REBREATHER_TANK = 21, R2_GUIDANCE_MODULE = 22, R2_THRUSTER_VALVE = 23,
 	R2_BALLOON_BACKPACK = 24, R2_RADAR_MECHANISM = 25, R2_JOYSTICK = 26,
@@ -108,6 +108,7 @@ enum CursorType {
 	EXITCURSOR_NE = 0x800D, EXITCURSOR_SE = 0x800E, EXITCURSOR_SW = 0x800F, EXITCURSOR_NW = 0x8010,
 	SHADECURSOR_UP = 0x8011, SHADECURSOR_DOWN = 0x8012, SHADECURSOR_HAND = 0x8013,
 	R2_CURSOR_20 = 0x8014, R2_CURSOR_21 = 0x8015, R2_CURSOR_22 = 0x8016, R2_CURSOR_23 = 0x8017,
+	R2_CURSOR_ROPE = 0x8025,
 
 	// Cursors
 	CURSOR_WALK = 0x100, CURSOR_LOOK = 0x200, CURSOR_700 = 700, CURSOR_USE = 0x400, CURSOR_TALK = 0x800,

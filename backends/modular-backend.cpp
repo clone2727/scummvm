@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -26,6 +26,7 @@
 
 #include "backends/graphics/graphics.h"
 #include "backends/mutex/mutex.h"
+#include "gui/EventRecorder.h"
 
 #include "audio/mixer.h"
 #include "graphics/pixelformat.h"
@@ -52,7 +53,7 @@ bool ModularBackend::hasFeature(Feature f) {
 }
 
 void ModularBackend::setFeatureState(Feature f, bool enable) {
-	return _graphicsManager->setFeatureState(f, enable);
+	_graphicsManager->setFeatureState(f, enable);
 }
 
 bool ModularBackend::getFeatureState(Feature f) {
@@ -141,7 +142,15 @@ void ModularBackend::fillScreen(uint32 col) {
 }
 
 void ModularBackend::updateScreen() {
+#ifdef ENABLE_EVENTRECORDER
+	g_eventRec.preDrawOverlayGui();
+#endif
+
 	_graphicsManager->updateScreen();
+
+#ifdef ENABLE_EVENTRECORDER
+	g_eventRec.postDrawOverlayGui();
+#endif
 }
 
 void ModularBackend::setShakePos(int shakeOffset) {

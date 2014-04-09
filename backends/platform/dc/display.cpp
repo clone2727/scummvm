@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -711,11 +711,7 @@ Graphics::Surface *OSystem_Dreamcast::lockScreen()
   if (!screen)
     return 0;
 
-  _framebuffer.pixels = screen;
-  _framebuffer.w = _screen_w;
-  _framebuffer.h = _screen_h;
-  _framebuffer.pitch = SCREEN_W*2;
-  _framebuffer.format = screenFormats[_screenFormat];
+  _framebuffer.init(_screen_w, _screen_h, SCREEN_W*2, screen, screenFormats[_screenFormat]);
 
   return &_framebuffer;
 }

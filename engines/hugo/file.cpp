@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -34,10 +34,11 @@
 #include "common/config-manager.h"
 
 #include "graphics/surface.h"
-#include "graphics/decoders/pcx.h"
 #include "graphics/thumbnail.h"
 
 #include "gui/saveload.h"
+
+#include "image/pcx.h"
 
 #include "hugo/hugo.h"
 #include "hugo/file.h"
@@ -59,6 +60,11 @@ static const int s_bootCypherLen = sizeof(s_bootCypher) - 1;
 FileManager::FileManager(HugoEngine *vm) : _vm(vm) {
 	_hasReadHeader = false;
 	_firstUIFFl = true;
+
+	_UIFHeader->_size = 0;
+	_UIFHeader->_offset = 0;
+	_soundHdr->_size = 0;
+	_soundHdr->_offset = 0;
 }
 
 FileManager::~FileManager() {
@@ -105,7 +111,7 @@ Seq *FileManager::readPCX(Common::SeekableReadStream &f, Seq *seqPtr, byte *imag
 			error("Insufficient memory to run game.");
 	}
 
-	Graphics::PCXDecoder pcx;
+	Image::PCXDecoder pcx;
 	if (!pcx.loadStream(f))
 		error("Error while reading PCX image");
 
@@ -241,13 +247,13 @@ SoundPtr FileManager::getSound(const int16 sound, uint16 *size) {
 
 	// No more to do if SILENCE (called for cleanup purposes)
 	if (sound == _vm->_soundSilence)
-		return 0;
+		return nullptr;
 
 	// Open sounds file
 	Common::File fp;                                // Handle to SOUND_FILE
 	if (!fp.open(getSoundFilename())) {
 		warning("Hugo Error: File not found %s", getSoundFilename());
-		return 0;
+		return nullptr;
 	}
 
 	if (!_hasReadHeader) {
@@ -491,7 +497,7 @@ void FileManager::readBootFile() {
 			memset(_vm->_boot._distrib, '\0', sizeof(_vm->_boot._distrib));
 			_vm->_boot._registered = kRegFreeware;
 			return;
-		} else if (_vm->getPlatform() == Common::kPlatformPC) {
+		} else if (_vm->getPlatform() == Common::kPlatformDOS) {
 			warning("readBootFile - Skipping as H2 and H3 Dos may be shareware");
 			memset(_vm->_boot._distrib, '\0', sizeof(_vm->_boot._distrib));
 			_vm->_boot._registered = kRegShareware;
@@ -514,6 +520,7 @@ void FileManager::readBootFile() {
 	ofp.read(_vm->_boot._pbswitch, sizeof(_vm->_boot._pbswitch));
 	ofp.read(_vm->_boot._distrib, sizeof(_vm->_boot._distrib));
 	_vm->_boot._exitLen = ofp.readUint16LE();
+	ofp.close();
 
 	byte *p = (byte *)&_vm->_boot;
 
@@ -522,7 +529,6 @@ void FileManager::readBootFile() {
 		checksum ^= p[i];
 		p[i] ^= s_bootCypher[i % s_bootCypherLen];
 	}
-	ofp.close();
 
 	if (checksum) {
 		Utils::notifyBox(Common::String::format("Corrupted startup file '%s'", getBootFilename()));

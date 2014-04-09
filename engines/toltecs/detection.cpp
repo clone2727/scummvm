@@ -8,16 +8,15 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  *
  */
 
@@ -66,7 +65,21 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "05472037e9cfde146e953c434e74f0f4", 337643527),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
+			GUIO1(GUIO_NONE)
+		},
+	},
+
+	{
+		// 3 Skulls of the Toltecs English version (alternate)
+		// From bug #3614933
+		{
+			"toltecs",
+			0,
+			AD_ENTRY1s("WESTERN", "a9c9cfef9d05b8f7a5573b626fa4ea87", 337643527),
+			Common::EN_ANY,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -79,7 +92,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "ba1742d3193b68ceb9434e2ab7a09a9b", 391462783),
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -92,7 +105,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "1a3292bad8e0bb5701800c73531dd75e", 345176617),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -105,7 +118,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "4fb845635cbdac732453fe23be350df9", 327269545),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -118,7 +131,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "479f468beccc1b0ce5873ec523d1380e", 308391018),
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -132,7 +145,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "69a5572e75409d8c6230b787faa353af", 337647960),
 			Common::HU_HUN,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NONE)
 		},
@@ -145,7 +158,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "53a0abd1c0bc5cad8ba18f0e56877705", 46241833),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO1(GUIO_NONE)
 		},
@@ -158,7 +171,7 @@ static const ToltecsGameDescription gameDescriptions[] = {
 			0,
 			AD_ENTRY1s("WESTERN", "1c85e82712d24f1d5c1ea2a66ddd75c2", 47730038),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO1(GUIO_NONE)
 		},
@@ -242,7 +255,7 @@ SaveStateList ToltecsMetaEngine::listSaves(const char *target) const {
 	Common::sort(filenames.begin(), filenames.end());	// Sort (hopefully ensuring we are sorted numerically..)
 
 	SaveStateList saveList;
-	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); file++) {
+	for (Common::StringArray::const_iterator file = filenames.begin(); file != filenames.end(); ++file) {
 		// Obtain the last 3 digits of the filename, since they correspond to the save slot
 		int slotNum = atoi(file->c_str() + file->size() - 3);
 

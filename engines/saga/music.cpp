@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -175,6 +175,10 @@ Music::Music(SagaEngine *vm, Audio::Mixer *mixer) : _vm(vm), _mixer(mixer) {
 			_musicContext = _vm->_resource->getContext(GAME_MUSICFILE_FM);
 		}
 	}
+
+	_trackNumber = 0;
+	_targetVolume = 0;
+	_currentVolumePercent = 0;
 
 	_digitalMusic = false;
 }
@@ -360,7 +364,7 @@ void Music::play(uint32 resourceId, MusicFlags flags) {
 
 	// Load MIDI/XMI resource data
 	if (_vm->getGameId() == GID_IHNM && _vm->isMacResources()) {
-		// Load the external music file for Mac IHNM		
+		// Load the external music file for Mac IHNM
 		_player->playQuickTime(Common::String::format("Music/Music%02x", resourceId), flags & MUSIC_LOOP);
 	} else {
 		if (_currentMusicBuffer == &_musicBuffer[1]) {

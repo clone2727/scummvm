@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -59,30 +59,30 @@ namespace Wintermute {
 class BaseParser {
 public:
 	struct TokenDesc {
-		int32   id;
+		int32 id;
 		const char *token;
 	};
 
 public:
-	int scanStr(const char *in, const char *format, ...);
+	int32 scanStr(const char *in, const char *format, ...);
 	int32 getCommand(char **buf, const TokenDesc *tokens, char **params);
 	BaseParser();
 	virtual ~BaseParser();
 private:
 	char *getLastOffender();
 	void skipToken(char **buf, char *tok, char *msg = nullptr);
-	int getTokenInt(char **buf);
+	int32 getTokenInt(char **buf);
 	float getTokenFloat(char **buf);
 	Common::String getToken(char **buf);
 	char *getAssignmentText(char **buf);
 	char *getSubText(char **buf, char open, char close);
 	void skipCharacters(char **buf, const char *toSkip);
 	int32 getObject(char **buf, const TokenDesc *tokens, char **name, char **data);
-	int _parserLine;
+	int32 _parserLine;
 	char _lastOffender[255];
 	char *_whiteSpace;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

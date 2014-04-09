@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -213,7 +213,10 @@ void AGOSEngine_Simon2::clearVideoWindow(uint16 num, uint16 color) {
 	uint16 xoffs = vlut[0] * 16;
 	uint16 yoffs = vlut[1];
 	uint16 dstWidth = _videoWindows[18] * 16;
-	byte *dst = (byte *)_window4BackScn->pixels + xoffs + yoffs * dstWidth;
+	// TODO: Is there any known connection between dstWidth and the pitch
+	// of the _window4BackScn Surface? If so, we might be able to pass
+	// yoffs as proper y parameter to getBasePtr.
+	byte *dst = (byte *)_window4BackScn->getBasePtr(xoffs, 0) + yoffs * dstWidth;
 
 	setMoveRect(0, 0, vlut[2] * 16, vlut[3]);
 

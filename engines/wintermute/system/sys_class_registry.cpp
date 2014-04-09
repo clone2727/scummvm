@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -234,7 +234,7 @@ bool SystemClassRegistry::loadTable(BaseGame *gameRef, BasePersistenceManager *p
 	uint32 numClasses = persistMgr->getDWORD();
 
 	for (uint32 i = 0; i < numClasses; i++) {
-		gameRef->_renderer->setIndicatorVal((int)(50.0f / (float)((float)numClasses / (float)i)));
+		gameRef->_renderer->setIndicatorVal((int)(50.0f / (float)((float)numClasses / (float)(i + 1))));
 
 		Common::String className = persistMgr->getStringObj();
 		NameMap::iterator mapIt = _nameMap.find(className);
@@ -286,7 +286,7 @@ bool SystemClassRegistry::loadInstances(BaseGame *gameRef, BasePersistenceManage
 
 	for (int i = 0; i < numInstances; i++) {
 		if (i % 20 == 0) {
-			gameRef->_renderer->setIndicatorVal((int)(50.0f + 50.0f / (float)((float)numInstances / (float)i)));
+			gameRef->_renderer->setIndicatorVal((int)(50.0f + 50.0f / (float)((float)numInstances / (float)(i + 1))));
 		}
 
 		checkHeader("<INSTANCE_HEAD>", persistMgr);
@@ -333,4 +333,4 @@ void SystemClassRegistry::dumpClasses(Common::WriteStream *stream) {
 	}
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

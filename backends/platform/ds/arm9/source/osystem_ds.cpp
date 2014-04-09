@@ -16,7 +16,8 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 
@@ -296,7 +297,7 @@ void OSystem_DS::copyRectToScreen(const void *buf, int pitch, int x, int y, int 
 	// to save a few pennies/euro cents on the hardware.
 
 	if (_frameBufferExists) {
-		bg = (u16 *)_framebuffer.pixels;
+		bg = (u16 *)_framebuffer.getPixels();
 		stride = _framebuffer.pitch;
 	} else {
 		bg = (u16 *)DS::get8BitBackBuffer();
@@ -455,7 +456,7 @@ void OSystem_DS::copyRectToScreen(const void *buf, int pitch, int x, int y, int 
 
 				dmaCopyHalfWords(3, src, dest1, w);
 
-				if ((!_frameBufferExists) || (buf == _framebuffer.pixels)) {
+				if ((!_frameBufferExists) || (buf == _framebuffer.getPixels())) {
 					dmaCopyHalfWords(2, src, dest2, w);
 				}
 
@@ -476,7 +477,7 @@ void OSystem_DS::updateScreen() {
 		_frameBufferExists = false;
 
 		// Copy temp framebuffer back to screen
-		copyRectToScreen((byte *)_framebuffer.pixels, _framebuffer.pitch, 0, 0, _framebuffer.w, _framebuffer.h);
+		copyRectToScreen((byte *)_framebuffer.getPixels(), _framebuffer.pitch, 0, 0, _framebuffer.w, _framebuffer.h);
 	}
 
 	DS::displayMode16BitFlipBuffer();
@@ -656,7 +657,7 @@ bool OSystem_DS::pollEvent(Common::Event &event) {
 	return false;
 }
 
-uint32 OSystem_DS::getMillis() {
+uint32 OSystem_DS::getMillis(bool skipRecord) {
 	return DS::getMillis();
 }
 
@@ -755,11 +756,8 @@ Graphics::Surface *OSystem_DS::createTempFrameBuffer() {
 
 	if (DS::isCpuScalerEnabled()) {
 
-		_framebuffer.pixels = DS::getScalerBuffer();
-		_framebuffer.w = DS::getGameWidth();
-		_framebuffer.h = DS::getGameHeight();
-		_framebuffer.pitch = DS::getGameWidth();
-		_framebuffer.format = Graphics::PixelFormat::createFormatCLUT8();
+		_framebuffer.init(DS::getGameWidth(), DS::getGameHeight(), DS::getGameWidth(),
+		                  DS::getScalerBuffer(), Graphics::PixelFormat::createFormatCLUT8());
 
 	} else {
 
@@ -780,11 +778,7 @@ Graphics::Surface *OSystem_DS::createTempFrameBuffer() {
 			dmaCopyHalfWords(3, srcLine, destLine, width);
 		}
 
-		_framebuffer.pixels = dest;
-		_framebuffer.w = width;
-		_framebuffer.h = height;
-		_framebuffer.pitch = width;
-		_framebuffer.format = Graphics::PixelFormat::createFormatCLUT8();
+		_framebuffer.init(width, height, width, dest, Graphics::PixelFormat::createFormatCLUT8());
 
 	}
 
@@ -798,8 +792,8 @@ Graphics::Surface *OSystem_DS::createTempFrameBuffer() {
 	for (int y = 0; y <  DS::getGameHeight(); y++) {
 		DC_FlushRange(image + (y * imageStrideInWords), DS::getGameWidth());
 		for (int x = 0; x < DS::getGameWidth() >> 1; x++) {
-			*(((u16 *) (_framebuffer.pixels)) + y * (DS::getGameWidth() >> 1) + x) = image[(y * imageStrideInWords) + x];
-//			*(((u16 *) (surf->pixels)) + y * (DS::getGameWidth() >> 1) + x) = image[y * imageStrideInWords + x];
+			*(((u16 *) (_framebuffer.getPixels())) + y * (DS::getGameWidth() >> 1) + x) = image[(y * imageStrideInWords) + x];
+//			*(((u16 *) (surf->getPixels())) + y * (DS::getGameWidth() >> 1) + x) = image[y * imageStrideInWords + x];
 		}
 	}*/
 

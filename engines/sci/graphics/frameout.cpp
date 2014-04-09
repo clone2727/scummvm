@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -532,7 +532,7 @@ void GfxFrameout::showVideo() {
 		if (videoDecoder->needsUpdate()) {
 			const Graphics::Surface *frame = videoDecoder->decodeNextFrame();
 			if (frame) {
-				g_system->copyRectToScreen(frame->pixels, frame->pitch, x, y, frame->w, frame->h);
+				g_system->copyRectToScreen(frame->getPixels(), frame->pitch, x, y, frame->w, frame->h);
 
 				if (videoDecoder->hasDirtyPalette())
 					g_system->getPaletteManager()->setPalette(videoDecoder->getPalette(), 0, 256);
@@ -745,9 +745,10 @@ void GfxFrameout::kernelFrameout() {
 					// Process global scaling, if needed.
 					// TODO: Seems like SCI32 always processes global scaling for scaled objects
 					// TODO: We can only process symmetrical scaling for now (i.e. same value for scaleX/scaleY)
-					if ((itemEntry->scaleSignal & kScaleSignalDoScaling32) && 
+					if ((itemEntry->scaleSignal & kScaleSignalDoScaling32) &&
 					   !(itemEntry->scaleSignal & kScaleSignalDisableGlobalScaling32) &&
-					    (itemEntry->scaleX == itemEntry->scaleY))
+					    (itemEntry->scaleX == itemEntry->scaleY) &&
+						itemEntry->scaleX != 128)
 						applyGlobalScaling(itemEntry, it->planeRect, view->getHeight(itemEntry->loopNo, itemEntry->celNo));
 
 					if ((itemEntry->scaleX == 128) && (itemEntry->scaleY == 128))
@@ -762,14 +763,6 @@ void GfxFrameout::kernelFrameout() {
 					// Translate back to actual coordinate within scrollable plane
 					nsRect.translate(it->planeOffsetX, it->planeOffsetY);
 
-					if (view && view->isSci2Hires()) {
-						view->adjustBackUpscaledCoordinates(nsRect.top, nsRect.left);
-						view->adjustBackUpscaledCoordinates(nsRect.bottom, nsRect.right);
-					} else if (getSciVersion() >= SCI_VERSION_2_1) {
-						_coordAdjuster->fromDisplayToScript(nsRect.top, nsRect.left);
-						_coordAdjuster->fromDisplayToScript(nsRect.bottom, nsRect.right);
-					}
-
 					if (g_sci->getGameId() == GID_PHANTASMAGORIA2) {
 						// HACK: Some (?) objects in Phantasmagoria 2 have no NS rect. Skip them for now.
 						// TODO: Remove once we figure out how Phantasmagoria 2 draws objects on screen.
@@ -777,12 +770,23 @@ void GfxFrameout::kernelFrameout() {
 							continue;
 					}
 
-					// FIXME: We should not update the object's NS rect here.
-					// This breaks the sliders in the control panel screen in
-					// QFG4, but disabling it does not change any functionality,
-					// as the object(s) will be drawn on screen with the
-					// calculated coordinates.
-					//g_sci->_gfxCompare->setNSRect(itemEntry->object, nsRect);
+					if (view && view->isSci2Hires()) {
+						view->adjustBackUpscaledCoordinates(nsRect.top, nsRect.left);
+						view->adjustBackUpscaledCoordinates(nsRect.bottom, nsRect.right);
+						g_sci->_gfxCompare->setNSRect(itemEntry->object, nsRect);
+					} else if (getSciVersion() >= SCI_VERSION_2_1 && _resMan->detectHires()) {
+						_coordAdjuster->fromDisplayToScript(nsRect.top, nsRect.left);
+						_coordAdjuster->fromDisplayToScript(nsRect.bottom, nsRect.right);
+						g_sci->_gfxCompare->setNSRect(itemEntry->object, nsRect);
+					}
+
+					// TODO: For some reason, the top left nsRect coordinates get
+					// swapped in the GK1 inventory screen, investigate why.
+					// HACK: Fix the coordinates by explicitly setting them here.
+					Common::Rect objNSRect = g_sci->_gfxCompare->getNSRect(itemEntry->object);
+					if (objNSRect.top == nsRect.left && objNSRect.left == nsRect.top && nsRect.top != 0 && nsRect.left != 0) {
+						g_sci->_gfxCompare->setNSRect(itemEntry->object, nsRect);
+					}
 				}
 
 				// Don't attempt to draw sprites that are outside the visible

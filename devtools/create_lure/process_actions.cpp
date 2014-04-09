@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -149,6 +149,7 @@ uint16 process_action_sequence_entry(int supportIndex, byte *data, uint16 remain
 		if (startOffset == 0x7328) { startOffset = 0x72ae; maxOffset = 0x7382; }
 		if (startOffset == 0x702f) { startOffset = 0x6f3d; maxOffset = 0x70a3; }
 		if (startOffset == 0x7886) { startOffset = 0x742a; maxOffset = 0x7896; }
+		break;
 	case DE_DEU:
 		if (startOffset == 0x7edb) { startOffset = 0x7ead; maxOffset = 0x7f05; }
 		if (startOffset == 0x7ab8) { startOffset = 0x796c; maxOffset = 0x7ae2; }

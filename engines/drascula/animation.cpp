@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -426,7 +426,7 @@ void DrasculaEngine::animation_2_1() {
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
 
-		roomNumber = 16;
+		_roomNumber = 16;
 
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
@@ -506,13 +506,13 @@ void DrasculaEngine::animation_2_1() {
 		trackProtagonist = 3;
 		// The room number was originally changed here to "no_bj.alg",
 		// which doesn't exist. In reality, this was just a hack to
-		// set the room number to a non-existant one, so that BJ does
+		// set the room number to a non-existent one, so that BJ does
 		// not appear again when the room is refreshed after the
 		// animation where Count Drascula abducts her. We set the
 		// room number to -1 for the same purpose
 		// Also check animation_9_6(), where the same hack was used by
 		// the original
-		roomNumber = -1;
+		_roomNumber = -1;
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
 		pause(8);
@@ -734,7 +734,7 @@ void DrasculaEngine::animation_14_2() {
 
 void DrasculaEngine::asco() {
 	loadPic(roomDisk, drawSurface3);
-	loadPic(roomNumber, bgSurface, HALF_PAL);
+	loadPic(_roomNumber, bgSurface, HALF_PAL);
 	black();
 	updateRoom();
 	updateScreen();
@@ -1645,23 +1645,23 @@ void DrasculaEngine::animation_9_6() {
 
 	int v_cd;
 
-	animate("fin.bin", 14);
+	(void)animate("fin.bin", 14);
 	playMusic(13);
 	flags[5] = 1;
-	animate("drf.bin", 16);
+	(void)animate("drf.bin", 16);
 	fadeToBlack(0);
 	clearRoom();
 	curX = -1;
 	objExit = 108;
 	enterRoom(59);
 	// The room number was originally changed here to "nada.alg",
-	// which is a non-existant file. In reality, this was just a
-	// hack to set the room number to a non-existant one, so that
+	// which is a non-existent file. In reality, this was just a
+	// hack to set the room number to a non-existent one, so that
 	// room sprites do not appear again when the room is refreshed.
 	// We set the room number to -1 for the same purpose.
 	// Also check animation_2_1(), where the same hack was used
 	// by the original
-	roomNumber = -2;
+	_roomNumber = -2;
 	loadPic("nota2.alg", bgSurface, HALF_PAL);
 	black();
 	trackProtagonist = 1;
@@ -2176,9 +2176,9 @@ void DrasculaEngine::animation_5_4(){
 void DrasculaEngine::animation_6_4() {
 	debug(4, "animation_6_4()");
 
-	int prevRoom = roomNumber;
+	int prevRoom = _roomNumber;
 
-	roomNumber = 26;
+	_roomNumber = 26;
 	clearRoom();
 	loadPic(26, bgSurface, HALF_PAL);
 	loadPic("aux26.alg", drawSurface3);
@@ -2191,11 +2191,11 @@ void DrasculaEngine::animation_6_4() {
 	updateScreen();
 	pause(40);
 	talk_igor(26, kIgorFront);
-	roomNumber = prevRoom;
+	_roomNumber = prevRoom;
 	clearRoom();
 	loadPic(96, frontSurface);
 	loadPic(roomDisk, drawSurface3);
-	loadPic(roomNumber, bgSurface, HALF_PAL);
+	loadPic(_roomNumber, bgSurface, HALF_PAL);
 	selectVerb(kVerbNone);
 	updateRoom();
 }
@@ -2224,7 +2224,7 @@ void DrasculaEngine::activatePendulum() {
 
 	flags[1] = 2;
 	hare_se_ve = 0;
-	roomNumber = 102;
+	_roomNumber = 102;
 	loadPic(102, bgSurface, HALF_PAL);
 	loadPic("an_p1.alg", drawSurface3);
 	loadPic("an_p2.alg", extraSurface);

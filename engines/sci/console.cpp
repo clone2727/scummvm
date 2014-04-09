@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -284,6 +284,7 @@ void Console::postEnter() {
 #endif
 
 			VideoState emptyState;
+			emptyState.reset();
 			emptyState.fileName = _videoFile;
 			emptyState.flags = kDoubled;	// always allow the videos to be double sized
 			playVideo(videoDecoder, emptyState);
@@ -2226,6 +2227,7 @@ bool Console::cmdIsSample(int argc, const char **argv) {
 	DebugPrintf("Sample size: %d, sample rate: %d, channels: %d, digital channel number: %d\n",
 			track->digitalSampleSize, track->digitalSampleRate, track->channelCount, track->digitalChannelNr);
 
+	delete soundRes;
 	return true;
 }
 
@@ -2349,8 +2351,7 @@ bool Console::cmdVMVarlist(int argc, const char **argv) {
 
 	for (int i = 0; i < 4; i++) {
 		DebugPrintf("%s vars at %04x:%04x ", varnames[i], PRINT_REG(make_reg(s->variablesSegment[i], s->variables[i] - s->variablesBase[i])));
-		if (s->variablesMax)
-			DebugPrintf("  total %d", s->variablesMax[i]);
+		DebugPrintf("  total %d", s->variablesMax[i]);
 		DebugPrintf("\n");
 	}
 
@@ -2407,7 +2408,7 @@ bool Console::cmdVMVars(int argc, const char **argv) {
 			return true;
 		}
 
-		if ((s->variablesMax) && (s->variablesMax[varType] <= varIndex)) {
+		if (s->variablesMax[varType] <= varIndex) {
 			DebugPrintf("Maximum variable number for this type is %d (0x%x)\n", s->variablesMax[varType], s->variablesMax[varType]);
 			return true;
 		}
@@ -2507,6 +2508,7 @@ bool Console::cmdValueType(int argc, const char **argv) {
 		break;
 	case SIG_TYPE_INTEGER:
 		DebugPrintf("Integer");
+		break;
 	case SIG_TYPE_INTEGER | SIG_TYPE_NULL:
 		DebugPrintf("Null");
 		break;
@@ -2978,7 +2980,7 @@ void Console::printKernelCallsFound(int kernelFuncNum, bool showFoundScripts) {
 	Script *script;
 	// Create a custom segment manager here, so that the game's segment
 	// manager won't be affected by loading and unloading scripts here.
-	SegManager *customSegMan = new SegManager(_engine->getResMan());
+	SegManager *customSegMan = new SegManager(_engine->getResMan(), _engine->getScriptPatcher());
 
 	Common::List<ResourceId>::iterator itr;
 	for (itr = resources.begin(); itr != resources.end(); ++itr) {
@@ -3838,10 +3840,15 @@ static int parse_reg_t(EngineState *s, const char *str, reg_t *dest, bool mayBeV
 			const char *tmp = Common::find(str_objname.begin(), str_objname.end(), '.');
 			if (tmp != str_objname.end()) {
 				index = strtol(tmp + 1, &endptr, 16);
-				if (*endptr)
-					return -1;
-				// Chop off the index
-				str_objname = Common::String(str_objname.c_str(), tmp);
+				if (*endptr) {
+					// The characters after the dot do not represent an index.
+					// This can happen if an object contains a dot in its name,
+					// like 'dominoes.opt' in Hoyle 3.
+					index = -1;
+				} else {
+					// Valid index found, chop it off
+					str_objname = Common::String(str_objname.c_str(), tmp);
+				}
 			}
 
 			// Replace all underscores in the name with spaces

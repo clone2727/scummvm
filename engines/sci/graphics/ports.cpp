@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -116,7 +116,7 @@ void GfxPorts::init(bool usesOldGfxFunctions, GfxPaint16 *paint16, GfxText16 *te
 	setPort(_wmgrPort);
 	// SCI0 games till kq4 (.502 - not including) did not adjust against _wmgrPort in kNewWindow
 	//  We leave _wmgrPort top at 0, so the adjustment wont get done
-	if (!g_sci->_features->usesOldGfxFunctions()) {
+	if (!_usesOldGfxFunctions) {
 		setOrigin(0, offTop);
 		_wmgrPort->rect.bottom = _screen->getHeight() - offTop;
 	} else {
@@ -131,7 +131,7 @@ void GfxPorts::init(bool usesOldGfxFunctions, GfxPaint16 *paint16, GfxText16 *te
 	_picWind = addWindow(Common::Rect(0, offTop, _screen->getWidth(), _screen->getHeight()), 0, 0, SCI_WINDOWMGR_STYLE_TRANSPARENT | SCI_WINDOWMGR_STYLE_NOFRAME, 0, true);
 	// For SCI0 games till kq4 (.502 - not including) we set _picWind top to offTop instead
 	//  Because of the menu/status bar
-	if (g_sci->_features->usesOldGfxFunctions())
+	if (_usesOldGfxFunctions)
 		_picWind->top = offTop;
 
 	kernelInitPriorityBands();
@@ -299,11 +299,6 @@ Window *GfxPorts::addWindow(const Common::Rect &dims, const Common::Rect *restor
 
 	Window *pwnd = new Window(id);
 	Common::Rect r;
-
-	if (!pwnd) {
-		error("Can't open window");
-		return 0;
-	}
 
 	_windowsById[id] = pwnd;
 
@@ -537,7 +532,7 @@ void GfxPorts::freeWindow(Window *pWnd) {
 	if (!pWnd->hSaved1.isNull())
 		_segMan->freeHunkEntry(pWnd->hSaved1);
 	if (!pWnd->hSaved2.isNull())
-		_segMan->freeHunkEntry(pWnd->hSaved1);
+		_segMan->freeHunkEntry(pWnd->hSaved2);
 	_windowsById[pWnd->id] = NULL;
 	delete pWnd;
 }
