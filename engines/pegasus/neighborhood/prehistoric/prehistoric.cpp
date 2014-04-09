@@ -124,7 +124,9 @@ void Prehistoric::setUpAIRules() {
 			AIHasItemCondition *hasLogCondition = new AIHasItemCondition(kHistoricalLog);
 			AIRule *rule = new AIRule(hasLogCondition, doneAction);
 			g_AIArea->addAIRule(rule);
-		} else {
+		}
+
+		if (!_vm->isOldDemo()) {
 			AIPlayMessageAction *messageAction = new AIPlayMessageAction("Images/AI/Prehistoric/XP1NB", false);
 			AILocationCondition *locCondition = new AILocationCondition(1);
 			locCondition->addLocation(MakeRoomView(kPrehistoric16, kNorth));
@@ -159,10 +161,12 @@ void Prehistoric::setUpAIRules() {
 			AITimerCondition *timerCondition = new AITimerCondition(kPrehistoricWarningTimeLimit, 1, true);
 			rule = new AIRule(timerCondition, messageAction);
 			g_AIArea->addAIRule(rule);
+		}
 
-			messageAction = new AIPlayMessageAction("Images/AI/Prehistoric/XP25W", false);
+		if (!_vm->isDemo()) {
+			AIPlayMessageAction *messageAction = new AIPlayMessageAction("Images/AI/Prehistoric/XP25W", false);
 			AIHasItemCondition *hasLogCondition = new AIHasItemCondition(kHistoricalLog);
-			rule = new AIRule(hasLogCondition, messageAction);
+			AIRule *rule = new AIRule(hasLogCondition, messageAction);
 			g_AIArea->addAIRule(rule);
 		}
 	}
@@ -200,11 +204,11 @@ TimeValue Prehistoric::getViewTime(const RoomID room, const DirectionConstant di
 void Prehistoric::findSpotEntry(const RoomID room, const DirectionConstant direction, SpotFlags flags, SpotTable::Entry &entry) {
 	Neighborhood::findSpotEntry(room, direction, flags, entry);
 
+	// The original strangely disabled the loop for the two volcano spots:
+	// (kPrehistoric01, kSouth) and (kPrehistoric25, kSouth)
+	// We don't do that here.
+
 	switch (MakeRoomView(room, direction)) {
-	case MakeRoomView(kPrehistoric01, kSouth):
-	case MakeRoomView(kPrehistoric25, kSouth):
-		entry.clear();
-		break;
 	case MakeRoomView(kPrehistoric01, kEast):
 		if (GameState.getPrehistoricSeenFlyer1())
 			entry.clear();
@@ -402,9 +406,10 @@ void Prehistoric::loadAmbientLoops() {
 	switch (room) {
 	case kPrehistoric02:
 		// 1/4 volume.
-		if (GameState.getPrehistoricSeenTimeStream())
-			loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 64);
-		break;
+		if (!GameState.getPrehistoricSeenTimeStream())
+			break;
+
+		// Fall through
 	case kPrehistoric01:
 	case kPrehistoric03:
 	case kPrehistoric04:
@@ -419,7 +424,10 @@ void Prehistoric::loadAmbientLoops() {
 	case kPrehistoric19:
 	case kPrehistoric20:
 		// 1/4 volume.
-		loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 64);
+		if (_vm->isDVD()) // Updated sound for the DVD version
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.32k.AIFF", 64);
+		else
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 64);
 		break;
 	case kPrehistoric08:
 	case kPrehistoric10:
@@ -429,11 +437,17 @@ void Prehistoric::loadAmbientLoops() {
 	case kPrehistoric18:
 	case kPrehistoric21:
 		// 3/16 volume.
-		loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 48);
+		if (_vm->isDVD()) // Updated sound for the DVD version
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.32k.AIFF", 48);
+		else
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 48);
 		break;
 	case kPrehistoric25:
 		// 1/8 volume.
-		loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 32);
+		if (_vm->isDVD()) // Updated sound for the DVD version
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.32k.AIFF", 32);
+		else
+			loadLoopSound1("Sounds/Prehistoric/P02SAL00.22k.AIFF", 32);
 		break;
 	case kPrehistoric22:
 	case kPrehistoric22North:
@@ -470,19 +484,29 @@ void Prehistoric::loadAmbientLoops() {
 		break;
 	case kPrehistoric01:
 	case kPrehistoric25:
-		loadLoopSound2("Sounds/Prehistoric/VolcLoop.22K.AIFF", 64);
+		if (_vm->isDVD())
+			loadLoopSound2("Sounds/Prehistoric/VolcLoop.32K.AIFF", 64);
+		else
+			loadLoopSound2("Sounds/Prehistoric/VolcLoop.22K.AIFF", 64);
 		break;
 	case kPrehistoric18:
-		if (_privateFlags.getFlag(kPrehistoricPrivateExtendedBridgeFlag))
-			loadLoopSound2("Sounds/Prehistoric/P18EAL00.22k.AIFF", 0x100, 0, 0);
-		else
+		if (_privateFlags.getFlag(kPrehistoricPrivateExtendedBridgeFlag)) {
+			if (_vm->isDVD()) // Updated sound for the DVD version
+				loadLoopSound2("Sounds/Prehistoric/P18EAL00.44K.aiff", 0x100, 0, 0);
+			else
+				loadLoopSound2("Sounds/Prehistoric/P18EAL00.22k.AIFF", 0x100, 0, 0);
+		} else {
 			loadLoopSound2("");
+		}
 		break;
 	case kPrehistoric23:
 	case kPrehistoric24:
 	case kPrehistoric22:
 	case kPrehistoric22North:
-		loadLoopSound2("Sounds/Prehistoric/P24NAL00.22k.AIFF", 64);
+		if (_vm->isDVD()) // Updated sound for the DVD version
+			loadLoopSound2("Sounds/Prehistoric/P24NAL00.32k.AIFF", 64);
+		else
+			loadLoopSound2("Sounds/Prehistoric/P24NAL00.22k.AIFF", 64);
 		break;
 	}
 }
@@ -575,7 +599,7 @@ Common::String Prehistoric::getEnvScanMovie() {
 	Common::String movieName = Neighborhood::getEnvScanMovie();
 
 	if (movieName.empty()) {
-		if (!_vm->isDemo()) {
+		if (!_vm->isOldDemo()) {
 			switch (GameState.getCurrentRoom()) {
 			case kPrehistoric16:
 			case kPrehistoric23:

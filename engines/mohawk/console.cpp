@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -531,6 +531,7 @@ bool RivenConsole::Cmd_DumpScript(int argc, const char **argv) {
 		varNames.push_back(name);
 	}
 	delete nameStream;
+	delete[] stringOffsets;
 
 	// Load in External Command Names
 	nameStream = _vm->getResource(ID_NAME, ExternalCommandNames);
@@ -552,6 +553,7 @@ bool RivenConsole::Cmd_DumpScript(int argc, const char **argv) {
 		xNames.push_back(name);
 	}
 	delete nameStream;
+	delete[] stringOffsets;
 
 	// Get CARD/HSPT data and dump their scripts
 	if (!scumm_stricmp(argv[2], "CARD")) {

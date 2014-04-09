@@ -9,12 +9,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -218,7 +218,7 @@ void Palette::rotate(uint first, uint last, bool forward) {
 
 
 
-void Gfx::setPalette(Palette pal) {
+void Gfx::setPalette(Palette &pal) {
 	byte sysPal[256*3];
 
 	uint n = pal.fillRGB(sysPal);
@@ -332,7 +332,7 @@ void Gfx::copyRectToScreen(const byte *buf, int pitch, int x, int y, int w, int 
 
 void Gfx::clearScreen() {
 	if (_doubleBuffering) {
-		if (_backBuffer.pixels) {
+		if (_backBuffer.getPixels()) {
 			Common::Rect r(_backBuffer.w, _backBuffer.h);
 			_backBuffer.fillRect(r, 0);
 		}
@@ -419,13 +419,13 @@ void Gfx::updateScreen() {
 	// is needed
 	_overlayMode = false;
 
-	bool skipBackground = (_backgroundInfo->bg.pixels == 0);	// don't render frame if background is missing
+	bool skipBackground = (_backgroundInfo->bg.getPixels() == 0);	// don't render frame if background is missing
 
 	if (!skipBackground) {
 		// background may not cover the whole screen, so adjust bulk update size
 		uint w = _backgroundInfo->width;
 		uint h = _backgroundInfo->height;
-		byte *backgroundData = (byte *)_backgroundInfo->bg.getBasePtr(0, 0);
+		byte *backgroundData = (byte *)_backgroundInfo->bg.getPixels();
 		uint16 backgroundPitch = _backgroundInfo->bg.pitch;
 		copyRectToScreen(backgroundData, backgroundPitch, _backgroundInfo->_x, _backgroundInfo->_y, w, h);
 	}
@@ -450,7 +450,7 @@ void Gfx::applyHalfbriteEffect_NS(Graphics::Surface &surf) {
 		return;
 	}
 
-	byte *buf = (byte *)surf.pixels;
+	byte *buf = (byte *)surf.getPixels();
 	for (int i = 0; i < surf.w*surf.h; i++) {
 		*buf++ |= 0x20;
 	}
@@ -493,7 +493,7 @@ void Gfx::patchBackground(Graphics::Surface &surf, int16 x, int16 y, bool mask) 
 	r.moveTo(x, y);
 
 	uint16 z = (mask) ? _backgroundInfo->getMaskLayer(y) : LAYER_FOREGROUND;
-	blt(r, (byte *)surf.pixels, &_backgroundInfo->bg, z, 100, 0);
+	blt(r, (byte *)surf.getPixels(), &_backgroundInfo->bg, z, 100, 0);
 }
 
 void Gfx::fillBackground(const Common::Rect& r, byte color) {
@@ -536,12 +536,12 @@ GfxObj *Gfx::renderFloatingLabel(Font *font, char *text) {
 		setupLabelSurface(*cnv, w, h);
 
 		font->setColor((_gameType == GType_BRA) ? 0 : 7);
-		font->drawString((byte *)cnv->pixels + 1, cnv->w, text);
-		font->drawString((byte *)cnv->pixels + 1 + cnv->w * 2, cnv->w, text);
-		font->drawString((byte *)cnv->pixels + cnv->w, cnv->w, text);
-		font->drawString((byte *)cnv->pixels + 2 + cnv->w, cnv->w, text);
+		font->drawString((byte *)cnv->getBasePtr(1, 0), cnv->w, text);
+		font->drawString((byte *)cnv->getBasePtr(1, 2), cnv->w, text);
+		font->drawString((byte *)cnv->getBasePtr(0, 1), cnv->w, text);
+		font->drawString((byte *)cnv->getBasePtr(2, 1), cnv->w, text);
 		font->setColor((_gameType == GType_BRA) ? 11 : 1);
-		font->drawString((byte *)cnv->pixels + 1 + cnv->w, cnv->w, text);
+		font->drawString((byte *)cnv->getBasePtr(1, 1), cnv->w, text);
 	} else {
 		w = font->getStringWidth(text);
 		h = font->height();
@@ -704,7 +704,7 @@ void Gfx::unregisterLabel(GfxObj *label) {
 void Gfx::copyRect(const Common::Rect &r, Graphics::Surface &src, Graphics::Surface &dst) {
 
 	byte *s = (byte *)src.getBasePtr(r.left, r.top);
-	byte *d = (byte *)dst.getBasePtr(0, 0);
+	byte *d = (byte *)dst.getPixels();
 
 	for (uint16 i = 0; i < r.height(); i++) {
 		memcpy(d, s, r.width());
@@ -746,7 +746,7 @@ Gfx::Gfx(Parallaction* vm) :
 	_unpackedBitmap = new byte[MAXIMUM_UNPACKED_BITMAP_SIZE];
 	assert(_unpackedBitmap);
 
-	if ((_gameType == GType_BRA) && (_vm->getPlatform() == Common::kPlatformPC)) {
+	if ((_gameType == GType_BRA) && (_vm->getPlatform() == Common::kPlatformDOS)) {
 	// this loads the backup palette needed by the PC version of BRA (see setBackground()).
 		BackgroundInfo	paletteInfo;
 		_disk->loadSlide(paletteInfo, "pointer");
@@ -834,7 +834,7 @@ void Gfx::setBackground(uint type, BackgroundInfo *info) {
 		// The PC version of BRA needs the entries 20-31 of the palette to be constant, but
 		// the background resource files are screwed up. The right colors come from an unused
 		// bitmap (pointer.bmp). Nothing is known about the Amiga version so far.
-		if ((_gameType == GType_BRA) && (_vm->getPlatform() == Common::kPlatformPC)) {
+		if ((_gameType == GType_BRA) && (_vm->getPlatform() == Common::kPlatformDOS)) {
 			int r, g, b;
 			for (uint i = 16; i < 32; i++) {
 				_backupPal.getEntry(i, r, g, b);

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -32,7 +32,7 @@
 #include "common/memstream.h"
 #include "common/system.h"
 #include "graphics/surface.h"
-#include "graphics/decoders/pict.h"
+#include "image/pict.h"
 
 namespace Sci {
 
@@ -129,7 +129,7 @@ void GfxMacIconBar::drawIcon(uint16 iconIndex, bool selected) {
 
 void GfxMacIconBar::drawEnabledImage(Graphics::Surface *surface, const Common::Rect &rect) {
 	if (surface)
-		g_system->copyRectToScreen(surface->pixels, surface->pitch, rect.left, rect.top, rect.width(), rect.height());
+		g_system->copyRectToScreen(surface->getPixels(), surface->pitch, rect.left, rect.top, rect.width(), rect.height());
 }
 
 void GfxMacIconBar::drawDisabledImage(Graphics::Surface *surface, const Common::Rect &rect) {
@@ -153,7 +153,7 @@ void GfxMacIconBar::drawDisabledImage(Graphics::Surface *surface, const Common::
 			*((byte *)newSurf.getBasePtr(j, i)) = 0;
 	}
 
-	g_system->copyRectToScreen(newSurf.pixels, newSurf.pitch, rect.left, rect.top, rect.width(), rect.height());
+	g_system->copyRectToScreen(newSurf.getPixels(), newSurf.pitch, rect.left, rect.top, rect.width(), rect.height());
 	newSurf.free();
 }
 
@@ -201,12 +201,12 @@ void GfxMacIconBar::setInventoryIcon(int16 icon) {
 }
 
 Graphics::Surface *GfxMacIconBar::loadPict(ResourceId id) {
-	Graphics::PICTDecoder pictDecoder;
 	Resource *res = g_sci->getResMan()->findResource(id, false);
 
 	if (!res || res->size == 0)
 		return 0;
 
+	Image::PICTDecoder pictDecoder;
 	Common::MemoryReadStream stream(res->data, res->size);
 	if (!pictDecoder.loadStream(stream))
 		return 0;
@@ -224,7 +224,7 @@ Graphics::Surface *GfxMacIconBar::createImage(uint32 iconIndex, bool isSelected)
 }
 
 void GfxMacIconBar::remapColors(Graphics::Surface *surf, const byte *palette) {
-	byte *pixels = (byte *)surf->pixels;
+	byte *pixels = (byte *)surf->getPixels();
 
 	// Remap to the screen palette
 	for (uint16 i = 0; i < surf->w * surf->h; i++) {

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -285,7 +285,7 @@ bool ScEngine::tick() {
 					_scripts[i]->run();
 				}
 			} else {
-				if (_scripts[i]->_waitTime <= _gameRef->_timer) {
+				if (_scripts[i]->_waitTime <= _gameRef->getTimer()->getTime()) {
 					_scripts[i]->run();
 				}
 			}
@@ -362,6 +362,8 @@ bool ScEngine::tick() {
 
 //////////////////////////////////////////////////////////////////////////
 bool ScEngine::tickUnbreakable() {
+	ScScript *oldScript = _currentScript;
+
 	// execute unbreakable scripts
 	for (uint32 i = 0; i < _scripts.size(); i++) {
 		if (!_scripts[i]->_unbreakable) {
@@ -373,9 +375,12 @@ bool ScEngine::tickUnbreakable() {
 			_scripts[i]->executeInstruction();
 		}
 		_scripts[i]->finish();
-		_currentScript = nullptr;
+		_currentScript = oldScript;
 	}
-	removeFinishedScripts();
+
+	// NB: Don't remove finished scripts here since we could be recursively
+	// executing scripts. Doing so could invalidate the outer iteration in
+	// ::tick() over _scripts.
 
 	return STATUS_OK;
 }
@@ -484,9 +489,9 @@ bool ScEngine::persist(BasePersistenceManager *persistMgr) {
 		cleanup();
 	}
 
-	persistMgr->transfer(TMEMBER(_gameRef));
-	persistMgr->transfer(TMEMBER(_currentScript));
-	persistMgr->transfer(TMEMBER(_globals));
+	persistMgr->transferPtr(TMEMBER_PTR(_gameRef));
+	persistMgr->transferPtr(TMEMBER_PTR(_currentScript));
+	persistMgr->transferPtr(TMEMBER_PTR(_globals));
 	_scripts.persist(persistMgr);
 
 	return STATUS_OK;
@@ -605,4 +610,4 @@ void ScEngine::dumpStats() {
 	    }*/
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

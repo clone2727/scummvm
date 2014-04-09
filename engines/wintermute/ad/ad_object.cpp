@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -38,7 +38,6 @@
 #include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/base/base_frame.h"
 #include "engines/wintermute/base/base_sprite.h"
-#include "engines/wintermute/base/base_string_table.h"
 #include "engines/wintermute/base/base_sub_frame.h"
 #include "engines/wintermute/base/base_surface_storage.h"
 #include "engines/wintermute/base/font/base_font.h"
@@ -860,19 +859,19 @@ bool AdObject::setFont(const char *filename) {
 
 
 //////////////////////////////////////////////////////////////////////////
-int AdObject::getHeight() {
+int32 AdObject::getHeight() {
 	if (!_currentSprite) {
 		return 0;
 	} else {
 		BaseFrame *frame = _currentSprite->_frames[_currentSprite->_currentFrame];
-		int ret = 0;
+		int32 ret = 0;
 		for (uint32 i = 0; i < frame->_subframes.size(); i++) {
 			ret = MAX(ret, frame->_subframes[i]->_hotspotY);
 		}
 
 		if (_zoomable) {
 			float zoom = ((AdGame *)_gameRef)->_scene->getZoomAt(_posX, _posY);
-			ret = (int)(ret * zoom / 100);
+			ret = (int32)(ret * zoom / 100);
 		}
 		return ret;
 	}
@@ -901,19 +900,19 @@ void AdObject::talk(const char *text, const char *sound, uint32 duration, const 
 	_sentence->_sound = nullptr;
 
 	_sentence->setText(text);
-	_gameRef->_stringTable->expand(&_sentence->_text);
+	_gameRef->expandStringByStringTable(&_sentence->_text);
 	_sentence->setStances(stances);
 	_sentence->_duration = duration;
 	_sentence->_align = Align;
-	_sentence->_startTime = _gameRef->_timer;
+	_sentence->_startTime = _gameRef->getTimer()->getTime();
 	_sentence->_currentStance = -1;
-	_sentence->_font = _font == nullptr ? _gameRef->_systemFont : _font;
+	_sentence->_font = _font == nullptr ? _gameRef->getSystemFont() : _font;
 	_sentence->_freezable = _freezable;
 
 	// try to locate speech file automatically
 	bool deleteSound = false;
 	if (!sound) {
-		char *key = _gameRef->_stringTable->getKey(text);
+		char *key = _gameRef->getKeyFromStringTable(text);
 		if (key) {
 			sound = ((AdGame *)_gameRef)->findSpeechFile(key);
 			delete[] key;
@@ -942,11 +941,11 @@ void AdObject::talk(const char *text, const char *sound, uint32 duration, const 
 
 	// set duration by text length
 	if (_sentence->_duration <= 0) {// TODO: Avoid longs.
-		_sentence->_duration = MAX((size_t)1000, _gameRef->_subtitlesSpeed * strlen(_sentence->_text));
+		_sentence->_duration = MAX<int32>((size_t)1000, _gameRef->_subtitlesSpeed * strlen(_sentence->_text));
 	}
 
 
-	int x, y, width, height;
+	int32 x, y, width, height;
 
 	x = _posX;
 	y = _posY;
@@ -960,10 +959,10 @@ void AdObject::talk(const char *text, const char *sound, uint32 duration, const 
 	if (_subtitlesWidth > 0) {
 		width = _subtitlesWidth;
 	} else {
-		if ((x < _gameRef->_renderer->_width / 4 || x > _gameRef->_renderer->_width * 0.75) && !_gameRef->_touchInterface) {
-			width = MAX(_gameRef->_renderer->_width / 4, MIN(x * 2, (_gameRef->_renderer->_width - x) * 2));
+		if ((x < _gameRef->_renderer->getWidth() / 4 || x > _gameRef->_renderer->getWidth() * 0.75) && !_gameRef->_touchInterface) {
+			width = MAX(_gameRef->_renderer->getWidth() / 4, MIN(x * 2, (_gameRef->_renderer->getWidth() - x) * 2));
 		} else {
-			width = _gameRef->_renderer->_width / 2;
+			width = _gameRef->_renderer->getWidth() / 2;
 		}
 	}
 
@@ -982,8 +981,8 @@ void AdObject::talk(const char *text, const char *sound, uint32 duration, const 
 	}
 
 
-	x = MIN(MAX(0, x), _gameRef->_renderer->_width - width);
-	y = MIN(MAX(0, y), _gameRef->_renderer->_height - height);
+	x = MIN(MAX<int32>(0, x), _gameRef->_renderer->getWidth() - width);
+	y = MIN(MAX<int32>(0, y), _gameRef->_renderer->getHeight() - height);
 
 	_sentence->_width = width;
 
@@ -1031,44 +1030,44 @@ bool AdObject::reset() {
 bool AdObject::persist(BasePersistenceManager *persistMgr) {
 	BaseObject::persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_active));
-	persistMgr->transfer(TMEMBER(_blockRegion));
-	persistMgr->transfer(TMEMBER(_currentBlockRegion));
-	persistMgr->transfer(TMEMBER(_currentWptGroup));
-	persistMgr->transfer(TMEMBER(_currentSprite));
-	persistMgr->transfer(TMEMBER(_drawn));
-	persistMgr->transfer(TMEMBER(_font));
-	persistMgr->transfer(TMEMBER(_ignoreItems));
-	persistMgr->transfer(TMEMBER_INT(_nextState));
-	persistMgr->transfer(TMEMBER(_sentence));
-	persistMgr->transfer(TMEMBER_INT(_state));
-	persistMgr->transfer(TMEMBER(_animSprite));
-	persistMgr->transfer(TMEMBER(_sceneIndependent));
-	persistMgr->transfer(TMEMBER(_forcedTalkAnimName));
-	persistMgr->transfer(TMEMBER(_forcedTalkAnimUsed));
-	persistMgr->transfer(TMEMBER(_tempSprite2));
-	persistMgr->transfer(TMEMBER_INT(_type));
-	persistMgr->transfer(TMEMBER(_wptGroup));
-	persistMgr->transfer(TMEMBER(_stickRegion));
-	persistMgr->transfer(TMEMBER(_subtitlesModRelative));
-	persistMgr->transfer(TMEMBER(_subtitlesModX));
-	persistMgr->transfer(TMEMBER(_subtitlesModY));
-	persistMgr->transfer(TMEMBER(_subtitlesModXCenter));
-	persistMgr->transfer(TMEMBER(_subtitlesWidth));
-	persistMgr->transfer(TMEMBER(_inventory));
-	persistMgr->transfer(TMEMBER(_partEmitter));
+	persistMgr->transferBool(TMEMBER(_active));
+	persistMgr->transferPtr(TMEMBER_PTR(_blockRegion));
+	persistMgr->transferPtr(TMEMBER_PTR(_currentBlockRegion));
+	persistMgr->transferPtr(TMEMBER_PTR(_currentWptGroup));
+	persistMgr->transferPtr(TMEMBER_PTR(_currentSprite));
+	persistMgr->transferBool(TMEMBER(_drawn));
+	persistMgr->transferPtr(TMEMBER_PTR(_font));
+	persistMgr->transferBool(TMEMBER(_ignoreItems));
+	persistMgr->transferSint32(TMEMBER_INT(_nextState));
+	persistMgr->transferPtr(TMEMBER_PTR(_sentence));
+	persistMgr->transferSint32(TMEMBER_INT(_state));
+	persistMgr->transferPtr(TMEMBER_PTR(_animSprite));
+	persistMgr->transferBool(TMEMBER(_sceneIndependent));
+	persistMgr->transferCharPtr(TMEMBER(_forcedTalkAnimName));
+	persistMgr->transferBool(TMEMBER(_forcedTalkAnimUsed));
+	persistMgr->transferPtr(TMEMBER_PTR(_tempSprite2));
+	persistMgr->transferSint32(TMEMBER_INT(_type));
+	persistMgr->transferPtr(TMEMBER_PTR(_wptGroup));
+	persistMgr->transferPtr(TMEMBER_PTR(_stickRegion));
+	persistMgr->transferBool(TMEMBER(_subtitlesModRelative));
+	persistMgr->transferSint32(TMEMBER(_subtitlesModX));
+	persistMgr->transferSint32(TMEMBER(_subtitlesModY));
+	persistMgr->transferBool(TMEMBER(_subtitlesModXCenter));
+	persistMgr->transferSint32(TMEMBER(_subtitlesWidth));
+	persistMgr->transferPtr(TMEMBER_PTR(_inventory));
+	persistMgr->transferPtr(TMEMBER_PTR(_partEmitter));
 
 	for (int i = 0; i < MAX_NUM_REGIONS; i++) {
-		persistMgr->transfer(TMEMBER(_currentRegions[i]));
+		persistMgr->transferPtr(TMEMBER_PTR(_currentRegions[i]));
 	}
 
 	_attachmentsPre.persist(persistMgr);
 	_attachmentsPost.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_registerAlias));
+	persistMgr->transferPtr(TMEMBER_PTR(_registerAlias));
 
-	persistMgr->transfer(TMEMBER(_partFollowParent));
-	persistMgr->transfer(TMEMBER(_partOffsetX));
-	persistMgr->transfer(TMEMBER(_partOffsetY));
+	persistMgr->transferBool(TMEMBER(_partFollowParent));
+	persistMgr->transferSint32(TMEMBER(_partOffsetX));
+	persistMgr->transferSint32(TMEMBER(_partOffsetY));
 
 	return STATUS_OK;
 }
@@ -1300,4 +1299,4 @@ bool AdObject::updatePartEmitter() {
 	return _partEmitter->update();
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

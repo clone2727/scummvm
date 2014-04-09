@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -120,6 +120,15 @@ protected:
 	EoBCoreEngine *_vm;
 
 	bool cmd_importSaveFile(int argc, const char **argv);
+	bool cmd_saveOriginal(int argc, const char **argv);
+	bool cmd_listMonsters(int argc, const char **argv);
+	bool cmd_showPosition(int argc, const char **argv);
+	bool cmd_setPosition(int argc, const char **argv);
+	bool cmd_openDoor(int argc, const char **argv);
+	bool cmd_closeDoor(int argc, const char **argv);
+	bool cmd_listFlags(int argc, const char **argv);
+	bool cmd_setFlag(int argc, const char **argv);
+	bool cmd_clearFlag(int argc, const char **argv);
 };
 #endif // ENABLE_EOB
 

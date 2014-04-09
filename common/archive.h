@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -184,8 +184,8 @@ public:
 	 * to assume that this method is using anything other than a simple case insensitive compare.
 	 * Thus do not use any tokens like '*' or '?' in the "caselessName" parameter of this function!
 	 */
-	void addSubDirectoryMatching(const FSNode &directory, const String &caselessName, int priority = 0) {
-		addSubDirectoriesMatching(directory, caselessName, true, priority);
+	void addSubDirectoryMatching(const FSNode &directory, const String &caselessName, int priority = 0, int depth = 1, bool flat = false) {
+		addSubDirectoriesMatching(directory, caselessName, true, priority, depth, flat);
 	}
 
 	/**
@@ -208,7 +208,7 @@ public:
 	 *
 	 * @see Common::matchString
 	 */
-	void addSubDirectoriesMatching(const FSNode &directory, String origPattern, bool ignoreCase, int priority = 0);
+	void addSubDirectoriesMatching(const FSNode &directory, String origPattern, bool ignoreCase, int priority = 0, int depth = 1, bool flat = false);
 
 	/**
 	 * Remove an archive from the searchable set.

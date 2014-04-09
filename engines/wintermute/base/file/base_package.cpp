@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -61,7 +61,7 @@ static bool findPackageSignature(Common::SeekableReadStream *f, uint32 *offset) 
 	uint32 bytesRead = startPos;
 
 	while (bytesRead < fileSize - 16) {
-		uint32 toRead = MIN((unsigned int)32768, fileSize - bytesRead);
+		uint32 toRead = MIN<unsigned int>((unsigned int)32768, fileSize - bytesRead);
 		f->seek((int32)startPos, SEEK_SET);
 		uint32 actuallyRead = f->read(buf, toRead);
 		if (actuallyRead != toRead) {
@@ -273,4 +273,4 @@ Common::SeekableReadStream *PackageSet::createReadStreamForMember(const Common::
 	return nullptr;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

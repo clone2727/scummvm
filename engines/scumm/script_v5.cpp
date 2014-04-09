@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,7 +27,7 @@
 #include "scumm/scumm_v3.h"
 #include "scumm/scumm_v5.h"
 #include "scumm/sound.h"
-#include "scumm/player_towns.h"
+#include "scumm/players/player_towns.h"
 #include "scumm/util.h"
 #include "scumm/verbs.h"
 
@@ -630,7 +630,7 @@ void ScummEngine_v5::o5_breakHere() {
 }
 
 void ScummEngine_v5::o5_chainScript() {
-	int vars[16];
+	int vars[NUM_SCRIPT_LOCAL];
 	int script;
 	int cur;
 
@@ -663,7 +663,7 @@ void ScummEngine_v5::o5_chainScript() {
 
 void ScummEngine_v5::o5_cursorCommand() {
 	int i, j, k;
-	int table[16];
+	int table[NUM_SCRIPT_LOCAL];
 	switch ((_opcode = fetchScriptByte()) & 0x1F) {
 	case 1:			// SO_CURSOR_ON
 		_cursor.state = 1;
@@ -736,7 +736,7 @@ void ScummEngine_v5::o5_cursorCommand() {
 }
 
 void ScummEngine_v5::o5_cutscene() {
-	int args[16];
+	int args[NUM_SCRIPT_LOCAL];
 	getWordVararg(args);
 	beginCutscene(args);
 }
@@ -2083,14 +2083,14 @@ void ScummEngine_v5::o5_isSoundRunning() {
 }
 
 void ScummEngine_v5::o5_soundKludge() {
-	int items[16];
+	int items[NUM_SCRIPT_LOCAL];
 	int num = getWordVararg(items);
 	_sound->soundKludge(items, num);
 }
 
 void ScummEngine_v5::o5_startObject() {
 	int obj, script;
-	int data[16];
+	int data[NUM_SCRIPT_LOCAL];
 
 	obj = getVarOrDirectWord(PARAM_1);
 	script = getVarOrDirectByte(PARAM_2);
@@ -2101,7 +2101,7 @@ void ScummEngine_v5::o5_startObject() {
 
 void ScummEngine_v5::o5_startScript() {
 	int op, script;
-	int data[16];
+	int data[NUM_SCRIPT_LOCAL];
 
 	op = _opcode;
 	script = getVarOrDirectByte(PARAM_1);
@@ -2130,7 +2130,7 @@ void ScummEngine_v5::o5_startScript() {
 	// Method used by original games to skip copy protection scheme
 	if (!_copyProtection) {
 		// Copy protection was disabled in LucasArts Classic Adventures (PC Disk)
-		if (_game.id == GID_LOOM && _game.platform == Common::kPlatformPC && _game.version == 3 && _currentRoom == 69 && script == 201)
+		if (_game.id == GID_LOOM && _game.platform == Common::kPlatformDOS && _game.version == 3 && _currentRoom == 69 && script == 201)
 			script = 205;
 		// Copy protection was disabled in KIXX XL release (Amiga Disk) and
 		// in LucasArts Classic Adventures (PC Disk)
@@ -2556,7 +2556,7 @@ void ScummEngine_v5::o5_walkActorToObject() {
 int ScummEngine_v5::getWordVararg(int *ptr) {
 	int i;
 
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < NUM_SCRIPT_LOCAL; i++)
 		ptr[i] = 0;
 
 	i = 0;

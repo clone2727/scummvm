@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -615,6 +615,8 @@ void SeqPlayer_HOF::runLoop() {
 
 	if (_vm->gameFlags().isDemo && !_vm->gameFlags().isTalkie)
 		_screen->fadeToBlack();
+	else if (!_isFinale && !_startupSaveLoadable)
+		_result = 1;
 
 	if (!_result)
 		delayTicks(75);
@@ -689,8 +691,6 @@ void SeqPlayer_HOF::playScenes() {
 			_screen->copyPage(2, 0);
 			_screen->updateScreen();
 		}
-
-		//_screen->copyPage(2, 6);
 
 		if (sq.flags & 1) {
 			playAnimation(&anim, sq.startFrame, sq.numFrames, sq.duration, sq.xPos, sq.yPos, _config->seqProc[_curScene], &_screen->getPalette(1), &_screen->getPalette(0), 30, 0);
@@ -793,11 +793,9 @@ bool SeqPlayer_HOF::checkPlaybackStatus() {
 		doTransition(0);
 		fadeOutMusic();
 		_abortPlayback = true;
-	} else {
-		return true;
 	}
 
-	return false;
+	return true;
 }
 
 void SeqPlayer_HOF::doTransition(int type) {
@@ -944,8 +942,8 @@ void SeqPlayer_HOF::playAnimation(WSAMovie_v2 *wsaObj, int startFrame, int lastF
 	bool finished = false;
 	uint32 startTime = _system->getMillis();
 
-	int origW = wsaObj->width();
-	int origH = wsaObj->width();
+	int origW = wsaObj ? wsaObj->width() : 0;
+	int origH = wsaObj ? wsaObj->height() : 0;
 	int drwX = x;
 	int drwY = y;
 	int drwW = origW;
@@ -1043,7 +1041,8 @@ void SeqPlayer_HOF::playDialogueAnimation(uint16 strID, uint16 soundID, int text
 	int dur = int(strlen(_sequenceStrings[strID])) * (_vm->gameFlags().isTalkie ? 7 : 15);
 	if (_vm->textEnabled()) {
 		int slot = displaySubTitle(strID, textPosX, textPosY, dur, textWidth);
-		_textSlots[slot].textcolor = textColor;
+		if (slot >= 0)
+			_textSlots[slot].textcolor = textColor;
 	}
 	_specialAnimTimeOutTotal = _system->getMillis() + dur * _vm->tickLength();
 	int curframe = animStartFrame;
@@ -1652,7 +1651,7 @@ void SeqPlayer_HOF::displayHoFTalkieScrollText(uint8 *data, const ScreenDim *d, 
 			textData[1].text += strlen((char *)textData[1].text);
 			textData[1].text[0] = textData[1].unk1;
 			cnt--;
-			memcpy(&textData[1], &textData[2], cnt * sizeof(ScrollTextData));
+			memmove(&textData[1], &textData[2], cnt * sizeof(ScrollTextData));
 		}
 
 		if (palCycle) {
@@ -1751,7 +1750,7 @@ bool SeqPlayer_HOF::countDownRunning() {
 #define CASE_ALT(dosCase, towns98Case)\
 	case dosCase:\
 	case towns98Case:\
-		if (!((_callbackCurrentFrame == towns98Case && (_vm->gameFlags().platform == Common::kPlatformFMTowns || _vm->gameFlags().platform == Common::kPlatformPC98)) || (_callbackCurrentFrame == dosCase && _vm->gameFlags().platform == Common::kPlatformPC)))\
+		if (!((_callbackCurrentFrame == towns98Case && (_vm->gameFlags().platform == Common::kPlatformFMTowns || _vm->gameFlags().platform == Common::kPlatformPC98)) || (_callbackCurrentFrame == dosCase && _vm->gameFlags().platform == Common::kPlatformDOS)))\
 			break;
 
 int SeqPlayer_HOF::cbHOF_westwood(WSAMovie_v2 *wsaObj, int x, int y, int frm) {
@@ -1775,18 +1774,22 @@ int SeqPlayer_HOF::cbHOF_title(WSAMovie_v2 *wsaObj, int x, int y, int frm) {
 		_result = _menu->handle(11) + 1;
 		_updateAnimations = false;
 
-		if (_result == 1) {
+		if (_result == 1 || _result == 3) {
 			_curScene = _lastScene;
 			_preventLooping = true;
-		} else {
-			setCountDown(200);
 		}
 
-		if (_result == 4)
+		if (_result == 2) {
+			_result = 0;
+		} else if (_result == 4) {
+			setCountDown(200);
 			_vm->quitGame();
+		}
 
 		_screen->hideMouse();
 		_screen->setCurPage(cp);
+	} else if (frm == 25) {
+		setCountDown(200);
 	}
 
 	return 0;

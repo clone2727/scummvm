@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -237,12 +237,29 @@ bool SXDate::scSetProperty(const char *name, ScValue *value) {
 bool SXDate::persist(BasePersistenceManager *persistMgr) {
 
 	BaseScriptable::persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_tm.tm_year));
-	persistMgr->transfer(TMEMBER(_tm.tm_mon));
-	persistMgr->transfer(TMEMBER(_tm.tm_mday));
-	persistMgr->transfer(TMEMBER(_tm.tm_hour));
-	persistMgr->transfer(TMEMBER(_tm.tm_min));
-	persistMgr->transfer(TMEMBER(_tm.tm_sec));
+	int32 year = _tm.tm_year;
+	int32 mon = _tm.tm_mon;
+	int32 mday = _tm.tm_mday;
+	int32 hour = _tm.tm_hour;
+	int32 min = _tm.tm_min;
+	int32 sec = _tm.tm_sec;
+	persistMgr->transferSint32(TMEMBER(year));
+	persistMgr->transferSint32(TMEMBER(mon));
+	persistMgr->transferSint32(TMEMBER(mday));
+	persistMgr->transferSint32(TMEMBER(hour));
+	persistMgr->transferSint32(TMEMBER(min));
+	persistMgr->transferSint32(TMEMBER(sec));
+	if (persistMgr->checkVersion(1, 2, 1)) {
+		int32 wday = _tm.tm_wday;
+		persistMgr->transferSint32(TMEMBER(wday));
+		_tm.tm_wday = wday;
+	}
+	_tm.tm_year = year;
+	_tm.tm_mon = mon;
+	_tm.tm_mday = mday;
+	_tm.tm_hour = hour;
+	_tm.tm_min = min;
+	_tm.tm_sec = sec;
 	return STATUS_OK;
 }
 
@@ -290,4 +307,4 @@ int SXDate::scCompare(BaseScriptable *Value) {
 	}
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

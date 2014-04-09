@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -29,6 +29,7 @@
 #include "engines/wintermute/platform_osystem.h"
 #include "engines/wintermute/base/base_file_manager.h"
 #include "engines/wintermute/base/base_game.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/base_string_table.h"
 #include "common/str.h"
 
@@ -64,7 +65,7 @@ bool BaseStringTable::addString(const char *key, const char *val, bool reportDup
 
 	StringsIter it = _strings.find(finalKey);
 	if (it != _strings.end() && reportDuplicities) {
-		_gameRef->LOG(0, "  Warning: Duplicate definition of string '%s'.", finalKey.c_str());
+		BaseEngine::LOG(0, "  Warning: Duplicate definition of string '%s'.", finalKey.c_str());
 	}
 
 	_strings[finalKey] = val;
@@ -185,7 +186,7 @@ const char *BaseStringTable::expandStatic(const char *string) const {
 
 //////////////////////////////////////////////////////////////////////////
 bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
-	_gameRef->LOG(0, "Loading string table...");
+	BaseEngine::LOG(0, "Loading string table...");
 
 	if (clearOld) {
 		_strings.clear();
@@ -194,7 +195,7 @@ bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
 	uint32 size;
 	byte *buffer = BaseFileManager::getEngineInstance()->readWholeFile(filename, &size);
 	if (buffer == nullptr) {
-		_gameRef->LOG(0, "BaseStringTable::LoadFile failed for file '%s'", filename);
+		BaseEngine::LOG(0, "BaseStringTable::LoadFile failed for file '%s'", filename);
 		return STATUS_FAILED;
 	}
 
@@ -205,7 +206,7 @@ bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
 		if (_gameRef->_textEncoding != TEXT_UTF8) {
 			_gameRef->_textEncoding = TEXT_UTF8;
 			//_gameRef->_textEncoding = TEXT_ANSI;
-			_gameRef->LOG(0, "  UTF8 file detected, switching to UTF8 text encoding");
+			BaseEngine::LOG(0, "  UTF8 file detected, switching to UTF8 text encoding");
 		}
 	} else {
 		_gameRef->_textEncoding = TEXT_ANSI;
@@ -247,9 +248,9 @@ bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
 
 	delete[] buffer;
 
-	_gameRef->LOG(0, "  %d strings loaded", _strings.size());
+	BaseEngine::LOG(0, "  %d strings loaded", _strings.size());
 
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -272,7 +272,7 @@ static void MacDrawTiles(DRAWOBJECT *pObj, uint8 *srcP, uint8 *destP, bool apply
 					tempDest += rptLength;
 				}
 
-				int overflow = (copyBytes % 2) == 0 ? 0 : 2 - (copyBytes % 2);
+				int overflow = (copyBytes & 1);
 				x += runLength;
 				srcP += runLength + overflow;
 			}
@@ -797,9 +797,10 @@ static void PackedWrtNonZero(DRAWOBJECT *pObj, uint8 *srcP, uint8 *destP,
  * Clears both the screen surface buffer and screen to the specified value
  */
 void ClearScreen() {
-	void *pDest = _vm->screen().getBasePtr(0, 0);
-	memset(pDest, 0, SCREEN_WIDTH * SCREEN_HEIGHT);
-	g_system->fillScreen(0);
+	byte blackColorIndex = (!TinselV1Mac) ? 0 : 255;
+	void *pDest = _vm->screen().getPixels();
+	memset(pDest, blackColorIndex, SCREEN_WIDTH * SCREEN_HEIGHT);
+	g_system->fillScreen(blackColorIndex);
 	g_system->updateScreen();
 }
 

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -243,6 +243,17 @@ void DarkMoonEngine::replaceMonster(int unit, uint16 block, int pos, int dir, in
 		if (_monsters[i].flags & 0x40)
 			continue;
 
+		// WORKAROUND for bug #3611077 (Dran's dragon transformation sequence triggered prematurely):
+		// The boss level and the mindflayer level share the same monster data. If you hang around
+		// long enough in the mindflayer level all 30 monster slots will be used up. When this
+		// happens it will trigger the dragon transformation sequence when Dran is moved around by script.
+		// We avoid removing Dran here by prefering monster slots occupied by monsters from another
+		// sub level.
+		if (_monsters[i].sub != _currentSub) {
+			index = i;
+			break;
+		}
+
 		int dist = getBlockDistance(_monsters[i].block, _currentBlock);
 
 		if (dist > maxDist) {
@@ -261,7 +272,10 @@ void DarkMoonEngine::replaceMonster(int unit, uint16 block, int pos, int dir, in
 }
 
 bool DarkMoonEngine::killMonsterExtra(EoBMonsterInPlay *m) {
-	if (_currentLevel == 16 && _currentSub == 1 && (_monsterProps[m->type].capsFlags & 4)) {
+	// WORKAROUND for bug #3611077 (see DarkMoonEngine::replaceMonster())
+	// The mindflayers have monster type 0, just like Dran. Using a monster slot occupied by a mindflayer would trigger the dragon transformation
+	// sequence when all 30 monster slots are used up. We avoid this by checking for m->sub == 1.
+	if (_currentLevel == 16 && _currentSub == 1 && m->sub == 1 && (_monsterProps[m->type].capsFlags & 4)) {
 		if (m->type) {
 			_playFinale = true;
 			_runFlag = false;

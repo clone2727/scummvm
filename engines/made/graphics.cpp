@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -83,7 +83,7 @@ void decompressImage(byte *source, Graphics::Surface &surface, uint16 cmdOffs, u
 	if ((maskFlags != 0) && (maskFlags != 2) && (pixelFlags != 0) && (pixelFlags != 2) && (cmdFlags != 0))
 		error("decompressImage() Unsupported flags: cmdFlags = %02X; maskFlags = %02X, pixelFlags = %02X", cmdFlags, maskFlags, pixelFlags);
 
-	byte *destPtr = (byte *)surface.getBasePtr(0, 0);
+	byte *destPtr = (byte *)surface.getPixels();
 
 	byte lineBuf[640 * 4];
 	byte bitBuf[40];
@@ -196,7 +196,7 @@ void decompressMovieImage(byte *source, Graphics::Surface &surface, uint16 cmdOf
 	byte *maskBuffer = source + maskOffs;
 	byte *pixelBuffer = source + pixelOffs;
 
-	byte *destPtr = (byte *)surface.getBasePtr(0, 0);
+	byte *destPtr = (byte *)surface.getPixels();
 
 	byte bitBuf[40];
 

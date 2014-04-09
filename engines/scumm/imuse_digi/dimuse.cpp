@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/system.h"
@@ -275,9 +276,12 @@ void IMuseDigital::callback() {
 						feedSize &= ~1;
 					if (channels == 2)
 						feedSize &= ~3;
-				} else {
+				} else if (bits == 8) {
 					if (channels == 2)
 						feedSize &= ~1;
+				} else {
+					warning("IMuseDigita::callback: Unexpected sample width, %d bits", bits);
+					continue;
 				}
 
 				if (feedSize == 0)

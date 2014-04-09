@@ -64,6 +64,10 @@ void GlobeTracker::setTrackParameters(const Hotspot *trackSpot, GlobeTrackDirect
 
 		_globeMovie->setSegment(start, start + kDurationPerRow);
 
+		// Clip new time so we don't go past the end of the segment
+		if (newTime >= start + kDurationPerRow)
+			newTime = start + kDurationPerRow - 1;
+
 		if (newTime != time) {
 			_globeMovie->setTime(newTime);
 			_globeMovie->redrawMovieWorld();
@@ -83,6 +87,10 @@ void GlobeTracker::setTrackParameters(const Hotspot *trackSpot, GlobeTrackDirect
 		}
 
 		_globeMovie->setSegment(start, start + kDurationPerRow);
+
+		// Clip new time so we don't go past the end of the segment
+		if (newTime >= start + kDurationPerRow)
+			newTime = start + kDurationPerRow - 1;
 
 		if (newTime != time) {
 			_globeMovie->setTime(newTime);
@@ -621,6 +629,7 @@ void GlobeGame::receiveNotification(Notification *notification, const Notificati
 			_monitorMovie.stop();
 			_monitorMovie.setSegment(0, _monitorMovie.getDuration());
 			_monitorMovie.setTime(kSplash2End * scale - 1);
+			_monitorMovie.redrawMovieWorld();
 			_monitorMovie.setFlags(0);
 
 			_owner->requestDelay(1, 2, kFilterNoInput, 0);
@@ -643,6 +652,7 @@ void GlobeGame::receiveNotification(Notification *notification, const Notificati
 			_monitorMovie.stop();
 			_monitorMovie.setSegment(0, _monitorMovie.getDuration());
 			_monitorMovie.setTime(kNewLaunchSiloTime * scale);
+			_monitorMovie.redrawMovieWorld();
 			_owner->requestSpotSound(kNewLaunchSiloIn, kNewLaunchSiloOut, kFilterNoInput,
 					kSpotSoundCompletedFlag);
 			_gameState = kPlayingNewSilo1;
@@ -895,6 +905,11 @@ void GlobeGame::clickGlobe(const Input &input) {
 				_monitorMovie.start();
 				_owner->requestSpotSound(kMaximumDeactivationIn, kMaximumDeactivationOut,
 						kFilterNoInput, kSpotSoundCompletedFlag);
+
+				// This sound was left out of the original.
+				_owner->requestSpotSound(kAllSilosDeactivatedIn, kAllSilosDeactivatedOut,
+						kFilterNoInput, kSpotSoundCompletedFlag);
+
 				_gameState = kPlayerWon1;
 			} else {
 				_owner->requestDelay(2, 1, kFilterNoInput, kDelayCompletedFlag);
@@ -1050,12 +1065,13 @@ void GlobeGame::doSolve() {
 	_upperNamesMovie.hide();
 	_lowerNamesMovie.hide();
 	_countdown.hide();
-	_monitorMovie.setSegment(kMaxDeactivatedStart * _monitorMovie.getScale(), kMaxDeactivatedStop * _monitorMovie.getScale());
-	_monitorMovie.setTime(kMaxDeactivatedStart * _monitorMovie.getScale());
+	_monitorMovie.setSegment(kMaxDeactivatedStart * _monitorMovie.getScale() + (kSiloDeactivatedOut - kSiloDeactivatedIn), kMaxDeactivatedStop * _monitorMovie.getScale());
+	_monitorMovie.setTime(kMaxDeactivatedStart * _monitorMovie.getScale() + (kSiloDeactivatedOut - kSiloDeactivatedIn));
 	_monitorCallBack.setCallBackFlag(kMaxDeactivatedFinished);
 	_monitorCallBack.scheduleCallBack(kTriggerAtStop, 0, 0);
 	_monitorMovie.start();
 	_owner->requestSpotSound(kMaximumDeactivationIn, kMaximumDeactivationOut, kFilterNoInput, kSpotSoundCompletedFlag);
+	_owner->requestSpotSound(kAllSilosDeactivatedIn, kAllSilosDeactivatedOut, kFilterNoInput, kSpotSoundCompletedFlag);
 	_gameState = kPlayerWon1;
 }
 

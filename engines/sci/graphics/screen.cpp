@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -115,6 +115,8 @@ GfxScreen::GfxScreen(ResourceManager *resMan) : _resMan(resMan) {
 	_controlScreen = (byte *)calloc(_pixels, 1);
 	_displayScreen = (byte *)calloc(_displayPixels, 1);
 
+	memset(&_ditheredPicColors, 0, sizeof(_ditheredPicColors));
+
 	// Sets display screen to be actually displayed
 	_activeScreen = _displayScreen;
 
@@ -168,14 +170,14 @@ void GfxScreen::copyToScreen() {
 void GfxScreen::copyFromScreen(byte *buffer) {
 	// TODO this ignores the pitch
 	Graphics::Surface *screen = g_system->lockScreen();
-	memcpy(buffer, screen->pixels, _displayPixels);
+	memcpy(buffer, screen->getPixels(), _displayPixels);
 	g_system->unlockScreen();
 }
 
 void GfxScreen::kernelSyncWithFramebuffer() {
 	// TODO this ignores the pitch
 	Graphics::Surface *screen = g_system->lockScreen();
-	memcpy(_displayScreen, screen->pixels, _displayPixels);
+	memcpy(_displayScreen, screen->getPixels(), _displayPixels);
 	g_system->unlockScreen();
 }
 
@@ -284,11 +286,15 @@ void GfxScreen::putPixelOnDisplay(int x, int y, byte color) {
  * with flood fill, due to small difference in the Bresenham logic.
  */
 void GfxScreen::drawLine(Common::Point startPoint, Common::Point endPoint, byte color, byte priority, byte control) {
-	int16 left = startPoint.x;
-	int16 top = startPoint.y;
-	int16 right = endPoint.x;
-	int16 bottom = endPoint.y;
-
+    int16 maxWidth = _width - 1;
+    int16 maxHeight = _height - 1;
+    // we need to clip values here, lsl3 room 620 background picture draws a line from 0, 199 t 320, 199
+    //  otherwise we would get heap corruption.
+	int16 left = CLIP<int16>(startPoint.x, 0, maxWidth);
+	int16 top = CLIP<int16>(startPoint.y, 0, maxHeight);
+	int16 right = CLIP<int16>(endPoint.x, 0, maxWidth);
+	int16 bottom = CLIP<int16>(endPoint.y, 0, maxHeight);
+	
 	//set_drawing_flag
 	byte drawMask = getDrawingMask(color, priority, control);
 

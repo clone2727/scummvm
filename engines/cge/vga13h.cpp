@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -26,6 +26,7 @@
  */
 
 #include "common/array.h"
+#include "common/config-manager.h"
 #include "common/rect.h"
 #include "graphics/palette.h"
 #include "cge/general.h"
@@ -210,11 +211,11 @@ Sprite *Sprite::expand() {
 			error("Bad SPR [%s]", fname);
 		Common::String line;
 		char tmpStr[kLineMax + 1];
-		int len = 0, lcnt = 0;
+		int lcnt = 0;
 
 		for (line = sprf.readLine(); !sprf.eos(); line = sprf.readLine()) {
-			len = line.size();
-			strcpy(tmpStr, line.c_str());
+			int len = line.size();
+			Common::strlcpy(tmpStr, line.c_str(), sizeof(tmpStr));
 			lcnt++;
 			if (len == 0 || *tmpStr == '.')
 				continue;
@@ -637,6 +638,10 @@ Vga::Vga(CGEEngine *vm) : _frmCnt(0), _msg(NULL), _name(NULL), _setPal(false), _
 		_page[idx]->create(320, 200, Graphics::PixelFormat::createFormatCLUT8());
 	}
 
+	if (ConfMan.getBool("enable_color_blind"))
+		_mono = 1;
+	
+
 	_oldColors = (Dac *)malloc(sizeof(Dac) * kPalCount);
 	_newColors = (Dac *)malloc(sizeof(Dac) * kPalCount);
 	getColors(_oldColors);
@@ -756,7 +761,7 @@ void Vga::setColors(Dac *tab, int lum) {
 	if (_mono) {
 		destP = _newColors;
 		for (int idx = 0; idx < kPalCount; idx++, destP++) {
-			// Form a greyscalce colour from 30% R, 59% G, 11% B
+			// Form a greyscalce color from 30% R, 59% G, 11% B
 			uint8 intensity = (((int)destP->_r * 77) + ((int)destP->_g * 151) + ((int)destP->_b * 28)) >> 8;
 			destP->_r = intensity;
 			destP->_g = intensity;
@@ -825,7 +830,7 @@ void Vga::update() {
 		}
 	}
 
-	g_system->copyRectToScreen(Vga::_page[0]->getBasePtr(0, 0), kScrWidth, 0, 0, kScrWidth, kScrHeight);
+	g_system->copyRectToScreen(Vga::_page[0]->getPixels(), kScrWidth, 0, 0, kScrWidth, kScrHeight);
 	g_system->updateScreen();
 }
 
@@ -844,7 +849,7 @@ void Bitmap::xShow(int16 x, int16 y) {
 	debugC(4, kCGEDebugBitmap, "Bitmap::xShow(%d, %d)", x, y);
 
 	const byte *srcP = (const byte *)_v;
-	byte *destEndP = (byte *)_vm->_vga->_page[1]->pixels + (kScrWidth * kScrHeight);
+	byte *destEndP = (byte *)_vm->_vga->_page[1]->getBasePtr(0, kScrHeight);
 	byte *lookupTable = _m;
 
 	// Loop through processing data for each plane. The game originally ran in plane mapped mode, where a
@@ -897,7 +902,7 @@ void Bitmap::show(int16 x, int16 y) {
 	debugC(5, kCGEDebugBitmap, "Bitmap::show(%d, %d)", x, y);
 
 	const byte *srcP = (const byte *)_v;
-	byte *destEndP = (byte *)_vm->_vga->_page[1]->pixels + (kScrWidth * kScrHeight);
+	byte *destEndP = (byte *)_vm->_vga->_page[1]->getBasePtr(0, kScrHeight);
 
 	// Loop through processing data for each plane. The game originally ran in plane mapped mode, where a
 	// given plane holds each fourth pixel sequentially. So to handle an entire picture, each plane's data

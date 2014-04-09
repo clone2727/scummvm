@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -87,7 +87,8 @@ enum ADGameFlags {
 	ADGF_ADDENGLISH = (1 << 24), ///< always add English as language option
 	ADGF_MACRESFORK = (1 << 25), ///< the md5 for this entry will be calculated from the resource fork
 	ADGF_USEEXTRAASTITLE = (1 << 26), ///< Extra field value will be used as main game title, not gameid
-	ADGF_DROPLANGUAGE = (1 << 28), ///< don't add language to gameid
+	ADGF_DROPLANGUAGE = (1 << 27), ///< don't add language to gameid
+	ADGF_DROPPLATFORM = (1 << 28), ///< don't add platform to gameid
 	ADGF_CD = (1 << 29),    	///< add "-cd" to gameid
 	ADGF_DEMO = (1 << 30)   	///< add "-demo" to gameid
 };
@@ -279,6 +280,9 @@ protected:
 	virtual const ADGameDescription *fallbackDetect(const FileMap &allFiles, const Common::FSList &fslist) const {
 		return 0;
 	}
+
+private:
+	void initSubSystems(const ADGameDescription *gameDesc) const;
 
 protected:
 	/**

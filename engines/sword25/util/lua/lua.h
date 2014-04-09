@@ -22,7 +22,7 @@
 #define LUA_RELEASE	"Lua 5.1.3"
 #define LUA_VERSION_NUM	501
 #define LUA_COPYRIGHT	"Copyright (C) 1994-2008 Lua.org, PUC-Rio"
-#define LUA_AUTHORS 	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
+#define LUA_AUTHORS	"R. Ierusalimschy, L. H. de Figueiredo & W. Celes"
 
 
 /* mark for precompiled code (`<esc>Lua') */
@@ -47,16 +47,6 @@
 #define LUA_ERRSYNTAX	3
 #define LUA_ERRMEM	4
 #define LUA_ERRERR	5
-
-// Added in ScummVM. Refer to http://www.lua.org/manual/5.1/manual.html
-static const char* luaErrorDescription[] = {
-	"No error",
-	"Coroutine yield",	// not an actual error, see lua_resume
-	"Runtime error",
-	"Syntax error during pre-compilation",	// refer to lua_load
-	"Memory allocation error",
-	"Error while running the error handler function"
-};
 
 typedef struct lua_State lua_State;
 

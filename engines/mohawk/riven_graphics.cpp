@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -255,7 +255,7 @@ void RivenGraphics::runScheduledTransition() {
 	}
 
 	// For now, just copy the image to screen without doing any transition.
-	_vm->_system->copyRectToScreen(_mainScreen->pixels, _mainScreen->pitch, 0, 0, _mainScreen->w, _mainScreen->h);
+	_vm->_system->copyRectToScreen(_mainScreen->getPixels(), _mainScreen->pitch, 0, 0, _mainScreen->w, _mainScreen->h);
 	_vm->_system->updateScreen();
 
 	_scheduledTransition = -1; // Clear scheduled transition
@@ -345,7 +345,7 @@ void RivenGraphics::drawInventoryImage(uint16 id, const Common::Rect *rect) {
 	mhkSurface->convertToTrueColor();
 	Graphics::Surface *surface = mhkSurface->getSurface();
 
-	_vm->_system->copyRectToScreen(surface->pixels, surface->pitch, rect->left, rect->top, surface->w, surface->h);
+	_vm->_system->copyRectToScreen(surface->getPixels(), surface->pitch, rect->left, rect->top, surface->w, surface->h);
 
 	delete mhkSurface;
 }
@@ -420,7 +420,7 @@ void RivenGraphics::updateCredits() {
 	} else {
 		// Otheriwse, we're scrolling
 		// Move the screen up one row
-		memmove(_mainScreen->pixels, _mainScreen->getBasePtr(0, 1), _mainScreen->pitch * (_mainScreen->h - 1));
+		memmove(_mainScreen->getPixels(), _mainScreen->getBasePtr(0, 1), _mainScreen->pitch * (_mainScreen->h - 1));
 
 		// Only update as long as we're not before the last frame
 		// Otherwise, we're just moving up a row (which we already did)
@@ -437,7 +437,7 @@ void RivenGraphics::updateCredits() {
 		}
 
 		// Now flush the new screen
-		_vm->_system->copyRectToScreen(_mainScreen->pixels, _mainScreen->pitch, 0, 0, _mainScreen->w, _mainScreen->h);
+		_vm->_system->copyRectToScreen(_mainScreen->getPixels(), _mainScreen->pitch, 0, 0, _mainScreen->w, _mainScreen->h);
 		_vm->_system->updateScreen();
 	}
 }

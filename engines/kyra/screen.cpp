@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -718,6 +718,13 @@ void Screen::fadePalette(const Palette &pal, int delay, const UpdateFunctor *upF
 		_vm->delay((delayAcc >> 8) * 1000 / 60);
 		delayAcc &= 0xFF;
 	}
+
+	// In case we should quit we setup the final palette here. This avoids
+	// ugly palette glitches when quitting while fading. This can for example
+	// be noticed when quitting while viewing the family album in Kyra3.
+	if (_vm->shouldQuit()) {
+		setScreenPalette(pal);
+	}
 }
 
 void Screen::getFadeParams(const Palette &pal, int delay, int &delayInc, int &diff) {
@@ -1256,7 +1263,7 @@ int Screen::getTextWidth(const char *str) {
 
 	while (1) {
 		if (_sjisMixedFontMode)
-			setFont(*str < 0 ? FID_SJIS_FNT : curFont);
+			setFont((*str & 0x80) ? FID_SJIS_FNT : curFont);
 
 		uint c = fetchChar(str);
 
@@ -1296,7 +1303,7 @@ void Screen::printText(const char *str, int x, int y, uint8 color1, uint8 color2
 
 	while (1) {
 		if (_sjisMixedFontMode)
-			setFont(*str < 0 ? FID_SJIS_FNT : curFont);
+			setFont((*str & 0x80) ? FID_SJIS_FNT : curFont);
 
 		uint8 charHeightFnt = getFontHeight();
 

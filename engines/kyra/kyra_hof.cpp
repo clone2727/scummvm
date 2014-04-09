@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -244,7 +244,7 @@ Common::Error KyraEngine_HoF::go() {
 		// load just the pak files needed for ingame
 		_staticres->loadStaticResourceFile();
 
-		if (_flags.platform == Common::kPlatformPC && _flags.isTalkie) {
+		if (_flags.platform == Common::kPlatformDOS && _flags.isTalkie) {
 			if (!_res->loadFileList("FILEDATA.FDT"))
 				error("couldn't load 'FILEDATA.FDT'");
 		} else {
@@ -990,7 +990,7 @@ void KyraEngine_HoF::loadNPCScript() {
 
 	char filename[] = "_NPC.EMC";
 
-	if (_flags.platform != Common::kPlatformPC || _flags.isTalkie) {
+	if (_flags.platform != Common::kPlatformDOS || _flags.isTalkie) {
 		switch (_lang) {
 		case 0:
 			filename[5] = 'E';
@@ -1449,7 +1449,7 @@ void KyraEngine_HoF::snd_playSoundEffect(int track, int volume) {
 	int16 vocIndex = (int16)READ_LE_UINT16(&_ingameSoundIndex[track * 2]);
 	if (vocIndex != -1) {
 		_sound->voicePlay(_ingameSoundList[vocIndex], 0, 255, 255, true);
-	} else if (_flags.platform == Common::kPlatformPC) {
+	} else if (_flags.platform == Common::kPlatformDOS) {
 		if (_sound->getSfxType() == Sound::kMidiMT32)
 			track = track < _mt32SfxMapSize ? _mt32SfxMap[track] - 1 : -1;
 		else if (_sound->getSfxType() == Sound::kMidiGM)

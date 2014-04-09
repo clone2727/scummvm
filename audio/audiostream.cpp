@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -98,6 +98,10 @@ LoopingAudioStream::LoopingAudioStream(RewindableAudioStream *stream, uint loops
 		// TODO: Properly indicate error
 		_loops = _completeIterations = 1;
 	}
+	if (stream->endOfData()) {
+		// Apparently this is an empty stream
+		_loops = _completeIterations = 1;
+	}
 }
 
 int LoopingAudioStream::readBuffer(int16 *buffer, const int numSamples) {
@@ -117,6 +121,10 @@ int LoopingAudioStream::readBuffer(int16 *buffer, const int numSamples) {
 			// TODO: Properly indicate error
 			_loops = _completeIterations = 1;
 			return samplesRead;
+		}
+		if (_parent->endOfData()) {
+			// Apparently this is an empty stream
+			_loops = _completeIterations = 1;
 		}
 
 		return samplesRead + readBuffer(buffer + samplesRead, remainingSamples);

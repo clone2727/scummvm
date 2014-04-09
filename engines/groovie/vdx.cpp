@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -358,7 +358,7 @@ void VDXPlayer::getStill(Common::ReadStream *in) {
 	byte *buf;
 	if (_flagOne) {
 		// Paint to the foreground
-		buf = (byte *)_fg->getBasePtr(0, 0);
+		buf = (byte *)_fg->getPixels();
 		if (_flag2Byte) {
 			mask = 0xff;
 		} else {
@@ -370,7 +370,7 @@ void VDXPlayer::getStill(Common::ReadStream *in) {
 		_flagFirstFrame = true;
 	} else {
 		// Paint to the background
-		buf = (byte *)_bg->getBasePtr(0, 0);
+		buf = (byte *)_bg->getPixels();
 	}
 
 	// Read the palette
@@ -486,9 +486,9 @@ void VDXPlayer::decodeBlockDelta(uint32 offset, byte *colors, uint16 imageWidth)
 	// TODO: Verify just the else block is required
 	//if (_flagOne) {
 		// Paint to the foreground
-		//dest = (byte *)_fg->getBasePtr(0, 0) + offset;
+		//dest = (byte *)_fg->getPixels() + offset;
 	//} else {
-		dest = (byte *)_bg->getBasePtr(0, 0) + offset;
+		dest = (byte *)_bg->getPixels() + offset;
 	//}
 
 	// Move the pointers to the beginning of the current block
@@ -496,8 +496,8 @@ void VDXPlayer::decodeBlockDelta(uint32 offset, byte *colors, uint16 imageWidth)
 	dest += blockOff;
 	byte *fgBuf = 0;
 	if (_flagSeven) {
-		fgBuf = (byte *)_fg->getBasePtr(0, 0) + offset + blockOff;
-		//byte *bgBuf = (byte *)_bg->getBasePtr(0, 0) + offset + blockOff;
+		fgBuf = (byte *)_fg->getPixels() + offset + blockOff;
+		//byte *bgBuf = (byte *)_bg->getPixels() + offset + blockOff;
 	}
 
 	for (int y = TILE_SIZE; y; y--) {
@@ -550,7 +550,7 @@ void VDXPlayer::fadeIn(uint8 *targetpal) {
 
 	// TODO: Is it required? If so, move to an appropiate place
 	// Copy the foreground to the background
-	memcpy((byte *)_vm->_graphicsMan->_foreground.getBasePtr(0, 0), (byte *)_vm->_graphicsMan->_background.getBasePtr(0, 0), 640 * 320);
+	memcpy((byte *)_vm->_graphicsMan->_foreground.getPixels(), (byte *)_vm->_graphicsMan->_background.getPixels(), 640 * 320);
 
 	// Start a fadein
 	_vm->_graphicsMan->fadeIn(targetpal);

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -75,8 +75,8 @@ bool BaseSurface::displayHalfTrans(int x, int y, Rect32 rect) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool BaseSurface::displayTransform(int x, int y, int hotX, int hotY, Rect32 rect, float zoomX, float zoomY, uint32 alpha, float rotate, TSpriteBlendMode blendMode, bool mirrorX, bool mirrorY) {
-	return displayTransZoom(x, y, rect, zoomX, zoomY, alpha, blendMode, mirrorX, mirrorY);
+bool BaseSurface::displayTransform(int x, int y, Rect32 rect, Rect32 newRect, const TransformStruct &transform) {
+	return displayTransform(x, y, rect, newRect, transform);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -129,7 +129,7 @@ bool BaseSurface::invalidate() {
 
 //////////////////////////////////////////////////////////////////////////
 bool BaseSurface::prepareToDraw() {
-	_lastUsedTime = _gameRef->_liveTimer;
+	_lastUsedTime = _gameRef->getLiveTimer()->getTime();
 
 	if (!_valid) {
 		//_gameRef->LOG(0, "Reviving: %s", _filename);
@@ -146,4 +146,4 @@ void BaseSurface::setSize(int width, int height) {
 	_height = height;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

@@ -8,16 +8,15 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  *
  */
 
@@ -65,7 +64,7 @@ ScriptInterpreter::ScriptInterpreter(ToltecsEngine *vm) : _vm(vm) {
 	_savedSp = 0;
 
 	_slots[kMaxScriptSlots - 1].size = 1024;
- 	_slots[kMaxScriptSlots - 1].data = new byte[_slots[kMaxScriptSlots - 1].size];
+	_slots[kMaxScriptSlots - 1].data = new byte[_slots[kMaxScriptSlots - 1].size];
 
 	setupScriptFunctions();
 
@@ -170,13 +169,25 @@ void ScriptInterpreter::setupScriptFunctions() {
 }
 
 void ScriptInterpreter::loadScript(uint resIndex, uint slotIndex) {
+	if (_slots[slotIndex].resIndex && _slots[slotIndex].resIndex != resIndex && _vm->_screen->isTalkTextActive(slotIndex)) {
+		// WORKAROUND: This happens when examining the assembled
+		// pickaxe. It could lead to random characters being printed,
+		// or possibly even crashes, when subtitles are enabled.
+		//
+		// According to johndoe and he said there may be some bug or
+		// missing feature that causes this situation to happen at all,
+		// but he was ok with this workaround for now.
+		warning("Possible script bug: Loading script %d into slot %d that has an active talk text, probably for script %d", resIndex, slotIndex, _slots[slotIndex].resIndex);
+		_vm->_screen->finishTalkTextItem(slotIndex);
+	}
+
 	delete[] _slots[slotIndex].data;
 
- 	_slots[slotIndex].resIndex = resIndex;
+	_slots[slotIndex].resIndex = resIndex;
 	Resource *scriptResource = _vm->_res->load(resIndex);
 	_slots[slotIndex].size = scriptResource->size;
- 	_slots[slotIndex].data = new byte[_slots[slotIndex].size];
- 	memcpy(_slots[slotIndex].data, scriptResource->data, _slots[slotIndex].size);
+	_slots[slotIndex].data = new byte[_slots[slotIndex].size];
+	memcpy(_slots[slotIndex].data, scriptResource->data, _slots[slotIndex].size);
 }
 
 void ScriptInterpreter::setMainScript(uint slotIndex) {
@@ -253,7 +264,7 @@ void ScriptInterpreter::execOpcode(byte opcode) {
 		_subCode = _code;
 		byte length = readByte();
 		if (length == 0) {
-			warning("Possible script bug detected - opcode length is 0 when calling script function");
+			warning("Opcode length is 0 when calling script function");
 			return;
 		}
 		debug(2, "length = %d", length);
@@ -472,7 +483,9 @@ void ScriptInterpreter::execOpcode(byte opcode) {
 		_code++;
 		break;
 	default:
-		error("Invalid opcode %d", opcode);
+		// Most likely a script bug. Throw a warning and ignore it.
+		// The original ignores invalid opcodes as well - bug #3604025.
+		warning("Invalid opcode %d", opcode);
 	}
 
 }
@@ -838,7 +851,7 @@ void ScriptInterpreter::sfFindMouseInRectIndex2() {
 }
 
 void ScriptInterpreter::sfDrawGuiImage() {
-  	_vm->_screen->drawGuiImage(arg16(5), arg16(3), arg16(7));
+	_vm->_screen->drawGuiImage(arg16(5), arg16(3), arg16(7));
 }
 
 void ScriptInterpreter::sfAddAnimatedSpriteNoLoop() {

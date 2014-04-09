@@ -1,11 +1,71 @@
 For a more comprehensive changelog of the latest experimental code, see:
         https://github.com/scummvm/scummvm/commits/
 
-1.6.0 (????-??-??)
+1.7.0 (????-??-??)
+ New Games:
+   - Added support for Return to Ringworld.
+   - Added support for The Neverhood.
+   - Added support for Mortville Manor.
+
+ General:
+   - Updated Munt MT-32 emulation code to version 1.3.0.
+   - Switched from our custom JPEG and PNG decoders to libjpeg(-turbo) and
+     libpng, which are faster and can handle more images.
+     (NOTE: The change to libpng was done in version 1.6.0, but it was not
+     added to the NEWS file).
+
+ AGOS:
+   - Added mouse wheel support for inventory and save game lists.
+   - Enabled verb name display in Simon the Sorcerer 2.
+   - Fixed the Feeble Files loyalty rating in the English 4CD version. (This
+     was apparently a bug in the original game. It is currently unknown if
+     other versions still have the same problem.)
+
+ Broken Sword 1:
+   - Added back support for MPEG-2 videos.
+
+ Broken Sword 2:
+   - Added back support for MPEG-2 videos.
+
+ CGE:
+   - Added an option to enable Color Blind mode the ScummVM GUI.
+ Gob:
+   - Improved video quality in Urban Runner.
+
+ Hopkins:
+   - Added an option to toggle Gore Mode from the ScummVM GUI.
+   - Fixed bug that could cause the music to stop prematurely.
+
+ SCI:
+   - Added support for the more detailed RAVE lip syncing data in the Windows
+     version of King's Quest 6. Portraits should now be much more expressive
+     when talking.
+   - Added support for simultaneous speech and subtitles in the CD versions
+     of Laura Bow 2 and King's Quest 6 (toggled either in-game with the new
+     "Dual" audio state, or via the ScummVM audio options).
+   - Fixed music fading.
+   - Fixed several script bugs in Camelot, Crazy Nick's, Hoyle 3, QFG1VGA, KQ5,
+     KQ6, LB2, LSL2, LSL5, Pharkas, PQ1VGA, SQ4, SQ5.
+   - Improved the MIDI parser so that music event processing is done more
+     properly.
+
+ SCUMM:
+   - Changed the saved game naming scheme of HE games to always contain
+     the target name.
+   - Fixed having multiple coaches in Backyard Football.
+
+ Tinsel:
+   - Discworld 1 and 2 no longer crash on big-endian systems.
+
+1.6.0 (2013-05-31)
  New Games:
    - Added support for 3 Skulls of the Toltecs.
    - Added support for Eye of the Beholder.
    - Added support for Eye of the Beholder II: The Legend of Darkmoon.
+   - Added support for Hopkins FBI.
+   - Added support for Tony Tough and the Night of Roasted Moths.
+   - Added support for The Journeyman Project: Pegasus Prime.
+   - Added support for the Macintosh version of Discworld 1.
 
  General:
    - Added a new save/load chooser based on a grid of thumbnails. This is only
@@ -21,11 +81,17 @@ For a more comprehensive changelog of the latest experimental code, see:
      which was to change the value by "one pixel" which would sometimes not
      change it at all.
    - Updated MT-32 emulation code to latest munt project snapshot.
+   - Added FluidSynth settings dialog, mainly for reverb and chorus settings.
+   - Fixed crash on certain Smacker movies.
 
   Cine:
    - Improved audio support for Amiga and AtariST versions of Future Wars.
      Now music fades out slowly instead of stopping immediately. Sound
      effects are now properly panned, when requested by the game.
+
+  CGE:
+   - Soltys contains a puzzle requiring the ALT key to be pressed while clicking
+     on an object. This puzzle has been disabled on devices not using this key.
 
   Drascula:
    - Resolved multiple UI issues with the original save/load screen.
@@ -65,6 +131,12 @@ For a more comprehensive changelog of the latest experimental code, see:
      General MIDI instruments, and should sound a lot closer to the original.
    - Added sound and music support for the Macintosh version of Loom.
    - Handle double-clicking in the Macintosh version of Loom.
+   - Major bugfixes in INSANE (the Full Throttle bike fights).
+
+ TOUCHE:
+   - Added support for Enhanced Music by James Woodcock
+     (http://www.jameswoodcock.co.uk/category/scummvm-music-enhancement-project/).
+
 
 1.5.0 (2012-07-27)
  New Games:

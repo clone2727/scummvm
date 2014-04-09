@@ -1,24 +1,24 @@
 /* ScummVM - Graphic Adventure Engine
-*
-* ScummVM is the legal property of its developers, whose names
-* are too numerous to list here. Please refer to the COPYRIGHT
-* file distributed with this source distribution.
-*
-* This program is free software; you can redistribute it and/or
-* modify it under the terms of the GNU General Public License
-* as published by the Free Software Foundation; either version 2
-* of the License, or (at your option) any later version.
-
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-*
-*/
+ *
+ * ScummVM is the legal property of its developers, whose names
+ * are too numerous to list here. Please refer to the COPYRIGHT
+ * file distributed with this source distribution.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
+ */
 
 #include "common/debug.h"
 #include "common/system.h"
@@ -58,12 +58,14 @@ Character::Character(ToonEngine *vm) : _vm(vm) {
 	_animSpecialDefaultId = 0;
 	_currentPathNode = 0;
 	_currentWalkStamp = 0;
+	_currentFacingStamp = 0;
 	_visible = true;
 	_speed = 150;   // 150 = nominal drew speed
 	_lastWalkTime = 0;
 	_numPixelToWalk = 0;
 	_nextIdleTime = _vm->_system->getMillis() + (_vm->randRange(0, 600) + 300) * _vm->getTickLength();
 	_lineToSayId = 0;
+	_time = 0;
 }
 
 Character::~Character(void) {
@@ -99,6 +101,9 @@ void Character::setFacing(int32 facing) {
 	if (_blockingWalk) {
 		_flags |= 2;
 
+		_currentFacingStamp++;
+		int32 localFacingStamp = _currentFacingStamp;
+
 		int32 dir = 0;
 
 		_lastWalkTime = _vm->_system->getMillis();
@@ -127,6 +132,11 @@ void Character::setFacing(int32 facing) {
 			else
 				playWalkAnim(0, 0);
 			_vm->doFrame();
+
+			if (_currentFacingStamp != localFacingStamp) {
+				// another setFacing was started in doFrame, we need to cancel this one.
+				return;
+			}
 		};
 
 		_flags &= ~2;

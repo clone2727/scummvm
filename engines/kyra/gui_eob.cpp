@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1300,24 +1300,24 @@ void EoBCoreEngine::gui_processWeaponSlotClickRight(int charIndex, int slotIndex
 
 	case 14:
 		// Potion
-		usePotion(charIndex, wslot);
+		usePotion(charIndex, slotIndex);
 		break;
 
 	case 18:
-		useWand(charIndex, wslot);
+		useWand(charIndex, slotIndex);
 		break;
 
 	case 19:
 		// eob2 horn
-		useHorn(charIndex, wslot);
+		useHorn(charIndex, slotIndex);
 		break;
 
 	case 20:
 		if (vl == 1)
 			inflictCharacterDamage(charIndex, 200);
 		else
-			useMagicScroll(charIndex, 55, wslot);
-		deleteInventoryItem(charIndex, wslot);
+			useMagicScroll(charIndex, 55, slotIndex);
+		deleteInventoryItem(charIndex, slotIndex);
 		break;
 
 	default:
@@ -2056,9 +2056,8 @@ void GUI_EoB::runCampMenu() {
 
 		if (inputFlag == _vm->_keyMap[Common::KEYCODE_ESCAPE])
 			inputFlag = 0x8007;
-		else if (inputFlag == _vm->_keyMap[Common::KEYCODE_KP5] || inputFlag == _vm->_keyMap[Common::KEYCODE_SPACE] || inputFlag == _vm->_keyMap[Common::KEYCODE_RETURN]) {
+		else if (prevHighlightButton && (inputFlag == _vm->_keyMap[Common::KEYCODE_KP5] || inputFlag == _vm->_keyMap[Common::KEYCODE_SPACE] || inputFlag == _vm->_keyMap[Common::KEYCODE_RETURN]))
 			inputFlag = 0x8000 + prevHighlightButton->index;
-		}
 
 		Button *clickedButton = _vm->gui_getButton(buttonList, inputFlag & 0x7FFF);
 

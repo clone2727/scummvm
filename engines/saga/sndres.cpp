@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -102,6 +102,15 @@ SndRes::SndRes(SagaEngine *vm) : _vm(vm), _sfxContext(NULL), _voiceContext(NULL)
 		// TODO
 #endif
 	}
+}
+
+SndRes::~SndRes() {
+#ifdef ENABLE_IHNM
+	if (_vm->getGameId() == GID_IHNM && _vm->isMacResources()) {
+		// Delete the dummy voice context. See setVoiceBank()
+		delete _voiceContext;
+	}
+#endif
 }
 
 void SndRes::setVoiceBank(int serial) {
@@ -240,11 +249,11 @@ bool SndRes::load(ResourceContext *context, uint32 resourceId, SoundBuffer &buff
 
 		if (!memcmp(header, "Creative", 8)) {
 			resourceType = kSoundVOC;
-		} else if (!memcmp(header, "RIFF", 4) != 0) {
+		} else if (!memcmp(header, "RIFF", 4)) {
 			resourceType = kSoundWAV;
-		} else if (!memcmp(header, "FORM", 4) != 0) {
+		} else if (!memcmp(header, "FORM", 4)) {
 			resourceType = kSoundAIFF;
-		} else if (!memcmp(header, "ajkg", 4) != 0) {
+		} else if (!memcmp(header, "ajkg", 4)) {
 			resourceType = kSoundShorten;
 		}
 

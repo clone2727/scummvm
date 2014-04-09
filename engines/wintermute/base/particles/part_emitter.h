@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -43,7 +43,7 @@ public:
 	PartEmitter(BaseGame *inGame, BaseScriptHolder *Owner);
 	virtual ~PartEmitter(void);
 
-	int _fadeOutTime;
+	int32 _fadeOutTime;
 
 	bool start();
 
@@ -70,11 +70,11 @@ public:
 
 
 private:
-	int _width;
-	int _height;
+	int32 _width;
+	int32 _height;
 
-	int _angle1;
-	int _angle2;
+	int32 _angle1;
+	int32 _angle2;
 
 	float _rotation1;
 	float _rotation2;
@@ -94,31 +94,31 @@ private:
 	float _scale2;
 	bool _scaleZBased;
 
-	int _maxParticles;
+	int32 _maxParticles;
 
-	int _lifeTime1;
-	int _lifeTime2;
+	int32 _lifeTime1;
+	int32 _lifeTime2;
 	bool _lifeTimeZBased;
 
-	int _genInterval;
-	int _genAmount;
+	int32 _genInterval;
+	int32 _genAmount;
 
 	bool _running;
-	int _overheadTime;
+	int32 _overheadTime;
 
-	int _maxBatches;
-	int _batchesGenerated;
+	int32 _maxBatches;
+	int32 _batchesGenerated;
 
 	Rect32 _border;
-	int _borderThicknessLeft;
-	int _borderThicknessRight;
-	int _borderThicknessTop;
-	int _borderThicknessBottom;
+	int32 _borderThicknessLeft;
+	int32 _borderThicknessRight;
+	int32 _borderThicknessTop;
+	int32 _borderThicknessBottom;
 
-	int _fadeInTime;
+	int32 _fadeInTime;
 
-	int _alpha1;
-	int _alpha2;
+	int32 _alpha1;
+	int32 _alpha2;
 	bool _alphaTimeBased;
 
 	bool _useRegion;
@@ -135,6 +135,6 @@ private:
 	BaseArray<char *> _sprites;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "teenagent/dialog.h"
@@ -28,7 +29,7 @@ namespace TeenAgent {
 
 void Dialog::show(uint16 dialogNum, Scene *scene, uint16 animation1, uint16 animation2, byte color1, byte color2, byte slot1, byte slot2) {
 	uint16 addr = _vm->res->getDialogAddr(dialogNum);
-	// WORKAROUND: For Dialog 163, The usage of this in the engine overlaps the previous dialog i.e. the 
+	// WORKAROUND: For Dialog 163, The usage of this in the engine overlaps the previous dialog i.e. the
 	// starting offset used is two bytes early, thus implicitly changing the first command of this dialog
 	// from NEW_LINE to CHANGE_CHARACTER.
 	// FIXME: Unsure if this is correct behaviour or if this is a regression from the original. Check this.

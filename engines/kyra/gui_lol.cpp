@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -373,8 +373,8 @@ void LoLEngine::gui_drawCharPortraitWithStats(int charNum) {
 	} else {
 		gui_drawLiveMagicBar(33, 32, _characters[charNum].magicPointsCur, 0, _characters[charNum].magicPointsMax, 5, 32, 162, 1, 0);
 		gui_drawLiveMagicBar(39, 32, _characters[charNum].hitPointsCur, 0, _characters[charNum].hitPointsMax, 5, 32, 154, 1, 1);
-		_screen->printText((_flags.platform == Common::kPlatformPC && !_flags.isTalkie) ? "M" : getLangString(0x4253), 33, 1, 160, 0);
-		_screen->printText((_flags.platform == Common::kPlatformPC && !_flags.isTalkie) ? "H" : getLangString(0x4254), 39, 1, 152, 0);
+		_screen->printText((_flags.platform == Common::kPlatformDOS && !_flags.isTalkie) ? "M" : getLangString(0x4253), 33, 1, 160, 0);
+		_screen->printText((_flags.platform == Common::kPlatformDOS && !_flags.isTalkie) ? "H" : getLangString(0x4254), 39, 1, 152, 0);
 	}
 
 	int spellLevels = 0;
@@ -697,7 +697,7 @@ void LoLEngine::gui_toggleButtonDisplayMode(int shapeIndex, int mode) {
 		t = _system->getMillis();
 		if (_buttonPressTimer > t)
 			delay(_buttonPressTimer - t);
-
+		// fall through
 	case 2:
 		mode = 0;
 		_lastButtonShape = 0;

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -318,8 +318,6 @@ SaveStateDescriptor AgiMetaEngine::querySaveMetaInfos(const char *target, int sl
 			int minutes = saveTime & 0xFF;
 
 			desc.setSaveTime(hour, minutes);
-
-			// TODO: played time
 		}
 
 
@@ -350,7 +348,7 @@ const ADGameDescription *AgiMetaEngine::fallbackDetect(const FileMap &allFilesXX
 
 	// Set the default values for the fallback descriptor's ADGameDescription part.
 	g_fallbackDesc.desc.language = Common::UNK_LANG;
-	g_fallbackDesc.desc.platform = Common::kPlatformPC;
+	g_fallbackDesc.desc.platform = Common::kPlatformDOS;
 	g_fallbackDesc.desc.flags = ADGF_NO_FLAGS;
 
 	// Set default values for the fallback descriptor's AGIGameDescription part.

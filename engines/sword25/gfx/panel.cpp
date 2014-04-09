@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -35,6 +35,8 @@
 #include "sword25/kernel/outputpersistenceblock.h"
 #include "sword25/gfx/graphicengine.h"
 #include "sword25/gfx/image/image.h"
+
+#include "sword25/gfx/renderobjectmanager.h"
 
 namespace Sword25 {
 
@@ -67,7 +69,7 @@ Panel::Panel(InputPersistenceBlock &reader, RenderObjectPtr<RenderObject> parent
 Panel::~Panel() {
 }
 
-bool Panel::doRender() {
+bool Panel::doRender(RectangleList *updateRects) {
 	// Falls der Alphawert 0 ist, ist das Panel komplett durchsichtig und es muss nichts gezeichnet werden.
 	if (_color >> 24 == 0)
 		return true;
@@ -75,7 +77,15 @@ bool Panel::doRender() {
 	GraphicEngine *gfxPtr = Kernel::getInstance()->getGfx();
 	assert(gfxPtr);
 
-	return gfxPtr->fill(&_bbox, _color);
+	for (RectangleList::iterator it = updateRects->begin(); it != updateRects->end(); ++it) {
+		const Common::Rect &clipRect = *it;
+		if (_bbox.intersects(clipRect)) {
+			Common::Rect intersectionRect = _bbox.findIntersectingRect(clipRect);
+			gfxPtr->fill(&intersectionRect, _color);
+		}
+	}
+
+	return true;
 }
 
 bool Panel::persist(OutputPersistenceBlock &writer) {
@@ -94,7 +104,7 @@ bool Panel::unpersist(InputPersistenceBlock &reader) {
 
 	result &= RenderObject::unpersist(reader);
 
-	uint color;
+	uint32 color;
 	reader.read(color);
 	setColor(color);
 

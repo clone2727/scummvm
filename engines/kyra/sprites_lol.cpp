@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -503,7 +503,6 @@ int LoLEngine::checkBlockOccupiedByParty(int x, int y, int testFlag) {
 void LoLEngine::drawBlockObjects(int blockArrayIndex) {
 	LevelBlockProperty *l = _visibleBlocks[blockArrayIndex];
 	uint16 s = l->assignedObjects;
-	LoLObject *obj = findObject(s);
 
 	if (l->direction != _currentDirection) {
 		l->drawObjects = 0;
@@ -511,8 +510,7 @@ void LoLEngine::drawBlockObjects(int blockArrayIndex) {
 
 		while (s) {
 			reassignDrawObjects(_currentDirection, s, l, true);
-			obj = findObject(s);
-			s = obj->nextAssignedObject;
+			s = findObject(s)->nextAssignedObject;
 		}
 	}
 
@@ -567,6 +565,7 @@ void LoLEngine::drawBlockObjects(int blockArrayIndex) {
 					case 2:
 					case 6:
 						flg |= 0x10;
+						// fall through
 					case 0:
 					case 4:
 						shpIndex = _flyingItemShapes[shpIndex].shapeLeft;

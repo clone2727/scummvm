@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef GRAPHICS_CURSORMAN_H
@@ -160,12 +161,15 @@ public:
 	 */
 	void replaceCursorPalette(const byte *colors, uint start, uint num);
 
+	void lock(bool locked);
 private:
 	friend class Common::Singleton<SingletonBaseType>;
 	// Even though this is basically the default constructor we implement it
 	// ourselves, so it is private and thus there is no way to create this class
 	// except from the Singleton code.
-	CursorManager() {}
+	CursorManager() {
+		_locked = false;
+	}
 	~CursorManager();
 
 	struct Cursor {
@@ -198,6 +202,7 @@ private:
 	};
 	Common::Stack<Cursor *> _cursorStack;
 	Common::Stack<Palette *> _cursorPaletteStack;
+	bool _locked;
 };
 
 } // End of namespace Graphics

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -32,13 +32,15 @@ byte BaseCostumeRenderer::drawCostume(const VirtScreen &vs, int numStrips, const
 
 	_out = vs;
 	if (drawToBackBuf)
-		_out.pixels = vs.getBackPixels(0, 0);
+		_out.setPixels(vs.getBackPixels(0, 0));
 	else
-		_out.pixels = vs.getPixels(0, 0);
+		_out.setPixels(vs.getPixels(0, 0));
 
 	_actorX += _vm->_virtscr[kMainVirtScreen].xstart & 7;
 	_out.w = _out.pitch / _vm->_bytesPerPixel;
-	_out.pixels = (byte *)_out.pixels - (_vm->_virtscr[kMainVirtScreen].xstart & 7);
+	// We do not use getBasePtr here because the offset to pixels never used
+	// _vm->_bytesPerPixel, but it seems unclear why.
+	_out.setPixels((byte *)_out.getPixels() - (_vm->_virtscr[kMainVirtScreen].xstart & 7));
 
 	_numStrips = numStrips;
 

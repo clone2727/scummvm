@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1219,7 +1219,7 @@ void cmdWander(AgiGame *state, uint8 *p) {
 
 void cmdSetGameID(AgiGame *state, uint8 *p) {
 	if (state->_curLogic->texts && (p0 - 1) <= state->_curLogic->numTexts)
-		strncpy(state->id, state->_curLogic->texts[p0 - 1], 8);
+		Common::strlcpy(state->id, state->_curLogic->texts[p0 - 1], 8);
 	else
 		state->id[0] = 0;
 
@@ -1705,7 +1705,9 @@ void cmdCallV1(AgiGame *state, uint8 *p) {
 	// FIXME: The following instruction looks incomplete.
 	// Maybe something is meant to be assigned to, or read from,
 	// the logic_list entry?
-	state->logic_list[++state->max_logics];
+//	state->logic_list[++state->max_logics];
+	// For now, just do the increment, to silence a clang warning
+	++state->max_logics;
 	_v[13] = 1;
 }
 

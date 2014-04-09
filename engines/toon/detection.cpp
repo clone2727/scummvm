@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -44,7 +44,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"study.svl", 0, "281efa3f33f6712c0f641a605f4d40fd", 2511090},
 			AD_LISTEND
 		},
-		Common::EN_ANY, Common::kPlatformPC, ADGF_NO_FLAGS, GUIO0()
+		Common::EN_ANY, Common::kPlatformDOS, ADGF_NO_FLAGS, GUIO0()
 	},
 	{
 		"toon", "",
@@ -54,7 +54,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"study.svl", 0, "df056b94ea83f1ed92a539cf636053ab", 2542668},
 			AD_LISTEND
 		},
-		Common::FR_FRA, Common::kPlatformPC, ADGF_NO_FLAGS, GUIO0()
+		Common::FR_FRA, Common::kPlatformDOS, ADGF_NO_FLAGS, GUIO0()
 	},
 	{
 		"toon", "",
@@ -64,7 +64,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"study.svl", 0, "72fe96a9e10967d3138e918295babc42", 2910283},
 			AD_LISTEND
 		},
-		Common::DE_DEU, Common::kPlatformPC, ADGF_NO_FLAGS, GUIO0()
+		Common::DE_DEU, Common::kPlatformDOS, ADGF_NO_FLAGS, GUIO0()
 	},
 	{
 		"toon", "",
@@ -74,7 +74,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"study.svl", 0, "b6b1ee2d9d94d53d305856039ab7bde7", 2634620},
 			AD_LISTEND
 		},
-		Common::ES_ESP, Common::kPlatformPC, ADGF_NO_FLAGS, GUIO0()
+		Common::ES_ESP, Common::kPlatformDOS, ADGF_NO_FLAGS, GUIO0()
 	},
 	{
 		"toon", "",
@@ -83,7 +83,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"arcaddbl.svl", 0, "1d1b96e317e03ffd3874a8ebe59556f3", 6246232},
 			{"study.svl", 0, "d4aff126ee27be3c3d25e2996369d7cb", 2324368},
 		},
-		Common::RU_RUS, Common::kPlatformPC, ADGF_NO_FLAGS, GUIO0()
+		Common::RU_RUS, Common::kPlatformDOS, ADGF_NO_FLAGS, GUIO0()
 	},
 	{
 		"toon", "",
@@ -93,7 +93,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"generic.svl", 0, "5eb99850ada22f0b8cf6392262d4dd07", 9404599},
 			AD_LISTEND
 		},
-		Common::DE_DEU, Common::kPlatformPC, ADGF_DEMO, GUIO0()
+		Common::DE_DEU, Common::kPlatformDOS, ADGF_DEMO, GUIO0()
 	},
 	{
 		"toon", "",
@@ -102,7 +102,7 @@ static const ADGameDescription gameDescriptions[] = {
 			{"generic.svl", 0, "5c42724bb93b360dca7044d6b7ef26e5", 7739319},
 			AD_LISTEND
 		},
-		Common::EN_ANY, Common::kPlatformPC, ADGF_DEMO, GUIO0()
+		Common::EN_ANY, Common::kPlatformDOS, ADGF_DEMO, GUIO0()
 	},
 
 	AD_TABLE_END_MARKER
@@ -179,10 +179,9 @@ SaveStateList ToonMetaEngine::listSaves(const char *target) const {
 	sort(filenames.begin(), filenames.end());   // Sort (hopefully ensuring we are sorted numerically..)
 
 	SaveStateList saveList;
-	int slotNum = 0;
 	for (Common::StringArray::const_iterator filename = filenames.begin(); filename != filenames.end(); ++filename) {
 		// Obtain the last 3 digits of the filename, since they correspond to the save slot
-		slotNum = atoi(filename->c_str() + filename->size() - 3);
+		int slotNum = atoi(filename->c_str() + filename->size() - 3);
 
 		if (slotNum >= 0 && slotNum <= 99) {
 			Common::InSaveFile *file = saveFileMan->openForLoading(*filename);
