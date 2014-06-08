@@ -560,6 +560,10 @@ bool MidiDriver_AmigaSci0::readInstruments() {
 class MidiPlayer_AmigaSci0 : public MidiPlayer {
 public:
 	MidiPlayer_AmigaSci0(SciVersion version) : MidiPlayer(version) { _driver = new MidiDriver_AmigaSci0(g_system->getMixer()); }
+	~MidiPlayer_AmigaSci0() {
+		delete _driver; 
+	}
+
 	byte getPlayId() const { return 0x40; }
 	int getPolyphony() const { return MidiDriver_AmigaSci0::kVoices; }
 	bool hasRhythmChannel() const { return false; }

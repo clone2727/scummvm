@@ -1948,6 +1948,10 @@ void MidiDriver_MacSci1::generateSampleChunk(int16 *data, int len) {
 class MidiPlayer_MacSci1 : public MidiPlayer {
 public:
 	MidiPlayer_MacSci1(SciVersion version) : MidiPlayer(version) { _driver = new MidiDriver_MacSci1(g_system->getMixer()); }
+	~MidiPlayer_MacSci1() {
+		delete _driver;
+	}
+
 	byte getPlayId() const;
 	int getPolyphony() const { return MidiDriver_MacSci1::kVoices; }
 	bool hasRhythmChannel() const { return false; }

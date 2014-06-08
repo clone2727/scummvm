@@ -1546,6 +1546,10 @@ void MidiDriver_MacSci0::generateSampleChunk(int16 *data, int len) {
 class MidiPlayer_MacSci0 : public MidiPlayer {
 public:
 	MidiPlayer_MacSci0(SciVersion version) : MidiPlayer(version) { _driver = new MidiDriver_MacSci0(g_system->getMixer()); }
+	~MidiPlayer_MacSci0() {
+		delete _driver;
+	}
+
 	byte getPlayId() const { return 0x40; }
 	int getPolyphony() const { return MidiDriver_MacSci0::kVoices; }
 	bool hasRhythmChannel() const { return false; }
