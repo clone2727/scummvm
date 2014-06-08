@@ -107,7 +107,7 @@ public:
 	};
 
 	MidiDriver_AmigaSci0(Audio::Mixer *mixer);
-	virtual ~MidiDriver_AmigaSci0() { }
+	virtual ~MidiDriver_AmigaSci0();
 
 	// MidiDriver
 	int open();
@@ -226,6 +226,16 @@ MidiDriver_AmigaSci0::MidiDriver_AmigaSci0(Audio::Mixer *mixer) :
 	memset(_chanVoice, 0, sizeof(_chanVoice));
 	memset(_voiceNote, 0, sizeof(_voiceNote));
 	memset(&_envelopeState, 0, sizeof(_envelopeState));
+	memset(&_bank, 0, sizeof(_bank));
+}
+
+MidiDriver_AmigaSci0::~MidiDriver_AmigaSci0() {
+	for (uint i = 0; i < ARRAYSIZE(_bank.instrument); i++) {
+		if (_bank.instrument[i]) {
+			delete[] _bank.instrument[i]->samples;
+			delete _bank.instrument[i];
+		}
+	}
 }
 
 int MidiDriver_AmigaSci0::open() {
@@ -398,6 +408,11 @@ void MidiDriver_AmigaSci0::stopVoices() {
 
 void MidiDriver_AmigaSci0::voiceOn(int8 voice, int8 note, bool newNote) {
 	_voiceState[voice].instrument = _bank.instrument[_voicePatch[voice]];
+
+	// Default to instrument 0
+	if (!_voiceState[voice].instrument)
+		_voiceState[voice].instrument = _bank.instrument[0];
+
 	_voiceState[voice].velocity = _voiceVelocity[voice];
 	_voiceVolume[voice] = _voiceVelocity[voice] >> 1;
 
@@ -512,14 +527,11 @@ void MidiDriver_AmigaSci0::setVolume(byte volume) {
 }
 
 bool MidiDriver_AmigaSci0::readInstruments() {
-	// FIXME: Memory allocated here is never freed
-
 	Common::File file;
 
 	if (!file.open("bank.001"))
 		return false;
 
-	memset(&_bank, 0, sizeof(_bank));
 	file.read(_bank.name, 8);
 	if (strcmp(_bank.name, "X0iUo123") != 0)
 		return false;
@@ -531,10 +543,7 @@ bool MidiDriver_AmigaSci0::readInstruments() {
 		Instrument *ins = new Instrument();
 		_bank.patchNr[i] = file.readUint16BE();
 		_bank.instrument[_bank.patchNr[i]] = ins;
-		if (i == 0) {
-			for (uint j = 0; j < _bank.instrumentCount; ++j)
-				_bank.instrument[j] = ins;
-		}
+
 		file.read(ins->name, 30);
 		ins->flags = file.readUint16BE();
 		ins->transpose = file.readByte();
@@ -548,10 +557,6 @@ bool MidiDriver_AmigaSci0::readInstruments() {
 		uint32 sampleSize = ins->seg1Size + ins->seg2Size + ins->seg3Size;
 		sampleSize <<= 1;
 		ins->samples = new int8[sampleSize];
-
-		if (!ins->samples)
-			return false;
-
 		file.read(ins->samples, sampleSize);
 	}
 
