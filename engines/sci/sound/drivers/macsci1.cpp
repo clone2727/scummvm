@@ -1232,6 +1232,13 @@ public:
 
 private:
 	enum {
+		kTimerThreshold = 16667
+	};
+
+	uint32 _timerIncrease;
+	uint32 _timerCounter;
+
+	enum {
 		kModeLoop = 1 << 0 // Instrument looping flag
 	};
 
@@ -1314,7 +1321,9 @@ private:
 #define NOTE_RANGE_LOOP 18
 
 MidiDriver_MacSci1::MidiDriver_MacSci1(Audio::Mixer *mixer) : MidiDriver_Emulated(mixer),
-	_playSwitch(true), _masterVolume(15), _patch(0) {
+	_playSwitch(true), _masterVolume(15), _patch(0), _timerCounter(0) {
+
+	_timerIncrease = getBaseTempo();
 
 	for (uint i = 0; i < kVoices; ++i) {
 		_voiceChannel[i] = -1;
@@ -1467,6 +1476,14 @@ void MidiDriver_MacSci1::calcMixVelocity(int8 voice) {
 }
 
 void MidiDriver_MacSci1::onTimer() {
+	// This callback is 250Hz and we need 60Hz for doEnvelope()
+	_timerCounter += _timerIncrease;
+
+	if (_timerCounter <= kTimerThreshold)
+		return;
+
+	_timerCounter -= kTimerThreshold;
+
 	for (uint i = 0; i < kVoices; ++i) {
 		if (_voiceNote[i] != -1) {
 			++_voiceTicks[i];
