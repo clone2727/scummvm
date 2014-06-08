@@ -225,6 +225,7 @@ MidiDriver_AmigaSci0::MidiDriver_AmigaSci0(Audio::Mixer *mixer) :
 	memset(_voicePitchWheelOffset, 0, sizeof(_voicePitchWheelOffset));
 	memset(_chanVoice, 0, sizeof(_chanVoice));
 	memset(_voiceNote, 0, sizeof(_voiceNote));
+	memset(&_envelopeState, 0, sizeof(_envelopeState));
 }
 
 int MidiDriver_AmigaSci0::open() {
