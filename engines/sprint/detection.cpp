@@ -43,9 +43,24 @@ static const PlainGameDescriptor sprintGames[] = {
 	{ 0, 0 }
 };
 
+static const ExecutableVersion enCDVersion = { "CD", kFlagNone, 0x2598, 0x2678, 0x2DA8, 0x38FA0, 0x35B8 };
 static const ExecutableVersion enDVDVersion = { "DVD", kFlagDVD, 0x2598, 0x2678, 0x2DA8, 0x38FAC, 0x35B8 };
 
 static const SprintGameDescription gameDescriptions[] = {
+	// Myst Masterpiece Edition CD
+	{
+		{
+			"myst",
+			"Masterpiece Edition",
+			AD_ENTRY1("Myst Masterpiece", "90e447e80db4476ab7e00123f5a44d23"),
+			Common::EN_ANY,
+			Common::kPlatformMacintosh,
+			ADGF_MACRESFORK,
+			GUIO_NONE
+		},
+		&enCDVersion,																	\
+	},
+
 	// Myst 10th Anniversary DVD
 	{
 		{
