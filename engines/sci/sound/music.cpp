@@ -107,7 +107,7 @@ void SciMusic::init() {
 			if (getSciVersion() <= SCI_VERSION_0_LATE)
 				_pMidiDrv = MidiPlayer_AmigaSci0_create(_soundVersion);
 			else
-				_pMidiDrv = MidiPlayer_AmigaMac_create(_soundVersion);
+				_pMidiDrv = MidiPlayer_AmigaSci1_create(_soundVersion);
 		} else
 			_pMidiDrv = MidiPlayer_AdLib_create(_soundVersion);
 		break;
