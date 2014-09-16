@@ -24,6 +24,7 @@
 #include "sci/sound/drivers/mididriver.h"
 #include "sci/resource.h"
 
+#include "common/array.h"
 #include "common/file.h"
 #include "common/frac.h"
 #include "common/memstream.h"
@@ -1173,6 +1174,34 @@ public:
 	void onNewSound(uint16 channels);
 
 private:
+	struct Instrument {
+		Instrument();
+		~Instrument();
+
+		uint16 index;
+		uint16 mode;
+		uint32 segSize1;
+		uint32 segSize2;
+		uint32 segSize3;
+		uint16 transpose;
+		byte attackLength;
+		byte decayLength;
+		byte sustainLength;
+		byte releaseLength;
+		int8 attackDelta;
+		int8 decayDelta;
+		int8 sustainDelta;
+		int8 releaseDelta;
+		int8 attackTarget;
+		int8 decayTarget;
+		int8 sustainTarget;
+		int8 releaseTarget; // ???
+		char name[31];
+		byte *samples;
+	};
+
+	Common::Array<Instrument *> _instruments;
+
 	uint32 _timerThreshold;
 	uint32 _timerIncrease;
 	uint32 _timerCounter;
@@ -1185,53 +1214,34 @@ private:
 	void doEnvelope();
 	void voiceOff(int8 voice);
 
+	int loadInstruments(Common::SeekableReadStream &patch);
+
 	bool _playSwitch;
 
-	byte _voicePatch[kVoices];
-	byte _voiceEnvState[kVoices];
-	byte _voiceVelocity[kVoices];
-	byte _voiceEnvCntDown[kVoices];
-	byte _voiceEnvLength[4][kVoices];
-	int8 _voiceEnvVelocity[5][kVoices];
-	int8 _voiceEnvDelta[4][kVoices];
+	struct Voice {
+		Voice();
+
+		const Instrument *instrument;
+		byte envState;
+		byte velocity;
+		byte envCntDown;
+		byte envLength[4];
+		int8 envVelocity[5];
+		int8 envDelta[4];
+		int8 note;
+		frac_t offset;
+		uint32 segSize1;
+		uint32 segSize2;
+		uint32 segSize3;
+		const byte *samples;
+		frac_t step;
+		bool loopingDisabled;
+		const byte *velocityAdjust;
+	} _voice[kVoices];
+
 	int8 _chanVoice[MIDI_CHANNELS];
-	int8 _voiceNote[kVoices];
-
-	uint32 _voiceSegment1Size[kVoices];
-	uint32 _voiceSegment2Size[kVoices];
-	uint32 _voiceSegment3Size[kVoices];
-	frac_t _voiceOffset[kVoices];
-	const byte *_voiceSamples[kVoices];
-	frac_t _voiceStep[kVoices];
-	bool _voiceLoopingDisabled[kVoices];
-	const byte *_voiceVelocityAdjust[kVoices];
-
 	Resource *_patch;
 };
-
-#define PATCH_MAGIC 0
-#define PATCH_NAME 8
-#define PATCH_INSTRUMENT_OFFSETS 40
-
-#define INS_INDEX 0
-#define INS_MODE 2
-#define INS_SEGMENT1_SIZE 4
-#define INS_SEGMENT2_SIZE 8
-#define INS_SEGMENT3_SIZE 12
-#define INS_TRANSPOSE 16
-#define INS_ENV_ATTACK_LEN 18
-#define INS_ENV_DECAY_LEN 19
-#define INS_ENV_SUSTAIN_LEN 20
-#define INS_ENV_RELEASE_LEN 21
-#define INS_ENV_ATTACK_DELTA 22
-#define INS_ENV_DECAY_DELTA 23
-#define INS_ENV_SUSTAIN_DELTA 24
-#define INS_ENV_RELEASE_DELTA 25
-#define INS_ENV_ATTACK_TARGET 26
-#define INS_ENV_DECAY_TARGET 27
-#define INS_ENV_SUSTAIN_TARGET 28
-#define INS_NAME 30
-#define INS_SAMPLES 60
 
 #define MODE_LOOPING (1 << 0)
 #define MODE_PITCH_CHANGES (1 << 1)
@@ -1240,34 +1250,28 @@ MidiDriver_MacSci0::MidiDriver_MacSci0(Audio::Mixer *mixer) : MidiDriver_Emulate
 	_playSwitch(true), _patch(0), _timerCounter(0), _timerThreshold(16667) {
 
 	_timerIncrease = getBaseTempo();
-	memset(_voicePatch, 0 , sizeof(_voicePatch));
-	memset(_voiceEnvState, 0 , sizeof(_voiceEnvState));
-	memset(_voiceVelocity, 0 , sizeof(_voiceVelocity));
-	memset(_voiceEnvCntDown, 0 , sizeof(_voiceEnvCntDown));
-	memset(_voiceNote, -1 , sizeof(_voiceNote));
-	memset(_voiceEnvLength, -1 , sizeof(_voiceEnvLength));
-	memset(_voiceEnvDelta, -1 , sizeof(_voiceEnvDelta));
-	memset(_voiceEnvVelocity, -1 , sizeof(_voiceEnvVelocity));
-	memset(_voiceOffset, 0 , sizeof(_voiceOffset));
-	memset(_voiceStep, 0 , sizeof(_voiceStep));
-	memset(_voiceLoopingDisabled, 0 , sizeof(_voiceLoopingDisabled));
 	memset(_chanVoice, -1, sizeof(_chanVoice));
 
 	for (uint i = 0; i < kVoices; ++i) {
-		_voiceSamples[i] = silence;
-		_voiceVelocityAdjust[i] = velocityAdjust;
-		_voiceSegment1Size[i] = 1;
-		_voiceSegment2Size[i] = 2;
-		_voiceSegment3Size[i] = 1;
+		_voice[i].samples = silence;
+		_voice[i].velocityAdjust = velocityAdjust;
+		_voice[i].segSize1 = 1;
+		_voice[i].segSize2 = 2;
+		_voice[i].segSize3 = 1;
 	}
 }
 
 int MidiDriver_MacSci0::open() {
-	_patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 200), true);
-	if (!_patch) {
+	Resource *patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 200), false);
+	if (!patch) {
 		warning("Could not open patch for Mac SCI0 sound driver");
 		return Common::kUnknownError;
 	}
+
+	Common::MemoryReadStream stream(patch->data, patch->size);
+	int errorCode = loadInstruments(stream);
+	if (errorCode != Common::kNoError)
+		return errorCode;
 
 	MidiDriver_Emulated::open();
 
@@ -1277,7 +1281,8 @@ int MidiDriver_MacSci0::open() {
 }
 
 void MidiDriver_MacSci0::close() {
-	g_sci->getResMan()->unlockResource(_patch);
+	for (uint32 i = 0; i < _instruments.size(); i++)
+		delete _instruments[i];
 }
 
 void MidiDriver_MacSci0::generateSamples(int16 *data, int len) {
@@ -1305,7 +1310,7 @@ void MidiDriver_MacSci0::onNewSound(uint16 channels) {
 	}
 
 	for (uint i = 0; i < kVoices; ++i)
-		_voiceNote[i] = -1;
+		_voice[i].note = -1;
 }
 
 void MidiDriver_MacSci0::onTimer() {
@@ -1319,31 +1324,123 @@ void MidiDriver_MacSci0::onTimer() {
 }
 
 void MidiDriver_MacSci0::voiceOff(int8 voice) {
-	_voiceLoopingDisabled[voice] = false;
-	_voiceSegment1Size[voice] = 1;
-	_voiceSegment2Size[voice] = 2;
-	_voiceSamples[voice] = silence;
-	_voiceOffset[voice] = 0;
-	_voiceStep[voice] = 0;
-	_voiceEnvState[voice] = 0;
+	_voice[voice].loopingDisabled = false;
+	_voice[voice].segSize1 = 1;
+	_voice[voice].segSize2 = 2;
+	_voice[voice].samples = silence;
+	_voice[voice].offset = 0;
+	_voice[voice].step = 0;
+	_voice[voice].envState = 0;
+}
+
+MidiDriver_MacSci0::Voice::Voice() :
+	instrument(0),
+	envState(0),
+	velocity(0),
+	envCntDown(0),
+	note(-1),
+	offset(0),
+	segSize1(1),
+	segSize2(2),
+	segSize3(1),
+	samples(0),
+	step(0),
+	loopingDisabled(false),
+	velocityAdjust(0) {
+
+	for (int i = 0; i < 4; i++)
+		envLength[i] = 0;
+	for (int i = 0; i < 5; i++)
+		envVelocity[i] = -1;
+	for (int i = 0; i < 4; i++)
+		envDelta[i] = -1;
+}
+
+int MidiDriver_MacSci0::loadInstruments(Common::SeekableReadStream &patch) {
+	// Check the header bytes
+	byte header[8];
+	patch.read(header, 8);
+	if (memcmp(header, "X1iUo123", 8) != 0) {
+		warning("Failed to detect sound bank header");
+		return Common::kUnknownError;
+	}
+
+	// Read in the bank name, just for debugging
+	char bankName[33];
+	patch.read(bankName, 32);
+	bankName[32] = 0;
+	debugC(kDebugLevelSound, "Bank Name: '%s'", bankName);
+	
+	_instruments.resize(128);
+
+	for (byte i = 0; i < 128; i++) {
+		patch.seek(40 + i * 4);
+		uint32 offset = patch.readUint32BE();
+
+		if (offset == 0) {
+			_instruments[i] = 0;
+			continue;
+		}
+
+		patch.seek(offset);
+
+		Instrument *instrument = new Instrument();
+		_instruments[i] = instrument;
+
+		instrument->index = patch.readUint16BE();
+		instrument->mode = patch.readUint16BE();
+		instrument->segSize1 = patch.readUint32BE();
+		instrument->segSize2 = patch.readUint32BE();
+		instrument->segSize3 = patch.readUint32BE();
+		instrument->transpose = patch.readUint16BE();
+		instrument->attackLength = patch.readByte();
+		instrument->decayLength = patch.readByte();
+		instrument->sustainLength = patch.readByte();
+		instrument->releaseLength = patch.readByte();
+		instrument->attackDelta = patch.readSByte();
+		instrument->decayDelta = patch.readSByte();
+		instrument->sustainDelta = patch.readSByte();
+		instrument->releaseDelta = patch.readSByte();
+		instrument->attackTarget = patch.readSByte();
+		instrument->decayTarget = patch.readSByte();
+		instrument->sustainTarget = patch.readSByte();
+		instrument->releaseTarget = patch.readSByte();
+		patch.read(instrument->name, 30);
+		instrument->name[30] = 0;
+
+		// Debug the instrument
+		debugC(kDebugLevelSound, "Instrument[%d]: '%s'", i, instrument->name);
+		debugC(kDebugLevelSound, "\tMode = %d, Transpose = %d", instrument->mode, instrument->transpose);
+		debugC(kDebugLevelSound, "\tSegment 1: %d, 2: %d, 3: %d", instrument->segSize1, instrument->segSize2, instrument->segSize3);
+		debugC(kDebugLevelSound, "\tAttack: %d len, %d delta, %d target", instrument->attackLength, instrument->attackDelta, instrument->attackTarget);
+		debugC(kDebugLevelSound, "\tDecay: %d len, %d delta, %d target", instrument->decayLength, instrument->decayDelta, instrument->decayTarget);
+		debugC(kDebugLevelSound, "\tSustain: %d len, %d delta, %d target", instrument->sustainLength, instrument->sustainDelta, instrument->sustainTarget);
+		debugC(kDebugLevelSound, "\tRelease: %d len, %d delta, %d target", instrument->releaseLength, instrument->releaseDelta, instrument->releaseTarget);
+
+		uint32 sampleSize = instrument->segSize1 + instrument->segSize2 + instrument->segSize3;
+		instrument->samples = new byte[sampleSize];
+		patch.read(instrument->samples, sampleSize);
+	}
+
+	return Common::kNoError;
 }
 
 void MidiDriver_MacSci0::doLoop() {
 	for (uint i = 0; i < kVoices; ++i) {
-		if (_voiceLoopingDisabled[i]) {
-			if ((uint)fracToInt(_voiceOffset[i]) >= _voiceSegment3Size[i])
+		if (_voice[i].loopingDisabled) {
+			if ((uint)fracToInt(_voice[i].offset) >= _voice[i].segSize3)
 				voiceOff(i);
 		} else {
-			if ((uint)fracToInt(_voiceOffset[i]) >= _voiceSegment2Size[i]) {
-				_voiceOffset[i] -= intToFrac(_voiceSegment2Size[i]);
-				_voiceOffset[i] += intToFrac(_voiceSegment1Size[i]);
+			if ((uint)fracToInt(_voice[i].offset) >= _voice[i].segSize2) {
+				_voice[i].offset -= intToFrac(_voice[i].segSize2);
+				_voice[i].offset += intToFrac(_voice[i].segSize1);
 			}
 		}
 	}
 }
 void MidiDriver_MacSci0::doEnvelope() {
 	for (uint i = 0; i < kVoices; ++i) {
-		byte state = _voiceEnvState[i];
+		byte state = _voice[i].envState;
 		switch (state) {
 		case 0:
 			continue;
@@ -1359,41 +1456,41 @@ void MidiDriver_MacSci0::doEnvelope() {
 			break;
 		case 6:
 			voiceOff(i);
-			_voiceEnvState[i] = 0;
-			_voiceEnvCntDown[i] = 0;
+			_voice[i].envState = 0;
+			_voice[i].envCntDown = 0;
 			continue;
 		}
 
-		if (_voiceEnvCntDown[i] != 0) {
-			--_voiceEnvCntDown[i];
+		if (_voice[i].envCntDown != 0) {
+			--_voice[i].envCntDown;
 			continue;
 		}
 
-		_voiceEnvCntDown[i] = _voiceEnvLength[state][i];
-		if (_voiceEnvVelocity[state][i] <= 0) {
+		_voice[i].envCntDown = _voice[i].envLength[state];
+		if (_voice[i].envVelocity[state] <= 0) {
 			voiceOff(i);
-			_voiceEnvState[i] = 0;
-			_voiceEnvCntDown[i] = 0;
+			_voice[i].envState = 0;
+			_voice[i].envCntDown = 0;
 			continue;
 		}
 
-		int8 velocity = _voiceEnvVelocity[state][i];
+		int8 velocity = _voice[i].envVelocity[state];
 		if (velocity > 63)
 			velocity = 63;
 		setMixVelMap(i, velocity);
 
-		int8 delta = _voiceEnvDelta[state][i];
+		int8 delta = _voice[i].envDelta[state];
 		if (delta >= 0) {
-			_voiceEnvVelocity[state][i] -= delta;
-			if (_voiceEnvVelocity[state][i] < _voiceEnvVelocity[state + 1][i])
-				++_voiceEnvState[i];
+			_voice[i].envVelocity[state] -= delta;
+			if (_voice[i].envVelocity[state] < _voice[i].envVelocity[state + 1])
+				++_voice[i].envState;
 		} else {
-			_voiceEnvVelocity[state][i] -= delta;
-			if (_voiceEnvVelocity[state][i] > _voiceEnvVelocity[state + 1][i])
-				++_voiceEnvState[i];
+			_voice[i].envVelocity[state] -= delta;
+			if (_voice[i].envVelocity[state] > _voice[i].envVelocity[state + 1])
+				++_voice[i].envState;
 		}
 
-		--_voiceEnvCntDown[i];
+		--_voice[i].envCntDown;
 	}
 }
 
@@ -1402,7 +1499,7 @@ void MidiDriver_MacSci0::setMixVelMap(int8 voice, byte velocity) {
 	if (!_playSwitch)
 		velocity = 0;
 
-	_voiceVelocityAdjust[voice] = velocityAdjust + (((_voiceVelocity[voice] * velocity) & 0xffffffc0) << 2);
+	_voice[voice].velocityAdjust = velocityAdjust + (((_voice[voice].velocity * velocity) & 0xffffffc0) << 2);
 }
 
 void MidiDriver_MacSci0::noteOn(int8 voice, int8 note, int8 velocity) {
@@ -1411,72 +1508,74 @@ void MidiDriver_MacSci0::noteOn(int8 voice, int8 note, int8 velocity) {
 		return;
 	}
 
-	byte patch = _voicePatch[voice];
+	const Instrument *instrument = _voice[voice].instrument;
+	if (!instrument)
+		return;
 
-	uint32 offset = READ_BE_UINT32(_patch->data + PATCH_INSTRUMENT_OFFSETS + (patch << 2));
-	_voiceVelocity[voice] = velocity >> 1;
-	_voiceEnvLength[0][voice] = _patch->data[offset + INS_ENV_ATTACK_LEN];
-	_voiceEnvLength[1][voice] = _patch->data[offset + INS_ENV_DECAY_LEN];
-	_voiceEnvLength[2][voice] = _patch->data[offset + INS_ENV_SUSTAIN_LEN];
-	_voiceEnvLength[3][voice] = _patch->data[offset + INS_ENV_RELEASE_LEN];
-	_voiceEnvDelta[0][voice] = _patch->data[offset + INS_ENV_ATTACK_DELTA];
-	_voiceEnvDelta[1][voice] = _patch->data[offset + INS_ENV_DECAY_DELTA];
-	_voiceEnvDelta[2][voice] = _patch->data[offset + INS_ENV_SUSTAIN_DELTA];
-	_voiceEnvDelta[3][voice] = _patch->data[offset + INS_ENV_RELEASE_DELTA];
-	_voiceEnvVelocity[0][voice] = 64;
-	_voiceEnvVelocity[1][voice] = _patch->data[offset + INS_ENV_ATTACK_TARGET];
-	_voiceEnvVelocity[2][voice] = _patch->data[offset + INS_ENV_DECAY_TARGET];
-	_voiceEnvVelocity[3][voice] = _patch->data[offset + INS_ENV_SUSTAIN_TARGET];
+	_voice[voice].velocity = velocity >> 1;
+	_voice[voice].envLength[0] = instrument->attackLength;
+	_voice[voice].envLength[1] = instrument->decayLength;
+	_voice[voice].envLength[2] = instrument->sustainLength;
+	_voice[voice].envLength[3] = instrument->releaseLength;
+	_voice[voice].envDelta[0] = instrument->attackDelta;
+	_voice[voice].envDelta[1] = instrument->decayDelta;
+	_voice[voice].envDelta[2] = instrument->sustainDelta;
+	_voice[voice].envDelta[3] = instrument->releaseDelta;
+	_voice[voice].envVelocity[0] = 64;
+	_voice[voice].envVelocity[1] = instrument->attackTarget;
+	_voice[voice].envVelocity[2] = instrument->decayTarget;
+	_voice[voice].envVelocity[3] = instrument->sustainTarget;
 
 	// The original driver (erroneously) reads the phase 4 target from the
 	// phase 1 delta. We should perhaps force 0 here or use the actual phase 4
 	// target from the patch file.
-	_voiceEnvVelocity[4][voice] = _voiceEnvDelta[0][voice];
+	_voice[voice].envVelocity[4] = _voice[voice].envDelta[0];
 
-	_voiceEnvCntDown[voice] = 0;
+	_voice[voice].envCntDown = 0;
 
 	// Another bug in the original driver, it erases three values belonging to other
 	// voices. This code can probably be removed.
 	for (int i = voice + 1; i < kVoices; ++i)
-		_voiceEnvCntDown[i] = 0;
+		_voice[i].envCntDown = 0;
 	for (int i = 0; i < voice; ++i)
-		_voiceEnvLength[0][i] = 0;
+		_voice[i].envLength[0] = 0;
 
-	_voiceSegment1Size[voice] = READ_BE_UINT32(_patch->data + offset + INS_SEGMENT1_SIZE);
-	_voiceSegment2Size[voice] = READ_BE_UINT32(_patch->data + offset + INS_SEGMENT2_SIZE);
-	_voiceSegment3Size[voice] = READ_BE_UINT32(_patch->data + offset + INS_SEGMENT3_SIZE);
-	_voiceOffset[voice] = 0;
+	_voice[voice].segSize1 = instrument->segSize1;
+	_voice[voice].segSize2 = instrument->segSize2;
+	_voice[voice].segSize3 = instrument->segSize3;
+	_voice[voice].offset = 0;
 
-	uint16 mode = READ_BE_UINT16(_patch->data +offset + INS_MODE);
+	uint16 mode = instrument->mode;
 
-	_voiceSamples[voice] = _patch->data + offset + INS_SAMPLES;
+	_voice[voice].samples = instrument->samples;
 
-	int16 transpose = READ_BE_UINT16(_patch->data + offset + INS_TRANSPOSE);
+	int16 transpose = instrument->transpose;
 	if (!(mode & MODE_PITCH_CHANGES))
 		transpose += 72;
 	else
 		transpose += note;
 
-	_voiceStep[voice] = stepTable[transpose];
-	_voiceLoopingDisabled[voice] = false;
-	_voiceEnvState[voice] = 1;
+	_voice[voice].step = stepTable[transpose];
 
-	if (!(mode & MODE_LOOPING)) {
-		_voiceLoopingDisabled[voice] = true;
-		_voiceEnvState[voice] = 0;
+	if (mode & MODE_LOOPING) {
+		_voice[voice].loopingDisabled = false;
+		_voice[voice].envState = 1;
+	} else {
+		_voice[voice].loopingDisabled = true;
+		_voice[voice].envState = 0;
 	}
 
 	setMixVelMap(voice, 63);
-	_voiceNote[voice] = note;
+	_voice[voice].note = note;
 }
 
 void MidiDriver_MacSci0::noteOff(int8 voice, int8 note) {
-	byte state = _voiceEnvState[voice];
-	if (_voiceNote[voice] == note && state != 0) {
+	byte state = _voice[voice].envState;
+	if (_voice[voice].note == note && state != 0) {
 		--state;
-		_voiceEnvVelocity[2][voice] = _voiceEnvVelocity[state][voice];
-		_voiceEnvState[voice] = 4;
-		_voiceEnvCntDown[voice] = 0;
+		_voice[voice].envVelocity[2] = _voice[voice].envVelocity[state];
+		_voice[voice].envState = 4;
+		_voice[voice].envCntDown = 0;
 	}
 }
 
@@ -1504,7 +1603,12 @@ void MidiDriver_MacSci0::send(uint32 b) {
 			voiceOff(voice);
 		break;
 	case 0xc0:
-		_voicePatch[voice] = op1;
+		if (op1 >= _instruments.size() || !_instruments[op1]) {
+			warning("Unknown instrument %d requested for voice %d", op1, voice);
+			_voice[voice].instrument = 0;
+		} else {
+			_voice[voice].instrument = _instruments[op1];
+		}
 		break;
 	}
 }
@@ -1517,18 +1621,18 @@ void MidiDriver_MacSci0::generateSampleChunk(int16 *data, int len) {
 	frac_t offset[kVoices];
 
 	for (uint i = 0; i < kVoices; ++i)
-		offset[i] = _voiceOffset[i];
+		offset[i] = _voice[i].offset;
 
 	assert(len <= 148);
 
 	for (int i = 0; i < len; i++) {
 		int16 mix = 0;
 		for (int v = 0; v < kVoices; v++)
-			offset[v] += _voiceStep[v];
+			offset[v] += _voice[v].step;
 		for (int v = 0; v < kVoices; v++) {
 			uint16 curOffset = fracToInt(offset[v]);
-			byte sample = _voiceSamples[v][curOffset];
-			mix += (int8)_voiceVelocityAdjust[v][sample];
+			byte sample = _voice[v].samples[curOffset];
+			mix += (int8)_voice[v].velocityAdjust[sample];
 		}
 
 		mix = mix4[mix4[mix + 0x100] + 0x80];
@@ -1538,9 +1642,35 @@ void MidiDriver_MacSci0::generateSampleChunk(int16 *data, int len) {
 	}
 
 	for (uint i = 0; i < kVoices; ++i)
-		_voiceOffset[i] = offset[i];
+		_voice[i].offset = offset[i];
 
 	doLoop();
+}
+
+MidiDriver_MacSci0::Instrument::Instrument() :
+	index(0),
+	mode(0),
+	segSize1(0),
+	segSize2(0),
+	segSize3(0),
+	transpose(0),
+	attackLength(0),
+	decayLength(0),
+	sustainLength(0),
+	releaseLength(0),
+	attackDelta(0),
+	decayDelta(0),
+	sustainDelta(0),
+	releaseDelta(0),
+	attackTarget(0),
+	decayTarget(0),
+	sustainTarget(0),
+	name(),
+	samples(0) {
+}
+
+MidiDriver_MacSci0::Instrument::~Instrument() {
+	delete[] samples;
 }
 
 class MidiPlayer_MacSci0 : public MidiPlayer {
