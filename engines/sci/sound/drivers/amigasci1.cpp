@@ -443,8 +443,6 @@ void MidiDriver_AmigaSci1::interrupt() {
 		(*_timerProc)(_timerParam);
 }
 
-#if 0
-// Voice mapping version (not supported by the interpreter at this time)
 int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
 	int8 voice = _chanLastVoice[channel];
 	uint16 maxTicks = 0;
@@ -475,37 +473,6 @@ int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
 		_voiceSustained[voice] = false;
 		voiceOff(maxTicksVoice);
 		_chanLastVoice[channel] = maxTicksVoice;
-		return maxTicksVoice;
-	}
-
-	return -1;
-}
-#endif
-
-int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
-	uint16 maxTicks = 0;
-	int8 maxTicksVoice = -1;
-
-	for (int8 voice = 0; voice < NUM_VOICES; ++voice) {
-		if (_voiceNote[voice] == -1) {
-			_voiceChannel[voice] = channel;
-			return voice;
-		}
-		uint16 ticks;
-		if (_voiceReleaseTicks[voice] != 0)
-			ticks = _voiceReleaseTicks[voice] + 0x8000;
-		else
-			ticks = _voiceReleaseTicks[voice];
-
-		if (ticks >= maxTicks) {
-			maxTicks = ticks;
-			maxTicksVoice = voice;
-		}
-	}
-
-	if (maxTicksVoice != -1) {
-		voiceOff(maxTicksVoice);
-		_voiceChannel[maxTicksVoice] = channel;
 		return maxTicksVoice;
 	}
 
