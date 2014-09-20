@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -117,7 +117,6 @@ public:
 	};
 
 	MidiDriver_AmigaSci1(Audio::Mixer *mixer);
-	virtual ~MidiDriver_AmigaSci1();
 
 	// MidiDriver
 	int open();
@@ -128,13 +127,13 @@ public:
 	void setTimerCallback(void *timer_param, Common::TimerManager::TimerProc timer_proc);
 	uint32 getBaseTempo() { return 1000000 / _baseFreq; }
 	bool isOpen() const { return _isOpen; }
-	virtual uint32 property(int prop, uint32 param) { return 0; }
+	uint32 property(int prop, uint32 param) { return 0; }
 
 	// Audio::Paula
 	void interrupt();
 
-	void setVolume(byte volume) { }
-	void playSwitch(bool play) { }
+	void setVolume(byte volume) { _masterVolume = volume; }
+	void playSwitch(bool play) { _playSwitch = play; }
 
 private:
 	enum {
@@ -149,11 +148,9 @@ private:
 	bool _isOpen;
 	int _baseFreq;
 	uint _masterVolume;
-	uint32 _timerThreshold;
-	uint32 _timerIncrease;
-	uint32 _timerCounter;
 
 	bool loadPatches(Common::SeekableReadStream &file);
+	void convertSamples();
 	void voiceOn(byte voice, int8 note, int8 velocity);
 	void voiceOff(byte voice);
 	int8 findVoice(int8 channel);
@@ -161,8 +158,9 @@ private:
 	void assignVoices(int8 channel, byte voices);
 	void releaseVoices(int8 channel, byte voices);
 	void donateVoices();
-	frac_t calcStep(int8 note, byte voice, byte *noteRange, byte *wave, byte *stepTable);
-	bool calcVoiceStep(byte voice);
+	uint16 calcPeriod(int8 note, byte voice, byte *noteRange, byte *wave, byte *periodTable);
+	void setVoicePeriod(byte voice, uint16 period);
+	bool calcVoicePeriod(byte voice);
 	void noteOn(int8 channel, int8 note, int8 velocity);
 	void noteOff(int8 channel, int8 note);
 	void changePatch(int8 channel, int8 patch);
@@ -171,8 +169,7 @@ private:
 	void calcMixVelocity(int8 voice);
 	void processEnvelope(int8 voice);
 	void initVoice(byte voice);
-	void copyBuffer(byte voice, uint idx);
-	void audioInterrupt(byte voice);
+	void deinitVoice(byte voice);
 
 	int8 _voiceChannel[NUM_VOICES];
 	bool _voiceReleased[NUM_VOICES];
@@ -180,25 +177,15 @@ private:
 	int8 _voiceEnvCurVel[NUM_VOICES];
 	kEnvState _voiceEnvState[NUM_VOICES];
 	byte _voiceEnvCntDown[NUM_VOICES];
-	frac_t _voicePos[NUM_VOICES];
 	uint16 _voiceTicks[NUM_VOICES];
 	uint16 _voiceReleaseTicks[NUM_VOICES];
 	byte *_voicePatch[NUM_VOICES];
 	byte *_voiceNoteRange[NUM_VOICES];
 	byte *_voiceWave[NUM_VOICES];
-	byte *_voiceStepTable[NUM_VOICES];
-	const byte *_voiceVelocityAdjust[NUM_VOICES];
+	byte *_voicePeriodTable[NUM_VOICES];
 	byte _voiceVelocity[NUM_VOICES];
 	int8 _voiceNote[NUM_VOICES];
-	bool _voiceOn[NUM_VOICES];
 	byte _voiceMixVelocity[NUM_VOICES];
-	frac_t _voiceStep[NUM_VOICES];
-	byte *_voiceBuf[NUM_VOICES];
-	uint16 _voiceBufFree[NUM_VOICES][2];
-	int8 _voiceNextBuffer[NUM_VOICES];
-	bool _voiceIsLastBuffer[NUM_VOICES];
-	int _voiceLastInt[NUM_VOICES];
-	bool _voiceIsLooping[NUM_VOICES];
 
 	int8 _chanPatch[MIDI_CHANNELS];
 	uint16 _chanPitch[MIDI_CHANNELS];
@@ -236,7 +223,7 @@ private:
 #define NOTE_RANGE_FIXED_NOTE 16
 #define NOTE_RANGE_LOOP 18
 
-#define INTERRUPT_FREQ 180 // Needs to be >= 130 for double buffering code
+#define INTERRUPT_FREQ 60
 
 MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 	Audio::Paula(true, mixer->getOutputRate(), mixer->getOutputRate() / INTERRUPT_FREQ),
@@ -247,11 +234,7 @@ MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 	_isOpen(false),
 	_baseFreq(INTERRUPT_FREQ),
 	_masterVolume(15),
-	_patch(0),
-	_timerThreshold(16667),
-	_timerCounter(0) {
-
-	_timerIncrease = getBaseTempo();
+	_patch(0) {
 
 	for (uint i = 0; i < NUM_VOICES; ++i) {
 		_voiceChannel[i] = -1;
@@ -260,26 +243,15 @@ MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 		_voiceEnvCurVel[i] = 0;
 		_voiceEnvState[i] = kEnvStateAttack;
 		_voiceEnvCntDown[i] = 0;
-		_voicePos[i] = 0;
 		_voiceTicks[i] = 0;
 		_voiceReleaseTicks[i] = 0;
 		_voicePatch[i] = 0;
 		_voiceNoteRange[i] = 0;
 		_voiceWave[i] = 0;
-		_voiceStepTable[i] = 0;
-//		_voiceVelocityAdjust[i] = velocityAdjust;
+		_voicePeriodTable[i] = 0;
 		_voiceVelocity[i] = 0;
 		_voiceNote[i] = -1;
-		_voiceOn[i] = false;
 		_voiceMixVelocity[i] = 0;
-		_voiceStep[i] = 0;
-		_voiceBuf[i] = new byte[kBufSize * 2];
-		_voiceBufFree[i][0] = 0;
-		_voiceBufFree[i][1] = 0;
-		_voiceNextBuffer[i] = 0;
-		_voiceIsLastBuffer[i] = false;
-		_voiceLastInt[i] = 1;
-		_voiceIsLooping[i] = false;
 	}
 
 	for (uint i = 0; i < MIDI_CHANNELS; ++i) {
@@ -292,18 +264,14 @@ MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 	}
 }
 
-MidiDriver_AmigaSci1::~MidiDriver_AmigaSci1() {
-	for (uint i = 0; i < NUM_VOICES; ++i) {
-		delete[] _voiceBuf[i];
-	}
-}
-
 int MidiDriver_AmigaSci1::open() {
 	_patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 9), true);
 	if (!_patch) {
 		warning("Could not open patch for Amiga SCI1 sound driver");
 		return Common::kUnknownError;
 	}
+
+	convertSamples();
 
 	startPaula();
 	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, _mixer->kMaxChannelVolume, 0, DisposeAfterUse::NO);
@@ -317,6 +285,46 @@ void MidiDriver_AmigaSci1::close() {
 	stopPaula();
 	_isOpen = false;
 	g_sci->getResMan()->unlockResource(_patch);
+}
+
+void MidiDriver_AmigaSci1::convertSamples() {
+	// This will change the original data returned by the resman
+	// It would probably be better to copy the patch
+	for (uint patchId = 0; patchId < 128; ++patchId) {
+		uint32 offset = READ_BE_UINT32(_patch->data + patchId * 4);
+
+		if (offset == 0)
+			continue;
+
+		byte *patch = _patch->data + offset;
+		byte *noteRange = patch + PATCH_NOTE_RANGE;
+
+		while (1) {
+			int16 startNote = READ_BE_UINT16(noteRange + NOTE_RANGE_START_NOTE);
+
+			if (startNote == -1)
+				break;
+
+			byte *wave = _patch->data + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
+
+			if (READ_BE_UINT16(wave + WAVE_IS_SIGNED) == 0) {
+				WRITE_BE_UINT16(wave + WAVE_IS_SIGNED, -1);
+
+				// The original code uses a signed 16-bit type here, while some samples
+				// exceed INT_MAX in size
+				int endOffset = READ_BE_UINT16(wave + WAVE_PHASE1_END);
+				endOffset += 224; // Additional samples are present to facilitate easy looping
+
+				byte *samples = wave + WAVE_SIZEOF;
+
+				do {
+					samples[endOffset] -= 0x80;
+				} while (--endOffset >= 0);
+			}
+
+			noteRange += NOTE_RANGE_SIZE;
+		}
+	}
 }
 
 void MidiDriver_AmigaSci1::processEnvelope(int8 voice) {
@@ -340,7 +348,7 @@ void MidiDriver_AmigaSci1::processEnvelope(int8 voice) {
 		byte attackSpeed = _voiceNoteRange[voice][NOTE_RANGE_ATTACK_SPEED];
 		_voiceEnvCntDown[voice] = envSpeedToSkip[attackSpeed];
 		_voiceEnvCurVel[voice] += envSpeedToStep[attackSpeed];
-		if (_voiceEnvCurVel[voice] >= attackTarget) {
+		if (attackTarget <= _voiceEnvCurVel[voice]) {
 			_voiceEnvCurVel[voice] = attackTarget;
 			_voiceEnvState[voice] = kEnvStateDecay;
 		}
@@ -354,7 +362,7 @@ void MidiDriver_AmigaSci1::processEnvelope(int8 voice) {
 		byte decaySpeed = _voiceNoteRange[voice][NOTE_RANGE_DECAY_SPEED];
 		_voiceEnvCntDown[voice] = envSpeedToSkip[decaySpeed];
 		_voiceEnvCurVel[voice] -= envSpeedToStep[decaySpeed];
-		if (_voiceEnvCurVel[voice] <= decayTarget) {
+		if (decayTarget >= _voiceEnvCurVel[voice]) {
 			_voiceEnvCurVel[voice] = decayTarget;
 			_voiceEnvState[voice] = kEnvStateSustain;
 		}
@@ -404,35 +412,20 @@ void MidiDriver_AmigaSci1::calcMixVelocity(int8 voice) {
 	if (!_playSwitch)
 		voiceVelocity = 0;
 
-	_voiceMixVelocity[voice] = voiceVelocity;
-//	_voiceVelocityAdjust[voice] = velocityAdjust + (voiceVelocity << 8);
-}
-
-void MidiDriver_AmigaSci1::audioInterrupt(byte voice) {
-	if (_voiceNextBuffer[voice] == -1)
-		voiceOff(voice);
-	else {
-		if (_voiceIsLastBuffer[voice])
-			_voiceNextBuffer[voice] = -1;
-		else
-			copyBuffer(voice, _voiceNextBuffer[voice]);
-	}
+	// _reverb = voiceVelocity (??)
+	setChannelVolume(voice, voiceVelocity);
 }
 
 void MidiDriver_AmigaSci1::interrupt() {
-	_timerCounter += _timerIncrease;
-
-	if (_timerCounter < _timerThreshold)
-		return;
-
-	if (_timerProc)
-		(*_timerProc)(_timerParam);
-
+	// In the original driver, the interrupt handlers for each voice
+	// call voiceOff when non-looping samples are finished.
 	for (uint i = 0; i < NUM_VOICES; ++i) {
-		uint curBuffer = getChannelOffset(i).int_off < kBufSize;
-		if (curBuffer != _voiceLastInt[i]) {
-			audioInterrupt(i);
-			_voiceLastInt[i] = curBuffer;
+		if (_voiceNote[i] != -1) {
+			if (READ_BE_UINT16(_voiceNoteRange[i] + NOTE_RANGE_LOOP) != 0) {
+				if (getChannelDmaCount(i) > 0) {
+					voiceOff(i);
+				}
+			}
 		}
 	}
 
@@ -446,7 +439,8 @@ void MidiDriver_AmigaSci1::interrupt() {
 		}
 	}
 
-	_timerCounter -= _timerThreshold;
+	if (_timerProc)
+		(*_timerProc)(_timerParam);
 }
 
 #if 0
@@ -468,7 +462,7 @@ int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
 			if (_voiceReleaseTicks[voice] != 0)
 				ticks = _voiceReleaseTicks[voice] + 0x8000;
 			else
-				ticks = _voiceReleaseTicks[voice];
+				ticks = _voiceTicks[voice];
 
 			if (ticks >= maxTicks) {
 				maxTicks = ticks;
@@ -478,6 +472,7 @@ int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
 	} while (voice != _chanLastVoice[channel]);
 
 	if (maxTicksVoice != -1) {
+		_voiceSustained[voice] = false;
 		voiceOff(maxTicksVoice);
 		_chanLastVoice[channel] = maxTicksVoice;
 		return maxTicksVoice;
@@ -520,7 +515,7 @@ int8 MidiDriver_AmigaSci1::findVoice(int8 channel) {
 void MidiDriver_AmigaSci1::voiceMapping(int8 channel, byte voices) {
 	int curVoices = 0;
 
-	for (int i = 0; i < NUM_VOICES; i++)
+	for (uint i = 0; i < NUM_VOICES; ++i)
 		if (_voiceChannel[i] == channel)
 			curVoices++;
 
@@ -535,7 +530,7 @@ void MidiDriver_AmigaSci1::voiceMapping(int8 channel, byte voices) {
 }
 
 void MidiDriver_AmigaSci1::assignVoices(int8 channel, byte voices) {
-	for (int i = 0; i < NUM_VOICES; i++)
+	for (int i = 0; i < NUM_VOICES; ++i)
 		if (_voiceChannel[i] == -1) {
 			_voiceChannel[i] = channel;
 
@@ -547,10 +542,15 @@ void MidiDriver_AmigaSci1::assignVoices(int8 channel, byte voices) {
 		}
 
 	_chanExtraVoices[channel] += voices;
+	// _chanPatch[channel] = _chanPatch[channel];
 }
 
 void MidiDriver_AmigaSci1::releaseVoices(int8 channel, byte voices) {
-	if (_chanExtraVoices[channel] >= voices) {
+	// It would suffice to just have the 'else' clause
+	if (voices == _chanExtraVoices[channel]) {
+		_chanExtraVoices[channel] = 0;
+		return;
+	} else if (voices <= _chanExtraVoices[channel]) {
 		_chanExtraVoices[channel] -= voices;
 		return;
 	}
@@ -558,8 +558,8 @@ void MidiDriver_AmigaSci1::releaseVoices(int8 channel, byte voices) {
 	voices -= _chanExtraVoices[channel];
 	_chanExtraVoices[channel] = 0;
 
-	for (int i = 0; i < NUM_VOICES; i++) {
-		if ((_voiceChannel[i] == channel) && (_voiceNote[i] == -1)) {
+	for (uint i = 0; i < NUM_VOICES; ++i) {
+		if ((channel == _voiceChannel[i]) && (_voiceNote[i] == -1)) {
 			_voiceChannel[i] = -1;
 			if (--voices == 0)
 				return;
@@ -570,12 +570,13 @@ void MidiDriver_AmigaSci1::releaseVoices(int8 channel, byte voices) {
 		uint16 maxTicks = 0;
 		int8 maxTicksVoice = 0;
 
-		for (int i = 0; i < NUM_VOICES; i++) {
-			if (_voiceChannel[i] == channel) {
+		for (uint i = 0; i < NUM_VOICES; ++i) {
+			if (channel == _voiceChannel[i]) {
 				// The original code seems to be broken here. It reads a word value from
 				// byte array _voiceSustained.
 				uint16 ticks = _voiceReleaseTicks[i];
-				if (ticks > 0)
+
+				if (ticks != 0)
 					ticks += 0x8000;
 				else
 					ticks = _voiceTicks[i];
@@ -586,23 +587,26 @@ void MidiDriver_AmigaSci1::releaseVoices(int8 channel, byte voices) {
 				}
 			}
 		}
+
+		// This could be removed, as voiceOff already does it
 		_voiceSustained[maxTicksVoice] = false;
+
 		voiceOff(maxTicksVoice);
 		_voiceChannel[maxTicksVoice] = -1;
-	} while (--voices > 0);
+	} while (--voices != 0);
 }
 
 void MidiDriver_AmigaSci1::donateVoices() {
 	int freeVoices = 0;
 
-	for (int i = 0; i < NUM_VOICES; i++)
+	for (uint i = 0; i < NUM_VOICES; ++i)
 		if (_voiceChannel[i] == -1)
 			freeVoices++;
 
 	if (freeVoices == 0)
 		return;
 
-	for (int i = 0; i < MIDI_CHANNELS; i++) {
+	for (uint i = 0; i < MIDI_CHANNELS; ++i) {
 		if (_chanExtraVoices[i] != 0) {
 			if (_chanExtraVoices[i] >= freeVoices) {
 				_chanExtraVoices[i] -= freeVoices;
@@ -618,53 +622,41 @@ void MidiDriver_AmigaSci1::donateVoices() {
 	}
 }
 
-void MidiDriver_AmigaSci1::copyBuffer(byte voice, uint idx) {
-	byte *buf = _voiceBuf[voice];
+void MidiDriver_AmigaSci1::initVoice(byte voice) {
+	setChannelVolume(voice, 0);
 
-	if (idx != 0)
-		buf += kBufSize;
-
-	uint16 offset = fracToInt(_voicePos[voice]) & 0xfffe;
-	_voiceBufFree[voice][idx] = 224 >> 1;
-	byte *samples = _voiceWave[voice] + WAVE_SIZEOF + offset;
-
-	for (uint i = 0; i < 224; ++i)
-		*buf++ = *samples++;
-
+	// The original driver uses double buffering to play the samples. We will instead
+	// play the data directly. The original driver might be OB1 in end offsets and
+	// loop sizes on occasion. Currently, this behavior isn't taken into account, and
+	// the samples are played according to the meta data in the sound bank.
+	int8 *samples = (int8 *)_voiceWave[voice] + WAVE_SIZEOF;
+	uint16 phase1Start = READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE1_START);
+	uint16 phase1End = READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE1_END);
+	uint16 phase2Start = READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE2_START);
 	uint16 phase2End = READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE2_END);
+	uint16 loop = READ_BE_UINT16(_voiceNoteRange[voice] + NOTE_RANGE_LOOP);
+
 	uint16 endOffset = phase2End;
 
 	if (endOffset == 0)
-		endOffset = READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE1_END);
+		endOffset = phase1End;
 
-	offset += 224;	
+	int phase1Len = endOffset - phase1Start + 1;
+	int phase2Len = endOffset - phase2Start + 1;
 
-	if (endOffset <= offset) {
-		if (phase2End == 0 || READ_BE_UINT16(_voiceNoteRange[voice] + NOTE_RANGE_LOOP) != 0) {
-			offset -= endOffset;
-			_voiceBufFree[voice][idx] = (224 - offset) >> 1;
-			_voiceIsLastBuffer[voice] = true;
-		} else {
-			_voiceIsLooping[voice] = true;
-			uint16 val = endOffset - READ_BE_UINT16(_voiceWave[voice] + WAVE_PHASE2_START) + 1;
-			do {
-				offset -= val;
-			} while (offset > endOffset);
-			offset &= 0xfffe;
-		}
+	// The original driver delays the voice start for two MIDI ticks, possibly
+	// due to DMA requirements
+	if (phase2End == 0 || loop != 0) {
+		// Non-looping
+		setChannelData(voice, samples + phase1Start, nullptr, phase1Len, 0);
+	} else {
+		// Looping
+		setChannelData(voice, samples + phase1Start, samples + phase2Start, phase1Len, phase2Len);
 	}
-
-	_voicePos[voice] = intToFrac(offset) | (_voicePos[voice] & FRAC_LO_MASK);
-	_voiceNextBuffer[voice] = (idx + 1) % 2;
-	// AUDO0LC = _voiceBuf[voice][idx]
 }
 
-void MidiDriver_AmigaSci1::initVoice(byte voice) {
-	_voiceNextBuffer[voice] = 0;
-	_voiceIsLastBuffer[voice] = false;
-	_voiceLastInt[voice] = 1;
-	setChannelVolume(voice, 0);
-	// CopyBuffer1
+void MidiDriver_AmigaSci1::deinitVoice(byte voice) {
+	clearVoice(voice);
 }
 
 void MidiDriver_AmigaSci1::voiceOn(byte voice, int8 note, int8 velocity) {
@@ -699,13 +691,12 @@ void MidiDriver_AmigaSci1::voiceOn(byte voice, int8 note, int8 velocity) {
 	}
 
 	byte *wave = _patch->data + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
-	byte *stepTable = _patch->data + READ_BE_UINT32(wave + WAVE_STEP_TABLE_OFFSET) + 16;
+	byte *periodTable = _patch->data + READ_BE_UINT32(wave + WAVE_STEP_TABLE_OFFSET) + 16;
 
 	_voicePatch[voice] = patch;
 	_voiceNoteRange[voice] = noteRange;
 	_voiceWave[voice] = wave;
-	_voiceStepTable[voice] = stepTable;
-	_voicePos[voice] = intToFrac(READ_BE_UINT16(wave + WAVE_PHASE1_START));
+	_voicePeriodTable[voice] = periodTable;
 
 	if (velocity != 0)
 		velocity = velocityMap[velocity >> 1];
@@ -713,16 +704,16 @@ void MidiDriver_AmigaSci1::voiceOn(byte voice, int8 note, int8 velocity) {
 	_voiceVelocity[voice] = velocity;
 	_voiceNote[voice] = note;
 
-	if (!calcVoiceStep(voice))
+	if (!calcVoicePeriod(voice)) {
 		_voiceNote[voice] = -1;
-	else {
-//		_voiceVelocityAdjust[voice] = velocityAdjust;
-		_voiceOn[voice] = true;
+		return;
 	}
+
+	initVoice(voice);
 }
 
 void MidiDriver_AmigaSci1::voiceOff(byte voice) {
-	_voiceOn[voice] = false;
+	deinitVoice(voice);
 	_voiceVelocity[voice] = 0;
 	_voiceNote[voice] = -1;
 	_voiceSustained[voice] = false;
@@ -733,7 +724,7 @@ void MidiDriver_AmigaSci1::voiceOff(byte voice) {
 	_voiceReleaseTicks[voice] = 0;
 }
 
-frac_t MidiDriver_AmigaSci1::calcStep(int8 note, byte voice, byte *noteRange, byte *wave, byte *stepTable) {
+uint16 MidiDriver_AmigaSci1::calcPeriod(int8 note, byte voice, byte *noteRange, byte *wave, byte *periodTable) {
 	uint16 noteAdj = note + 127 - READ_BE_UINT16(wave + WAVE_NATIVE_NOTE);
 	byte channel = _voiceChannel[voice];
 	uint16 pitch = _chanPitch[channel];
@@ -742,50 +733,54 @@ frac_t MidiDriver_AmigaSci1::calcStep(int8 note, byte voice, byte *noteRange, by
 	byte offset = pitchToSemiRem[pitch];
 	int octave = noteToOctave[noteAdj];
 
-	while (noteAdj < 243)
-		noteAdj += 12;
-	noteAdj -= 243;
+	while (noteAdj >= 12)
+		noteAdj -= 12;
 
-	frac_t step = READ_BE_UINT32(stepTable + (noteAdj << 4) + offset);
+	uint32 period = READ_BE_UINT32(periodTable + (noteAdj << 4) + offset);
 
 	int16 transpose = READ_BE_UINT16(noteRange + NOTE_RANGE_TRANSPOSE);
 	if (transpose > 0) {
-		frac_t delta = READ_BE_UINT32(stepTable + (noteAdj << 4) + offset + 16) - step;
+		uint32 delta = period - READ_BE_UINT32(periodTable + (noteAdj << 4) + offset + 16);
 		delta >>= 4;
-		delta >>= octave;
 		delta *= transpose;
-		step >>= octave;
-		step += delta;
+		period -= delta;
 	} else if (transpose < 0) {
-		frac_t delta = step - READ_BE_UINT32(stepTable + (noteAdj << 4) + offset - 16);
+		uint32 delta = READ_BE_UINT32(periodTable + (noteAdj << 4) + offset - 16) - period;
 		delta >>= 4;
-		delta >>= octave;
 		delta *= -transpose;
-		step >>= octave;
-		step -= delta;
-	} else {
-		if (octave != 0)
-			step >>= octave;
+		period += delta;
 	}
 
-	return step;
+	if (octave != 0)
+		period >>= octave;
+
+	if (period < 0x7c || period > 0xffff)
+		return -1;
+
+	return period;
 }
 
-bool MidiDriver_AmigaSci1::calcVoiceStep(byte voice) {
+void MidiDriver_AmigaSci1::setVoicePeriod(byte voice, uint16 period) {
+	// Audio::Paula uses int16 instead of uint16?
+	setChannelPeriod(voice, period);
+}
+
+bool MidiDriver_AmigaSci1::calcVoicePeriod(byte voice) {
 	int8 note = _voiceNote[voice];
+	// byte *patch = _voicePatch[voice];
 	byte *noteRange = _voiceNoteRange[voice];
 	byte *wave = _voiceWave[voice];
-	byte *stepTable = _voiceStepTable[voice];
+	byte *periodTable = _voicePeriodTable[voice];
 
 	int16 fixedNote = READ_BE_UINT16(noteRange + NOTE_RANGE_FIXED_NOTE);
 	if (fixedNote != -1)
 		note = fixedNote;
 
-	frac_t step = calcStep(note, voice, noteRange, wave, stepTable);
-	if (step == -1)
+	uint16 period = calcPeriod(note, voice, noteRange, wave, periodTable);
+	if (period == 0xffff)
 		return false;
 
-	_voiceStep[voice] = step;
+	setVoicePeriod(voice, period);
 	return true;
 }
 
@@ -795,7 +790,7 @@ void MidiDriver_AmigaSci1::noteOn(int8 channel, int8 note, int8 velocity) {
 		return;
 	}
 
-	for (uint i = 0; i < NUM_VOICES; i++) {
+	for (uint i = 0; i < NUM_VOICES; ++i) {
 		if (_voiceChannel[i] == channel && _voiceNote[i] == note) {
 			_voiceSustained[i] = false;
 			voiceOff(i);
@@ -810,7 +805,7 @@ void MidiDriver_AmigaSci1::noteOn(int8 channel, int8 note, int8 velocity) {
 }
 
 void MidiDriver_AmigaSci1::noteOff(int8 channel, int8 note) {
-	for (uint i = 0; i < NUM_VOICES; i++) {
+	for (uint i = 0; i < NUM_VOICES; ++i) {
 		if (_voiceChannel[i] == channel && _voiceNote[i] == note) {
 			if (_chanHold[channel])
 				_voiceSustained[i] = true;
@@ -844,9 +839,9 @@ void MidiDriver_AmigaSci1::holdPedal(int8 channel, int8 pedal) {
 void MidiDriver_AmigaSci1::setPitchWheel(int8 channel, uint16 pitch) {
 	_chanPitch[channel] = pitch;
 
-	for (int i = 0; i < NUM_VOICES; i++)
+	for (int i = 0; i < NUM_VOICES; ++i)
 		if (_voiceNote[i] != -1 && _voiceChannel[i] == channel)
-			calcVoiceStep(i);
+			calcVoicePeriod(i);
 }
 
 void MidiDriver_AmigaSci1::setTimerCallback(void *timer_param, Common::TimerManager::TimerProc timer_proc) {
@@ -869,6 +864,7 @@ void MidiDriver_AmigaSci1::send(uint32 b) {
 		break;
 	case 0xb0:
 		switch (op1) {
+		// case 0x01 (mod wheel) is also kept track of in the original driver, but not used
 		case 0x07:
 			if (op2 != 0) {
 				op2 >>= 1;
