@@ -274,7 +274,8 @@ int MidiDriver_AmigaSci1::open() {
 	convertSamples();
 
 	startPaula();
-	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, _mixer->kMaxChannelVolume, 0, DisposeAfterUse::NO);
+	// Enable reverse stereo to counteract Audio::Paula's reverse stereo
+	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, _mixer->kMaxChannelVolume, 0, DisposeAfterUse::NO, false, true);
 	_isOpen = true;
 
 	return Common::kNoError;
