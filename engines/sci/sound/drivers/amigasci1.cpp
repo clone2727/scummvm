@@ -45,7 +45,8 @@ static const byte envSpeedToSkip[32] = {
 	0x01, 0x00, 0x01, 0x07, 0x02, 0x05, 0x07, 0x00, 0x01, 0x02, 0x08, 0x08, 0x08, 0x09, 0x0e, 0x0b
 };
 
-static const byte noteToOctave[256] = {
+// This table has 257 elements in SCI1 EGA and 255 elements in SCI1
+static const byte noteToOctave[257] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01,
 	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
 	0x02, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x03,
@@ -61,7 +62,8 @@ static const byte noteToOctave[256] = {
 	0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x11, 0x11, 0x11, 0x11,
 	0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x11, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12, 0x12,
 	0x12, 0x12, 0x12, 0x12, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13, 0x13,
-	0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x15, 0x15, 0x15, 0x00
+	0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x14, 0x15, 0x15, 0x15, 0x15,
+	0x15
 };
 
 static const int16 pitchToSemitone[97] = {
@@ -103,12 +105,15 @@ static const byte velocityMap[64] = {
 	0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x34, 0x35, 0x37, 0x39, 0x3a, 0x3c, 0x3e, 0x40
 };
 
+static const byte velocityMapSci1EGA[64] = {
+	0x01, 0x04, 0x07, 0x0a, 0x0c, 0x0f, 0x11, 0x15, 0x18, 0x1a, 0x1c, 0x1e, 0x20, 0x21, 0x22, 0x23,
+	0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x30, 0x31, 0x31,
+	0x32, 0x32, 0x33, 0x33, 0x34, 0x34, 0x35, 0x35, 0x36, 0x36, 0x37, 0x37, 0x38, 0x38, 0x38, 0x39,
+	0x39, 0x39, 0x3a, 0x3a, 0x3a, 0x3b, 0x3b, 0x3b, 0x3c, 0x3d, 0x3e, 0x3e, 0x3f, 0x3f, 0x40, 0x40
+};
+
 class MidiDriver_AmigaSci1 : public MidiDriver, public Audio::Paula {
 public:
-	enum {
-		kBufSize = 224
-	};
-
 	enum kEnvState {
 		kEnvStateAttack,
 		kEnvStateDecay,
@@ -136,10 +141,6 @@ public:
 	void playSwitch(bool play) { _playSwitch = play; }
 
 private:
-	enum {
-		kModeLoop = 1 << 0 // Instrument looping flag
-	};
-
 	Audio::Mixer *_mixer;
 	Audio::SoundHandle _mixerSoundHandle;
 	Common::TimerManager::TimerProc _timerProc;
@@ -171,6 +172,7 @@ private:
 	void initVoice(byte voice);
 	void deinitVoice(byte voice);
 
+	bool _isSci1EGA;
 	int8 _voiceChannel[NUM_VOICES];
 	bool _voiceReleased[NUM_VOICES];
 	bool _voiceSustained[NUM_VOICES];
@@ -194,7 +196,7 @@ private:
 	int8 _chanLastVoice[MIDI_CHANNELS];
 	byte _chanExtraVoices[MIDI_CHANNELS];
 
-	Resource *_patch;
+	byte *_patch;
 };
 
 #define PATCH_NAME 0
@@ -202,13 +204,13 @@ private:
 
 #define WAVE_NAME 0
 #define WAVE_IS_SIGNED 8
-#define WAVE_PHASE1_START 10
-#define WAVE_PHASE1_END 12
-#define WAVE_PHASE2_START 14
-#define WAVE_PHASE2_END 16
-#define WAVE_NATIVE_NOTE 18
-#define WAVE_STEP_TABLE_OFFSET 20
-#define WAVE_SIZEOF 24
+#define WAVE_PHASE1_START (_isSci1EGA ? 8 : 10)
+#define WAVE_PHASE1_END (_isSci1EGA ? 10 : 12)
+#define WAVE_PHASE2_START (_isSci1EGA ? 12 : 14)
+#define WAVE_PHASE2_END (_isSci1EGA ? 14 : 16)
+#define WAVE_NATIVE_NOTE (_isSci1EGA ? 16 : 18)
+#define WAVE_STEP_TABLE_OFFSET (_isSci1EGA ? 18 : 20)
+#define WAVE_SIZEOF (_isSci1EGA ? 22 : 24)
 
 #define NOTE_RANGE_SIZE 20
 #define NOTE_RANGE_START_NOTE 0
@@ -228,6 +230,7 @@ private:
 MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 	Audio::Paula(true, mixer->getOutputRate(), mixer->getOutputRate() / INTERRUPT_FREQ),
 	_mixer(mixer),
+	_isSci1EGA(false),
 	_timerProc(nullptr),
 	_timerParam(nullptr),
 	_playSwitch(true),
@@ -265,13 +268,26 @@ MidiDriver_AmigaSci1::MidiDriver_AmigaSci1(Audio::Mixer *mixer) :
 }
 
 int MidiDriver_AmigaSci1::open() {
-	_patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 9), true);
-	if (!_patch) {
+	Resource *patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 9), false);
+	int offset = 0;
+
+	if (!patch) {
+		patch = g_sci->getResMan()->findResource(ResourceId(kResourceTypePatch, 5), false);
+		_isSci1EGA = true;
+		// SCI1 early has an extra dword at the beginning of the patch, skip it
+		offset = 4;
+	}
+
+	if (!patch) {
 		warning("Could not open patch for Amiga SCI1 sound driver");
 		return Common::kUnknownError;
 	}
 
-	convertSamples();
+	_patch = new byte[patch->size - offset];
+	memcpy(_patch, patch->data + offset, patch->size - offset);
+
+	if (!_isSci1EGA)
+		convertSamples();
 
 	startPaula();
 	// Enable reverse stereo to counteract Audio::Paula's reverse stereo
@@ -285,19 +301,20 @@ void MidiDriver_AmigaSci1::close() {
 	_mixer->stopHandle(_mixerSoundHandle);
 	stopPaula();
 	_isOpen = false;
-	g_sci->getResMan()->unlockResource(_patch);
+	if (_patch)
+		delete[] _patch;
 }
 
 void MidiDriver_AmigaSci1::convertSamples() {
 	// This will change the original data returned by the resman
 	// It would probably be better to copy the patch
 	for (uint patchId = 0; patchId < 128; ++patchId) {
-		uint32 offset = READ_BE_UINT32(_patch->data + patchId * 4);
+		uint32 offset = READ_BE_UINT32(_patch + patchId * 4);
 
 		if (offset == 0)
 			continue;
 
-		byte *patch = _patch->data + offset;
+		byte *patch = _patch + offset;
 		byte *noteRange = patch + PATCH_NOTE_RANGE;
 
 		while (1) {
@@ -306,7 +323,7 @@ void MidiDriver_AmigaSci1::convertSamples() {
 			if (startNote == -1)
 				break;
 
-			byte *wave = _patch->data + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
+			byte *wave = _patch + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
 
 			if (READ_BE_UINT16(wave + WAVE_IS_SIGNED) == 0) {
 				WRITE_BE_UINT16(wave + WAVE_IS_SIGNED, -1);
@@ -609,8 +626,15 @@ void MidiDriver_AmigaSci1::initVoice(byte voice) {
 	if (endOffset == 0)
 		endOffset = phase1End;
 
-	int phase1Len = endOffset - phase1Start + 1;
-	int phase2Len = endOffset - phase2Start + 1;
+	// Paula consumes one word at a time
+	phase1Start &= 0xfffe;
+	phase2Start &= 0xfffe;
+
+	// If endOffset is odd, the sample byte at endOffset is played, otherwise it isn't
+	endOffset = (endOffset + 1) & 0xfffe;
+
+	int phase1Len = endOffset - phase1Start;
+	int phase2Len = endOffset - phase2Start;
 
 	// The original driver delays the voice start for two MIDI ticks, possibly
 	// due to DMA requirements
@@ -636,12 +660,12 @@ void MidiDriver_AmigaSci1::voiceOn(byte voice, int8 note, int8 velocity) {
 	_voiceReleaseTicks[voice] = 0;
 
 	int8 patchId = _chanPatch[_voiceChannel[voice]];
-	uint32 offset = READ_BE_UINT32(_patch->data + patchId * 4);
+	uint32 offset = READ_BE_UINT32(_patch + patchId * 4);
 
 	if (offset == 0)
 		return;
 
-	byte *patch = _patch->data + offset;
+	byte *patch = _patch + offset;
 	byte *noteRange = patch + PATCH_NOTE_RANGE;
 
 	while (1) {
@@ -658,16 +682,20 @@ void MidiDriver_AmigaSci1::voiceOn(byte voice, int8 note, int8 velocity) {
 		noteRange += NOTE_RANGE_SIZE;
 	}
 
-	byte *wave = _patch->data + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
-	byte *periodTable = _patch->data + READ_BE_UINT32(wave + WAVE_STEP_TABLE_OFFSET) + 16;
+	byte *wave = _patch + READ_BE_UINT32(noteRange + NOTE_RANGE_SAMPLE_OFFSET);
+	byte *periodTable = _patch + READ_BE_UINT32(wave + WAVE_STEP_TABLE_OFFSET) + 16;
 
 	_voicePatch[voice] = patch;
 	_voiceNoteRange[voice] = noteRange;
 	_voiceWave[voice] = wave;
 	_voicePeriodTable[voice] = periodTable;
 
-	if (velocity != 0)
-		velocity = velocityMap[velocity >> 1];
+	if (velocity != 0) {
+		if (_isSci1EGA)
+			velocity = velocityMapSci1EGA[velocity >> 1];
+		else
+			velocity = velocityMap[velocity >> 1];
+	}
 
 	_voiceVelocity[voice] = velocity;
 	_voiceNote[voice] = note;
@@ -698,6 +726,11 @@ uint16 MidiDriver_AmigaSci1::calcPeriod(int8 note, byte voice, byte *noteRange, 
 	uint16 pitch = _chanPitch[channel];
 	pitch /= 170;
 	noteAdj += pitchToSemitone[pitch];
+
+	// SCI1 EGA is off by one note
+	if (_isSci1EGA)
+		++noteAdj;
+
 	byte offset = pitchToSemiRem[pitch];
 	int octave = noteToOctave[noteAdj];
 
