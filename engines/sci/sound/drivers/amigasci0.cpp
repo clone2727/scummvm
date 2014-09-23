@@ -135,7 +135,7 @@ private:
 		uint32 seg3Offset;
 		uint16 seg3Size;
 		int8 *samples;
-		byte transpose;
+		int8 transpose;
 		byte envelope[12];
 		byte name[31];
 	};
@@ -340,11 +340,10 @@ void MidiDriver_AmigaSci0::startVoice(int8 voice) {
 	setChannelData(voice, _voice[voice].seg1, _voice[voice].seg2, _voice[voice].seg1Size * 2, _voice[voice].seg2Size * 2);
 	setChannelVolume(voice, _masterVolume * _voice[voice].volume >> 6);
 	setChannelPeriod(voice, _voice[voice].period);
-	enableChannel(voice);
 }
 
 void MidiDriver_AmigaSci0::stopVoice(int8 voice) {
-	disableChannel(voice);
+	clearVoice(voice);
 }
 
 void MidiDriver_AmigaSci0::setupVoice(int8 voice) {
@@ -409,9 +408,9 @@ void MidiDriver_AmigaSci0::stopVoices() {
 void MidiDriver_AmigaSci0::voiceOn(int8 voice, int8 note, bool newNote) {
 	_voiceState[voice].instrument = _bank.instrument[_voicePatch[voice]];
 
-	// Default to instrument 0
+	// Default to the first instrument in the bank
 	if (!_voiceState[voice].instrument)
-		_voiceState[voice].instrument = _bank.instrument[0];
+		_voiceState[voice].instrument = _bank.instrument[_bank.patchNr[0]];
 
 	_voiceState[voice].velocity = _voiceVelocity[voice];
 	_voiceVolume[voice] = _voiceVelocity[voice] >> 1;
