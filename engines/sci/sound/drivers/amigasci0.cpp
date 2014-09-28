@@ -34,7 +34,10 @@
 
 namespace Sci {
 
-static const uint16 periodTable[432] = {
+// TODO: SQ3 contains a troublesome 'sound.064' patch that doesn't seem to
+// be loaded in SSCI. Find out what's going on.
+
+static const uint16 periodTable[525] = {
 	0x3bb9, 0x3ade, 0x3a05, 0x3930, 0x385e, 0x378f, 0x36c3, 0x35fa,
 	0x3534, 0x3471, 0x33b0, 0x32f3, 0x3238, 0x3180, 0x30ca, 0x3017,
 	0x2f66, 0x2eb8, 0x2e0d, 0x2d64, 0x2cbd, 0x2c19, 0x2b77, 0x2ad7,
@@ -88,24 +91,30 @@ static const uint16 periodTable[432] = {
 	0x00bd, 0x00ba, 0x00b7, 0x00b5, 0x00b2, 0x00af, 0x00ad, 0x00aa,
 	0x00a8, 0x00a6, 0x00a3, 0x00a1, 0x009f, 0x009d, 0x009a, 0x0098,
 	0x0096, 0x0094, 0x0092, 0x0090, 0x008e, 0x008c, 0x008a, 0x0088,
-	0x0086, 0x0084, 0x0082, 0x0080, 0x007e, 0x0000, 0x0000, 0x0000
+	0x0086, 0x0084, 0x0082, 0x0080, 0x007e, 0x0000, 0x0000, 0x0000,
+	// Last elements are 0x0000 to indicate out of Paula frequency range
+
+	// Early drivers contain two more octaves, transposed. The
+	// 0x0000 above will never be accessed in "early driver mode",
+	// due to missing pitch bend support.
+	0x01dd, 0x01d6, 0x01cf, 0x01c9, 0x01c2, 0x01bc, 0x01b5, 0x01af,
+	0x01a9, 0x01a3, 0x019d, 0x0197, 0x0191, 0x018b, 0x0186, 0x0180,
+	0x017b, 0x0175, 0x0170, 0x016a, 0x0165, 0x0160, 0x015b, 0x0156,
+	0x0151, 0x014c, 0x0147, 0x0143, 0x013e, 0x0139, 0x0135, 0x0130,
+	0x012c, 0x0128, 0x0124, 0x0120, 0x011c, 0x0118, 0x0114, 0x0110,
+	0x010c, 0x0108, 0x0104, 0x0101, 0x00fd, 0x00f9, 0x00f5, 0x00f2,
+	0x00ee, 0x00eb, 0x00e7, 0x00e4, 0x00e1, 0x00de, 0x00da, 0x00d7,
+	0x00d4, 0x00d1, 0x00ce, 0x00cb, 0x00c8, 0x00c5, 0x00c2, 0x00c0,
+	0x00bd, 0x00ba, 0x00b7, 0x00b5, 0x00b2, 0x00af, 0x00ad, 0x00aa,
+	0x00a8, 0x00a6, 0x00a3, 0x00a1, 0x009f, 0x009d, 0x009a, 0x0098,
+	0x0096, 0x0094, 0x0092, 0x0090, 0x008e, 0x008c, 0x008a, 0x0088,
+	0x0086, 0x0084, 0x0082, 0x0080, 0x007e
 };
 
 static const int8 silence[2] = { 0, 0 };
 
 class MidiDriver_AmigaSci0 : public MidiDriver, public Audio::Paula {
 public:
-	enum {
-		kVoices = 4
-	};
-
-	enum kEnvState {
-		kEnvStateAttack,
-		kEnvStateDecay,
-		kEnvStateSustain,
-		kEnvStateRelease
-	};
-
 	MidiDriver_AmigaSci0(Audio::Mixer *mixer);
 	virtual ~MidiDriver_AmigaSci0();
 
@@ -162,11 +171,11 @@ private:
 	};
 
 	struct {
-		byte state[kVoices];
-		byte countDown[kVoices];
-		byte length[4][kVoices];
-		int8 velocity[4][kVoices];
-		int8 delta[4][kVoices];
+		byte state[NUM_VOICES];
+		byte countDown[NUM_VOICES];
+		byte length[4][NUM_VOICES];
+		int8 velocity[4][NUM_VOICES];
+		int8 delta[4][NUM_VOICES];
 	} _envelopeState;
 
 	byte _startVoice;
@@ -177,17 +186,18 @@ private:
 	bool _isOpen;
 	int _baseFreq;
 	byte _masterVolume;
-	bool _playSwitch; //FIXME (also Mac drivers)
+	bool _playSwitch;
+	bool _isEarlyDriver;
 
-	VoiceState _voiceState[kVoices];
-	Voice _voice[kVoices];
-	byte _voicePatch[kVoices];
-	byte _voiceVelocity[kVoices]; // MIDI velocity 0-127
-	byte _voiceVolume[kVoices]; // Amiga volume 0-63
-	int8 _voicePitchWheelSign[kVoices];
-	byte _voicePitchWheelOffset[kVoices];
+	VoiceState _voiceState[NUM_VOICES];
+	Voice _voice[NUM_VOICES];
+	byte _voicePatch[NUM_VOICES];
+	byte _voiceVelocity[NUM_VOICES]; // MIDI velocity 0-127
+	byte _voiceVolume[NUM_VOICES]; // Amiga volume 0-63
+	int8 _voicePitchWheelSign[NUM_VOICES];
+	byte _voicePitchWheelOffset[NUM_VOICES];
 	int8 _chanVoice[MIDI_CHANNELS];
-	int8 _voiceNote[kVoices];
+	int8 _voiceNote[NUM_VOICES];
 
 	bool readInstruments();
 	void startVoice(int8 voice);
@@ -198,7 +208,7 @@ private:
 	void doEnvelopes();
 	void noteOn(int8 voice, int8 note, int8 velocity);
 	void noteOff(int8 voice, int8 note);
-	void voiceOn(int8 voice, int8 note, bool newNote);
+	bool voiceOn(int8 voice, int8 note, bool newNote);
 	void pitchWheel(int8 voice, int16 pitch);
 };
 
@@ -227,6 +237,18 @@ MidiDriver_AmigaSci0::MidiDriver_AmigaSci0(Audio::Mixer *mixer) :
 	memset(_voiceNote, 0, sizeof(_voiceNote));
 	memset(&_envelopeState, 0, sizeof(_envelopeState));
 	memset(&_bank, 0, sizeof(_bank));
+
+	switch (g_sci->getGameId()) {
+	case GID_HOYLE1:
+	case GID_LSL2:
+	case GID_LSL3:
+	case GID_SQ3:
+	case GID_QFG1:
+		_isEarlyDriver = true;
+		break;
+	default:
+		_isEarlyDriver = false;
+	}
 }
 
 MidiDriver_AmigaSci0::~MidiDriver_AmigaSci0() {
@@ -245,7 +267,8 @@ int MidiDriver_AmigaSci0::open() {
 	}
 
 	startPaula();
-	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, _mixer->kMaxChannelVolume, 0, DisposeAfterUse::NO);
+	// Enable reverse stereo to counteract Audio::Paula's reverse stereo
+	_mixer->playStream(Audio::Mixer::kPlainSoundType, &_mixerSoundHandle, this, -1, _mixer->kMaxChannelVolume, 0, DisposeAfterUse::NO, false, true);
 	_isOpen = true;
 
 	return Common::kNoError;
@@ -270,7 +293,7 @@ void MidiDriver_AmigaSci0::onNewSound(uint16 channels) {
 			break;
 	}
 
-	for (uint i = 0; i < kVoices; ++i)
+	for (uint i = 0; i < NUM_VOICES; ++i)
 		_voiceNote[i] = -1;
 }
 
@@ -288,7 +311,7 @@ void MidiDriver_AmigaSci0::interrupt() {
 }
 
 void MidiDriver_AmigaSci0::doEnvelopes() {
-	for (uint voice = 0; voice < kVoices; ++voice) {
+	for (uint voice = 0; voice < NUM_VOICES; ++voice) {
 		byte state = _envelopeState.state[voice];
 
 		if (state == 0 || state == 3)
@@ -318,7 +341,14 @@ void MidiDriver_AmigaSci0::doEnvelopes() {
 			if (velocity > 63)
 				velocity = 63;
 
-			setChannelVolume(voice, (velocity * _masterVolume >> 6) * _voiceVolume[voice] >> 6);
+			if (!_playSwitch)
+				velocity = 0;
+
+			// Early games ignore note velocity for envelope-enabled notes
+			if (_isEarlyDriver)
+				setChannelVolume(voice, velocity * _masterVolume >> 6);
+			else
+				setChannelVolume(voice, (velocity * _masterVolume >> 6) * _voiceVolume[voice] >> 6);
 
 			int8 delta = _envelopeState.delta[state][voice];
 			if (delta < 0) {
@@ -338,7 +368,8 @@ void MidiDriver_AmigaSci0::doEnvelopes() {
 
 void MidiDriver_AmigaSci0::startVoice(int8 voice) {
 	setChannelData(voice, _voice[voice].seg1, _voice[voice].seg2, _voice[voice].seg1Size * 2, _voice[voice].seg2Size * 2);
-	setChannelVolume(voice, _masterVolume * _voice[voice].volume >> 6);
+	if (_playSwitch)
+		setChannelVolume(voice, _masterVolume * _voice[voice].volume >> 6);
 	setChannelPeriod(voice, _voice[voice].period);
 }
 
@@ -385,7 +416,7 @@ void MidiDriver_AmigaSci0::setupVoice(int8 voice) {
 }
 
 void MidiDriver_AmigaSci0::startVoices() {
-	for (uint i = 0; i < kVoices; ++i)
+	for (uint i = 0; i < NUM_VOICES; ++i)
 		if (_startVoice & (1 << i)) {
 			setupVoice(i);
 			startVoice(i);
@@ -399,13 +430,13 @@ void MidiDriver_AmigaSci0::stopVoices() {
 	byte masterVolume = _masterVolume;
 	_masterVolume = 0;
 
-	for (uint i = 0; i < kVoices; ++i)
+	for (uint i = 0; i < NUM_VOICES; ++i)
 		stopVoice(i);
 
 	_masterVolume = masterVolume;
 }
 
-void MidiDriver_AmigaSci0::voiceOn(int8 voice, int8 note, bool newNote) {
+bool MidiDriver_AmigaSci0::voiceOn(int8 voice, int8 note, bool newNote) {
 	_voiceState[voice].instrument = _bank.instrument[_voicePatch[voice]];
 
 	// Default to the first instrument in the bank
@@ -420,27 +451,29 @@ void MidiDriver_AmigaSci0::voiceOn(int8 voice, int8 note, bool newNote) {
 			_voiceState[voice].loop = 3;
 		else
 			_voiceState[voice].loop = 0;
-
-		// In the original the test here is flags <= 1
-		if (!(_voiceState[voice].instrument->flags & MODE_PITCH_CHANGES))
-			note = 101;
-
-		int16 index = (note + _voiceState[voice].instrument->transpose) * 4;
-		if (_voicePitchWheelSign[voice] != 0) {
-			if (_voicePitchWheelSign[voice] > 0)
-				index += _voicePitchWheelOffset[voice];
-			else
-				index -= _voicePitchWheelOffset[voice];
-
-			if (index < 0 || index > 430)
-				return;
-		}
-
-		if (periodTable[index] != 0) {
-			_voiceState[voice].period = periodTable[index];
-			_voiceNote[voice] = note;
-		}
 	}
+
+	// In the original the test here is flags <= 1
+	if (!(_voiceState[voice].instrument->flags & MODE_PITCH_CHANGES))
+		note = 101;
+
+	int16 index = (note + _voiceState[voice].instrument->transpose) * 4;
+	if (_voicePitchWheelSign[voice] != 0) {
+		if (_voicePitchWheelSign[voice] > 0)
+			index += _voicePitchWheelOffset[voice];
+		else
+			index -= _voicePitchWheelOffset[voice];
+
+		if (index < 0 || index > 430)
+			return false;
+	}
+
+	if (periodTable[index] == 0)
+		return false;
+
+	_voiceState[voice].period = periodTable[index];
+	_voiceNote[voice] = note;
+	return true;
 }
 
 void MidiDriver_AmigaSci0::noteOn(int8 voice, int8 note, int8 velocity) {
@@ -451,9 +484,10 @@ void MidiDriver_AmigaSci0::noteOn(int8 voice, int8 note, int8 velocity) {
 		return;
 	}
 
-	voiceOn(voice, note, true);
-	_startVoice |= (1 << voice);
-	stopVoice(voice);
+	if (voiceOn(voice, note, true)) {
+		_startVoice |= (1 << voice);
+		stopVoice(voice);
+	}
 }
 
 void MidiDriver_AmigaSci0::noteOff(int8 voice, int8 note) {
@@ -505,15 +539,16 @@ void MidiDriver_AmigaSci0::send(uint32 b) {
 		noteOn(voice, op1, op2);
 		break;
 	case 0xb0:
-		// Not in original driver FIXME
-//		if (op1 == 0x7b)
-//			voiceOff(voice);
+		// Not in original driver
+		if (op1 == 0x7b)
+			stopVoice(voice);
 		break;
 	case 0xc0:
 		_voicePatch[voice] = op1;
 		break;
 	case 0xe0:
-		pitchWheel(voice, (op2 << 7) | op1);
+		if (!_isEarlyDriver)
+			pitchWheel(voice, (op2 << 7) | op1);
 		break;
 	}
 }
@@ -570,7 +605,7 @@ public:
 	}
 
 	byte getPlayId() const { return 0x40; }
-	int getPolyphony() const { return MidiDriver_AmigaSci0::kVoices; }
+	int getPolyphony() const { return MidiDriver_AmigaSci0::NUM_VOICES; }
 	bool hasRhythmChannel() const { return false; }
 	void setVolume(byte volume) { static_cast<MidiDriver_AmigaSci0 *>(_driver)->setVolume(volume); }
 	void playSwitch(bool play) { static_cast<MidiDriver_AmigaSci0 *>(_driver)->playSwitch(play); }
