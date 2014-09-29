@@ -34,8 +34,12 @@
 
 namespace Sci {
 
-// TODO: SQ3 contains a troublesome 'sound.064' patch that doesn't seem to
-// be loaded in SSCI. Find out what's going on.
+// FIXME: SQ3, LSL2 and HOYLE1 for Amiga don't seem to load any
+// patches, even though patches are present. Later games do load
+// patches, but include disabled patches with a 'd' appended to the
+// filename, e.g. sound.010d. For SQ3, LSL2 and HOYLE1, we should
+// probably disable patch loading. Maybe the original interpreter
+// loads these disabled patches under some specific condition?
 
 static const uint16 periodTable[525] = {
 	0x3bb9, 0x3ade, 0x3a05, 0x3930, 0x385e, 0x378f, 0x36c3, 0x35fa,
