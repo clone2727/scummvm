@@ -138,11 +138,11 @@ public:
 private:
 	struct Instrument {
 		uint16 flags;
-		uint16 seg1Size;
+		int16 seg1Size;
 		uint32 seg2Offset;
-		uint16 seg2Size;
+		int16 seg2Size;
 		uint32 seg3Offset;
-		uint16 seg3Size;
+		int16 seg3Size;
 		int8 *samples;
 		int8 transpose;
 		byte envelope[12];
@@ -166,7 +166,7 @@ private:
 	struct Voice {
 		byte loop;
 		const int8 *seg1, *seg2;
-		uint16 seg1Size, seg2Size;
+		int16 seg1Size, seg2Size;
 		uint16 period, volume;
 	};
 
@@ -581,14 +581,14 @@ bool MidiDriver_AmigaSci0::readInstruments() {
 		file.read(ins->name, 30);
 		ins->flags = file.readUint16BE();
 		ins->transpose = file.readByte();
-		ins->seg1Size = file.readUint16BE();
+		ins->seg1Size = file.readSint16BE();
 		ins->seg2Offset = file.readUint32BE();
-		ins->seg2Size = file.readUint16BE();
+		ins->seg2Size = file.readSint16BE();
 		ins->seg3Offset = file.readUint32BE();
-		ins->seg3Size = file.readUint16BE();
+		ins->seg3Size = file.readSint16BE();
 		file.read(ins->envelope, 12);
 
-		uint32 sampleSize = ins->seg1Size + ins->seg2Size + ins->seg3Size;
+		int32 sampleSize = ins->seg1Size + ins->seg2Size + ins->seg3Size;
 		sampleSize <<= 1;
 		ins->samples = new int8[sampleSize];
 		file.read(ins->samples, sampleSize);
