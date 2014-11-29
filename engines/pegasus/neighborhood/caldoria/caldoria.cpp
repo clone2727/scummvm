@@ -42,109 +42,119 @@
 
 namespace Pegasus {
 
-static const int16 kVidPhoneAngle = 30;
-static const int16 kReplicatorAngle = 50;
-static const int16 kDrawersAngle = -30;
-static const int16 kCaldoria53Angle = 45;
-static const int16 kCaldoria55Angle = -45;
+enum {
+	kVidPhoneAngle = 30,
+	kReplicatorAngle = 50,
+	kDrawersAngle = -30,
+	kCaldoria53Angle = 45,
+	kCaldoria55Angle = -45
+};
 
-static const TimeValue kSinclairInterruptionTime1 = 2955;
-static const TimeValue kSinclairInterruptionTime2 = 6835;
-static const TimeValue kSinclairInterruptionTime3 = 9835;
-static const TimeValue kSinclairInterruptionTime4 = 12555;
+enum {
+	kSinclairInterruptionTime1 = 2955,
+	kSinclairInterruptionTime2 = 6835,
+	kSinclairInterruptionTime3 = 9835,
+	kSinclairInterruptionTime4 = 12555
+};
 
-static const InputBits kPullbackInterruptFilter = kFilterAllInput;
-static const InputBits kRecalibrationInterruptFilter = kFilterAllInput;
+enum {
+	kPullbackInterruptFilter = kFilterAllInput,
+	kRecalibrationInterruptFilter = kFilterAllInput
+};
 
-static const TimeValue kCaldoriaReplicatorIntroIn = 4933;
-static const TimeValue kCaldoriaReplicatorIntroOut = 6557;
+enum {
+	kCaldoriaReplicatorIntroIn = 4933,
+	kCaldoriaReplicatorIntroOut = 6557,
 
-static const TimeValue kCaldoriaReplicatorWrongChoiceIn = 6557;
-static const TimeValue kCaldoriaReplicatorWrongChoiceOut = 8586;
+	kCaldoriaReplicatorWrongChoiceIn = 6557,
+	kCaldoriaReplicatorWrongChoiceOut = 8586,
 
-static const TimeValue kCaldoriaReplicatorOJChoiceIn = 8586;
-static const TimeValue kCaldoriaReplicatorOJChoiceOut = 11687;
+	kCaldoriaReplicatorOJChoiceIn = 8586,
+	kCaldoriaReplicatorOJChoiceOut = 11687,
 
-static const TimeValue kCaldoriaMessagesIntroIn = 11687;
-static const TimeValue kCaldoriaMessagesIntroOut = 13641;
+	kCaldoriaMessagesIntroIn = 11687,
+	kCaldoriaMessagesIntroOut = 13641,
 
-static const TimeValue kCaldoriaFirstMessageIn = 13641;
-static const TimeValue kCaldoriaFirstMessageOut = 14203;
+	kCaldoriaFirstMessageIn = 13641,
+	kCaldoriaFirstMessageOut = 14203,
 
-static const TimeValue kCaldoriaSecondMessageIn = 14203;
-static const TimeValue kCaldoriaSecondMessageOut = 14750;
+	kCaldoriaSecondMessageIn = 14203,
+	kCaldoriaSecondMessageOut = 14750,
 
-static const TimeValue kCaldoriaDoorCloseIn = 14750;
-static const TimeValue kCaldoriaDoorCloseOut = 15472;
+	kCaldoriaDoorCloseIn = 14750,
+	kCaldoriaDoorCloseOut = 15472,
 
-static const TimeValue kCaldoriaElevatorCloseIn = 15472;
-static const TimeValue kCaldoriaElevatorCloseOut = 16336;
+	kCaldoriaElevatorCloseIn = 15472,
+	kCaldoriaElevatorCloseOut = 16336,
 
-static const TimeValue kCaldoriaShowerCloseIn = 16336;
-static const TimeValue kCaldoriaShowerCloseOut = 17101;
+	kCaldoriaShowerCloseIn = 16336,
+	kCaldoriaShowerCloseOut = 17101,
 
-static const TimeValue kCaldoriaGTDoorCloseIn = 17101;
-static const TimeValue kCaldoriaGTDoorCloseOut = 18523;
+	kCaldoriaGTDoorCloseIn = 17101,
+	kCaldoriaGTDoorCloseOut = 18523,
 
-static const TimeValue kCaldoriaNobodyHomeIn = 18523;
-static const TimeValue kCaldoriaNobodyHomeOut = 21469;
+	kCaldoriaNobodyHomeIn = 18523,
+	kCaldoriaNobodyHomeOut = 21469,
 
-static const TimeValue kCaldoriaNoOtherFloorIn = 21469;
-static const TimeValue kCaldoriaNoOtherFloorOut = 28013;
+	kCaldoriaNoOtherFloorIn = 21469,
+	kCaldoriaNoOtherFloorOut = 28013,
 
-static const TimeValue kCaldoria4DInstructionsIn = 28013;
-static const TimeValue kCaldoria4DInstructionsOut = 29730;
+	kCaldoria4DInstructionsIn = 28013,
+	kCaldoria4DInstructionsOut = 29730,
 
-static const TimeValue kCaldoriaDrinkOJIn = 33910;
-static const TimeValue kCaldoriaDrinkOJOut = 35846;
+	kCaldoriaDrinkOJIn = 33910,
+	kCaldoriaDrinkOJOut = 35846,
 
-static const TimeValue kCaldoriaNoOtherDestinationIn = 35846;
-static const TimeValue kCaldoriaNoOtherDestinationOut = 37877;
+	kCaldoriaNoOtherDestinationIn = 35846,
+	kCaldoriaNoOtherDestinationOut = 37877,
 
-static const TimeValue kCaldoriaUhghIn = 37877;
-static const TimeValue kCaldoriaUhghOut = 38025;
+	kCaldoriaUhghIn = 37877,
+	kCaldoriaUhghOut = 38025,
 
-static const TimeValue kCaldoriaSinclairShootsOSIn = 38025;
-static const TimeValue kCaldoriaSinclairShootsOSOut = 40649;
+	kCaldoriaSinclairShootsOSIn = 38025,
+	kCaldoriaSinclairShootsOSOut = 40649,
 
-static const TimeValue kCaldoriaScreamingAfterIn = 40649;
-static const TimeValue kCaldoriaScreamingAfterOut = 47661;
+	kCaldoriaScreamingAfterIn = 40649,
+	kCaldoriaScreamingAfterOut = 47661
+};
 
-static const TimeValue k4FloorTime = 0;
+enum {
+	k4FloorTime = 0,
 
-static const TimeValue k4To1Start = 40;
-static const TimeValue k4To1Stop = 7720;
+	k4To1Start = 40,
+	k4To1Stop = 7720,
 
-static const TimeValue k4To5Start = 7720;
-static const TimeValue k4To5Stop = 10280;
+	k4To5Start = 7720,
+	k4To5Stop = 10280,
 
-static const TimeValue k4To2Time = 10280;
+	k4To2Time = 10280,
 
-static const TimeValue k4To3Time = 10320;
+	k4To3Time = 10320,
 
-static const TimeValue k1FloorTime = 10360;
+	k1FloorTime = 10360,
 
-static const TimeValue k1To4Start = 10400;
-static const TimeValue k1To4Stop = 18080;
+	k1To4Start = 10400,
+	k1To4Stop = 18080,
 
-static const TimeValue k1To5Start = 18080;
-static const TimeValue k1To5Stop = 28320;
+	k1To5Start = 18080,
+	k1To5Stop = 28320,
 
-static const TimeValue k1To2Time = 28320;
+	k1To2Time = 28320,
 
-static const TimeValue k1To3Time = 28360;
+	k1To3Time = 28360,
 
-static const TimeValue k5FloorTime = 28400;
+	k5FloorTime = 28400,
 
-static const TimeValue k5To1Start = 28440;
-static const TimeValue k5To1Stop = 38680;
+	k5To1Start = 28440,
+	k5To1Stop = 38680,
 
-static const TimeValue k5To4Start = 38680;
-static const TimeValue k5To4Stop = 41240;
+	k5To4Start = 38680,
+	k5To4Stop = 41240,
 
-static const TimeValue k5To2Time = 41240;
+	k5To2Time = 41240,
 
-static const TimeValue k5To3Time = 41280;
+	k5To3Time = 41280
+};
 
 // FuseFunction functions...
 
@@ -196,11 +206,13 @@ void Caldoria::start() {
 		if (!pullbackMovie->loadFile("Images/Caldoria/Pullback.movie"))
 			error("Could not load pullback movie");
 
+		pullbackMovie->setVolume(MIN<uint>(_vm->getSoundFXLevel(), 0xFF));
+
 		// Draw the first frame so we can fade to it
 		const Graphics::Surface *frame = pullbackMovie->decodeNextFrame();
 		assert(frame);
 		assert(frame->format == g_system->getScreenFormat());
-		g_system->copyRectToScreen((byte *)frame->pixels, frame->pitch, 64, 112, frame->w, frame->h);
+		g_system->copyRectToScreen((const byte *)frame->getPixels(), frame->pitch, 64, 112, frame->w, frame->h);
 		_vm->_gfx->doFadeInSync(kTwoSeconds * kFifteenTicksPerSecond, kFifteenTicksPerSecond);
 
 		bool saveAllowed = _vm->swapSaveAllowed(false);
@@ -216,7 +228,7 @@ void Caldoria::start() {
 				frame = pullbackMovie->decodeNextFrame();
 
 				if (frame) {
-					g_system->copyRectToScreen((byte *)frame->pixels, frame->pitch, 64, 112, frame->w, frame->h);
+					g_system->copyRectToScreen((const byte *)frame->getPixels(), frame->pitch, 64, 112, frame->w, frame->h);
 					g_system->updateScreen();
 				}
 			}
@@ -386,54 +398,72 @@ void Caldoria::startSpotOnceOnly(TimeValue startTime, TimeValue stopTime) {
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen13CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen13CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria14, kEast):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen14CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen14CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria18, kWest):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen18CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen18CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria23, kSouth):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen23CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen23CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria33, kSouth):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen33CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen33CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria36, kNorth):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen36CarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen36CarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria41, kNorth):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen41NorthCarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen41NorthCarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria41, kEast):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen41EastCarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen41EastCarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	case MakeRoomView(kCaldoria41, kWest):
 		if (!_privateFlags.getFlag(kCaldoriaPrivateSeen41WestCarFlag) && _vm->getRandomBit() == 0) {
 			_privateFlags.setFlag(kCaldoriaPrivateSeen41WestCarFlag, true);
 			Neighborhood::startSpotOnceOnly(startTime, stopTime);
+		} else {
+			showViewFrame(getViewTime(GameState.getCurrentRoom(), GameState.getCurrentDirection()));
 		}
 		break;
 	default:
@@ -889,7 +919,7 @@ void Caldoria::arriveAtCaldoria49() {
 		setCurrentAlternate(kAltCaldoriaNormal);
 
 	// Need to force the loop to play.
-	if (GameState.getCurrentDirection() == kNorth) {
+	if (GameState.getCurrentDirection() == kNorth && !GameState.getCaldoriaSinclairShot()) {
 		GameState.setCaldoriaFuseTimeLimit(kSinclairShootsTimeLimit);
 		startExtraSequence(kCa49NorthVoiceAnalysis, kExtraCompletedFlag, kFilterNoInput);
 	}
@@ -1291,6 +1321,7 @@ void Caldoria::activateHotspots() {
 				_vm->getAllHotspots().deactivateOneHotspot(kCaldoriaRightDrawerNoKeysCloseSpotID);
 			}
 		}
+		break;
 	case kCaldoriaReplicator:
 		if (GameState.getCaldoriaMadeOJ())
 			_vm->getAllHotspots().deactivateOneHotspot(kCaldoriaMakeOJSpotID);
@@ -1640,10 +1671,12 @@ void Caldoria::takeElevator(uint startFloor, uint endFloor) {
 			break;
 		case 2:
 			_croppedMovie.setTime(k1To2Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 3:
 			_croppedMovie.setTime(k1To3Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 4:
@@ -1670,10 +1703,12 @@ void Caldoria::takeElevator(uint startFloor, uint endFloor) {
 			break;
 		case 2:
 			_croppedMovie.setTime(k4To2Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 3:
 			_croppedMovie.setTime(k4To3Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 4:
@@ -1697,10 +1732,12 @@ void Caldoria::takeElevator(uint startFloor, uint endFloor) {
 			break;
 		case 2:
 			_croppedMovie.setTime(k5To2Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 3:
 			_croppedMovie.setTime(k5To3Time);
+			_croppedMovie.redrawMovieWorld();
 			requestSpotSound(kCaldoriaNoOtherDestinationIn, kCaldoriaNoOtherDestinationOut, kFilterNoInput, kSpotSoundCompletedFlag);
 			break;
 		case 4:
@@ -1891,10 +1928,13 @@ uint Caldoria::getNumHints() {
 					numHints = 1;
 			}
 			break;
+#if 0
+		// The hint file is missing
 		case MakeRoomView(kCaldoria49, kEast):
 		case MakeRoomView(kCaldoria54, kEast):
 			numHints = 1;
 			break;
+#endif
 		case MakeRoomView(kCaldoria49, kNorth):
 			numHints = 1;
 			break;
@@ -1925,9 +1965,12 @@ Common::String Caldoria::getHintMovie(uint hintNum) {
 			}
 
 			return "Images/AI/Globals/XGLOB1A";
+#if 0
+		// The hint file is missing
 		case MakeRoomView(kCaldoria49, kEast):
 		case MakeRoomView(kCaldoria54, kEast):
 			return "Images/AI/Caldoria/X49E";
+#endif
 		case MakeRoomView(kCaldoria49, kNorth):
 			return "Images/AI/Caldoria/X49NB2";
 		}

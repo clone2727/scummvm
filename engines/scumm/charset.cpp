@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 
@@ -252,7 +253,7 @@ CharsetRenderer::~CharsetRenderer() {
 
 CharsetRendererCommon::CharsetRendererCommon(ScummEngine *vm)
 	: CharsetRenderer(vm), _bytesPerPixel(0), _fontHeight(0), _numChars(0) {
-	_shadowMode = false;
+	_enableShadow = false;
 	_shadowColor = 0;
 }
 
@@ -391,6 +392,10 @@ int CharsetRenderer::getStringWidth(int arg, const byte *text) {
 			} else if (chr & 0x80) {
 				pos++;
 				width += _vm->_2byteWidth;
+				// Original keeps glyph width and character dimensions separately
+				if (_vm->_language == Common::KO_KOR || _vm->_language == Common::ZH_TWN) {
+					width++;
+				}
 				continue;
 			}
 		}
@@ -477,6 +482,12 @@ void CharsetRenderer::addLinebreaks(int a, byte *str, int pos, int maxwidth) {
 			} else if (chr & 0x80) {
 				pos++;
 				curw += _vm->_2byteWidth;
+				// Original keeps glyph width and character dimensions separately
+				if (_vm->_language == Common::KO_KOR || _vm->_language == Common::ZH_TWN) {
+					curw++;
+				}
+			} else {
+				curw += getCharWidth(chr);
 			}
 		} else {
 			curw += getCharWidth(chr);
@@ -506,12 +517,17 @@ int CharsetRendererV3::getCharWidth(uint16 chr) {
 	return spacing;
 }
 
-void CharsetRendererV3::enableShadow(bool enable) {
+void CharsetRendererPC::enableShadow(bool enable) {
 	_shadowColor = 0;
-	_shadowMode = enable;
+	_enableShadow = enable;
+
+	if (_vm->_game.version >= 7 && _vm->_language == Common::KO_KOR)
+		_shadowType = kHorizontalShadowType;
+	else
+		_shadowType = kNormalShadowType;
 }
 
-void CharsetRendererV3::drawBits1(Graphics::Surface &dest, int x, int y, const byte *src, int drawTop, int width, int height) {
+void CharsetRendererPC::drawBits1(Graphics::Surface &dest, int x, int y, const byte *src, int drawTop, int width, int height) {
 	byte *dst = (byte *)dest.getBasePtr(x, y);
 
 	byte bits = 0;
@@ -524,8 +540,12 @@ void CharsetRendererV3::drawBits1(Graphics::Surface &dest, int x, int y, const b
 			if ((x % 8) == 0)
 				bits = *src++;
 			if ((bits & revBitMask(x % 8)) && y + drawTop >= 0) {
-				if (_shadowMode)
-					dst[1] = dst2[0] = dst2[1] = _shadowColor;
+				if (_enableShadow) {
+					if (_shadowType == kNormalShadowType)
+						dst[1] = dst2[0] = dst2[1] = _shadowColor;
+					else if (_shadowType == kHorizontalShadowType)
+						dst[1] = _shadowColor;
+				}
 				dst[0] = col;
 			}
 			dst += dest.format.bytesPerPixel;
@@ -614,7 +634,7 @@ void CharsetRendererV3::printChar(int chr, bool ignoreCharsetMask) {
 	if (_left + origWidth > _right + 1)
 		return;
 
-	if (_shadowMode) {
+	if (_enableShadow) {
 		width++;
 		height++;
 	}
@@ -657,7 +677,7 @@ void CharsetRendererV3::printChar(int chr, bool ignoreCharsetMask) {
 
 	if (_str.right < _left) {
 		_str.right = _left;
-		if (_shadowMode)
+		if (_enableShadow)
 			_str.right++;
 	}
 
@@ -775,11 +795,15 @@ void CharsetRendererClassic::printChar(int chr, bool ignoreCharsetMask) {
 
 	printCharIntern(is2byte, _charPtr, _origWidth, _origHeight, _width, _height, vs, ignoreCharsetMask);
 
+	// Original keeps glyph width and character dimensions separately
+	if ((_vm->_language == Common::ZH_TWN || _vm->_language == Common::KO_KOR) && is2byte)
+		_origWidth++;
+
 	_left += _origWidth;
 
 	if (_str.right < _left) {
 		_str.right = _left;
-		if (_vm->_game.platform != Common::kPlatformFMTowns && _shadowMode)
+		if (_vm->_game.platform != Common::kPlatformFMTowns && _enableShadow)
 			_str.right++;
 	}
 
@@ -799,7 +823,7 @@ void CharsetRendererClassic::printCharIntern(bool is2byte, const byte *charPtr, 
 		if (ignoreCharsetMask || !vs->hasTwoBuffers) {
 			dstPtr = vs->getPixels(0, 0);
 		} else {
-			dstPtr = (byte *)_vm->_textSurface.pixels;
+			dstPtr = (byte *)_vm->_textSurface.getPixels();
 		}
 
 		if (_blitAlso && vs->hasTwoBuffers) {
@@ -829,7 +853,7 @@ void CharsetRendererClassic::printCharIntern(bool is2byte, const byte *charPtr, 
 			dstPtr = vs->getPixels(_left, drawTop);
 		} else {
 			dstSurface = _vm->_textSurface;
-			dstPtr = (byte *)_vm->_textSurface.pixels + (_top - _vm->_screenTop) * _vm->_textSurface.pitch * _vm->_textSurfaceMultiplier + _left * _vm->_textSurfaceMultiplier;
+			dstPtr = (byte *)_vm->_textSurface.getBasePtr(_left * _vm->_textSurfaceMultiplier, (_top - _vm->_screenTop) * _vm->_textSurfaceMultiplier);
 		}
 
 		if (_blitAlso && vs->hasTwoBuffers) {
@@ -843,7 +867,10 @@ void CharsetRendererClassic::printCharIntern(bool is2byte, const byte *charPtr, 
 			drawTop = _top - _vm->_screenTop;
 		}
 
-		drawBitsN(dstSurface, dstPtr, charPtr, *_fontPtr, drawTop, origWidth, origHeight);
+		if (is2byte && _vm->_game.platform != Common::kPlatformFMTowns)
+			drawBits1(dstSurface, _left, drawTop, charPtr, drawTop, origWidth, origHeight);
+		else
+			drawBitsN(dstSurface, dstPtr, charPtr, *_fontPtr, drawTop, origWidth, origHeight);
 
 		if (_blitAlso && vs->hasTwoBuffers) {
 			// FIXME: Revisiting this code, I think the _blitAlso mode is likely broken
@@ -883,6 +910,24 @@ void CharsetRendererClassic::printCharIntern(bool is2byte, const byte *charPtr, 
 }
 
 bool CharsetRendererClassic::prepareDraw(uint16 chr) {
+	bool is2byte = (chr >= 256 && _vm->_useCJKMode);
+	if (is2byte) {
+		if (_vm->_language == Common::KO_KOR)
+			enableShadow(true);
+
+		_charPtr = _vm->get2byteCharPtr(chr);
+		_width = _origWidth = _vm->_2byteWidth;
+		_height = _origHeight = _vm->_2byteHeight;
+		_offsX = _offsY = 0;
+
+		if (_enableShadow) {
+			_width++;
+			_height++;
+		}
+
+		return true;
+	}
+
 	uint32 charOffs = READ_LE_UINT32(_fontPtr + chr * 4 + 4);
 	assert(charOffs < 0x14000);
 	if (!charOffs)
@@ -907,8 +952,14 @@ bool CharsetRendererClassic::prepareDraw(uint16 chr) {
 void CharsetRendererClassic::drawChar(int chr, Graphics::Surface &s, int x, int y) {
 	if (!prepareDraw(chr))
 		return;
-	byte *dst = (byte *)s.pixels + y * s.pitch + x;
-	drawBitsN(s, dst, _charPtr, *_fontPtr, y, _width, _height);
+
+	byte *dst = (byte *)s.getBasePtr(x, y);
+
+	bool is2byte = (_vm->_useCJKMode && chr >= 256);
+	if (is2byte)
+		drawBits1(s, x, y, _charPtr, y, _width, _height);
+	else
+		drawBitsN(s, dst, _charPtr, *_fontPtr, y, _width, _height);
 }
 
 void CharsetRendererClassic::drawBitsN(const Graphics::Surface &s, byte *dst, const byte *src, byte bpp, int drawTop, int width, int height) {
@@ -981,7 +1032,7 @@ int CharsetRendererTownsV3::getFontHeight() {
 
 void CharsetRendererTownsV3::enableShadow(bool enable) {
 	_shadowColor = 8;
-	_shadowMode = enable;
+	_enableShadow = enable;
 
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 	_shadowColor = 0x88;
@@ -1026,13 +1077,13 @@ void CharsetRendererTownsV3::drawBits1(Graphics::Surface &dest, int x, int y, co
 				bits = *src++;
 			if ((bits & revBitMask(x % 8)) && y + drawTop >= 0) {
 				if (dest.format.bytesPerPixel == 2) {
-					if (_shadowMode) {
+					if (_enableShadow) {
 						WRITE_UINT16(dst + 2, _vm->_16BitPalette[_shadowColor]);
 						WRITE_UINT16(dst + dest.pitch, _vm->_16BitPalette[_shadowColor]);
 					}
 					WRITE_UINT16(dst, _vm->_16BitPalette[_color]);
 				} else {
-					if (_shadowMode) {
+					if (_enableShadow) {
 #ifndef DISABLE_TOWNS_DUAL_LAYER_MODE
 						if (scale2x) {
 							dst[2] = dst[3] = dst2[2] = dst2[3] = _shadowColor;
@@ -1123,11 +1174,11 @@ void CharsetRendererPCE::drawBits1(Graphics::Surface &dest, int x, int y, const 
 				bits = *src++;
 			if ((bits & revBitMask(bitCount % 8)) && y + drawTop >= 0) {
 				if (dest.format.bytesPerPixel == 2) {
-					if (_shadowMode)
+					if (_enableShadow)
 						WRITE_UINT16(dst + dest.pitch + 2, _vm->_16BitPalette[_shadowColor]);
 					WRITE_UINT16(dst, _vm->_16BitPalette[_color]);
 				} else {
-					if (_shadowMode)
+					if (_enableShadow)
 						*(dst + dest.pitch + 1) = _shadowColor;
 					*dst = _color;
 				}
@@ -1226,7 +1277,8 @@ void CharsetRendererNut::printChar(int chr, bool ignoreCharsetMask) {
 	int width = _current->getCharWidth(chr);
 	int height = _current->getCharHeight(chr);
 
-	if (chr >= 256 && _vm->_useCJKMode)
+	bool is2byte = chr >= 256 && _vm->_useCJKMode;
+	if (is2byte)
 		width = _vm->_2byteWidth;
 
 	shadow.right = _left + width;
@@ -1242,7 +1294,7 @@ void CharsetRendererNut::printChar(int chr, bool ignoreCharsetMask) {
 	if (ignoreCharsetMask) {
 		VirtScreen *vs = &_vm->_virtscr[kMainVirtScreen];
 		s = *vs;
-		s.pixels = vs->getPixels(0, 0);
+		s.setPixels(vs->getPixels(0, 0));
 	} else {
 		s = _vm->_textSurface;
 		drawTop -= _vm->_screenTop;
@@ -1258,8 +1310,8 @@ void CharsetRendererNut::printChar(int chr, bool ignoreCharsetMask) {
 		_str.left = _left;
 
 	// Original keeps glyph width and character dimensions separately
-	if (_vm->_language == Common::ZH_TWN && width == 16)
-		width = 17;
+	if ((_vm->_language == Common::ZH_TWN || _vm->_language == Common::KO_KOR) && is2byte)
+		width++;
 
 	_left += width;
 
@@ -1326,7 +1378,7 @@ void CharsetRendererNES::printChar(int chr, bool ignoreCharsetMask) {
 
 	if (_str.right < _left) {
 		_str.right = _left;
-		if (_shadowMode)
+		if (_enableShadow)
 			_str.right++;
 	}
 
@@ -1401,7 +1453,7 @@ void CharsetRendererTownsClassic::drawBitsN(const Graphics::Surface&, byte *dst,
 	}
 
 	bool scale2x = (_vm->_textSurfaceMultiplier == 2);
-	dst = (byte *)_vm->_textSurface.pixels + (_top - _vm->_screenTop) * _vm->_textSurface.pitch * _vm->_textSurfaceMultiplier + _left * _vm->_textSurfaceMultiplier;
+	dst = (byte *)_vm->_textSurface.getBasePtr(_left * _vm->_textSurfaceMultiplier, (_top - _vm->_screenTop) * _vm->_textSurfaceMultiplier);
 
 	int y, x;
 	int color;
@@ -1482,7 +1534,7 @@ bool CharsetRendererTownsClassic::prepareDraw(uint16 chr) {
 		_origHeight = _height = _vm->_2byteHeight;
 		_charPtr = _vm->get2byteCharPtr(chr);
 		_offsX = _offsY = 0;
-		if (_shadowMode) {
+		if (_enableShadow) {
 			_width++;
 			_height++;
 		}
@@ -1494,7 +1546,7 @@ bool CharsetRendererTownsClassic::prepareDraw(uint16 chr) {
 }
 
 void CharsetRendererTownsClassic::setupShadowMode() {
-	_shadowMode = true;
+	_enableShadow = true;
 	_shadowColor = _vm->_townsCharsetColorMap[0];
 	assert(_vm->_cjkFont);
 

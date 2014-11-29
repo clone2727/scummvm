@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -597,7 +597,7 @@ void ConfigManager::setActiveDomain(const String &domName) {
 		_activeDomain = 0;
 	} else {
 		assert(isValidDomainName(domName));
-		_activeDomain = & _gameDomains[domName];
+		_activeDomain = &_gameDomains[domName];
 	}
 	_activeDomainName = domName;
 }
@@ -626,6 +626,10 @@ void ConfigManager::addMiscDomain(const String &domName) {
 void ConfigManager::removeGameDomain(const String &domName) {
 	assert(!domName.empty());
 	assert(isValidDomainName(domName));
+	if (domName == _activeDomainName) {
+		_activeDomainName.clear();
+		_activeDomain = 0;
+	}
 	_gameDomains.erase(domName);
 }
 
@@ -638,6 +642,10 @@ void ConfigManager::removeMiscDomain(const String &domName) {
 
 void ConfigManager::renameGameDomain(const String &oldName, const String &newName) {
 	renameDomain(oldName, newName, _gameDomains);
+	if (_activeDomainName == oldName) {
+		_activeDomainName = newName;
+		_activeDomain = &_gameDomains[newName];
+	}
 }
 
 void ConfigManager::renameMiscDomain(const String &oldName, const String &newName) {

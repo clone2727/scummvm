@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -63,7 +63,7 @@ void GraphicsMan::update() {
 
 			// Clear the buffer when ending the fade out
 			if (_fading == 2)
-				_foreground.fillRect(Common::Rect(640, 320), 0);
+				_foreground.fillRect(Common::Rect(640, _foreground.h), 0);
 		}
 	}
 
@@ -74,6 +74,22 @@ void GraphicsMan::update() {
 	}
 }
 
+void GraphicsMan::switchToFullScreen(bool fullScreen) {
+	_foreground.free();
+	_background.free();
+
+	if (fullScreen) {
+		_foreground.create(640, 480, _vm->_pixelFormat);
+		_background.create(640, 480, _vm->_pixelFormat);
+	} else {
+		_vm->_system->fillScreen(0);
+		_foreground.create(640, 320, _vm->_pixelFormat);
+		_background.create(640, 320, _vm->_pixelFormat);
+	}
+
+	_changed = true;
+}
+
 void GraphicsMan::change() {
 	_changed = true;
 }
@@ -82,9 +98,9 @@ void GraphicsMan::mergeFgAndBg() {
 	uint32 i;
 	byte *countf, *countb;
 
-	countf = (byte *)_foreground.getBasePtr(0, 0);
-	countb = (byte *)_background.getBasePtr(0, 0);
-	for (i = 640 * 320; i; i--) {
+	countf = (byte *)_foreground.getPixels();
+	countb = (byte *)_background.getPixels();
+	for (i = 640 * _foreground.h; i; i--) {
 		if (255 == *(countf)) {
 			*(countf) = *(countb);
 		}
@@ -94,7 +110,10 @@ void GraphicsMan::mergeFgAndBg() {
 }
 
 void GraphicsMan::updateScreen(Graphics::Surface *source) {
-	_vm->_system->copyRectToScreen(source->getBasePtr(0, 0), 640, 0, 80, 640, 320);
+	if (!isFullScreen())
+		_vm->_system->copyRectToScreen(source->getPixels(), source->pitch, 0, 80, 640, 320);
+	else
+		_vm->_system->copyRectToScreen(source->getPixels(), source->pitch, 0, 0, 640, 480);
 	change();
 }
 

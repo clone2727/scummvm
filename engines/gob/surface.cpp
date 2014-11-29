@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -31,7 +31,8 @@
 #include "graphics/primitives.h"
 #include "graphics/pixelformat.h"
 #include "graphics/surface.h"
-#include "graphics/decoders/iff.h"
+
+#include "image/iff.h"
 
 namespace Gob {
 
@@ -45,7 +46,7 @@ static void plotPixel(int x, int y, int color, void *data) {
 Pixel::Pixel(byte *vidMem, uint8 bpp, byte *min, byte *max) :
 	_vidMem(vidMem), _bpp(bpp), _min(min), _max(max) {
 
-	assert((_bpp == 1) || (_bpp == 2));
+	assert((_bpp == 1) || (_bpp == 2) || (_bpp == 4));
 	assert(_vidMem >= _min);
 	assert(_vidMem <  _max);
 }
@@ -91,6 +92,8 @@ uint32 Pixel::get() const {
 		return *((byte *) _vidMem);
 	if (_bpp == 2)
 		return *((uint16 *) _vidMem);
+	if (_bpp == 4)
+		return *((uint32 *) _vidMem);
 
 	return 0;
 }
@@ -103,6 +106,8 @@ void Pixel::set(uint32 p) {
 		*((byte *) _vidMem) = (byte) p;
 	if (_bpp == 2)
 		*((uint16 *) _vidMem) = (uint16) p;
+	if (_bpp == 4)
+		*((uint32 *) _vidMem) = (uint32) p;
 }
 
 bool Pixel::isValid() const {
@@ -113,7 +118,7 @@ bool Pixel::isValid() const {
 ConstPixel::ConstPixel(const byte *vidMem, uint8 bpp, const byte *min, const byte *max) :
 	_vidMem(vidMem), _bpp(bpp), _min(min), _max(max) {
 
-	assert((_bpp == 1) || (_bpp == 2));
+	assert((_bpp == 1) || (_bpp == 2) || (_bpp == 4));
 	assert(_vidMem >= _min);
 	assert(_vidMem <  _max);
 }
@@ -159,6 +164,8 @@ uint32 ConstPixel::get() const {
 		return *((const byte *) _vidMem);
 	if (_bpp == 2)
 		return *((const uint16 *) _vidMem);
+	if (_bpp == 4)
+		return *((const uint32 *) _vidMem);
 
 	return 0;
 }
@@ -172,7 +179,7 @@ Surface::Surface(uint16 width, uint16 height, uint8 bpp, byte *vidMem) :
 	_width(width), _height(height), _bpp(bpp), _vidMem(vidMem) {
 
 	assert((_width > 0) && (_height > 0));
-	assert((_bpp == 1) || (_bpp == 2));
+	assert((_bpp == 1) || (_bpp == 2) || (_bpp == 4));
 
 	if (!_vidMem) {
 		_vidMem    = new byte[_bpp * _width * _height];
@@ -187,7 +194,7 @@ Surface::Surface(uint16 width, uint16 height, uint8 bpp, const byte *vidMem) :
 	_width(width), _height(height), _bpp(bpp), _vidMem(0) {
 
 	assert((_width > 0) && (_height > 0));
-	assert((_bpp == 1) || (_bpp == 2));
+	assert((_bpp == 1) || (_bpp == 2) || (_bpp == 4));
 
 	_vidMem    = new byte[_bpp * _width * _height];
 	_ownVidMem = true;
@@ -504,7 +511,7 @@ void Surface::fillRect(uint16 left, uint16 top, uint16 right, uint16 bottom, uin
 		return;
 	}
 
-	assert(_bpp == 2);
+	assert((_bpp == 2) || (_bpp == 4));
 
 	// Otherwise, we have to fill by pixel
 
@@ -808,14 +815,14 @@ bool Surface::loadTGA(Common::SeekableReadStream &stream) {
 }
 
 bool Surface::loadIFF(Common::SeekableReadStream &stream) {
-	Graphics::IFFDecoder decoder;
+	Image::IFFDecoder decoder;
 	decoder.loadStream(stream);
 
 	if (!decoder.getSurface())
 		return false;
 
 	resize(decoder.getSurface()->w, decoder.getSurface()->h);
-	memcpy(_vidMem, decoder.getSurface()->pixels, decoder.getSurface()->w * decoder.getSurface()->h);
+	memcpy(_vidMem, decoder.getSurface()->getPixels(), decoder.getSurface()->w * decoder.getSurface()->h);
 
 	return true;
 }

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -33,7 +33,7 @@
 		"",
 		AD_ENTRY1("intro.stk", "2bb8878a8042244dd2b96ff682381baa"),
 		EN_GRB,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -47,7 +47,7 @@
 		"",
 		AD_ENTRY1s("intro.stk", "de92e5c6a8c163007ffceebef6e67f7d", 7117568),
 		EN_USA,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -61,7 +61,7 @@
 		"",
 		AD_ENTRY1s("intro.stk", "6d60f9205ecfbd8735da2ee7823a70dc", 7014426),
 		ES_ESP,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -75,7 +75,7 @@
 		"",
 		AD_ENTRY1("intro.stk", "4b10525a3782aa7ecd9d833b5c1d308b"),
 		FR_FRA,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -89,7 +89,7 @@
 		"",
 		AD_ENTRY1("intro.stk", "63170e71f04faba88673b3f510f9c4c8"),
 		DE_DEU,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -103,7 +103,7 @@
 		"",
 		AD_ENTRY1s("intro.stk", "8b57cd510da8a3bbd99e3a0297a8ebd1", 7018771),
 		IT_ITA,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_NO_FLAGS,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -228,93 +228,6 @@
 	0, 0, 0
 },
 
-// -- DOS VGA Floppy --
-
-{
-	{
-		"ween",
-		"",
-		AD_ENTRY1("intro.stk", "2bb8878a8042244dd2b96ff682381baa"),
-		EN_GRB,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-{
-	{
-		"ween",
-		"",
-		AD_ENTRY1s("intro.stk", "de92e5c6a8c163007ffceebef6e67f7d", 7117568),
-		EN_USA,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-{ // Supplied by cybot_tmin in bug report #1667743
-	{
-		"ween",
-		"",
-		AD_ENTRY1s("intro.stk", "6d60f9205ecfbd8735da2ee7823a70dc", 7014426),
-		ES_ESP,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-{
-	{
-		"ween",
-		"",
-		AD_ENTRY1("intro.stk", "4b10525a3782aa7ecd9d833b5c1d308b"),
-		FR_FRA,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-{ // Supplied by cartman_ on #scummvm
-	{
-		"ween",
-		"",
-		AD_ENTRY1("intro.stk", "63170e71f04faba88673b3f510f9c4c8"),
-		DE_DEU,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-{ // Supplied by glorfindel in bugreport #1722142
-	{
-		"ween",
-		"",
-		AD_ENTRY1s("intro.stk", "8b57cd510da8a3bbd99e3a0297a8ebd1", 7018771),
-		IT_ITA,
-		kPlatformPC,
-		ADGF_NO_FLAGS,
-		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
-	},
-	kGameTypeWeen,
-	kFeaturesAdLib,
-	0, 0, 0
-},
-
 // -- Demos --
 
 {
@@ -323,7 +236,7 @@
 		"Demo",
 		AD_ENTRY1("intro.stk", "2e9c2898f6bf206ede801e3b2e7ee428"),
 		UNK_LANG,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},
@@ -337,7 +250,7 @@
 		"Demo",
 		AD_ENTRY1("intro.stk", "15fb91a1b9b09684b28ac75edf66e504"),
 		EN_USA,
-		kPlatformPC,
+		kPlatformDOS,
 		ADGF_DEMO,
 		GUIO2(GUIO_NOSUBTITLES, GUIO_NOSPEECH)
 	},

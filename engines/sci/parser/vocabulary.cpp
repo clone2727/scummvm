@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -494,8 +494,6 @@ void Vocabulary::debugDecipherSaidBlock(const byte *addr) {
 				case 0xf9:
 					debugN(">");
 					break;
-				case 0xff:
-					break;
 			}
 		}
 	} while (nextItem != 0xff);
@@ -532,18 +530,16 @@ bool Vocabulary::tokenizeString(ResultWordListList &retval, const char *sentence
 	*error = NULL;
 
 	do {
-
 		c = sentence[pos_in_sentence++];
+
 		if (Common::isAlnum(c) || (c == '-' && wordLen) || (c >= 0x80)) {
 			currentWord[wordLen] = lowerCaseMap[c];
 			++wordLen;
-		}
-		// Continue on this word */
-		// Words may contain a '-', but may not
-		// start with one.
-		else {
-			if (wordLen) { // Finished a word?
+		} else if (c == ' ' || c == '\0') {
+			// Continue on this word. Words may contain a '-', but may not start with
+			// one.
 
+			if (wordLen) { // Finished a word?
 				ResultWordList lookup_result;
 
 				// Look it up
@@ -579,7 +575,7 @@ void Vocabulary::printSuffixes() const {
 		strncpy(alt_buf, suf->alt_suffix, suf->alt_suffix_length);
 		alt_buf[suf->alt_suffix_length] = 0;
 
-		con->DebugPrintf("%4d: (%03x) -%12s  =>  -%12s (%03x)\n", i, suf->class_mask, word_buf, alt_buf, suf->result_class);
+		con->debugPrintf("%4d: (%03x) -%12s  =>  -%12s (%03x)\n", i, suf->class_mask, word_buf, alt_buf, suf->result_class);
 		++i;
 	}
 }
@@ -590,14 +586,14 @@ void Vocabulary::printParserWords() const {
 	int n = 0;
 	for (WordMap::iterator i = _parserWords.begin(); i != _parserWords.end(); ++i) {
 		for (ResultWordList::iterator j = i->_value.begin(); j != i->_value.end(); ++j) {
-			con->DebugPrintf("%4d: %03x [%03x] %20s |", n, j->_class, j->_group, i->_key.c_str());
+			con->debugPrintf("%4d: %03x [%03x] %20s |", n, j->_class, j->_group, i->_key.c_str());
 			if (n % 3 == 0)
-				con->DebugPrintf("\n");
+				con->debugPrintf("\n");
 			n++;
 		}
 	}
 
-	con->DebugPrintf("\n");
+	con->debugPrintf("\n");
 }
 
 void _vocab_recursive_ptree_dump(ParseTreeNode *tree, int blanks) {
@@ -667,15 +663,15 @@ void Vocabulary::printParserNodes(int num) {
 	Console *con = g_sci->getSciDebugger();
 
 	for (int i = 0; i < num; i++) {
-		con->DebugPrintf(" Node %03x: ", i);
+		con->debugPrintf(" Node %03x: ", i);
 		if (_parserNodes[i].type == kParseTreeLeafNode)
-			con->DebugPrintf("Leaf: %04x\n", _parserNodes[i].value);
+			con->debugPrintf("Leaf: %04x\n", _parserNodes[i].value);
 		else {
 			// FIXME: Do we really want to print the *addresses*
 			// of the left & right child?
 			// Note that one or both may be zero pointers, so we can't just
 			// print their values.
-			con->DebugPrintf("Branch: ->%p, ->%p\n",
+			con->debugPrintf("Branch: ->%p, ->%p\n",
 					(const void *)_parserNodes[i].left,
 					(const void *)_parserNodes[i].right);
 		}
@@ -696,11 +692,11 @@ int Vocabulary::parseNodes(int *i, int *pos, int type, int nr, int argc, const c
 		return *pos;
 	}
 	if (type == kParseEndOfInput) {
-		con->DebugPrintf("Unbalanced parentheses\n");
+		con->debugPrintf("Unbalanced parentheses\n");
 		return -1;
 	}
 	if (type == kParseClosingParenthesis) {
-		con->DebugPrintf("Syntax error at token %d\n", *i);
+		con->debugPrintf("Syntax error at token %d\n", *i);
 		return -1;
 	}
 
@@ -726,19 +722,18 @@ int Vocabulary::parseNodes(int *i, int *pos, int type, int nr, int argc, const c
 
 		newPos = parseNodes(i, pos, nextToken, nextValue, argc, argv);
 
+		if (newPos == -1)
+			return -1;
+
 		if (j == 0)
 			 _parserNodes[oldPos].left = &_parserNodes[newPos];
 		else
 			 _parserNodes[oldPos].right = &_parserNodes[newPos];
-
-
-		if (newPos == -1)
-			return -1;
 	}
 
 	const char *token = argv[(*i)++];
 	if (strcmp(token, ")"))
-		con->DebugPrintf("Expected ')' at token %d\n", *i);
+		con->debugPrintf("Expected ')' at token %d\n", *i);
 
 	return oldPos;
 }

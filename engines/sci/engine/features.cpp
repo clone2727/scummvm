@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -344,9 +344,9 @@ bool GameFeatures::autoDetectGfxFunctionsType(int methodNum) {
 			if (kFuncNum == 8) {	// kDrawPic	(SCI0 - SCI11)
 				// If kDrawPic is called with 6 parameters from the overlay
 				// selector, the game is using old graphics functions.
-				// Otherwise, if it's called with 8 parameters, it's using new
-				// graphics functions.
-				_gfxFunctionsType = (argc == 8) ? SCI_VERSION_0_LATE : SCI_VERSION_0_EARLY;
+				// Otherwise, if it's called with 8 parameters (e.g. SQ3) or 4 parameters
+				// (e.g. Hoyle 1/2), it's using new graphics functions.
+				_gfxFunctionsType = (argc == 6) ? SCI_VERSION_0_EARLY : SCI_VERSION_0_LATE;
 				return true;
 			}
 		}
@@ -467,9 +467,9 @@ bool GameFeatures::autoDetectSci21KernelType() {
 		// seen it happen in the RAMA demo, thus we can assume that the
 		// game is using a SCI2.1 table
 
-		// HACK: The Inside the Chest Demo doesn't have sounds at all, but
-		// it's using a SCI2 kernel
-		if (g_sci->getGameId() == GID_CHEST) {
+		// HACK: The Inside the Chest Demo and King's Questions minigame
+		// don't have sounds at all, but they're using a SCI2 kernel
+		if (g_sci->getGameId() == GID_CHEST || g_sci->getGameId() == GID_KQUESTIONS) {
 			_sci21KernelType = SCI_VERSION_2;
 			return true;
 		}
@@ -496,7 +496,9 @@ bool GameFeatures::autoDetectSci21KernelType() {
 		opcode = extOpcode >> 1;
 
 		// Check for end of script
-		if (opcode == op_ret || offset >= script->getBufSize())
+		// We don't check for op_ret here because the Phantasmagoria Mac script
+		// has an op_ret early on in its script (controlled by a branch).
+		if (offset >= script->getBufSize())
 			break;
 
 		if (opcode == op_callk) {

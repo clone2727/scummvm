@@ -64,6 +64,10 @@ void GlobeTracker::setTrackParameters(const Hotspot *trackSpot, GlobeTrackDirect
 
 		_globeMovie->setSegment(start, start + kDurationPerRow);
 
+		// Clip new time so we don't go past the end of the segment
+		if (newTime >= start + kDurationPerRow)
+			newTime = start + kDurationPerRow - 1;
+
 		if (newTime != time) {
 			_globeMovie->setTime(newTime);
 			_globeMovie->redrawMovieWorld();
@@ -83,6 +87,10 @@ void GlobeTracker::setTrackParameters(const Hotspot *trackSpot, GlobeTrackDirect
 		}
 
 		_globeMovie->setSegment(start, start + kDurationPerRow);
+
+		// Clip new time so we don't go past the end of the segment
+		if (newTime >= start + kDurationPerRow)
+			newTime = start + kDurationPerRow - 1;
 
 		if (newTime != time) {
 			_globeMovie->setTime(newTime);
@@ -386,20 +394,22 @@ static const NotificationFlags kGlobeNotificationFlags = kGlobeSplash1Finished |
 													kGlobeTimerExpired |
 													kMaxDeactivatedFinished;
 
-static const int16 kSplash1End = 4;
-static const int16 kSplash2End = 5;
-static const int16 kSplash3Start = 8;
-static const int16 kSplash3Stop = 9;
-static const int16 kSplash4Start = 9;
-static const int16 kSplash4Stop = 10;
-static const int16 kNewLaunchSiloTime = 10;
-static const int16 kSiloDeactivatedTime = 11;
-static const int16 kMissileLaunchedTime = 12;
-static const int16 kMaxDeactivatedStart = 13;
-static const int16 kMaxDeactivatedStop = 23;
+enum {
+	kSplash1End = 4,
+	kSplash2End = 5,
+	kSplash3Start = 8,
+	kSplash3Stop = 9,
+	kSplash4Start = 9,
+	kSplash4Stop = 10,
+	kNewLaunchSiloTime = 10,
+	kSiloDeactivatedTime = 11,
+	kMissileLaunchedTime = 12,
+	kMaxDeactivatedStart = 13,
+	kMaxDeactivatedStop = 23,
 
-static const int16 kGamePlaying = 1;
-static const int16 kGameOver = 2;
+	kGamePlaying = 1,
+	kGameOver = 2
+};
 
 enum {
 	kGameIntro,
@@ -445,8 +455,13 @@ GlobeGame::GlobeGame(Neighborhood *handler) : GameInteraction(kNoradGlobeGameInt
 	_neighborhoodNotification = handler->getNeighborhoodNotification();
 }
 
+void GlobeGame::setSoundFXLevel(const uint16 fxLevel) {
+	_monitorMovie.setVolume(fxLevel);
+}
+
 void GlobeGame::openInteraction() {
 	_monitorMovie.initFromMovieFile("Images/Norad Delta/N79 Left Monitor");
+	_monitorMovie.setVolume(((PegasusEngine *)g_engine)->getSoundFXLevel());
 	_monitorMovie.moveElementTo(kGlobeMonitorLeft, kGlobeMonitorTop);
 	_monitorMovie.setDisplayOrder(kGlobeMonitorLayer);
 	_monitorMovie.startDisplaying();
@@ -621,6 +636,7 @@ void GlobeGame::receiveNotification(Notification *notification, const Notificati
 			_monitorMovie.stop();
 			_monitorMovie.setSegment(0, _monitorMovie.getDuration());
 			_monitorMovie.setTime(kSplash2End * scale - 1);
+			_monitorMovie.redrawMovieWorld();
 			_monitorMovie.setFlags(0);
 
 			_owner->requestDelay(1, 2, kFilterNoInput, 0);
@@ -643,6 +659,7 @@ void GlobeGame::receiveNotification(Notification *notification, const Notificati
 			_monitorMovie.stop();
 			_monitorMovie.setSegment(0, _monitorMovie.getDuration());
 			_monitorMovie.setTime(kNewLaunchSiloTime * scale);
+			_monitorMovie.redrawMovieWorld();
 			_owner->requestSpotSound(kNewLaunchSiloIn, kNewLaunchSiloOut, kFilterNoInput,
 					kSpotSoundCompletedFlag);
 			_gameState = kPlayingNewSilo1;
@@ -895,6 +912,11 @@ void GlobeGame::clickGlobe(const Input &input) {
 				_monitorMovie.start();
 				_owner->requestSpotSound(kMaximumDeactivationIn, kMaximumDeactivationOut,
 						kFilterNoInput, kSpotSoundCompletedFlag);
+
+				// This sound was left out of the original.
+				_owner->requestSpotSound(kAllSilosDeactivatedIn, kAllSilosDeactivatedOut,
+						kFilterNoInput, kSpotSoundCompletedFlag);
+
 				_gameState = kPlayerWon1;
 			} else {
 				_owner->requestDelay(2, 1, kFilterNoInput, kDelayCompletedFlag);
@@ -1050,12 +1072,13 @@ void GlobeGame::doSolve() {
 	_upperNamesMovie.hide();
 	_lowerNamesMovie.hide();
 	_countdown.hide();
-	_monitorMovie.setSegment(kMaxDeactivatedStart * _monitorMovie.getScale(), kMaxDeactivatedStop * _monitorMovie.getScale());
-	_monitorMovie.setTime(kMaxDeactivatedStart * _monitorMovie.getScale());
+	_monitorMovie.setSegment(kMaxDeactivatedStart * _monitorMovie.getScale() + (kSiloDeactivatedOut - kSiloDeactivatedIn), kMaxDeactivatedStop * _monitorMovie.getScale());
+	_monitorMovie.setTime(kMaxDeactivatedStart * _monitorMovie.getScale() + (kSiloDeactivatedOut - kSiloDeactivatedIn));
 	_monitorCallBack.setCallBackFlag(kMaxDeactivatedFinished);
 	_monitorCallBack.scheduleCallBack(kTriggerAtStop, 0, 0);
 	_monitorMovie.start();
 	_owner->requestSpotSound(kMaximumDeactivationIn, kMaximumDeactivationOut, kFilterNoInput, kSpotSoundCompletedFlag);
+	_owner->requestSpotSound(kAllSilosDeactivatedIn, kAllSilosDeactivatedOut, kFilterNoInput, kSpotSoundCompletedFlag);
 	_gameState = kPlayerWon1;
 }
 

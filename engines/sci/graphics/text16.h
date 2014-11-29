@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -40,7 +40,7 @@ class GfxFont;
  */
 class GfxText16 {
 public:
-	GfxText16(ResourceManager *_resMan, GfxCache *fonts, GfxPorts *ports, GfxPaint16 *paint16, GfxScreen *screen);
+	GfxText16(GfxCache *fonts, GfxPorts *ports, GfxPaint16 *paint16, GfxScreen *screen);
 	~GfxText16();
 
 	GuiResourceId GetFontId();
@@ -51,15 +51,20 @@ public:
 
 	void ClearChar(int16 chr);
 
-	int16 GetLongest(const char *text, int16 maxWidth, GuiResourceId orgFontId);
+	int16 GetLongest(const char *&text, int16 maxWidth, GuiResourceId orgFontId);
 	void Width(const char *text, int16 from, int16 len, GuiResourceId orgFontId, int16 &textWidth, int16 &textHeight, bool restoreFont);
 	void StringWidth(const char *str, GuiResourceId orgFontId, int16 &textWidth, int16 &textHeight);
 	void ShowString(const char *str, GuiResourceId orgFontId, int16 orgPenColor);
 	void DrawString(const char *str, GuiResourceId orgFontId, int16 orgPenColor);
-	int16 Size(Common::Rect &rect, const char *text, GuiResourceId fontId, int16 maxWidth);
+	int16 Size(Common::Rect &rect, const char *text, uint16 textLanguage, GuiResourceId fontId, int16 maxWidth);
 	void Draw(const char *text, int16 from, int16 len, GuiResourceId orgFontId, int16 orgPenColor);
 	void Show(const char *text, int16 from, int16 len, GuiResourceId orgFontId, int16 orgPenColor);
-	void Box(const char *text, bool show, const Common::Rect &rect, TextAlignment alignment, GuiResourceId fontId);
+	void Box(const char *text, uint16 languageSplitter, bool show, const Common::Rect &rect, TextAlignment alignment, GuiResourceId fontId);
+
+	void Box(const char *text, bool show, const Common::Rect &rect, TextAlignment alignment, GuiResourceId fontId) {
+		Box(text, 0, show, rect, alignment, fontId);
+	}
+	
 	void DrawString(const char *text);
 	void DrawStatus(const char *text);
 
@@ -67,15 +72,14 @@ public:
 
 	reg_t allocAndFillReferenceRectArray();
 
-	void kernelTextSize(const char *text, int16 font, int16 maxWidth, int16 *textWidth, int16 *textHeight);
+	void kernelTextSize(const char *text, uint16 textLanguage, int16 font, int16 maxWidth, int16 *textWidth, int16 *textHeight);
 	void kernelTextFonts(int argc, reg_t *argv);
 	void kernelTextColors(int argc, reg_t *argv);
 
 private:
 	void init();
-	bool SwitchToFont900OnSjis(const char *text);
+	bool SwitchToFont900OnSjis(const char *text, uint16 languageSplitter);
 
-	ResourceManager *_resMan;
 	GfxCache *_cache;
 	GfxPorts *_ports;
 	GfxPaint16 *_paint16;

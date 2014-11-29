@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -304,20 +304,12 @@ void Resource::clearContexts() {
 }
 
 void Resource::loadResource(ResourceContext *context, uint32 resourceId, ByteArray &resourceBuffer) {
-	Common::File *file;
-	uint32 resourceOffset;
-	ResourceData *resourceData;
-
-
-	resourceData = context->getResourceData(resourceId);
-
-	file = context->getFile(resourceData);
-
-	resourceOffset = resourceData->offset;
+	ResourceData *resourceData = context->getResourceData(resourceId);
+	Common::File *file = context->getFile(resourceData);
+	uint32 resourceOffset = resourceData->offset;
 
 	debug(8, "loadResource %d 0x%X:0x%X", resourceId, resourceOffset, uint(resourceData->size));
 	resourceBuffer.resize(resourceData->size);
-
 
 	file->seek((long)resourceOffset, SEEK_SET);
 

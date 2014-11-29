@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -71,7 +71,7 @@ public:
 	int getDimy();
 
 	// Creation
-	virtual void create(int dimx, int dimy, int nBpp);
+	void create(int dimx, int dimy, int nBpp);
 	virtual void destroy();
 
 	// These are valid only if the buffer is locked
@@ -208,8 +208,10 @@ public:
  * 16-bit color source
  */
 class RMGfxSourceBuffer16 : public RMGfxSourceBuffer {
-protected:
+public:
 	virtual void prepareImage();
+
+protected:
 	bool _bTrasp0;
 
 public:
@@ -408,7 +410,7 @@ public:
 
 	// Overloaded initialization methods
 	virtual void init(Common::ReadStream &ds, int dimx, int dimy, bool bLoadPalette = false);
-	virtual int init(byte *buf, int dimx, int dimy, bool bLoadPalette = false);
+	virtual int init(const byte *buf, int dimx, int dimy, bool bLoadPalette = false);
 
 	virtual ~RMGfxSourceBuffer8RLEWordAA();
 };

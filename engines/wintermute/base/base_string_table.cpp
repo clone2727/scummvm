@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -29,6 +29,7 @@
 #include "engines/wintermute/platform_osystem.h"
 #include "engines/wintermute/base/base_file_manager.h"
 #include "engines/wintermute/base/base_game.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/base_string_table.h"
 #include "common/str.h"
 
@@ -64,7 +65,7 @@ bool BaseStringTable::addString(const char *key, const char *val, bool reportDup
 
 	StringsIter it = _strings.find(finalKey);
 	if (it != _strings.end() && reportDuplicities) {
-		_gameRef->LOG(0, "  Warning: Duplicate definition of string '%s'.", finalKey.c_str());
+		BaseEngine::LOG(0, "  Warning: Duplicate definition of string '%s'.", finalKey.c_str());
 	}
 
 	_strings[finalKey] = val;
@@ -146,6 +147,15 @@ void BaseStringTable::expand(char **str) const {
 	}
 }
 
+//////////////////////////////////////////////////////////////////////////
+void BaseStringTable::expand(Common::String &str) const {
+	char *tmp = new char[str.size()+1];
+	strcpy(tmp, str.c_str());
+	expand(&tmp);
+	str = tmp;
+	delete[] tmp;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 const char *BaseStringTable::expandStatic(const char *string) const {
@@ -185,16 +195,18 @@ const char *BaseStringTable::expandStatic(const char *string) const {
 
 //////////////////////////////////////////////////////////////////////////
 bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
-	_gameRef->LOG(0, "Loading string table...");
+	BaseEngine::LOG(0, "Loading string table...");
 
 	if (clearOld) {
+		_filenames.clear();
 		_strings.clear();
 	}
+	_filenames.push_back(Common::String(filename));
 
 	uint32 size;
 	byte *buffer = BaseFileManager::getEngineInstance()->readWholeFile(filename, &size);
 	if (buffer == nullptr) {
-		_gameRef->LOG(0, "BaseStringTable::LoadFile failed for file '%s'", filename);
+		BaseEngine::LOG(0, "BaseStringTable::LoadFile failed for file '%s'", filename);
 		return STATUS_FAILED;
 	}
 
@@ -205,7 +217,7 @@ bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
 		if (_gameRef->_textEncoding != TEXT_UTF8) {
 			_gameRef->_textEncoding = TEXT_UTF8;
 			//_gameRef->_textEncoding = TEXT_ANSI;
-			_gameRef->LOG(0, "  UTF8 file detected, switching to UTF8 text encoding");
+			BaseEngine::LOG(0, "  UTF8 file detected, switching to UTF8 text encoding");
 		}
 	} else {
 		_gameRef->_textEncoding = TEXT_ANSI;
@@ -247,9 +259,32 @@ bool BaseStringTable::loadFile(const char *filename, bool clearOld) {
 
 	delete[] buffer;
 
-	_gameRef->LOG(0, "  %d strings loaded", _strings.size());
+	BaseEngine::LOG(0, "  %d strings loaded", _strings.size());
 
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+bool BaseStringTable::persist(BasePersistenceManager *persistMgr) {
+	// Do nothing if the save game is too old.
+	if (!persistMgr->checkVersion(1, 3, 1)) {
+		return true;
+	}
+	uint32 numFiles = _filenames.size();
+	persistMgr->transferUint32("NumFiles", &numFiles);
+	if (persistMgr->getIsSaving()) {
+		for (uint i = 0; i < numFiles; i++) {
+			persistMgr->transferString("Filename", &_filenames[i]);
+		}
+	} else {
+		_strings.clear();
+		_filenames.clear();
+		for (uint i = 0; i < numFiles; i++) {
+			Common::String filename = "";
+			persistMgr->transferString("Filename", &filename);
+			loadFile(filename.c_str(), false);
+		}
+	}
+	return true;
+}
+
+} // End of namespace Wintermute

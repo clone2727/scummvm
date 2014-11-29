@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/hash-str.h"
@@ -361,6 +362,25 @@ void String::deleteChar(uint32 p) {
 	_size--;
 }
 
+void String::erase(uint32 p, uint32 len) {
+	assert(p < _size);
+
+	makeUnique();
+	// If len == npos or p + len is over the end, remove all the way to the end
+	if (len == npos || p + len >= _size) {
+		// Delete char at p as well. So _size = (p - 1) + 1
+		_size = p;
+		// Null terminate
+		_str[_size] = 0;
+		return;
+	}
+
+	for ( ; p + len <= _size; p++) {
+		_str[p] = _str[p + len];
+	}
+	_size -= len;
+}
+
 void String::clear() {
 	decRefCount(_extern._refCount);
 
@@ -370,7 +390,7 @@ void String::clear() {
 }
 
 void String::setChar(char c, uint32 p) {
-	assert(p <= _size);
+	assert(p < _size);
 
 	makeUnique();
 	_str[p] = c;

@@ -149,10 +149,14 @@ MainMenu::MainMenu() : GameMenu(kMainMenuID), _menuBackground(0), _overviewButto
 
 	bool isDemo = ((PegasusEngine *)g_engine)->isDemo();
 
-	if (isDemo)
-		_menuBackground.initFromPICTFile("Images/Demo/DemoMenu.pict");
-	else
+	if (isDemo) {
+		if (((PegasusEngine *)g_engine)->isWindows())
+			_menuBackground.initFromPICTFile("Images/Demo/DemoMenuPC.pict");
+		else
+			_menuBackground.initFromPICTFile("Images/Demo/DemoMenu.pict");
+	} else {
 		_menuBackground.initFromPICTFile("Images/Main Menu/MainMenu.mac");
+	}
 	_menuBackground.setDisplayOrder(0);
 	_menuBackground.startDisplaying();
 	_menuBackground.show();
@@ -223,6 +227,7 @@ MainMenu::MainMenu() : GameMenu(kMainMenuID), _menuBackground(0), _overviewButto
 
 	_menuLoop.attachFader(&_menuFader);
 	_menuLoop.initFromAIFFFile("Sounds/Main Menu.aiff");
+	_menuFader.setMasterVolume(((PegasusEngine *)g_engine)->getAmbienceLevel());
 
 	updateDisplay();
 }
@@ -732,6 +737,7 @@ DeathMenu::DeathMenu(const DeathReason deathReason) : GameMenu(kDeathMenuID), _d
 		_largeSelect.startDisplaying();
 	} else {
 		_triumphSound.initFromQuickTime("Sounds/Caldoria/Galactic Triumph");
+		_triumphSound.setVolume(((PegasusEngine *)g_engine)->getAmbienceLevel());
 		_triumphSound.playSound();
 	}
 

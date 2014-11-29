@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -26,7 +26,6 @@
 #include "common/debug.h"
 #include "common/debug-channels.h"
 #include "common/error.h"
-#include "common/EventRecorder.h"
 #include "common/file.h"
 #include "common/fs.h"
 #include "common/tokenizer.h"
@@ -51,9 +50,10 @@ WintermuteEngine::WintermuteEngine() : Engine(g_system) {
 	_game = new AdGame("");
 	_debugger = nullptr;
 	_trigDebug = false;
+	_gameDescription = nullptr;
 }
 
-WintermuteEngine::WintermuteEngine(OSystem *syst, const ADGameDescription *desc)
+WintermuteEngine::WintermuteEngine(OSystem *syst, const WMEGameDescription *desc)
 	: Engine(syst), _gameDescription(desc) {
 	// Put your engine in a sane state, but do nothing big yet;
 	// in particular, do not load data from files; rather, if you
@@ -105,7 +105,7 @@ bool WintermuteEngine::hasFeature(EngineFeature f) const {
 
 Common::Error WintermuteEngine::run() {
 	// Initialize graphics using following:
-	Graphics::PixelFormat format(4, 8, 8, 8, 8, 16, 8, 0, 24);
+	Graphics::PixelFormat format(4, 8, 8, 8, 8, 24, 16, 8, 0);
 	initGraphics(800, 600, true, &format);
 	if (g_system->getScreenFormat() != format) {
 		error("Wintermute currently REQUIRES 32bpp");
@@ -133,7 +133,7 @@ Common::Error WintermuteEngine::run() {
 }
 
 int WintermuteEngine::init() {
-	BaseEngine::createInstance(_targetName, _gameDescription->language);
+	BaseEngine::createInstance(_targetName, _gameDescription->adDesc.gameid, _gameDescription->adDesc.language, _gameDescription->targetExecutable);
 	_game = new AdGame(_targetName);
 	if (!_game) {
 		return 1;
@@ -141,35 +141,13 @@ int WintermuteEngine::init() {
 	BaseEngine::instance().setGameRef(_game);
 	BasePlatform::initialize(this, _game, 0, nullptr);
 
-	bool windowedMode = !ConfMan.getBool("fullscreen");
-
-	if (ConfMan.hasKey("debug_mode")) {
-		if (ConfMan.getBool("debug_mode")) {
-			_game->DEBUG_DebugEnable("./wme.log");
-		}
-	}
-
-	if (ConfMan.hasKey("show_fps")) {
-		_game->_debugShowFPS = ConfMan.getBool("show_fps");
-	} else {
-		_game->_debugShowFPS = false;
-	}
-
-	if (ConfMan.hasKey("disable_smartcache")) {
-		_game->_smartCache = ConfMan.getBool("disable_smartcache");
-	} else {
-		_game->_smartCache = true;
-	}
-
-	if (!_game->_smartCache) {
-		_game->LOG(0, "Smart cache is DISABLED");
-	}
+	_game->initConfManSettings();
 
 	// load general game settings
 	_game->initialize1();
 
 	// set gameId, for savegame-naming:
-	_game->setGameId(_targetName);
+	_game->setGameTargetName(_targetName);
 
 	if (DID_FAIL(_game->loadSettings("startup.settings"))) {
 		_game->LOG(0, "Error loading game settings.");
@@ -182,10 +160,8 @@ int WintermuteEngine::init() {
 
 	_game->initialize2();
 
-	bool ret;
+	bool ret = _game->initRenderer();
 
-	// initialize the renderer
-	ret = _game->_renderer->initRenderer(_game->_settingsResWidth, _game->_settingsResHeight, windowedMode);
 	if (DID_FAIL(ret)) {
 		_game->LOG(ret, "Error initializing renderer. Exiting.");
 
@@ -206,7 +182,7 @@ int WintermuteEngine::init() {
 	// load game
 	uint32 dataInitStart = g_system->getMillis();
 
-	if (DID_FAIL(_game->loadFile(_game->_settingsGameFile ? _game->_settingsGameFile : "default.game"))) {
+	if (DID_FAIL(_game->loadGameSettingsFile())) {
 		_game->LOG(ret, "Error loading game file. Exiting.");
 		delete _game;
 		_game = nullptr;
@@ -238,6 +214,9 @@ int WintermuteEngine::messageLoop() {
 	const uint32 maxFPS = 60;
 	const uint32 frameTime = 2 * (uint32)((1.0 / maxFPS) * 1000);
 	while (!done) {
+		if (!_game) {
+			break;
+		}
 		_debugger->onFrame();
 
 		Common::Event event;
@@ -250,7 +229,7 @@ int WintermuteEngine::messageLoop() {
 			_trigDebug = false;
 		}
 
-		if (_game && _game->_renderer->_active && _game->_renderer->_ready) {
+		if (_game && _game->_renderer->_active && _game->_renderer->isReady()) {
 			_game->displayContent();
 			_game->displayQuickMsg();
 
@@ -263,15 +242,18 @@ int WintermuteEngine::messageLoop() {
 			}
 
 			// ***** flip
-			if (!_game->_suspendedRendering) {
+			if (!_game->getSuspendedRendering()) {
 				_game->_renderer->flip();
 			}
-			if (_game->_loading) {
+			if (_game->getIsLoading()) {
 				_game->loadGame(_game->_scheduledLoadSlot);
 			}
 			prevTime = time;
 		}
-		if (_game->_quitting) {
+		if (shouldQuit()) {
+			break;
+		}
+		if (_game && _game->_quitting) {
 			break;
 		}
 	}
@@ -311,7 +293,7 @@ bool WintermuteEngine::getGameInfo(const Common::FSList &fslist, Common::String 
 	caption = name = "(invalid)";
 	Common::SeekableReadStream *stream = nullptr;
 	// Quick-fix, instead of possibly breaking the persistence-system, let's just roll with it
-	BaseFileManager *fileMan = new BaseFileManager(Common::UNK_LANG);
+	BaseFileManager *fileMan = new BaseFileManager(Common::UNK_LANG, true);
 	fileMan->registerPackages(fslist);
 	stream = fileMan->openFile("startup.settings", false, false);
 
@@ -383,6 +365,17 @@ bool WintermuteEngine::getGameInfo(const Common::FSList &fslist, Common::String 
 					name = value;
 				} else if (key == "CAPTION") {
 					retVal = true;
+					// Remove any translation tags, if they are included in the game description.
+					// This can potentially remove parts of a string that has translation tags
+					// and contains a "/" in its description (e.g. /tag/Name start / name end will
+					// result in "name end"), but it's a very rare case, and this code is just used
+					// for fallback anyway.
+					if (value.hasPrefix("/")) {
+						value.deleteChar(0);
+						while (value.contains("/")) {
+							value.deleteChar(0);
+						}
+					}
 					caption = value;
 				}
 			}

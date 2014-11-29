@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -87,10 +87,11 @@ reg_t kGetEvent(EngineState *s, int argc, reg_t *argv) {
 		g_sci->getVocabulary()->parser_event = NULL_REG; // Invalidate parser event
 
 	if (s->_cursorWorkaroundActive) {
-		// ffs: GfxCursor::setPosition()
-		// we check, if actual cursor position is inside given rect
-		//  if that's the case, we switch ourself off. Otherwise
-		//  we simulate the original set position to the scripts
+		// We check if the actual cursor position is inside specific rectangles
+		// where the cursor itself should be moved to. If this is the case, we
+		// set the mouse cursor's position to be within the rectangle in
+		// question. Check GfxCursor::setPosition(), for a more detailed
+		// explanation and a list of cursor position workarounds.
 		if (s->_cursorWorkaroundRect.contains(mousePos.x, mousePos.y)) {
 			s->_cursorWorkaroundActive = false;
 		} else {
@@ -125,7 +126,7 @@ reg_t kGetEvent(EngineState *s, int argc, reg_t *argv) {
 
 		// track left buttton clicks, if requested
 		if (curEvent.type == SCI_EVENT_MOUSE_PRESS && curEvent.data == 1 && g_debug_track_mouse_clicks) {
-			g_sci->getSciDebugger()->DebugPrintf("Mouse clicked at %d, %d\n",
+			g_sci->getSciDebugger()->debugPrintf("Mouse clicked at %d, %d\n",
 						mousePos.x, mousePos.y);
 		}
 
@@ -162,20 +163,20 @@ reg_t kGetEvent(EngineState *s, int argc, reg_t *argv) {
 
 		// A SCI event occurred, and we have been asked to stop, so open the debug console
 		Console *con = g_sci->getSciDebugger();
-		con->DebugPrintf("SCI event occurred: ");
+		con->debugPrintf("SCI event occurred: ");
 		switch (curEvent.type) {
 		case SCI_EVENT_QUIT:
-			con->DebugPrintf("quit event\n");
+			con->debugPrintf("quit event\n");
 			break;
 		case SCI_EVENT_KEYBOARD:
-			con->DebugPrintf("keyboard event\n");
+			con->debugPrintf("keyboard event\n");
 			break;
 		case SCI_EVENT_MOUSE_RELEASE:
 		case SCI_EVENT_MOUSE_PRESS:
-			con->DebugPrintf("mouse click event\n");
+			con->debugPrintf("mouse click event\n");
 			break;
 		default:
-			con->DebugPrintf("unknown or no event (event type %d)\n", curEvent.type);
+			con->debugPrintf("unknown or no event (event type %d)\n", curEvent.type);
 		}
 
 		con->attach();

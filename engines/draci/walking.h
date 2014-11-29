@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -103,7 +103,19 @@ struct GPL2Program;
 
 class WalkingState {
 public:
-	explicit WalkingState(DraciEngine *vm) : _vm(vm) { stopWalking(); }
+	explicit WalkingState(DraciEngine *vm) : _vm(vm) {
+		_dir = kDirectionLast;
+		_startingDirection = kMoveUndefined;
+		_segment = 0;
+		_lastAnimPhase = 0;
+		_turningFinished = 0;
+		_callbackOffset = 0;
+		_callbackOffsetLast = 0;
+		_callbackLast = 0;
+
+		stopWalking();
+	}
+
 	~WalkingState() {}
 
 	void stopWalking();
@@ -114,6 +126,7 @@ public:
 
 	void setCallback(const GPL2Program *program, uint16 offset);
 	void callback();
+	void callbackLast();
 
 	bool isActive() const { return _path.size() > 0; }
 
@@ -147,7 +160,9 @@ private:
 	bool _turningFinished;
 
 	const GPL2Program *_callback;
+	const GPL2Program *_callbackLast;
 	uint16 _callbackOffset;
+	uint16 _callbackOffsetLast;
 
 	// Initiates turning of the dragon into the direction for the next
 	// segment / after walking.  Returns false when there is nothing left

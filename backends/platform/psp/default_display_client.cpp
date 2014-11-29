@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -192,11 +192,8 @@ void Screen::setScummvmPixelFormat(const Graphics::PixelFormat *format) {
 Graphics::Surface *Screen::lockAndGetForEditing() {
 	DEBUG_ENTER_FUNC();
 
-	_frameBuffer.pixels = _buffer.getPixels();
-	_frameBuffer.w = _buffer.getSourceWidth();
-	_frameBuffer.h = _buffer.getSourceHeight();
-	_frameBuffer.pitch = _buffer.getBytesPerPixel() * _buffer.getWidth();
-	_frameBuffer.format = _pixelFormat;
+	_frameBuffer.init(_buffer.getSourceWidth(), _buffer.getSourceHeight(), _buffer.getBytesPerPixel() * _buffer.getWidth(),
+	                  _buffer.getPixels(), _pixelFormat);
 	// We'll set to dirty once we unlock the screen
 
 	return &_frameBuffer;

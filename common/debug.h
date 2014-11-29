@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_DEBUG_H
@@ -117,5 +118,9 @@ void debugCN(uint32 debugChannels, const char *s, ...) GCC_PRINTF(2, 3);
  */
 extern int gDebugLevel;
 
+//Global constant for EventRecorder debug channel
+enum GlobalDebugLevels {
+	kDebugLevelEventRec = 1 << 30
+};
 
 #endif

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,8 +27,9 @@
  */
 
 #include "engines/wintermute/base/base_parser.h"
+#include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/base/base_frame.h"
-#include "engines/wintermute/base/base_game.h"
+#include "engines/wintermute/base/base_object.h"
 #include "engines/wintermute/base/base_dynamic_buffer.h"
 #include "engines/wintermute/base/sound/base_sound_manager.h"
 #include "engines/wintermute/base/sound/base_sound.h"
@@ -75,7 +76,7 @@ BaseFrame::~BaseFrame() {
 
 
 //////////////////////////////////////////////////////////////////////
-bool BaseFrame::draw(int x, int y, BaseObject *registerOwner, float zoomX, float zoomY, bool precise, uint32 alpha, bool allFrames, float rotate, TSpriteBlendMode blendMode) {
+bool BaseFrame::draw(int x, int y, BaseObject *registerOwner, float zoomX, float zoomY, bool precise, uint32 alpha, bool allFrames, float rotate, Graphics::TSpriteBlendMode blendMode) {
 	bool res;
 
 	for (uint32 i = 0; i < _subframes.size(); i++) {
@@ -141,7 +142,7 @@ TOKEN_DEF(EDITOR_PROPERTY)
 TOKEN_DEF(KILL_SOUND)
 TOKEN_DEF_END
 //////////////////////////////////////////////////////////////////////
-bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
+bool BaseFrame::loadBuffer(char *buffer, int lifeTime, bool keepLoaded) {
 	TOKEN_TABLE_START(commands)
 	TOKEN_TABLE(DELAY)
 	TOKEN_TABLE(IMAGE)
@@ -180,10 +181,10 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 	bool decoration = false;
 	bool mirrorX = false;
 	bool mirrorY = false;
-	BasePlatform::setRectEmpty(&rect);
+	rect.setEmpty();
 	char *surface_file = nullptr;
 
-	while ((cmd = parser.getCommand((char **)&buffer, commands, &params)) > 0) {
+	while ((cmd = parser.getCommand(&buffer, commands, &params)) > 0) {
 		switch (cmd) {
 		case TOKEN_DELAY:
 			parser.scanStr(params, "%d", &_delay);
@@ -248,7 +249,7 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 
 		case TOKEN_SUBFRAME: {
 			BaseSubFrame *subframe = new BaseSubFrame(_gameRef);
-			if (!subframe || DID_FAIL(subframe->loadBuffer((byte *)params, lifeTime, keepLoaded))) {
+			if (!subframe || DID_FAIL(subframe->loadBuffer(params, lifeTime, keepLoaded))) {
 				delete subframe;
 				cmd = PARSERR_GENERIC;
 			} else {
@@ -264,8 +265,8 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 			}
 			_sound = new BaseSound(_gameRef);
 			if (!_sound || DID_FAIL(_sound->setSound(params, Audio::Mixer::kSFXSoundType, false))) {
-				if (_gameRef->_soundMgr->_soundAvailable) {
-					_gameRef->LOG(0, "Error loading sound '%s'.", params);
+				if (BaseEngine::instance().getSoundMgr()->_soundAvailable) {
+					BaseEngine::LOG(0, "Error loading sound '%s'.", params);
 				}
 				delete _sound;
 				_sound = nullptr;
@@ -289,17 +290,17 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 			break;
 
 		case TOKEN_EDITOR_PROPERTY:
-			parseEditorProperty((byte *)params, false);
+			parseEditorProperty(params, false);
 			break;
 		}
 	}
 	if (cmd == PARSERR_TOKENNOTFOUND) {
-		_gameRef->LOG(0, "Syntax error in FRAME definition");
+		BaseEngine::LOG(0, "Syntax error in FRAME definition");
 		return STATUS_FAILED;
 	}
 
 	if (cmd == PARSERR_GENERIC) {
-		_gameRef->LOG(0, "Error loading FRAME definition");
+		BaseEngine::LOG(0, "Error loading FRAME definition");
 		return STATUS_FAILED;
 	}
 
@@ -314,7 +315,7 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 
 		if (!sub->_surface) {
 			delete sub;
-			_gameRef->LOG(0, "Error loading SUBFRAME");
+			BaseEngine::LOG(0, "Error loading SUBFRAME");
 			return STATUS_FAILED;
 		}
 
@@ -324,7 +325,7 @@ bool BaseFrame::loadBuffer(byte *buffer, int lifeTime, bool keepLoaded) {
 		}
 	}
 
-	if (BasePlatform::isRectEmpty(&rect)) {
+	if (rect.isRectEmpty()) {
 		sub->setDefaultRect();
 	} else {
 		sub->setRect(rect);
@@ -351,7 +352,7 @@ bool BaseFrame::getBoundingRect(Rect32 *rect, int x, int y, float scaleX, float 
 	if (!rect) {
 		return false;
 	}
-	BasePlatform::setRectEmpty(rect);
+	rect->setEmpty();
 
 	Rect32 subRect;
 
@@ -413,13 +414,13 @@ bool BaseFrame::persist(BasePersistenceManager *persistMgr) {
 	BaseScriptable::persist(persistMgr);
 
 	_applyEvent.persist(persistMgr);
-	persistMgr->transfer(TMEMBER(_delay));
-	persistMgr->transfer(TMEMBER(_editorExpanded));
-	persistMgr->transfer(TMEMBER(_keyframe));
-	persistMgr->transfer(TMEMBER(_killSound));
-	persistMgr->transfer(TMEMBER(_moveX));
-	persistMgr->transfer(TMEMBER(_moveY));
-	persistMgr->transfer(TMEMBER(_sound));
+	persistMgr->transferUint32(TMEMBER(_delay));
+	persistMgr->transferBool(TMEMBER(_editorExpanded));
+	persistMgr->transferBool(TMEMBER(_keyframe));
+	persistMgr->transferBool(TMEMBER(_killSound));
+	persistMgr->transferSint32(TMEMBER(_moveX));
+	persistMgr->transferSint32(TMEMBER(_moveY));
+	persistMgr->transferPtr(TMEMBER_PTR(_sound));
 	_subframes.persist(persistMgr);
 
 	return STATUS_OK;
@@ -763,4 +764,4 @@ const char *BaseFrame::scToString() {
 	return "[frame]";
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

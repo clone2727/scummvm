@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -574,7 +574,7 @@ int16 ScriptFunctions::sfLoadMouseCursor(int16 argc, int16 *argv) {
 	PictureResource *flex = _vm->_res->getPicture(argv[2]);
 	if (flex) {
 		Graphics::Surface *surf = flex->getPicture();
-		CursorMan.replaceCursor(surf->pixels, surf->w, surf->h, argv[1], argv[0], 0);
+		CursorMan.replaceCursor(surf->getPixels(), surf->w, surf->h, argv[1], argv[0], 0);
 		_vm->_res->freeResource(flex);
 	}
 	return 0;

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,6 +27,7 @@
 #include "agos/intern.h"
 #include "agos/vga.h"
 
+#include "common/debug-channels.h"
 #include "common/endian.h"
 #include "common/system.h"
 #include "common/textconsole.h"
@@ -152,7 +153,7 @@ void AGOSEngine::runVgaScript() {
 	for (;;) {
 		uint opcode;
 
-		if (_dumpVgaOpcodes) {
+		if (DebugMan.isDebugChannelEnabled(kDebugVGAOpcode)) {
 			if (_vcPtr != (const byte *)&_vcGetOutOfCode) {
 				debugN("%.5d %.5X: %5d %4d ", _vgaTickCounter, (unsigned int)(_vcPtr - _curVgaFile1), _vgaCurSpriteId, _vgaCurZoneNum);
 				dumpVideoScript(_vcPtr, true);
@@ -381,8 +382,7 @@ void AGOSEngine::vcSkipNextInstruction() {
 		_vcPtr += opcodeParamLenPN[opcode];
 	}
 
-	if (_dumpVgaOpcodes)
-		debugN("; skipped\n");
+	debugCN(kDebugVGAOpcode, "; skipped\n");
 }
 
 // VGA Script commands
@@ -648,7 +648,7 @@ void AGOSEngine::drawImage_init(int16 image, uint16 palette, int16 x, int16 y, u
 	if (height == 0 || width == 0)
 		return;
 
-	if (_dumpImages)
+	if (DebugMan.isDebugChannelEnabled(kDebugImageDump))
 		dumpSingleBitmap(_vgaCurZoneNum, state.image, state.srcPtr, width, height,
 											 state.palette);
 	state.width = state.draw_width = width;		/* cl */
@@ -1179,7 +1179,7 @@ void AGOSEngine::vc32_saveScreen() {
 	if (getGameType() == GType_PN) {
 		Graphics::Surface *screen = _system->lockScreen();
 		byte *dst = getBackGround();
-		byte *src = (byte *)screen->pixels;
+		byte *src = (byte *)screen->getPixels();
 		for (int i = 0; i < _screenHeight; i++) {
 			memcpy(dst, src, _screenWidth);
 			dst += _backGroundBuf->pitch;
@@ -1193,7 +1193,7 @@ void AGOSEngine::vc32_saveScreen() {
 		uint16 height = _videoWindows[4 * 4 + 3];
 
 		byte *dst = (byte *)_backGroundBuf->getBasePtr(xoffs, yoffs);
-		byte *src = (byte *)_window4BackScn->pixels;
+		byte *src = (byte *)_window4BackScn->getPixels();
 		uint16 srcWidth = _videoWindows[4 * 4 + 2] * 16;
 		for (; height > 0; height--) {
 			memcpy(dst, src, width);
@@ -1247,7 +1247,7 @@ void AGOSEngine::clearVideoWindow(uint16 num, uint16 color) {
 
 	if (getGameType() == GType_ELVIRA1 && num == 3) {
 		Graphics::Surface *screen = _system->lockScreen();
-		byte *dst = (byte *)screen->pixels;
+		byte *dst = (byte *)screen->getPixels();
 		for (int i = 0; i < _screenHeight; i++) {
 			memset(dst, color, _screenWidth);
 			dst += screen->pitch;
@@ -1258,7 +1258,10 @@ void AGOSEngine::clearVideoWindow(uint16 num, uint16 color) {
 		uint16 xoffs = (vlut[0] - _videoWindows[16]) * 16;
 		uint16 yoffs = (vlut[1] - _videoWindows[17]);
 		uint16 dstWidth = _videoWindows[18] * 16;
-		byte *dst = (byte *)_window4BackScn->pixels + xoffs + yoffs * dstWidth;
+		// TODO: Is there any known connection between dstWidth and the pitch
+		// of the _window4BackScn Surface? If so, we might be able to pass
+		// yoffs as proper y parameter to getBasePtr.
+		byte *dst = (byte *)_window4BackScn->getBasePtr(xoffs, 0) + yoffs * dstWidth;
 
 		setMoveRect(0, 0, vlut[2] * 16, vlut[3]);
 

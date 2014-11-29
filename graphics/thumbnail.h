@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef GRAPHICS_THUMBNAIL_H
@@ -63,6 +64,24 @@ bool saveThumbnail(Common::WriteStream &out);
  * Saves a (given) thumbnail to the given write stream.
  */
 bool saveThumbnail(Common::WriteStream &out, const Graphics::Surface &thumb);
+
+/**
+ * Grabs framebuffer into surface
+ *
+ * @param surf	a surface
+ * @return		false if a error occurred
+ */
+bool createScreenShot(Graphics::Surface &surf);
+
+/**
+ * Scales a passed surface, creating a new surface with the result
+ * @param srcImage		Source image to scale
+ * @param xSize			New surface width
+ * @param ySize			New surface height
+ * @remarks Caller is responsible for freeing the returned surface
+ */
+Graphics::Surface *scale(const Graphics::Surface &srcImage, int xSize, int ySize);
+
 
 } // End of namespace Graphics
 

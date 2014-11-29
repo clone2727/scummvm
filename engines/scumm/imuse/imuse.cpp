@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -46,7 +46,6 @@ namespace Scumm {
 IMuseInternal::IMuseInternal() :
 	_native_mt32(false),
 	_enable_gs(false),
-	_sc55(false),
 	_midi_adlib(NULL),
 	_midi_native(NULL),
 	_sysex(NULL),
@@ -495,12 +494,9 @@ uint32 IMuseInternal::property(int prop, uint32 value) {
 	case IMuse::PROP_GS:
 		_enable_gs = (value > 0);
 
-		// If True Roland MT-32 is not selected, run in GM or GS mode.
-		// If it is selected, change the Roland GS synth to MT-32 mode.
-		if (_midi_native && !_native_mt32)
-			initGM(_midi_native);
-		else if (_midi_native && _native_mt32 && _enable_gs) {
-			_sc55 = true;
+		// GS Mode emulates MT-32 on a GS device, so _native_mt32 should always be true
+		if (_midi_native && _enable_gs) {
+			_native_mt32 = true;
 			initGM(_midi_native);
 		}
 		break;
@@ -1487,7 +1483,7 @@ void IMuseInternal::initMT32(MidiDriver *midi) {
 }
 
 void IMuseInternal::initGM(MidiDriver *midi) {
-	byte buffer[11];
+	byte buffer[12];
 	int i;
 
 	// General MIDI System On message
@@ -1499,7 +1495,7 @@ void IMuseInternal::initGM(MidiDriver *midi) {
 
 	if (_enable_gs) {
 		// All GS devices recognize the GS Reset command,
-		// even with Roland's ID. It is impractical to
+		// even using Roland's ID. It is impractical to
 		// support other manufacturers' devices for
 		// further GS settings, as there are limitless
 		// numbers of them out there that would each
@@ -1514,29 +1510,27 @@ void IMuseInternal::initGM(MidiDriver *midi) {
 		debug(2, "GS SysEx: GS Reset");
 		_system->delayMillis(200);
 
-		if (_sc55) {
-			// This mode is for GS devices that support an MT-32-compatible
-			// Map, such as the Roland Sound Canvas line of modules. It
-			// will allow them to work with True MT-32 mode, but will
-			// obviously still ignore MT-32 SysEx (and thus custom
-			// instruments).
+		// Set global Master Tune to 442.0kHz, as on the MT-32
+		memcpy(&buffer[4], "\x40\x00\x00\x00\x04\x04\x0F\x29", 8);
+		midi->sysEx(buffer, 12);
+		debug(2, "GS SysEx: Master Tune set to 442.0kHz");
 
-			// Set Channels 1-16 to SC-55 Map, then CM-64/32L Variation
-			for (i = 0; i < 16; ++i) {
-				midi->send((127 << 16) | (0  << 8) | (0xB0 | i));
-				midi->send((1   << 16) | (32 << 8) | (0xB0 | i));
-				midi->send((0   << 16) | (0  << 8) | (0xC0 | i));
-			}
-			debug(2, "GS Program Change: CM-64/32L Map Selected");
+		// Note: All Roland GS devices support CM-64/32L maps
 
-			// Set Percussion Channel to SC-55 Map (CC#32, 01H), then
-			// Switch Drum Map to CM-64/32L (MT-32 Compatible Drums)
-			midi->getPercussionChannel()->controlChange(0, 0);
-			midi->getPercussionChannel()->controlChange(32, 1);
-			midi->send(127 << 8 | 0xC0 | 9);
-			debug(2, "GS Program Change: Drum Map is CM-64/32L");
-
+		// Set Channels 1-16 to SC-55 Map, then CM-64/32L Variation
+		for (i = 0; i < 16; ++i) {
+			midi->send((127 << 16) | (0  << 8) | (0xB0 | i));
+			midi->send((1   << 16) | (32 << 8) | (0xB0 | i));
+			midi->send((0   << 16) | (0  << 8) | (0xC0 | i));
 		}
+		debug(2, "GS Program Change: CM-64/32L Map Selected");
+
+		// Set Percussion Channel to SC-55 Map (CC#32, 01H), then
+		// Switch Drum Map to CM-64/32L (MT-32 Compatible Drums)
+		midi->getPercussionChannel()->controlChange(0, 0);
+		midi->getPercussionChannel()->controlChange(32, 1);
+		midi->send(127 << 8 | 0xC0 | 9);
+		debug(2, "GS Program Change: Drum Map is CM-64/32L");
 
 		// Set Master Chorus to 0. The MT-32 has no chorus capability.
 		memcpy(&buffer[4], "\x40\x01\x3A\x00\x05", 5);
@@ -1546,7 +1540,7 @@ void IMuseInternal::initGM(MidiDriver *midi) {
 		// Set Channels 1-16 Reverb to 64, which is the
 		// equivalent of MT-32 default Reverb Level 5
 		for (i = 0; i < 16; ++i)
-			midi->send((64   << 16) | (91 << 8) | (0xB0 | i));
+			midi->send((64 << 16) | (91 << 8) | (0xB0 | i));
 		debug(2, "GM Controller 91 Change: Channels 1-16 Reverb Level is 64");
 
 		// Set Channels 1-16 Pitch Bend Sensitivity to
@@ -1741,10 +1735,10 @@ void IMuseInternal::copyGlobalInstrument(byte slot, Instrument *dest) {
 		// In case we have an valid instrument set up, copy it to the part.
 		_global_instruments[slot].copy_to(dest);
 	} else if (_pcSpeaker) {
-		debug(0, "Trying to use non-existant global PC Speaker instrument %d", slot);
+		debug(0, "Trying to use non-existent global PC Speaker instrument %d", slot);
 		dest->pcspk(defaultInstr);
 	} else {
-		debug(0, "Trying to use non-existant global AdLib instrument %d", slot);
+		debug(0, "Trying to use non-existent global AdLib instrument %d", slot);
 		dest->adlib(defaultInstr);
 	}
 }

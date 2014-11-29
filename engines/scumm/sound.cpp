@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -27,16 +27,15 @@
 #include "common/substream.h"
 
 #include "scumm/actor.h"
+#include "scumm/cdda.h"
 #include "scumm/file.h"
 #include "scumm/imuse/imuse.h"
 #include "scumm/imuse_digi/dimuse.h"
-#include "scumm/player_towns.h"
+#include "scumm/players/player_towns.h"
 #include "scumm/resource.h"
 #include "scumm/scumm.h"
 #include "scumm/sound.h"
 #include "scumm/util.h"
-
-#include "backends/audiocd/audiocd.h"
 
 #include "audio/decoders/adpcm.h"
 #include "audio/decoders/flac.h"
@@ -89,11 +88,21 @@ Sound::Sound(ScummEngine *parent, Audio::Mixer *mixer)
 	memset(_mouthSyncTimes, 0, sizeof(_mouthSyncTimes));
 
 	_musicType = MDT_NONE;
+
+	_loomSteamCD.playing = false;
+	_loomSteamCD.track = 0;
+	_loomSteamCD.start = 0;
+	_loomSteamCD.duration = 0;
+	_loomSteamCD.numLoops = 0;
+	_loomSteamCD.volume = Audio::Mixer::kMaxChannelVolume;
+	_loomSteamCD.balance = 0;
+
+	_isLoomSteam = _vm->_game.id == GID_LOOM && Common::File::exists("CDDA.SOU");
 }
 
 Sound::~Sound() {
 	stopCDTimer();
-	g_system->getAudioCDManager()->stop();
+	stopCD();
 	free(_offsetTable);
 }
 
@@ -470,8 +479,10 @@ static int compareMP3OffsetTable(const void *a, const void *b) {
 
 void Sound::startTalkSound(uint32 offset, uint32 b, int mode, Audio::SoundHandle *handle) {
 	int num = 0, i;
-	int size = 0;
 	int id = -1;
+#if defined(USE_FLAC) || defined(USE_VORBIS) || defined(USE_MAD)
+	int size = 0;
+#endif
 	Common::ScopedPtr<ScummFile> file;
 
 	if (_vm->_game.id == GID_CMI) {
@@ -562,10 +573,14 @@ void Sound::startTalkSound(uint32 offset, uint32 b, int mode, Audio::SoundHandle
 				num = result->num_tags;
 			}
 			offset = result->new_offset;
+#if defined(USE_FLAC) || defined(USE_VORBIS) || defined(USE_MAD)
 			size = result->compressed_size;
+#endif
 		} else {
 			offset += 8;
+#if defined(USE_FLAC) || defined(USE_VORBIS) || defined(USE_MAD)
 			size = -1;
+#endif
 		}
 
 		file.reset(new ScummFile());
@@ -643,7 +658,11 @@ void Sound::startTalkSound(uint32 offset, uint32 b, int mode, Audio::SoundHandle
 			_vm->_imuseDigital->startVoice(kTalkSoundID, input);
 #endif
 		} else {
-			_mixer->playStream(Audio::Mixer::kSpeechSoundType, handle, input, id);
+			if (mode == 1) {
+				_mixer->playStream(Audio::Mixer::kSFXSoundType, handle, input, id);
+			} else {
+				_mixer->playStream(Audio::Mixer::kSpeechSoundType, handle, input, id);
+			}
 		}
 	}
 }
@@ -832,9 +851,6 @@ void Sound::soundKludge(int *list, int num) {
 }
 
 void Sound::talkSound(uint32 a, uint32 b, int mode, int channel) {
-	if (_vm->_game.version >= 5 && ConfMan.getBool("speech_mute"))
-		return;
-
 	if (mode == 1) {
 		_talk_sound_a1 = a;
 		_talk_sound_b1 = b;
@@ -1027,7 +1043,7 @@ void Sound::playCDTrack(int track, int numLoops, int startFrame, int duration) {
 
 	// Play it
 	if (!_soundsPaused)
-		g_system->getAudioCDManager()->play(track, numLoops, startFrame, duration);
+		playCDTrackInternal(track, numLoops, startFrame, duration);
 
 	// Start the timer after starting the track. Starting an MP3 track is
 	// almost instantaneous, but a CD player may take some time. Hopefully
@@ -1035,16 +1051,59 @@ void Sound::playCDTrack(int track, int numLoops, int startFrame, int duration) {
 	startCDTimer();
 }
 
+void Sound::playCDTrackInternal(int track, int numLoops, int startFrame, int duration) {
+	_loomSteamCD.track = track;
+	_loomSteamCD.numLoops = numLoops;
+	_loomSteamCD.start = startFrame;
+	_loomSteamCD.duration = duration;
+
+	if (!_isLoomSteam) {
+		g_system->getAudioCDManager()->play(track, numLoops, startFrame, duration);
+	} else {
+		// Stop any currently playing track
+		_mixer->stopHandle(_loomSteamCDAudioHandle);
+
+		Common::File *cddaFile = new Common::File();
+		if (cddaFile->open("CDDA.SOU")) {
+			Audio::Timestamp start = Audio::Timestamp(0, startFrame, 75);
+			Audio::Timestamp end = Audio::Timestamp(0, startFrame + duration, 75);
+			Audio::SeekableAudioStream *stream = makeCDDAStream(cddaFile, DisposeAfterUse::YES);
+
+			_mixer->playStream(Audio::Mixer::kMusicSoundType, &_loomSteamCDAudioHandle,
+			                    Audio::makeLoopingAudioStream(stream, start, end, (numLoops < 1) ? numLoops + 1 : numLoops));
+		} else {
+			delete cddaFile;
+		}
+	}
+}
+
 void Sound::stopCD() {
-	g_system->getAudioCDManager()->stop();
+	if (!_isLoomSteam)
+		g_system->getAudioCDManager()->stop();
+	else
+		_mixer->stopHandle(_loomSteamCDAudioHandle);
 }
 
 int Sound::pollCD() const {
-	return g_system->getAudioCDManager()->isPlaying();
+	if (!_isLoomSteam)
+		return g_system->getAudioCDManager()->isPlaying();
+	else
+		return _mixer->isSoundHandleActive(_loomSteamCDAudioHandle);
 }
 
 void Sound::updateCD() {
-	g_system->getAudioCDManager()->updateCD();
+	if (!_isLoomSteam)
+		g_system->getAudioCDManager()->updateCD();
+}
+
+AudioCDManager::Status Sound::getCDStatus() {
+	if (!_isLoomSteam)
+		return g_system->getAudioCDManager()->getStatus();
+	else {
+		AudioCDManager::Status info = _loomSteamCD;
+		info.playing = _mixer->isSoundHandleActive(_loomSteamCDAudioHandle);
+		return info;
+	}
 }
 
 void Sound::saveLoadWithSerializer(Serializer *ser) {
@@ -1815,7 +1874,7 @@ int ScummEngine::readSoundResourceSmallHeader(ResId idx) {
 
 	debug(4, "readSoundResourceSmallHeader(%d)", idx);
 
-	if ((_game.id == GID_LOOM) && (_game.version == 3) && (_game.platform == Common::kPlatformPC) && VAR(VAR_SOUNDCARD) == 4) {
+	if ((_game.id == GID_LOOM) && (_game.version == 3) && (_game.platform == Common::kPlatformDOS) && VAR(VAR_SOUNDCARD) == 4) {
 		// Roland resources in Loom are tagless
 		// So we add an RO tag to allow imuse to detect format
 		byte *ptr, *src_ptr;
@@ -1930,7 +1989,6 @@ int ScummEngine::readSoundResourceSmallHeader(ResId idx) {
 		//   8 bytes MTrk header
 		//   7 bytes MIDI tempo sysex
 		//     + some default instruments
-		byte *ptr;
 		if (_game.features & GF_OLD_BUNDLE) {
 			ad_size -= 4;
 			_fileHandle->seek(ad_offs + 4, SEEK_SET);
@@ -1938,10 +1996,17 @@ int ScummEngine::readSoundResourceSmallHeader(ResId idx) {
 			ad_size -= 6;
 			_fileHandle->seek(ad_offs, SEEK_SET);
 		}
-		ptr = (byte *) calloc(ad_size, 1);
-		_fileHandle->read(ptr, ad_size);
-		convertADResource(_res, _game, idx, ptr, ad_size);
-		free(ptr);
+		// For games using AD except Indy3 and Loom we are using our iMuse
+		// implementation. See output initialization in
+		// ScummEngine::setupMusic for more information.
+		if (_game.id != GID_INDY3 && _game.id != GID_LOOM) {
+			byte *ptr = (byte *)calloc(ad_size, 1);
+			_fileHandle->read(ptr, ad_size);
+			convertADResource(_res, _game, idx, ptr, ad_size);
+			free(ptr);
+		} else {
+			_fileHandle->read(_res->createResource(rtSound, idx, ad_size), ad_size);
+		}
 		return 1;
 	} else if (ro_offs != 0) {
 		_fileHandle->seek(ro_offs - 2, SEEK_SET);

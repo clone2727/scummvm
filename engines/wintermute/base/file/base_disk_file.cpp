@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -39,10 +39,10 @@
 
 namespace Wintermute {
 
-void correctSlashes(char *fileName) {
-	for (size_t i = 0; i < strlen(fileName); i++) {
+void correctSlashes(Common::String &fileName) {
+	for (size_t i = 0; i < fileName.size(); i++) {
 		if (fileName[i] == '\\') {
-			fileName[i] = '/';
+			fileName.setChar('/', i);
 		}
 	}
 }
@@ -111,11 +111,14 @@ Common::SeekableReadStream *openDiskFile(const Common::String &filename) {
 	uint32 prefixSize = 0;
 	Common::SeekableReadStream *file = nullptr;
 	Common::String fixedFilename = filename;
+	correctSlashes(fixedFilename);
 
 	// Absolute path: TODO: Add specific fallbacks here.
-	if (filename.contains(':')) {
-		if (filename.hasPrefix("c:\\windows\\fonts\\")) { // East Side Story refers to "c:\windows\fonts\framd.ttf"
-			fixedFilename = filename.c_str() + 17;
+	if (fixedFilename.contains(':')) {
+		if (fixedFilename.hasPrefix("c:/windows/fonts/")) { // East Side Story refers to "c:\windows\fonts\framd.ttf"
+			fixedFilename = filename.c_str() + 14;
+		} else if (fixedFilename.hasPrefix("c:/carol6/svn/data/")) {	// Carol Reed 6: Black Circle refers to "c:\carol6\svn\data\sprites\system\help.png"
+			fixedFilename = fixedFilename.c_str() + 19;
 		} else {
 			error("openDiskFile::Absolute path or invalid filename used in %s", filename.c_str());
 		}
@@ -125,7 +128,7 @@ Common::SeekableReadStream *openDiskFile(const Common::String &filename) {
 	SearchMan.listMatchingMembers(files, fixedFilename);
 
 	for (Common::ArchiveMemberList::iterator it = files.begin(); it != files.end(); ++it) {
-		if ((*it)->getName() == filename) {
+		if ((*it)->getName().equalsIgnoreCase(lastPathComponent(fixedFilename,'/'))) {
 			file = (*it)->createReadStream();
 			break;
 		}
@@ -148,7 +151,8 @@ Common::SeekableReadStream *openDiskFile(const Common::String &filename) {
 		}
 
 		if (compressed) {
-			uint32 dataOffset, compSize, uncompSize;
+			uint32 dataOffset, compSize;
+			unsigned long uncompSize;
 			dataOffset = file->readUint32LE();
 			compSize = file->readUint32LE();
 			uncompSize = file->readUint32LE();
@@ -170,7 +174,7 @@ Common::SeekableReadStream *openDiskFile(const Common::String &filename) {
 			file->seek(dataOffset + prefixSize, SEEK_SET);
 			file->read(compBuffer, compSize);
 
-			if (Common::uncompress(data, (unsigned long *)&uncompSize, compBuffer, compSize) != true) {
+			if (Common::uncompress(data, &uncompSize, compBuffer, compSize) != true) {
 				error("Error uncompressing file '%s'", filename.c_str());
 				delete[] compBuffer;
 				delete file;
@@ -191,4 +195,4 @@ Common::SeekableReadStream *openDiskFile(const Common::String &filename) {
 	return nullptr;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

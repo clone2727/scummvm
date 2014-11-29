@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -44,15 +44,15 @@ class AdResponseContext;
 class AdResponseBox;
 class AdGame : public BaseGame {
 public:
-	virtual bool onScriptShutdown(ScScript *script);
+	virtual bool onScriptShutdown(ScScript *script) override;
 
-	virtual bool onMouseLeftDown();
-	virtual bool onMouseLeftUp();
-	virtual bool onMouseLeftDblClick();
-	virtual bool onMouseRightDown();
-	virtual bool onMouseRightUp();
+	virtual bool onMouseLeftDown() override;
+	virtual bool onMouseLeftUp() override;
+	virtual bool onMouseLeftDblClick() override;
+	virtual bool onMouseRightDown() override;
+	virtual bool onMouseRightUp() override;
 
-	virtual bool displayDebugInfo();
+	virtual bool displayDebugInfo() override;
 
 	bool addSpeechDir(const char *dir);
 	bool removeSpeechDir(const char *dir);
@@ -63,37 +63,37 @@ public:
 	bool _tempDisableSaveState;
 	virtual bool resetContent();
 	bool addItem(AdItem *item);
-	AdItem *getItemByName(const char *name);
+	AdItem *getItemByName(const char *name) const;
 
 	AdObject *_inventoryOwner;
 	bool isItemTaken(char *itemName);
 	bool registerInventory(AdInventory *inv);
 	bool unregisterInventory(AdInventory *inv);
-	virtual bool displayContent(bool update = true, bool displayAll = false);
+	virtual bool displayContent(bool update = true, bool displayAll = false) override;
 
-	bool gameResponseUsed(int ID);
+	bool gameResponseUsed(int ID) const;
 	bool addGameResponse(int ID);
 	bool resetResponse(int ID);
 
-	bool branchResponseUsed(int ID);
+	bool branchResponseUsed(int ID) const;
 	bool addBranchResponse(int ID);
 	bool clearBranchResponses(char *name);
 	bool startDlgBranch(const char *branchName, const char *scriptName, const char *eventName);
 	bool endDlgBranch(const char *branchName, const char *scriptName, const char *eventName);
-	virtual bool windowLoadHook(UIWindow *win, char **buf, char **params);
-	virtual bool windowScriptMethodHook(UIWindow *win, ScScript *script, ScStack *stack, const char *name);
+	virtual bool windowLoadHook(UIWindow *win, char **buf, char **params) override;
+	virtual bool windowScriptMethodHook(UIWindow *win, ScScript *script, ScStack *stack, const char *name) override;
 
 	AdSceneState *getSceneState(const char *filename, bool saving);
 	BaseViewport *_sceneViewport;
 
-	int _texItemLifeTime;
-	int _texWalkLifeTime;
-	int _texStandLifeTime;
-	int _texTalkLifeTime;
+	int32 _texItemLifeTime;
+	int32 _texWalkLifeTime;
+	int32 _texStandLifeTime;
+	int32 _texTalkLifeTime;
 
 	TTalkSkipButton _talkSkipButton;
 
-	virtual bool getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *extMinor);
+	virtual bool getVersion(byte *verMajor, byte *verMinor, byte *extMajor, byte *extMinor) const override;
 	bool scheduleChangeScene(const char *filename, bool fadeIn);
 	void setPrevSceneName(const char *name);
 	void setPrevSceneFilename(const char *name);
@@ -120,18 +120,18 @@ public:
 	BaseArray<AdObject *> _objects;
 
 	virtual bool loadFile(const char *filename);
-	virtual bool loadBuffer(byte *buffer, bool complete = true);
+	virtual bool loadBuffer(char *buffer, bool complete = true);
 
 	bool loadItemsFile(const char *filename, bool merge = false);
-	bool loadItemsBuffer(byte *buffer, bool merge = false);
+	bool loadItemsBuffer(char *buffer, bool merge = false);
 
 	// scripting interface
-	virtual ScValue *scGetProperty(const Common::String &name);
-	virtual bool scSetProperty(const char *name, ScValue *value);
-	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name);
+	virtual ScValue *scGetProperty(const Common::String &name) override;
+	virtual bool scSetProperty(const char *name, ScValue *value) override;
+	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
 	bool validMouse();
 private:
-	virtual bool externalCall(ScScript *script, ScStack *stack, ScStack *thisStack, char *name);
+	virtual bool externalCall(ScScript *script, ScStack *stack, ScStack *thisStack, char *name) override;
 
 	AdObject *_invObject;
 	BaseArray<AdInventory *> _inventories;
@@ -151,13 +151,13 @@ private:
 	BaseArray<AdSceneState *> _sceneStates;
 	BaseArray<char *> _dlgPendingBranches;
 
-	BaseArray<AdResponseContext *> _responsesBranch;
-	BaseArray<AdResponseContext *> _responsesGame;
+	BaseArray<const AdResponseContext *> _responsesBranch;
+	BaseArray<const AdResponseContext *> _responsesGame;
 
 	AdResponseBox *_responseBox;
 	AdInventoryBox *_inventoryBox;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

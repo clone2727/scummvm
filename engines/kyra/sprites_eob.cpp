@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -213,18 +213,9 @@ void EoBCoreEngine::killMonster(EoBMonsterInPlay *m, bool giveExperience) {
 	if (killMonsterExtra(m)) {
 		placeMonster(m, 0, -1);
 
-		if ((_flags.gameID == GI_EOB1) && (m->type == 21)) {
-			_playFinale = true;
-			_runFlag = false;
-		}
-
 		if (m->mode == 8)
 			updateAttackingMonsterFlags();
 	}
-}
-
-bool EoBCoreEngine::killMonsterExtra(EoBMonsterInPlay *) {
-	return true;
 }
 
 int EoBCoreEngine::countSpecificMonsters(int type) {
@@ -246,6 +237,9 @@ void EoBCoreEngine::updateAttackingMonsterFlags() {
 		m->dest = _currentBlock;
 		m2 = m;
 	}
+
+	if (!m2)
+		return;
 
 	if (m2->type == 7)
 		setScriptFlags(4);
@@ -551,8 +545,6 @@ void EoBCoreEngine::drawMonsters(int index) {
 
 			SpriteDecoration *dcr = &_monsterDecorations[(p->decorations[ii] - 1) * 6 + subFrame + shpIndex - 1];
 
-			if (!dcr)
-				continue;
 			if (!dcr->shp)
 				continue;
 
@@ -651,6 +643,8 @@ void EoBCoreEngine::drawFlyingObjects(int index) {
 				y = 44;
 			}
 		}
+
+		assert(shp);
 
 		shp = _screen->scaleShape(shp, sclValue);
 

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -533,6 +533,7 @@ int Events::handleOneShot(Event *event) {
 		default:
 			break;
 		}
+		break;
 #ifdef ENABLE_IHNM
 	case kCutawayEvent:
 		switch (event->op) {
@@ -545,6 +546,7 @@ int Events::handleOneShot(Event *event) {
 		default:
 			break;
 		}
+		break;
 #endif
 	case kActorEvent:
 		switch (event->op) {
@@ -554,6 +556,7 @@ int Events::handleOneShot(Event *event) {
 		default:
 			break;
 		}
+		break;
 	default:
 		break;
 	}
@@ -578,6 +581,18 @@ EventColumns *Events::chain(EventColumns *eventColumns, const Event &event) {
 	initializeEvent(eventColumns->back());
 
 	return eventColumns;
+}
+
+EventColumns *Events::chainMusic(EventColumns *eventColumns, long musicId, bool loop, long time) {
+	Event event;
+
+	event.type = kEvTOneshot;
+	event.code = kMusicEvent;
+	event.param = musicId;
+	event.param2 = loop ? MUSIC_NORMAL : MUSIC_LOOP;
+	event.op = kEventPlay;
+	event.time = time;
+	return chain(eventColumns, event);
 }
 
 void Events::initializeEvent(Event &event) {

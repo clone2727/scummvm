@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -144,7 +144,7 @@ public:
 
 class IIgsMidi : public AgiSound {
 public:
-	IIgsMidi(uint8 *data, uint32 len, int resnum, SoundMgr &manager);
+	IIgsMidi(uint8 *data, uint32 len, int resnum);
 	~IIgsMidi() { if (_data != NULL) free(_data); }
 	virtual uint16 type() { return _type; }
 	virtual const uint8 *getPtr() { return _ptr; }
@@ -161,7 +161,7 @@ public:
 
 class IIgsSample : public AgiSound {
 public:
-	IIgsSample(uint8 *data, uint32 len, int resnum, SoundMgr &manager);
+	IIgsSample(uint8 *data, uint32 len, int resnum);
 	~IIgsSample() { delete[] _sample; }
 	virtual uint16 type() { return _header.type; }
 	const IIgsSampleHeader &getHeader() const { return _header; }

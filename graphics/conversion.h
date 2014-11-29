@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -48,10 +48,10 @@ inline static void RGB2YUV(byte r, byte g, byte b, byte &y, byte &u, byte &v) {
 /**
  * Blits a rectangle from one graphical format to another.
  *
- * @param dstbuf	the buffer which will recieve the converted graphics data
- * @param srcbuf	the buffer containing the original graphics data
- * @param dstpitch	width in bytes of one full line of the dest buffer
- * @param srcpitch	width in bytes of one full line of the source buffer
+ * @param dst		the buffer which will recieve the converted graphics data
+ * @param src		the buffer containing the original graphics data
+ * @param dstPitch	width in bytes of one full line of the dest buffer
+ * @param srcPitch	width in bytes of one full line of the source buffer
  * @param w			the width of the graphics data
  * @param h			the height of the graphics data
  * @param dstFmt	the desired pixel format

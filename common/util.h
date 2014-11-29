@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_UTIL_H
@@ -41,10 +42,10 @@
 #undef MAX
 #endif
 
-template<typename T> inline T ABS (T x)			{ return (x>=0) ? x : -x; }
-template<typename T> inline T MIN (T a, T b)	{ return (a<b) ? a : b; }
-template<typename T> inline T MAX (T a, T b)	{ return (a>b) ? a : b; }
-template<typename T> inline T CLIP (T v, T amin, T amax)
+template<typename T> inline T ABS(T x)		{ return (x >= 0) ? x : -x; }
+template<typename T> inline T MIN(T a, T b)	{ return (a < b) ? a : b; }
+template<typename T> inline T MAX(T a, T b)	{ return (a > b) ? a : b; }
+template<typename T> inline T CLIP(T v, T amin, T amax)
 		{ if (v < amin) return amin; else if (v > amax) return amax; else return v; }
 
 /**
@@ -71,7 +72,7 @@ template<typename T> inline void SWAP(T &a, T &b) { T tmp = a; a = b; b = tmp; }
 # define SCUMMVM_CURRENT_FUNCTION __PRETTY_FUNCTION__
 #elif defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)
 #  define SCUMMVM_CURRENT_FUNCTION	__func__
-#elif defined(_MSC_VER) && _MSC_VER >= 1300
+#elif defined(_MSC_VER)
 #  define SCUMMVM_CURRENT_FUNCTION __FUNCTION__
 #else
 #  define SCUMMVM_CURRENT_FUNCTION "<unknown>"

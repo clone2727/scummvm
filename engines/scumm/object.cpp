@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1013,7 +1013,6 @@ void ScummEngine::resetRoomObject(ObjectData *od, const byte *room, const byte *
 		od->actordir = (byte)READ_LE_UINT16(&imhd->v7.actordir);
 
 	} else if (_game.version == 6) {
-		assert(imhd);
 		od->obj_nr = READ_LE_UINT16(&(cdhd->v6.obj_id));
 
 		od->width = READ_LE_UINT16(&cdhd->v6.w);
@@ -1715,7 +1714,7 @@ void ScummEngine_v6::drawBlastObject(BlastObject *eo) {
 		error("object %d is not a blast object", eo->number);
 
 	bdd.dst = *vs;
-	bdd.dst.pixels = vs->getPixels(0, 0);
+	bdd.dst.setPixels(vs->getPixels(0, 0));
 	bdd.x = eo->rect.left;
 	bdd.y = eo->rect.top;
 

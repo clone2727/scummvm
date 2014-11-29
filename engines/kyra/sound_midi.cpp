@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -323,7 +323,7 @@ void MidiOutput::setSourceVolume(int source, int volume, bool apply) {
 		for (int i = 0; i < 16; ++i) {
 			// Controller 0 in the state table should always be '7' aka
 			// volume control
-			byte realVol = (_channels[i].controllers[0].value * volume) >> 8;
+			byte realVol = (_sources[source].controllers[i][0].value * volume) >> 8;
 			sendIntern(0xB0, i, 0x07, realVol);
 		}
 	}
@@ -783,7 +783,6 @@ void SoundMidiPC::onTimer(void *data) {
 				midi->_sfx[i]->stopPlaying();
 			}
 
-			midi->_output->setSourceVolume(0, midi->_musicVolume, true);
 			midi->_fadeMusicOut = false;
 		}
 	}

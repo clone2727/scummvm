@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -48,6 +48,7 @@ bool SaveLoad::loadGame(const Common::String &filename, BaseGame *gameRef) {
 
 	bool ret;
 
+	gameRef->stopVideo();
 	gameRef->_renderer->initSaveLoad(false);
 
 	gameRef->_loadInProgress = true;
@@ -75,7 +76,7 @@ bool SaveLoad::loadGame(const Common::String &filename, BaseGame *gameRef) {
 
 	gameRef->_renderer->endSaveLoad();
 
-	//_gameRef->LOG(0, "Load end %d", BaseUtils::GetUsedMemMB());
+	//BaseEngine::LOG(0, "Load end %d", BaseUtils::GetUsedMemMB());
 	// AdGame:
 	if (DID_SUCCEED(ret)) {
 		SystemClassRegistry::getInstance()->enumInstances(SaveLoad::afterLoadRegion, "AdRegion", nullptr);
@@ -201,4 +202,4 @@ bool SaveLoad::emptySaveSlot(int slot) {
 }
 
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

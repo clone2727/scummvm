@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -161,9 +161,23 @@ const char *iPhone_getDocumentsDir() {
 - (id)initWithFrame:(struct CGRect)frame {
 	self = [super initWithFrame: frame];
 
+	_contentScaleFactor = 1;
 	if ([[UIScreen mainScreen] respondsToSelector:@selector(scale)]) {
 		if ([self respondsToSelector:@selector(setContentScaleFactor:)]) {
-			[self setContentScaleFactor:[[UIScreen mainScreen] scale]];
+			// Horrible and crazy method to get the proper return value of
+			// scale when the SDK used for building does not know anything
+			// about the selector scale...
+			NSMethodSignature *scaleSignature = [UIScreen instanceMethodSignatureForSelector:@selector(scale)];
+			NSInvocation *scaleInvocation = [NSInvocation invocationWithMethodSignature:scaleSignature];
+			[scaleInvocation setTarget:[UIScreen mainScreen]];
+			[scaleInvocation setSelector:@selector(scale)];
+			[scaleInvocation invoke];
+
+			NSInteger returnLength = [[scaleInvocation methodSignature] methodReturnLength];
+			if (returnLength == sizeof(CGFloat)) {
+				[scaleInvocation getReturnValue:&_contentScaleFactor];
+				[self setContentScaleFactor:_contentScaleFactor];
+			}
 		}
 	}
 
@@ -365,7 +379,7 @@ const char *iPhone_getDocumentsDir() {
 	_mouseTexCoords[5] = _mouseTexCoords[7] = _videoContext.mouseHeight / (GLfloat)_videoContext.mouseTexture.h;
 
 	glBindTexture(GL_TEXTURE_2D, _mouseCursorTexture); printOpenGLError();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _videoContext.mouseTexture.w, _videoContext.mouseTexture.h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, _videoContext.mouseTexture.pixels); printOpenGLError();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _videoContext.mouseTexture.w, _videoContext.mouseTexture.h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, _videoContext.mouseTexture.getPixels()); printOpenGLError();
 }
 
 - (void)updateMainSurface {
@@ -377,7 +391,7 @@ const char *iPhone_getDocumentsDir() {
 	// Unfortunately we have to update the whole texture every frame, since glTexSubImage2D is actually slower in all cases
 	// due to the iPhone internals having to convert the whole texture back from its internal format when used.
 	// In the future we could use several tiled textures instead.
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _videoContext.screenTexture.w, _videoContext.screenTexture.h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, _videoContext.screenTexture.pixels); printOpenGLError();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _videoContext.screenTexture.w, _videoContext.screenTexture.h, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, _videoContext.screenTexture.getPixels()); printOpenGLError();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); printOpenGLError();
 }
 
@@ -386,7 +400,7 @@ const char *iPhone_getDocumentsDir() {
 	glTexCoordPointer(2, GL_FLOAT, 0, _overlayTexCoords); printOpenGLError();
 
 	glBindTexture(GL_TEXTURE_2D, _overlayTexture); printOpenGLError();
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _videoContext.overlayTexture.w, _videoContext.overlayTexture.h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, _videoContext.overlayTexture.pixels); printOpenGLError();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _videoContext.overlayTexture.w, _videoContext.overlayTexture.h, 0, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1, _videoContext.overlayTexture.getPixels()); printOpenGLError();
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4); printOpenGLError();
 }
 
@@ -613,6 +627,11 @@ const char *iPhone_getDocumentsDir() {
 }
 
 - (bool)getMouseCoords:(CGPoint)point eventX:(int *)x eventY:(int *)y {
+	// We scale the input according to our scale factor to get actual screen
+	// cooridnates.
+	point.x *= _contentScaleFactor;
+	point.y *= _contentScaleFactor;
+
 	if (![self convertToRotatedCoords:point result:&point])
 		return false;
 

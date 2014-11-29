@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -26,6 +26,7 @@
 #include "engines/engine.h"
 #include "engines/advancedDetector.h"
 #include "gui/debugger.h"
+#include "engines/wintermute/game_description.h"
 
 namespace Wintermute {
 
@@ -44,7 +45,7 @@ enum {
 
 class WintermuteEngine : public Engine {
 public:
-	WintermuteEngine(OSystem *syst, const ADGameDescription *desc);
+	WintermuteEngine(OSystem *syst, const WMEGameDescription *desc);
 	WintermuteEngine();
 	~WintermuteEngine();
 
@@ -67,7 +68,7 @@ private:
 	int messageLoop();
 	GUI::Debugger *_debugger;
 	BaseGame *_game;
-	const ADGameDescription *_gameDescription;
+	const WMEGameDescription *_gameDescription;
 
 	friend class Console;
 };

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -216,7 +216,14 @@ void AGOSEngine_Simon2::clearName() {
 		return;
 	}
 
-	AGOSEngine_Simon1::clearName();
+	if (_currentVerbBox == _lastVerbOn)
+		return;
+
+	resetNameWindow();
+	_lastVerbOn = _currentVerbBox;
+
+	if (_currentVerbBox != NULL && !(_currentVerbBox->flags & kBFBoxDead))
+		printVerbOf(_currentVerbBox->id);
 }
 
 void AGOSEngine_Simon1::clearName() {
@@ -242,12 +249,18 @@ void AGOSEngine::clearName() {
 	resetNameWindow();
 }
 
+static const byte convertVerbID[9] = {
+	0, 1, 5, 11, 8, 7, 10, 3, 2
+};
+
 void AGOSEngine::printVerbOf(uint hitarea_id) {
 	const char *txt;
 	const char * const *verb_names;
 	const char * const *verb_prep_names;
 
 	hitarea_id -= 101;
+	if (getGameType() == GType_SIMON2)
+		hitarea_id = convertVerbID[hitarea_id];
 
 	if (_showPreposition) {
 		switch (_language) {
@@ -973,7 +986,7 @@ void AGOSEngine::invertBox(HitArea *ha, byte a, byte b, byte c, byte d) {
 	_videoLockOut |= 0x8000;
 
 	Graphics::Surface *screen = _system->lockScreen();
-	src = (byte *)screen->pixels + ha->y * screen->pitch + ha->x;
+	src = (byte *)screen->getBasePtr(ha->x, ha->y);
 
 	// WORKAROUND: Hitareas for saved game names aren't adjusted for scrolling locations
 	if (getGameType() == GType_SIMON2 && ha->id >= 208 && ha->id <= 213) {
@@ -1004,7 +1017,7 @@ void AGOSEngine::invertBox(HitArea *ha, byte a, byte b, byte c, byte d) {
 					src[i] = color;
 				}
 			} else if (getGameType() == GType_PN) {
-				if (getPlatform() == Common::kPlatformPC) {
+				if (getPlatform() == Common::kPlatformDOS) {
 					if (color != 15) {
 						color ^= 7;
 						src[i] = color;

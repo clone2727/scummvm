@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -71,30 +71,34 @@ public:
 	void updateVolume();
 
 	void setType(Audio::Mixer::SoundType Type);
+	Audio::Mixer::SoundType getType() const;
 
 	bool loadFromFile(const Common::String &filename, bool forceReload = false);
 	void setStreaming(bool streamed, uint32 numBlocks = 0, uint32 blockSize = 0);
 	bool applyFX(TSFXType type, float param1, float param2, float param3, float param4);
-
+	int32 getPrivateVolume() const;
+	void setFreezePaused(bool freezePaused);
+	bool isFreezePaused() const;
+	bool isLooping() const;
 	//HSTREAM _stream;
 	//HSYNC _sync;
+
+private:
+	Audio::Mixer::SoundType _type;
 	Audio::SeekableAudioStream *_stream;
 	Audio::SoundHandle *_handle;
-
 	bool _freezePaused;
-	uint32 _loopStart;
-	Audio::Mixer::SoundType _type;
 	bool _looping;
-
-	int _privateVolume;
-private:
+	int32 _privateVolume;
+	uint32 _loopStart;
 	uint32 _startPos;
 	Common::String _filename;
 	bool _streamed;
 	Common::SeekableReadStream *_file;
-	int _volume;
+	int32 _volume;
+	int8 _pan;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

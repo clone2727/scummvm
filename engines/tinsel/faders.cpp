@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -106,7 +106,7 @@ static void FadeProcess(CORO_PARAM, const void *param) {
 		FadingPalette(pFade->pPalQ, true);
 
 	// get pointer to palette - reduce pointer indirection a bit
-	_ctx->pPalette = (PALETTE *)LockMem(FROM_32(pFade->pPalQ->hPal));
+	_ctx->pPalette = (PALETTE *)LockMem(pFade->pPalQ->hPal);
 
 	for (_ctx->pColMult = pFade->pColorMultTable; *_ctx->pColMult >= 0; _ctx->pColMult++) {
 		// go through all multipliers in table - until a negative entry
@@ -137,9 +137,8 @@ static void FadeProcess(CORO_PARAM, const void *param) {
  * Generic palette fader/unfader. Creates a 'FadeProcess' process
  * for each palette that is to fade.
  * @param multTable			Fixed point color multiplier table
- * @param noFadeTable		List of palettes not to fade
  */
-static void Fader(const long multTable[], SCNHANDLE noFadeTable[]) {
+static void Fader(const long multTable[]) {
 	PALQ *pPal;	// palette manager iterator
 
 	if (TinselV2) {
@@ -151,84 +150,61 @@ static void Fader(const long multTable[], SCNHANDLE noFadeTable[]) {
 
 	// create a process for each palette in the palette queue
 	for (pPal = GetNextPalette(NULL); pPal != NULL; pPal = GetNextPalette(pPal)) {
-		bool bFade = true;
-			// assume we want to fade this palette
+		FADE fade;
 
-		// is palette in the list of palettes not to fade
-		if (noFadeTable != NULL) {
-			// there is a list of palettes not to fade
-			for (int i = 0; noFadeTable[i] != 0; i++) {
-				if (pPal->hPal == noFadeTable[i]) {
-					// palette is in the list - dont fade it
-					bFade = false;
+		// fill in FADE struct
+		fade.pColorMultTable	= multTable;
+		fade.pPalQ		= pPal;
 
-					// leave loop prematurely
-					break;
-				}
-			}
-		}
-
-		if (bFade) {
-			FADE fade;
-
-			// fill in FADE struct
-			fade.pColorMultTable	= multTable;
-			fade.pPalQ		= pPal;
-
-			// create a fader process for this palette
-			CoroScheduler.createProcess(PID_FADER, FadeProcess, (void *)&fade, sizeof(FADE));
-		}
+		// create a fader process for this palette
+		CoroScheduler.createProcess(PID_FADER, FadeProcess, (void *)&fade, sizeof(FADE));
 	}
 }
 
 /**
  * Fades a list of palettes down to black.
- * 'noFadeTable' is a NULL terminated list of palettes not to fade.
  */
-void FadeOutMedium(SCNHANDLE noFadeTable[]) {
+void FadeOutMedium() {
 	// Fixed point fade multiplier table
 	static const long fadeout[] = {0xea00, 0xd000, 0xb600, 0x9c00,
 		0x8200, 0x6800, 0x4e00, 0x3400, 0x1a00, 0, -1};
 
 	// call generic fader
-	Fader(fadeout, noFadeTable);
+	Fader(fadeout);
 }
 
 /**
  * Fades a list of palettes down to black.
- * @param noFadeTable		A NULL terminated list of palettes not to fade.
  */
-void FadeOutFast(SCNHANDLE noFadeTable[]) {
+void FadeOutFast() {
 	// Fixed point fade multiplier table
 	static const long fadeout[] = {0xd000, 0xa000, 0x7000, 0x4000, 0x1000, 0, -1};
 
 	// call generic fader
-	Fader(fadeout, noFadeTable);
+	Fader(fadeout);
 }
 
 /**
  * Fades a list of palettes from black to their current colors.
- * 'noFadeTable' is a NULL terminated list of palettes not to fade.
  */
-void FadeInMedium(SCNHANDLE noFadeTable[]) {
+void FadeInMedium() {
 	// Fade multiplier table
 	static const long fadein[] = {0, 0x1a00, 0x3400, 0x4e00, 0x6800,
 		0x8200, 0x9c00, 0xb600, 0xd000, 0xea00, 0x10000L, -1};
 
 	// call generic fader
-	Fader(fadein, noFadeTable);
+	Fader(fadein);
 }
 
 /**
  * Fades a list of palettes from black to their current colors.
- * @param noFadeTable		A NULL terminated list of palettes not to fade.
  */
-void FadeInFast(SCNHANDLE noFadeTable[]) {
+void FadeInFast() {
 	// Fade multiplier table
 	static const long fadein[] = {0, 0x1000, 0x4000, 0x7000, 0xa000, 0xd000, 0x10000L, -1};
 
 	// call generic fader
-	Fader(fadein, noFadeTable);
+	Fader(fadein);
 }
 
 void PokeInTagColor() {

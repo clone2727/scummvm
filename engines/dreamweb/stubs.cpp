@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1259,6 +1259,10 @@ void DreamWebEngine::commandWithOb(uint8 command, uint8 type, uint8 index) {
 	uint8 textLen = _textLen;
 
 	const uint8 *string = (const uint8 *)_commandText.getString(command);
+	// Fix spelling in command 3 FR: "Aller ver" => "Aller vers"
+	const char *command3Fr = "Aller vers";
+	if (command == 3 && getLanguage() == Common::FR_FRA)
+		string = (const uint8 *)command3Fr;
 	printDirect(string, _textAddressX, _textAddressY, textLen, (bool)(textLen & 1));
 
 	copyName(type, index, commandLine);
@@ -2562,14 +2566,14 @@ void DreamWebEngine::showGun() {
 	greyscaleSum();
 	_fadeDirection = 1;
 	_fadeCount = 63;
-	_colourPos = 0;
+	_colorPos = 0;
 	_numToFade = 128;
 	hangOn(130);
 	endPalToStart();
 	clearEndPal();
 	_fadeDirection = 1;
 	_fadeCount = 63;
-	_colourPos = 0;
+	_colorPos = 0;
 	_numToFade = 128;
 	hangOn(200);
 	_roomsSample = 34;
@@ -2745,7 +2749,7 @@ void DreamWebEngine::entryAnims() {
 			// Make doors open
 			removeSetObject(4);
 			placeSetObject(5);
-		} else if (_vars._location == 47) {	// Dream centre
+		} else if (_vars._location == 47) {	// Dream center
 			placeSetObject(4);
 			placeSetObject(5);
 		} else if (_vars._location == 38) {	// Car park

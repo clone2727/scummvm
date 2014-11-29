@@ -7,6 +7,7 @@ ANDROID_PLUGIN_VERSIONCODE = 6
 JAVA_FILES = \
 	ScummVM.java \
 	ScummVMEvents.java \
+	ScummVMEventsHoneycomb.java \
 	ScummVMApplication.java \
 	ScummVMActivity.java \
 	EditableSurfaceView.java \
@@ -27,11 +28,14 @@ PORT_DISTFILES = $(PATH_DIST)/README.Android
 
 RESOURCES = \
 	$(PATH_RESOURCES)/values/strings.xml \
+	$(PATH_RESOURCES)/values/margins.xml \
+	$(PATH_RESOURCES)/values-television/margins.xml \
 	$(PATH_RESOURCES)/layout/main.xml \
 	$(PATH_RESOURCES)/layout/splash.xml \
 	$(PATH_RESOURCES)/drawable/gradient.xml \
 	$(PATH_RESOURCES)/drawable/scummvm.png \
-	$(PATH_RESOURCES)/drawable/scummvm_big.png
+	$(PATH_RESOURCES)/drawable/scummvm_big.png \
+	$(PATH_RESOURCES)/drawable-xhdpi/ouya_icon.png
 
 PLUGIN_RESOURCES = \
 	$(PATH_RESOURCES)/values/strings.xml \
@@ -41,10 +45,10 @@ PLUGIN_RESOURCES = \
 #LDFLAGS += -Wl,--gc-sections
 #CXXFLAGS += -ffunction-sections -fdata-sections -fvisibility=hidden -fvisibility-inlines-hidden
 
-AAPT = $(ANDROID_SDK)/platform-tools/aapt
+AAPT = $(ANDROID_SDK)/$(ANDROID_BTOOLS)/aapt
 ADB = $(ANDROID_SDK)/platform-tools/adb
-DX = $(ANDROID_SDK)/platform-tools/dx
-APKBUILDER = $(ANDROID_SDK)/tools/apkbuilder
+DX = $(ANDROID_SDK)/$(ANDROID_BTOOLS)/dx
+APKBUILDER = java -Xmx128M -classpath $(ANDROID_SDK)/tools/lib/sdklib.jar com.android.sdklib.build.ApkBuilderMain
 JAVAC ?= javac
 JAVACFLAGS = -source 1.5 -target 1.5
 

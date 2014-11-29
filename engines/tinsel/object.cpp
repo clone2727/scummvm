@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -375,7 +375,7 @@ OBJECT *InitObject(const OBJ_INIT *pInitTbl) {
 
 		if (pImg->hImgPal) {
 			// allocate a palette for this object
-			pPalQ = AllocPalette(FROM_LE_32(pImg->hImgPal));
+			pPalQ = AllocPalette(FROM_32(pImg->hImgPal));
 
 			// make sure palette allocated
 			assert(pPalQ != NULL);
@@ -494,7 +494,7 @@ OBJECT *RectangleObject(SCNHANDLE hPal, int color, int width, int height) {
 	OBJECT *pRect = InitObject(&rectObj);
 
 	// allocate a palette for this object
-	pPalQ = AllocPalette(FROM_32(hPal));
+	pPalQ = AllocPalette(hPal);
 
 	// make sure palette allocated
 	assert(pPalQ != NULL);

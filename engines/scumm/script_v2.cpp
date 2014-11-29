@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -1390,7 +1390,14 @@ void ScummEngine_v2::o2_loadRoomWithEgo() {
 
 	a = derefActor(VAR(VAR_EGO), "o2_loadRoomWithEgo");
 
-	a->putActor(0, 0, room);
+	// The original interpreter sets the actors new room X/Y to the last rooms X/Y
+	// This fixes a problem with MM: script 161 in room 12, the 'Oomph!' script
+	// This scripts runs before the actor position is set to the correct room entry location
+	if ((_game.id == GID_MANIAC) && (_game.platform != Common::kPlatformNES)) {
+		a->putActor(a->getPos().x, a->getPos().y, room);
+	} else {
+		a->putActor(0, 0, room);
+	}
 	_egoPositioned = false;
 
 	x = (int8)fetchScriptByte();

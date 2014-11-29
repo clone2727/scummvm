@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -43,19 +43,31 @@ public:
 	bool setIconHover(const char *filename);
 	bool setIconPressed(const char *filename);
 	void setText(const char *text);
-	int32 _iD;
+	void setID(int32 id);
+	BaseSprite *getIcon() const;
+	BaseSprite *getIconHover() const;
+	BaseSprite *getIconPressed() const;
+	BaseFont *getFont() const;
+	int32 getID() const;
+
+	const char *getText() const;
+	const char *getTextOrig() const;
+
+	AdResponse(BaseGame *inGame);
+	virtual ~AdResponse();
+	TResponseType _responseType;
+private:
 	BaseSprite *_icon;
 	BaseSprite *_iconHover;
 	BaseSprite *_iconPressed;
 	BaseFont *_font;
+
+	int32 _iD;
+
 	char *_text;
 	char *_textOrig;
-	AdResponse(BaseGame *inGame);
-	virtual ~AdResponse();
-	TResponseType _responseType;
-
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -49,6 +49,8 @@ void ScummEngine::runScript(int script, bool freezeResistant, bool recursive, in
 	if (!recursive)
 		stopScript(script);
 
+	uint16 number = (_currentScript != 0xFF) ? vm.slot[_currentScript].number : 0;
+
 	if (script < _numGlobalScripts) {
 		// Call getResourceAddress to ensure the resource is loaded & its usage count reset
 		/*scriptPtr =*/ getResourceAddress(rtScript, script);
@@ -56,7 +58,7 @@ void ScummEngine::runScript(int script, bool freezeResistant, bool recursive, in
 		scriptType = WIO_GLOBAL;
 
 		debugC(DEBUG_SCRIPTS, "runScript(Global-%d) from %d-%d", script,
-				       vm.slot[_currentScript].number, _roomResource);
+				       number, _roomResource);
 	} else {
 		scriptOffs = _localScriptOffsets[script - _numGlobalScripts];
 		if (scriptOffs == 0)
@@ -64,7 +66,7 @@ void ScummEngine::runScript(int script, bool freezeResistant, bool recursive, in
 		scriptType = WIO_LOCAL;
 
 		debugC(DEBUG_SCRIPTS, "runScript(%d) from %d-%d", script,
-				       vm.slot[_currentScript].number, _roomResource);
+				       number, _roomResource);
 	}
 
 	if (cycle == 0)
@@ -138,10 +140,10 @@ void ScummEngine::runObjectScript(int object, int entry, bool freezeResistant, b
 void ScummEngine::initializeLocals(int slot, int *vars) {
 	int i;
 	if (!vars) {
-		for (i = 0; i < 25; i++)
+		for (i = 0; i < NUM_SCRIPT_LOCAL; i++)
 			vm.localvar[slot][i] = 0;
 	} else {
-		for (i = 0; i < 25; i++)
+		for (i = 0; i < NUM_SCRIPT_LOCAL; i++)
 			vm.localvar[slot][i] = vars[i];
 	}
 }
@@ -755,13 +757,13 @@ void ScummEngine::stopObjectCode() {
 }
 
 void ScummEngine::runInventoryScript(int i) {
-	int args[24];
-	memset(args, 0, sizeof(args));
-	args[0] = i;
 	if (VAR(VAR_INVENTORY_SCRIPT)) {
 		if (_game.id == GID_INDY3 && _game.platform == Common::kPlatformMacintosh) {
 			inventoryScriptIndy3Mac();
 		} else {
+			int args[NUM_SCRIPT_LOCAL];
+			memset(args, 0, sizeof(args));
+			args[0] = i;
 			runScript(VAR(VAR_INVENTORY_SCRIPT), 0, 0, args);
 		}
 	}
@@ -970,6 +972,18 @@ void ScummEngine::runEntryScript() {
 		runScript(VAR(VAR_ENTRY_SCRIPT2), 0, 0, 0);
 }
 
+void ScummEngine::runQuitScript() {
+	if (VAR_QUIT_SCRIPT != 0xFF && VAR(VAR_QUIT_SCRIPT)) {
+		int args[NUM_SCRIPT_LOCAL];
+
+		memset(args, 0, sizeof(args));
+		args[0] = 2;
+		args[1] = 1003;
+
+		runScript(VAR(VAR_QUIT_SCRIPT), 0, 0, args);
+	}
+}
+
 void ScummEngine::killScriptsAndResources() {
 	ScriptSlot *ss;
 	int i;
@@ -1060,7 +1074,7 @@ void ScummEngine::doSentence(int verb, int objectA, int objectB) {
 
 void ScummEngine::checkAndRunSentenceScript() {
 	int i;
-	int localParamList[24];
+	int localParamList[NUM_SCRIPT_LOCAL];
 	const ScriptSlot *ss;
 	int sentenceScript;
 
@@ -1308,7 +1322,7 @@ void ScummEngine_v0::runSentenceScript() {
 }
 
 void ScummEngine_v2::runInputScript(int clickArea, int val, int mode) {
-	int args[24];
+	int args[NUM_SCRIPT_LOCAL];
 	int verbScript;
 
 	verbScript = 4;
@@ -1332,7 +1346,7 @@ void ScummEngine_v2::runInputScript(int clickArea, int val, int mode) {
 }
 
 void ScummEngine::runInputScript(int clickArea, int val, int mode) {
-	int args[24];
+	int args[NUM_SCRIPT_LOCAL];
 	int verbScript;
 
 	verbScript = VAR(VAR_VERB_SCRIPT);
@@ -1490,7 +1504,7 @@ void ScummEngine::beginCutscene(int *args) {
 
 void ScummEngine::endCutscene() {
 	ScriptSlot *ss = &vm.slot[_currentScript];
-	int args[16];
+	int args[NUM_SCRIPT_LOCAL];
 
 	if (ss->cutsceneOverride > 0)	// Only terminate if active
 		ss->cutsceneOverride--;

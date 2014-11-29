@@ -19,7 +19,9 @@ def buildTheme(themeName):
 
 	zf.write('THEMERC', './THEMERC')
 
-	for filename in os.listdir('.'):
+	filenames = os.listdir('.')
+	filenames.sort()
+	for filename in filenames:
 		if os.path.isfile(filename) and not filename[0] == '.' and filename.endswith(THEME_FILE_EXTENSIONS):
 			zf.write(filename, './' + filename)
 			print ("    Adding file: " + filename)
@@ -37,9 +39,13 @@ def parseSTX(theme_file, def_file):
 	comm = re.compile("<!--(.*?)-->", re.DOTALL)
 	head = re.compile("<\?(.*?)\?>")
 
+	strlitcount = 0
 	output = ""
 	for line in theme_file:
-		output +=  line.rstrip("\r\n\t ").lstrip() + " \n"
+		output +=  line.rstrip("\r\n\t ").lstrip()
+		if not output.endswith('>'):
+			output += ' '
+		output += "\n"
 
 	output = re.sub(comm, "", output)
 	output = re.sub(head, "", output)
@@ -48,7 +54,9 @@ def parseSTX(theme_file, def_file):
 
 	for line in output.splitlines():
 		if line and not line.isspace():
+			strlitcount += len(line)
 			def_file.write("\"" + line + "\"\n")
+	return strlitcount
 
 def buildDefTheme(themeName):
 	def_file = open("default.inc", "w")
@@ -57,15 +65,24 @@ def buildDefTheme(themeName):
 		print ("Cannot open default theme dir.")
 
 	def_file.write(""" "<?xml version = '1.0'?>"\n""")
+	strlitcount = 24
 
-	for filename in os.listdir(themeName):
+	filenames = os.listdir(themeName)
+	filenames.sort()
+	for filename in filenames:
 		filename = os.path.join(themeName, filename)
 		if os.path.isfile(filename) and filename.endswith(".stx"):
 			theme_file = open(filename, "r")
-			parseSTX(theme_file, def_file)
+			strlitcount += parseSTX(theme_file, def_file)
 			theme_file.close()
 
 	def_file.close()
+
+	if strlitcount > 65535:
+		print("WARNING: default.inc string literal is of length %d which exceeds the" % strlitcount)
+		print("         maximum length of 65536 that C++ compilers are required to support.")
+		print("         It is likely that bugs will occur dependent on compiler behaviour.")
+		print("         To avoid this, reduce the size of the theme.")
 
 def printUsage():
 	print ("===============================")

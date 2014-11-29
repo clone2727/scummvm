@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -339,10 +339,10 @@ void GfxTransitions::pixelation(bool blackoutFlag) {
 
 	do {
 		mask = (mask & 1) ? (mask >> 1) ^ 0xB400 : mask >> 1;
-		if (mask >= _screen->getWidth() * _screen->getHeight())
+		if (mask >= _screen->getScriptWidth() * _screen->getScriptHeight())
 			continue;
-		pixelRect.left = mask % _screen->getWidth(); pixelRect.right = pixelRect.left + 1;
-		pixelRect.top = mask / _screen->getWidth();	pixelRect.bottom = pixelRect.top + 1;
+		pixelRect.left = mask % _screen->getScriptWidth(); pixelRect.right = pixelRect.left + 1;
+		pixelRect.top = mask / _screen->getScriptWidth();	pixelRect.bottom = pixelRect.top + 1;
 		pixelRect.clip(_picRect);
 		if (!pixelRect.isEmpty())
 			copyRectToScreen(pixelRect, blackoutFlag);

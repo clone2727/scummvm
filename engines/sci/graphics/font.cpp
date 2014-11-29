@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -48,8 +48,8 @@ GfxFontFromResource::GfxFontFromResource(ResourceManager *resMan, GfxScreen *scr
 	// filling info for every char
 	for (int16 i = 0; i < _numChars; i++) {
 		_chars[i].offset = READ_SCI32ENDIAN_UINT16(_resourceData + 6 + i * 2);
-		_chars[i].w = _resourceData[_chars[i].offset];
-		_chars[i].h = _resourceData[_chars[i].offset + 1];
+		_chars[i].width = _resourceData[_chars[i].offset];
+		_chars[i].height = _resourceData[_chars[i].offset + 1];
 	}
 }
 
@@ -66,10 +66,10 @@ byte GfxFontFromResource::getHeight() {
 	return _fontHeight;
 }
 byte GfxFontFromResource::getCharWidth(uint16 chr) {
-	return chr < _numChars ? _chars[chr].w : 0;
+	return chr < _numChars ? _chars[chr].width : 0;
 }
 byte GfxFontFromResource::getCharHeight(uint16 chr) {
-	return chr < _numChars ? _chars[chr].h : 0;
+	return chr < _numChars ? _chars[chr].height : 0;
 }
 byte *GfxFontFromResource::getCharData(uint16 chr) {
 	return chr < _numChars ? _resourceData + _chars[chr].offset + 2 : 0;

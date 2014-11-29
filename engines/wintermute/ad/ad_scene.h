@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -67,16 +67,16 @@ public:
 	bool pointInViewport(int x, int y);
 	int getOffsetTop();
 	int getOffsetLeft();
-	bool getViewportSize(int *width = nullptr, int *height = nullptr);
-	bool getViewportOffset(int *offsetX = nullptr, int *offsetY = nullptr);
+	bool getViewportSize(int32 *width = nullptr, int32 *height = nullptr);
+	bool getViewportOffset(int32 *offsetX = nullptr, int32 *offsetY = nullptr);
 	BaseViewport *_viewport;
 	BaseFader *_fader;
-	int _pfPointsNum;
+	int32 _pfPointsNum;
 	void pfPointsAdd(int x, int y, int distance);
 	void pfPointsStart();
 	bool _initialized;
-	bool correctTargetPoint(int startX, int startY, int *x, int *y, bool checkFreeObjects = false, BaseObject *requester = nullptr);
-	bool correctTargetPoint2(int startX, int startY, int *targetX, int *targetY, bool checkFreeObjects, BaseObject *requester);
+	bool correctTargetPoint(int32 startX, int32 startY, int32 *x, int32 *y, bool checkFreeObjects = false, BaseObject *requester = nullptr);
+	bool correctTargetPoint2(int32 startX, int32 startY, int32 *targetX, int32 *targetY, bool checkFreeObjects, BaseObject *requester);
 	DECLARE_PERSISTENT(AdScene, BaseObject)
 	bool displayRegionContent(AdRegion *region = nullptr, bool display3DOnly = false);
 	bool displayRegionContentOld(AdRegion *region = nullptr);
@@ -87,7 +87,7 @@ public:
 	float getScaleAt(int y);
 	bool sortScaleLevels();
 	bool sortRotLevels();
-	virtual bool saveAsText(BaseDynamicBuffer *buffer, int indent);
+	virtual bool saveAsText(BaseDynamicBuffer *buffer, int indent) override;
 	uint32 getAlphaAt(int x, int y, bool colorCheck = false);
 	bool _paralaxScrolling;
 	void skipTo(int offsetX, int offsetY);
@@ -96,16 +96,16 @@ public:
 	void skipToObject(BaseObject *object);
 	void scrollToObject(BaseObject *object);
 	void scrollTo(int offsetX, int offsetY);
-	virtual bool update();
+	virtual bool update() override;
 	bool _autoScroll;
-	int _targetOffsetTop;
-	int _targetOffsetLeft;
+	int32 _targetOffsetTop;
+	int32 _targetOffsetLeft;
 
-	int _scrollPixelsV;
+	int32 _scrollPixelsV;
 	uint32 _scrollTimeV;
 	uint32 _lastTimeV;
 
-	int _scrollPixelsH;
+	int32 _scrollPixelsH;
 	uint32 _scrollTimeH;
 	uint32 _lastTimeH;
 
@@ -117,20 +117,20 @@ public:
 	bool isWalkableAt(int x, int y, bool checkFreeObjects = false, BaseObject *requester = nullptr);
 	AdLayer *_mainLayer;
 	float getZoomAt(int x, int y);
-	bool getPath(BasePoint source, BasePoint target, AdPath *path, BaseObject *requester = nullptr);
+	bool getPath(const BasePoint &source, const BasePoint &target, AdPath *path, BaseObject *requester = nullptr);
 	AdScene(BaseGame *inGame);
 	virtual ~AdScene();
 	BaseArray<AdLayer *> _layers;
 	BaseArray<AdObject *> _objects;
 	BaseArray<AdWaypointGroup *> _waypointGroups;
 	bool loadFile(const char *filename);
-	bool loadBuffer(byte *buffer, bool complete = true);
-	int _width;
-	int _height;
+	bool loadBuffer(char *buffer, bool complete = true);
+	int32 _width;
+	int32 _height;
 	bool addObject(AdObject *Object);
 	bool removeObject(AdObject *Object);
-	int _editorMarginH;
-	int _editorMarginV;
+	int32 _editorMarginH;
+	int32 _editorMarginV;
 	uint32 _editorColFrame;
 	uint32 _editorColEntity;
 	uint32 _editorColRegion;
@@ -153,13 +153,13 @@ public:
 	BaseArray<AdRotLevel *> _rotLevels;
 
 	virtual bool restoreDeviceObjects();
-	int getPointsDist(BasePoint p1, BasePoint p2, BaseObject *requester = nullptr);
+	int getPointsDist(const BasePoint &p1, const BasePoint &p2, BaseObject *requester = nullptr);
 
 	// scripting interface
-	virtual ScValue *scGetProperty(const Common::String &name);
-	virtual bool scSetProperty(const char *name, ScValue *value);
-	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name);
-	virtual const char *scToString();
+	virtual ScValue *scGetProperty(const Common::String &name) override;
+	virtual bool scSetProperty(const char *name, ScValue *value) override;
+	virtual bool scCallMethod(ScScript *script, ScStack *stack, ScStack *thisStack, const char *name) override;
+	virtual const char *scToString() override;
 
 
 private:
@@ -171,11 +171,11 @@ private:
 	BaseObject *_pfRequester;
 	BaseArray<AdPathPoint *> _pfPath;
 
-	int _offsetTop;
-	int _offsetLeft;
+	int32 _offsetTop;
+	int32 _offsetLeft;
 
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

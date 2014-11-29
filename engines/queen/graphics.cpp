@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -214,7 +214,7 @@ Graphics::~Graphics() {
 }
 
 void Graphics::unpackControlBank() {
-	if (_vm->resource()->getPlatform() == Common::kPlatformPC) {
+	if (_vm->resource()->getPlatform() == Common::kPlatformDOS) {
 		_vm->bankMan()->load("CONTROL.BBK",17);
 
 		// unpack mouse pointer frame
@@ -231,7 +231,7 @@ void Graphics::unpackControlBank() {
 }
 
 void Graphics::setupArrows() {
-	if (_vm->resource()->getPlatform() == Common::kPlatformPC) {
+	if (_vm->resource()->getPlatform() == Common::kPlatformDOS) {
 		int scrollX = _vm->display()->horizontalScroll();
 		BobSlot *arrow;
 		arrow = bob(ARROW_BOB_UP);
@@ -522,7 +522,7 @@ void Graphics::setBobText(const BobSlot *pbs, const char *text, int textX, int t
 
 	// Calc text position
 
-	short x, y, width, height;
+	short x, y, width;
 
 	if (flags) {
 		if (flags == 2)
@@ -540,7 +540,7 @@ void Graphics::setBobText(const BobSlot *pbs, const char *text, int textX, int t
 		BobFrame *pbf = _vm->bankMan()->fetchFrame(pbs->frameNum);
 
 		width  = (pbf->width  * pbs->scale) / 100;
-		height = (pbf->height * pbs->scale) / 100;
+		short height = (pbf->height * pbs->scale) / 100;
 
 		y = y - height - 16 - lineCount * 9;
 	}
@@ -1250,7 +1250,7 @@ void BamScene::updateFightAnimation() {
 			break;
 		case 99: // end of BAM data
 			_lastSoundIndex = _index = 0;
-			if (_vm->resource()->getPlatform() == Common::kPlatformPC) {
+			if (_vm->resource()->getPlatform() == Common::kPlatformDOS) {
 				_fightData = fightDataBlocks[_vm->randomizer.getRandomNumber(2)];
 			}
 			if (_flag == F_REQ_STOP) {

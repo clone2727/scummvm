@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "gui/saveload-dialog.h"
@@ -91,7 +92,7 @@ void SaveLoadChooserDialog::open() {
 	Dialog::open();
 
 	// So that quitting ScummVM will not cause the dialog result to say a
-	// savegame was selected.
+	// saved game was selected.
 	setResult(-1);
 }
 
@@ -271,7 +272,7 @@ void SaveLoadChooserSimple::handleCommand(CommandSender *sender, uint32 cmd, uin
 		break;
 	case kDelCmd:
 		if (selItem >= 0 && _delSupport) {
-			MessageDialog alert(_("Do you really want to delete this savegame?"),
+			MessageDialog alert(_("Do you really want to delete this saved game?"),
 								_("Delete"), _("Cancel"));
 			if (alert.runModal() == kMessageOK) {
 				_metaEngine->removeSaveState(_target.c_str(), _saveList[selItem].getSaveSlot());
@@ -286,6 +287,7 @@ void SaveLoadChooserSimple::handleCommand(CommandSender *sender, uint32 cmd, uin
 		break;
 	case kCloseCmd:
 		setResult(-1);
+		// Fall through
 	default:
 		SaveLoadChooserDialog::handleCommand(sender, cmd, data);
 	}
@@ -486,7 +488,7 @@ void SaveLoadChooserSimple::updateSaveList() {
 			}
 		}
 
-		// Show "Untitled savestate" for empty/whitespace savegame descriptions
+		// Show "Untitled savestate" for empty/whitespace saved game descriptions
 		Common::String description = x->getDescription();
 		Common::String trimmedDescription = description;
 		trimmedDescription.trim();
@@ -595,6 +597,7 @@ void SaveLoadChooserGrid::handleCommand(CommandSender *sender, uint32 cmd, uint3
 
 	case kCloseCmd:
 		setResult(-1);
+		// Fall through
 	default:
 		SaveLoadChooserDialog::handleCommand(sender, cmd, data);
 	}

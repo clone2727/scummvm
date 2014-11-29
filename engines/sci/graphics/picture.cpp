@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -88,10 +88,13 @@ void GfxPicture::draw(int16 animationNr, bool mirroredFlag, bool addToFlag, int1
 }
 
 void GfxPicture::reset() {
+	int16 startY = _ports->getPort()->top;
+	int16 startX = 0;
 	int16 x, y;
-	for (y = _ports->getPort()->top; y < _screen->getHeight(); y++) {
-		for (x = 0; x < _screen->getWidth(); x++) {
-			_screen->putPixel(x, y, GFX_SCREEN_MASK_ALL, 255, 0, 0);
+	_screen->vectorAdjustCoordinate(&startX, &startY);
+	for (y = startY; y < _screen->getHeight(); y++) {
+		for (x = startX; x < _screen->getWidth(); x++) {
+			_screen->vectorPutPixel(x, y, GFX_SCREEN_MASK_ALL, 255, 0, 0);
 		}
 	}
 }
@@ -132,7 +135,7 @@ void GfxPicture::drawSci11Vga() {
 		_palette->createFromData(inbuffer + palette_data_ptr, size - palette_data_ptr, &palette);
 		_palette->set(&palette, true);
 
-		drawCelData(inbuffer, size, cel_headerPos, cel_RlePos, cel_LiteralPos, 0, 0, 0, 0);
+		drawCelData(inbuffer, size, cel_headerPos, cel_RlePos, cel_LiteralPos, 0, 0, 0, 0, false);
 	}
 
 	// process vector data
@@ -224,20 +227,22 @@ void GfxPicture::drawSci32Vga(int16 celNo, int16 drawX, int16 drawY, int16 pictu
 	cel_RlePos = READ_SCI11ENDIAN_UINT32(inbuffer + cel_headerPos + 24);
 	cel_LiteralPos = READ_SCI11ENDIAN_UINT32(inbuffer + cel_headerPos + 28);
 
-	drawCelData(inbuffer, size, cel_headerPos, cel_RlePos, cel_LiteralPos, drawX, drawY, pictureX, pictureY);
+	drawCelData(inbuffer, size, cel_headerPos, cel_RlePos, cel_LiteralPos, drawX, drawY, pictureX, pictureY, false);
 	cel_headerPos += 42;
 }
 #endif
 
 extern void unpackCelData(byte *inBuffer, byte *celBitmap, byte clearColor, int pixelCount, int rlePos, int literalPos, ViewType viewType, uint16 width, bool isMacSci11ViewData);
 
-void GfxPicture::drawCelData(byte *inbuffer, int size, int headerPos, int rlePos, int literalPos, int16 drawX, int16 drawY, int16 pictureX, int16 pictureY) {
+void GfxPicture::drawCelData(byte *inbuffer, int size, int headerPos, int rlePos, int literalPos, int16 drawX, int16 drawY, int16 pictureX, int16 pictureY, bool isEGA) {
 	byte *celBitmap = NULL;
 	byte *ptr = NULL;
 	byte *headerPtr = inbuffer + headerPos;
 	byte *rlePtr = inbuffer + rlePos;
-	int16 displaceX, displaceY;
-	byte priority = _addToFlag ? _priority : 0;
+	// displaceX, displaceY fields are ignored, and may contain garbage
+	// (e.g. pic 261 in Dr. Brain 1 Spanish - bug #3614914)
+	//int16 displaceX, displaceY;
+	byte priority = _priority;
 	byte clearColor;
 	bool compression = true;
 	byte curByte;
@@ -245,14 +250,18 @@ void GfxPicture::drawCelData(byte *inbuffer, int size, int headerPos, int rlePos
 	int pixelCount;
 	uint16 width, height;
 
+	// if the picture is not an overlay and we are also not in EGA mode, use priority 0
+	if (!isEGA && !_addToFlag)
+		priority = 0;
+
 #ifdef ENABLE_SCI32
 	if (_resourceType != SCI_PICTURE_TYPE_SCI32) {
 #endif
 		// Width/height here are always LE, even in Mac versions
 		width = READ_LE_UINT16(headerPtr + 0);
 		height = READ_LE_UINT16(headerPtr + 2);
-		displaceX = (signed char)headerPtr[4];
-		displaceY = (unsigned char)headerPtr[5];
+		//displaceX = (signed char)headerPtr[4];
+		//displaceY = (unsigned char)headerPtr[5];
 		if (_resourceType == SCI_PICTURE_TYPE_SCI11)
 			// SCI1.1 uses hardcoded clearcolor for pictures, even if cel header specifies otherwise
 			clearColor = _screen->getColorWhite();
@@ -262,23 +271,21 @@ void GfxPicture::drawCelData(byte *inbuffer, int size, int headerPos, int rlePos
 	} else {
 		width = READ_SCI11ENDIAN_UINT16(headerPtr + 0);
 		height = READ_SCI11ENDIAN_UINT16(headerPtr + 2);
-		displaceX = READ_SCI11ENDIAN_UINT16(headerPtr + 4); // probably signed?!?
-		displaceY = READ_SCI11ENDIAN_UINT16(headerPtr + 6); // probably signed?!?
+		//displaceX = READ_SCI11ENDIAN_UINT16(headerPtr + 4); // probably signed?!?
+		//displaceY = READ_SCI11ENDIAN_UINT16(headerPtr + 6); // probably signed?!?
 		clearColor = headerPtr[8];
 		if (headerPtr[9] == 0)
 			compression = false;
 	}
 #endif
 
-	if (displaceX || displaceY)
-		error("unsupported embedded cel-data in picture");
+	//if (displaceX || displaceY)
+	//	error("unsupported embedded cel-data in picture");
 
 	// We will unpack cel-data into a temporary buffer and then plot it to screen
 	//  That needs to be done cause a mirrored picture may be requested
 	pixelCount = width * height;
 	celBitmap = new byte[pixelCount];
-	if (!celBitmap)
-		error("Unable to allocate temporary memory for picture drawing");
 
 	if (g_sci->getPlatform() == Common::kPlatformMacintosh && getSciVersion() >= SCI_VERSION_2) {
 		// See GfxView::unpackCel() for why this black/white swap is done
@@ -358,37 +365,78 @@ void GfxPicture::drawCelData(byte *inbuffer, int size, int headerPos, int rlePos
 		ptr = celBitmap;
 		ptr += skipCelBitmapPixels;
 		ptr += skipCelBitmapLines * width;
-		if (!_mirroredFlag) {
-			// Draw bitmap to screen
-			x = leftX;
-			while (y < lastY) {
-				curByte = *ptr++;
-				if ((curByte != clearColor) && (priority >= _screen->getPriority(x, y)))
-					_screen->putPixel(x, y, drawMask, curByte, priority, 0);
 
-				x++;
+		if ((!isEGA) || (priority < 16)) {
+			// VGA + EGA, EGA only checks priority, when given priority is below 16
+			if (!_mirroredFlag) {
+				// Draw bitmap to screen
+				x = leftX;
+				while (y < lastY) {
+					curByte = *ptr++;
+					if ((curByte != clearColor) && (priority >= _screen->getPriority(x, y)))
+						_screen->putPixel(x, y, drawMask, curByte, priority, 0);
 
-				if (x >= rightX) {
-					ptr += sourcePixelSkipPerRow;
-					x = leftX;
-					y++;
+					x++;
+
+					if (x >= rightX) {
+						ptr += sourcePixelSkipPerRow;
+						x = leftX;
+						y++;
+					}
+				}
+			} else {
+				// Draw bitmap to screen (mirrored)
+				x = rightX - 1;
+				while (y < lastY) {
+					curByte = *ptr++;
+					if ((curByte != clearColor) && (priority >= _screen->getPriority(x, y)))
+						_screen->putPixel(x, y, drawMask, curByte, priority, 0);
+
+					if (x == leftX) {
+						ptr += sourcePixelSkipPerRow;
+						x = rightX;
+						y++;
+					}
+
+					x--;
 				}
 			}
 		} else {
-			// Draw bitmap to screen (mirrored)
-			x = rightX - 1;
-			while (y < lastY) {
-				curByte = *ptr++;
-				if ((curByte != clearColor) && (priority >= _screen->getPriority(x, y)))
-					_screen->putPixel(x, y, drawMask, curByte, priority, 0);
+			// EGA, when priority is above 15
+			//  we don't check priority and also won't set priority at all
+			//  fixes picture 48 of kq5 (island overview). Bug #5182
+			if (!_mirroredFlag) {
+				// EGA+priority>15: Draw bitmap to screen
+				x = leftX;
+				while (y < lastY) {
+					curByte = *ptr++;
+					if (curByte != clearColor)
+						_screen->putPixel(x, y, GFX_SCREEN_MASK_VISUAL, curByte, 0, 0);
 
-				if (x == leftX) {
-					ptr += sourcePixelSkipPerRow;
-					x = rightX;
-					y++;
+					x++;
+
+					if (x >= rightX) {
+						ptr += sourcePixelSkipPerRow;
+						x = leftX;
+						y++;
+					}
 				}
+			} else {
+				// EGA+priority>15: Draw bitmap to screen (mirrored)
+				x = rightX - 1;
+				while (y < lastY) {
+					curByte = *ptr++;
+					if (curByte != clearColor)
+						_screen->putPixel(x, y, GFX_SCREEN_MASK_VISUAL, curByte, 0, 0);
 
-				x--;
+					if (x == leftX) {
+						ptr += sourcePixelSkipPerRow;
+						x = rightX;
+						y++;
+					}
+
+					x--;
+				}
 			}
 		}
 	}
@@ -436,6 +484,8 @@ enum {
 	PIC_OPX_VGA_PRIORITY_TABLE_EQDIST = 3,
 	PIC_OPX_VGA_PRIORITY_TABLE_EXPLICIT = 4
 };
+
+//#define DEBUG_PICTURE_DRAW 1
 
 #ifdef DEBUG_PICTURE_DRAW
 const char *picOpcodeNames[] = {
@@ -538,28 +588,15 @@ void GfxPicture::drawVectorData(byte *data, int dataSize) {
 			if ((_screen->isUnditheringEnabled()) && ((_resourceId >= 53 && _resourceId <= 58) || (_resourceId == 61)))
 				icemanDrawFix = true;
 		}
-		if (g_sci->getGameId() == GID_KQ5) {
-			// WORKAROUND: ignore the seemingly broken priority of picture 48
-			// (island overview). Fixes bug #3041044.
-			if (_resourceId == 48)
-				ignoreBrokenPriority = true;
-		}
-		if (g_sci->getGameId() == GID_SQ4) {
-			// WORKAROUND: ignore the seemingly broken priority of pictures 546
-			// and 547 (Vohaul's head and Roger Jr trapped). Fixes bug #3046543.
-			if (_resourceId == 546 || _resourceId == 547)
-				ignoreBrokenPriority = true;
-			// WORKAROUND: ignore the seemingly broken priority of picture 631
-			// (SQ1 view from the cockpit). Fixes bug #3046513.
-			if (_resourceId == 631)
-				ignoreBrokenPriority = true;
-		}
 	}
 
 	// Drawing
 	while (curPos < dataSize) {
 #ifdef DEBUG_PICTURE_DRAW
 		debug("Picture op: %X (%s) at %d", data[curPos], picOpcodeNames[data[curPos] - 0xF0], curPos);
+		_screen->copyToScreen();
+		g_system->updateScreen();
+		g_system->delayMillis(400);
 #endif
 		switch (pic_op = data[curPos++]) {
 		case PIC_OP_SET_COLOR:
@@ -605,7 +642,7 @@ void GfxPicture::drawVectorData(byte *data, int dataSize) {
 		case PIC_OP_MEDIUM_LINES: // medium line
 			vectorGetAbsCoords(data, curPos, x, y);
 			if (icemanDrawFix) {
-				// WORKAROUND: remove certain lines in iceman ffs. see above
+				// WORKAROUND: remove certain lines in iceman - see above
 				if ((pic_color == 1) && (pic_priority == 14)) {
 					if ((y < 100) || (!(y & 1))) {
 						pic_color = 255;
@@ -656,6 +693,7 @@ void GfxPicture::drawVectorData(byte *data, int dataSize) {
 					case 35:
 					case 381:
 					case 376:
+					//case 390:	// in the blacklisted NRS patch 1.2 (bug #3615060)
 						return;
 					default:
 						break;
@@ -737,8 +775,15 @@ void GfxPicture::drawVectorData(byte *data, int dataSize) {
 				case PIC_OPX_EGA_EMBEDDED_VIEW:
 					vectorGetAbsCoordsNoMirror(data, curPos, x, y);
 					size = READ_LE_UINT16(data + curPos); curPos += 2;
-					_priority = pic_priority; // set global priority so the cel gets drawn using current priority as well
-					drawCelData(data, _resource->size, curPos, curPos + 8, 0, x, y, 0, 0);
+					// hardcoded in SSCI, 16 for SCI1early excluding Space Quest 4, 0 for anything else
+					//  fixes sq4 pictures 546+547 (Vohaul's head and Roger Jr trapped). Bug #5250
+					//  fixes sq4 picture 631 (SQ1 view from cockpit). Bug 5249
+					if ((getSciVersion() <= SCI_VERSION_1_EARLY) && (g_sci->getGameId() != GID_SQ4)) {
+						_priority = 16;
+					} else {
+						_priority = 0;
+					}
+					drawCelData(data, _resource->size, curPos, curPos + 8, 0, x, y, 0, 0, true);
 					curPos += size;
 					break;
 				case PIC_OPX_EGA_SET_PRIORITY_TABLE:
@@ -780,8 +825,14 @@ void GfxPicture::drawVectorData(byte *data, int dataSize) {
 				case PIC_OPX_VGA_EMBEDDED_VIEW: // draw cel
 					vectorGetAbsCoordsNoMirror(data, curPos, x, y);
 					size = READ_LE_UINT16(data + curPos); curPos += 2;
-					_priority = pic_priority; // set global priority so the cel gets drawn using current priority as well
-					drawCelData(data, _resource->size, curPos, curPos + 8, 0, x, y, 0, 0);
+					if (getSciVersion() <= SCI_VERSION_1_EARLY) {
+						// During SCI1Early sierra always used 0 as priority for cels inside picture resources
+						//  fixes Space Quest 4 orange ship lifting off (bug #6446)
+						_priority = 0;
+					} else {
+						_priority = pic_priority; // set global priority so the cel gets drawn using current priority as well
+					}
+					drawCelData(data, _resource->size, curPos, curPos + 8, 0, x, y, 0, 0, false);
 					curPos += size;
 					break;
 				case PIC_OPX_VGA_PRIORITY_TABLE_EQDIST:
@@ -891,17 +942,17 @@ void GfxPicture::vectorFloodFill(int16 x, int16 y, byte color, byte priority, by
 	Common::Point p, p1;
 	byte screenMask = _screen->getDrawingMask(color, priority, control);
 	byte matchedMask, matchMask;
-	int16 w, e, a_set, b_set;
 
 	bool isEGA = (_resMan->getViewType() == kViewEga);
 
 	p.x = x + curPort->left;
 	p.y = y + curPort->top;
-	stack.push(p);
 
-	byte searchColor = _screen->getVisual(p.x, p.y);
-	byte searchPriority = _screen->getPriority(p.x, p.y);
-	byte searchControl = _screen->getControl(p.x, p.y);
+	_screen->vectorAdjustCoordinate(&p.x, &p.y);
+
+	byte searchColor = _screen->vectorGetVisual(p.x, p.y);
+	byte searchPriority = _screen->vectorGetPriority(p.x, p.y);
+	byte searchControl = _screen->vectorGetControl(p.x, p.y);
 
 	if (isEGA) {
 		// In EGA games a pixel in the framebuffer is only 4 bits. We store
@@ -948,28 +999,43 @@ void GfxPicture::vectorFloodFill(int16 x, int16 y, byte color, byte priority, by
 	}
 
 	// hard borders for filling
-	int l = curPort->rect.left + curPort->left;
-	int t = curPort->rect.top + curPort->top;
-	int r = curPort->rect.right + curPort->left - 1;
-	int b = curPort->rect.bottom + curPort->top - 1;
+	int16 borderLeft = curPort->rect.left + curPort->left;
+	int16 borderTop = curPort->rect.top + curPort->top;
+	int16 borderRight = curPort->rect.right + curPort->left - 1;
+	int16 borderBottom = curPort->rect.bottom + curPort->top - 1;
+	int16 curToLeft, curToRight, a_set, b_set;
+	
+	// Translate coordinates, if required (needed for Macintosh 480x300)
+	_screen->vectorAdjustCoordinate(&borderLeft, &borderTop);
+	_screen->vectorAdjustCoordinate(&borderRight, &borderBottom);
+	//return;
+
+	stack.push(p);
+	
 	while (stack.size()) {
 		p = stack.pop();
-		if ((matchedMask = _screen->isFillMatch(p.x, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)) == 0) // already filled
+		if ((matchedMask = _screen->vectorIsFillMatch(p.x, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)) == 0) // already filled
 			continue;
-		_screen->putPixel(p.x, p.y, screenMask, color, priority, control);
-		w = p.x;
-		e = p.x;
+		_screen->vectorPutPixel(p.x, p.y, screenMask, color, priority, control);
+		curToLeft = p.x;
+		curToRight = p.x;
 		// moving west and east pointers as long as there is a matching color to fill
-		while (w > l && (matchedMask = _screen->isFillMatch(w - 1, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)))
-			_screen->putPixel(--w, p.y, screenMask, color, priority, control);
-		while (e < r && (matchedMask = _screen->isFillMatch(e + 1, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)))
-			_screen->putPixel(++e, p.y, screenMask, color, priority, control);
+		while (curToLeft > borderLeft && (matchedMask = _screen->vectorIsFillMatch(curToLeft - 1, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)))
+			_screen->vectorPutPixel(--curToLeft, p.y, screenMask, color, priority, control);
+		while (curToRight < borderRight && (matchedMask = _screen->vectorIsFillMatch(curToRight + 1, p.y, matchMask, searchColor, searchPriority, searchControl, isEGA)))
+			_screen->vectorPutPixel(++curToRight, p.y, screenMask, color, priority, control);
+#if 0
+		// debug code for floodfill
+		_screen->copyToScreen();
+		g_system->updateScreen();
+		g_system->delayMillis(100);
+#endif
 		// checking lines above and below for possible flood targets
 		a_set = b_set = 0;
-		while (w <= e) {
-			if (p.y > t && (matchedMask = _screen->isFillMatch(w, p.y - 1, matchMask, searchColor, searchPriority, searchControl, isEGA))) { // one line above
+		while (curToLeft <= curToRight) {
+			if (p.y > borderTop && (matchedMask = _screen->vectorIsFillMatch(curToLeft, p.y - 1, matchMask, searchColor, searchPriority, searchControl, isEGA))) { // one line above
 				if (a_set == 0) {
-					p1.x = w;
+					p1.x = curToLeft;
 					p1.y = p.y - 1;
 					stack.push(p1);
 					a_set = 1;
@@ -977,16 +1043,16 @@ void GfxPicture::vectorFloodFill(int16 x, int16 y, byte color, byte priority, by
 			} else
 				a_set = 0;
 
-			if (p.y < b && (matchedMask = _screen->isFillMatch(w, p.y + 1, matchMask, searchColor, searchPriority, searchControl, isEGA))) { // one line below
+			if (p.y < borderBottom && (matchedMask = _screen->vectorIsFillMatch(curToLeft, p.y + 1, matchMask, searchColor, searchPriority, searchControl, isEGA))) { // one line below
 				if (b_set == 0) {
-					p1.x = w;
+					p1.x = curToLeft;
 					p1.y = p.y + 1;
 					stack.push(p1);
 					b_set = 1;
 				}
 			} else
 				b_set = 0;
-			w++;
+			curToLeft++;
 		}
 	}
 }
@@ -1124,7 +1190,7 @@ void GfxPicture::vectorPatternBox(Common::Rect box, byte color, byte prio, byte 
 
 	for (y = box.top; y < box.bottom; y++) {
 		for (x = box.left; x < box.right; x++) {
-			_screen->putPixel(x, y, flag, color, prio, control);
+			_screen->vectorPutPixel(x, y, flag, color, prio, control);
 		}
 	}
 }
@@ -1137,7 +1203,7 @@ void GfxPicture::vectorPatternTexturedBox(Common::Rect box, byte color, byte pri
 	for (y = box.top; y < box.bottom; y++) {
 		for (x = box.left; x < box.right; x++) {
 			if (*textureData) {
-				_screen->putPixel(x, y, flag, color, prio, control);
+				_screen->vectorPutPixel(x, y, flag, color, prio, control);
 			}
 			textureData++;
 		}
@@ -1154,7 +1220,7 @@ void GfxPicture::vectorPatternCircle(Common::Rect box, byte size, byte color, by
 	for (y = box.top; y < box.bottom; y++) {
 		for (x = box.left; x < box.right; x++) {
 			if (bitmap & 1) {
-				_screen->putPixel(x, y, flag, color, prio, control);
+				_screen->vectorPutPixel(x, y, flag, color, prio, control);
 			}
 			bitNo++;
 			if (bitNo == 8) {
@@ -1173,12 +1239,12 @@ void GfxPicture::vectorPatternTexturedCircle(Common::Rect box, byte size, byte c
 	byte bitNo = 0;
 	const bool *textureData = &vectorPatternTextures[vectorPatternTextureOffset[texture]];
 	int y, x;
-
+	
 	for (y = box.top; y < box.bottom; y++) {
 		for (x = box.left; x < box.right; x++) {
 			if (bitmap & 1) {
 				if (*textureData) {
-					_screen->putPixel(x, y, flag, color, prio, control);
+					_screen->vectorPutPixel(x, y, flag, color, prio, control);
 				}
 				textureData++;
 			}
@@ -1203,7 +1269,10 @@ void GfxPicture::vectorPattern(int16 x, int16 y, byte color, byte priority, byte
 	rect.top = y; rect.left = x;
 	rect.setHeight((size*2)+1); rect.setWidth((size*2)+2);
 	_ports->offsetRect(rect);
-	rect.clip(_screen->getWidth(), _screen->getHeight());
+	rect.clip(_screen->getScriptWidth(), _screen->getScriptHeight());
+
+	_screen->vectorAdjustCoordinate(&rect.left, &rect.top);
+	_screen->vectorAdjustCoordinate(&rect.right, &rect.bottom);
 
 	if (code & SCI_PATTERN_CODE_RECTANGLE) {
 		// Rectangle

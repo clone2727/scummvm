@@ -32,7 +32,7 @@
 #include "graphics/cursorman.h"
 #include "graphics/fontman.h"
 #include "graphics/wincursor.h"
-#include "video/codecs/cinepak.h"
+#include "image/bmp.h"
 
 namespace JMP {
 	
@@ -93,7 +93,7 @@ void GraphicsManager::drawString(Common::String string, Common::Rect rect, uint3
 
 void GraphicsManager::drawBitmap(Common::String filename, int x, int y) {
 	Graphics::Surface surface = decodeBitmap(filename);
-	_vm->_system->copyRectToScreen((byte*)surface.pixels, surface.pitch, x, y, surface.w, surface.h);
+	_vm->_system->copyRectToScreen((byte *)surface.getPixels(), surface.pitch, x, y, surface.w, surface.h);
 	surface.free();
 	_vm->_system->updateScreen();
 }
@@ -108,8 +108,8 @@ void GraphicsManager::drawBitmap(Common::String filename, Common::Rect srcRect, 
 }
 
 void GraphicsManager::drawEXEBitmap(uint16 id, int x, int y) {
-	Graphics::Surface surface = decodeBitmapNoHeader(_vm->getEXEResource(Common::kNEBitmap, id));
-	_vm->_system->copyRectToScreen((byte*)surface.pixels, surface.pitch, x, y, surface.w, surface.h);
+	Graphics::Surface surface = decodeBitmap(_vm->getEXEResource(Common::kNEBitmap, id));
+	_vm->_system->copyRectToScreen((byte *)surface.getPixels(), surface.pitch, x, y, surface.w, surface.h);
 	surface.free();
 }
 
@@ -117,110 +117,25 @@ Graphics::Surface GraphicsManager::decodeBitmap(Common::String filename) {
 	Common::File *file = new Common::File();
 	if (!file->open(filename.c_str()))
 		error ("Couldn't open \'%s\'", filename.c_str());
-	
-	BitmapHeader header;
-	
-	header.type = file->readUint16BE();
-	assert(header.type == 'BM');
-	header.size = file->readUint32LE();
-	assert(header.size != 0);
-	header.res1 = file->readUint16LE();
-	header.res2 = file->readUint16LE();
-	header.imageOffset = file->readUint32LE();
 
-	return decodeBitmapNoHeader(file, header.imageOffset);
+	return decodeBitmap(file);
 }
 
-#define BITMAP_CINEPAK_TAG MKTAG('d', 'i', 'v', 'c')
-
-Graphics::Surface GraphicsManager::decodeBitmapNoHeader(Common::SeekableReadStream *stream, uint32 imageOffset) {
+Graphics::Surface GraphicsManager::decodeBitmap(Common::SeekableReadStream *stream) {
 	assert(stream);
 
-	InfoHeader info;
+	Image::BitmapDecoder bmp;
+	if (!bmp.loadStream(*stream))
+		error("Failed to decode bitmap");
 
-	info.size = stream->readUint32LE();
-	info.width = stream->readUint32LE();
-	info.height = stream->readUint32LE();
-	info.planes = stream->readUint16LE();
-	info.bitsPerPixel = stream->readUint16LE();
-	info.compression = stream->readUint32LE();
-	info.imageSize = stream->readUint32LE();
-	info.pixelsPerMeterX = stream->readUint32LE();
-	info.pixelsPerMeterY = stream->readUint32LE();
-	info.colorsUsed = stream->readUint32LE();
-	info.colorsImportant = stream->readUint32LE();
+	const Graphics::Surface *decodedSurface = bmp.getSurface();
+	const byte *palette = bmp.getPalette();
 
-	assert(info.compression == 0 || BITMAP_CINEPAK_TAG);
-	
-	byte *palData = (byte *)malloc(3 * 256);
-	
-	if (info.bitsPerPixel == 8) {
-		if (info.colorsUsed == 0)
-			info.colorsUsed = 256;
-		
-		for (uint16 i = 0; i < info.colorsUsed; i++) {			
-			palData[i * 3 + 2] = stream->readByte();
-			palData[i * 3 + 1] = stream->readByte();
-			palData[i * 3] = stream->readByte();
-			stream->readByte();
-		}
-	} else if (info.bitsPerPixel > 8)
-		assert(info.bitsPerPixel == 24);
-	
-	Graphics::Surface surface;
-	surface.create(info.width, info.height, _pixelFormat);
+	Graphics::Surface output;
+	output.copyFrom(*decodedSurface);
+	output.convertToInPlace(g_system->getScreenFormat(), palette);
 
-	if (imageOffset != 0)
-		stream->seek(imageOffset);
-
-	if (info.compression == BITMAP_CINEPAK_TAG) {
-		// The Cinepak Hack:
-		// bitdata/title/bkg.btb contains a Cinepak frame in the bitmap
-		// This is against the format. However, we can stil handle it.
-		// Some images in the DLL are Cinepak as well.
-		Common::SeekableReadStream *cinepakStream = stream->readStream(info.imageSize);
-		
-		Video::CinepakDecoder *cinepak = new Video::CinepakDecoder();
-		const Graphics::Surface *cinepakSurface = cinepak->decodeImage(cinepakStream);
-		surface.copyFrom(*cinepakSurface);
-		
-		delete cinepakStream;
-		delete cinepak;
-	} else {
-		byte *dst = (byte *)surface.pixels + (surface.h - 1) * surface.pitch;
-		int srcPitch = info.width * (info.bitsPerPixel >> 3);
-		const int extraDataLength = (srcPitch % 4) ? 4 - (srcPitch % 4) : 0;
-
-		for (uint16 i = 0; i < info.height; i++) {
-			byte r = 0, g = 0, b = 0;
-			for (uint16 j = 0; j < info.width; j++) {
-				if (info.bitsPerPixel == 8) {
-					byte index = stream->readByte();
-					r = palData[index * 3];
-					g = palData[index * 3 + 1];
-					b = palData[index * 3 + 2];
-				} else {
-					b = stream->readByte();
-					g = stream->readByte();
-					r = stream->readByte();
-				}
-
-				if (_pixelFormat.bytesPerPixel == 2)
-					*(uint16*)dst = _pixelFormat.RGBToColor(r, g, b);
-				else
-					*(uint32*)dst = _pixelFormat.RGBToColor(r, g, b);
-				dst += _pixelFormat.bytesPerPixel;
-			}
-
-			dst -= surface.pitch * 2;
-			stream->skip(extraDataLength);
-		}
-	}
-
-	free(palData);
-	delete stream;
-
-	return surface;
+	return output;
 }
 	
 } // End of namespace JMP

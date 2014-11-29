@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -31,6 +31,8 @@
 
 
 #include "engines/wintermute/base/base.h"
+#include "engines/wintermute/math/rect32.h"
+#include "engines/wintermute/persistent.h"
 
 namespace Wintermute {
 class BaseObject;
@@ -39,10 +41,10 @@ public:
 	int getHeight() const;
 	int getWidth() const;
 	Rect32 *getRect();
-	bool setRect(int left, int top, int right, int bottom, bool noCheck = false);
+	bool setRect(int32 left, int32 top, int32 right, int32 bottom, bool noCheck = false);
 	DECLARE_PERSISTENT(BaseViewport, BaseClass)
-	int _offsetY;
-	int _offsetX;
+	int32 _offsetY;
+	int32 _offsetX;
 	BaseObject *_mainObject;
 	BaseViewport(BaseGame *inGame = nullptr);
 	virtual ~BaseViewport();
@@ -50,6 +52,6 @@ private:
 	Rect32 _rect;
 };
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

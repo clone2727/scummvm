@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -43,9 +43,6 @@ int Scene::DinoStartProc() {
 
 	playMovie("testvid.smk");
 
-	// HACK: Forcibly quit here
-	_vm->quitGame();
-
 	return SUCCESS;
 }
 
@@ -54,9 +51,6 @@ int Scene::FTA2StartProc() {
 
 	playMovie("trimark.smk");
 	playMovie("intro.smk");
-
-	// HACK: Forcibly quit here
-	_vm->quitGame();
 
 	return SUCCESS;
 }
@@ -108,7 +102,7 @@ void Scene::playMovie(const char *filename) {
 		if (smkDecoder->needsUpdate()) {
 			const Graphics::Surface *frame = smkDecoder->decodeNextFrame();
 			if (frame) {
-				_vm->_system->copyRectToScreen(frame->pixels, frame->pitch, x, y, frame->w, frame->h);
+				_vm->_system->copyRectToScreen(frame->getPixels(), frame->pitch, x, y, frame->w, frame->h);
 
 				if (smkDecoder->hasDirtyPalette())
 					_vm->_system->getPaletteManager()->setPalette(smkDecoder->getPalette(), 0, 256);

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "gui/browser.h"
@@ -83,7 +84,7 @@ enum {
 
 static const char *savePeriodLabels[] = { _s("Never"), _s("every 5 mins"), _s("every 10 mins"), _s("every 15 mins"), _s("every 30 mins"), 0 };
 static const int savePeriodValues[] = { 0, 5 * 60, 10 * 60, 15 * 60, 30 * 60, -1 };
-static const char *outputRateLabels[] = { _s("<default>"), _s("8 kHz"), _s("11kHz"), _s("22 kHz"), _s("44 kHz"), _s("48 kHz"), 0 };
+static const char *outputRateLabels[] = { _s("<default>"), _s("8 kHz"), _s("11 kHz"), _s("22 kHz"), _s("44 kHz"), _s("48 kHz"), 0 };
 static const int outputRateValues[] = { 0, 8000, 11025, 22050, 44100, 48000, -1 };
 
 OptionsDialog::OptionsDialog(const Common::String &domain, int x, int y, int w, int h)
@@ -852,10 +853,10 @@ void OptionsDialog::addMIDIControls(GuiObject *boss, const Common::String &prefi
 
 	// SoundFont
 	if (g_system->getOverlayWidth() > 320)
-		_soundFontButton = new ButtonWidget(boss, prefix + "mcFontButton", _("SoundFont:"), _("SoundFont is supported by some audio cards, Fluidsynth and Timidity"), kChooseSoundFontCmd);
+		_soundFontButton = new ButtonWidget(boss, prefix + "mcFontButton", _("SoundFont:"), _("SoundFont is supported by some audio cards, FluidSynth and Timidity"), kChooseSoundFontCmd);
 	else
-		_soundFontButton = new ButtonWidget(boss, prefix + "mcFontButton", _c("SoundFont:", "lowres"), _("SoundFont is supported by some audio cards, Fluidsynth and Timidity"), kChooseSoundFontCmd);
-	_soundFont = new StaticTextWidget(boss, prefix + "mcFontPath", _c("None", "soundfont"), _("SoundFont is supported by some audio cards, Fluidsynth and Timidity"));
+		_soundFontButton = new ButtonWidget(boss, prefix + "mcFontButton", _c("SoundFont:", "lowres"), _("SoundFont is supported by some audio cards, FluidSynth and Timidity"), kChooseSoundFontCmd);
+	_soundFont = new StaticTextWidget(boss, prefix + "mcFontPath", _c("None", "soundfont"), _("SoundFont is supported by some audio cards, FluidSynth and Timidity"));
 
 	_soundFontClearButton = addClearButton(boss, prefix + "mcFontClearButton", kClearSoundFontCmd);
 
@@ -887,7 +888,7 @@ void OptionsDialog::addMT32Controls(GuiObject *boss, const Common::String &prefi
 		_mt32Checkbox = new CheckboxWidget(boss, prefix + "mcMt32Checkbox", _c("True Roland MT-32 (no GM emulation)", "lowres"), _("Check if you want to use your real hardware Roland-compatible sound device connected to your computer"));
 
 	// GS Extensions setting
-	_enableGSCheckbox = new CheckboxWidget(boss, prefix + "mcGSCheckbox", _("Roland GS Mode (disable GM mapping)"), _("Turns off General MIDI mapping for games with Roland MT-32 soundtrack"));
+	_enableGSCheckbox = new CheckboxWidget(boss, prefix + "mcGSCheckbox", _("Roland GS Device (enable MT-32 mappings)"), _("Check if you want to enable patch mappings to emulate an MT-32 on a Roland GS device"));
 
 	const MusicPlugin::List p = MusicMan.getPlugins();
 	// Make sure the null device is the first one in the list to avoid undesired
@@ -1130,10 +1131,10 @@ GlobalOptionsDialog::GlobalOptionsDialog()
 
 	// Save game path
 	if (g_system->getOverlayWidth() > 320)
-		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _("Save Path:"), _("Specifies where your savegames are put"), kChooseSaveDirCmd);
+		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _("Save Path:"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
 	else
-		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _c("Save Path:", "lowres"), _("Specifies where your savegames are put"), kChooseSaveDirCmd);
-	_savePath = new StaticTextWidget(tab, "GlobalOptions_Paths.SavePath", "/foo/bar", _("Specifies where your savegames are put"));
+		new ButtonWidget(tab, "GlobalOptions_Paths.SaveButton", _c("Save Path:", "lowres"), _("Specifies where your saved games are put"), kChooseSaveDirCmd);
+	_savePath = new StaticTextWidget(tab, "GlobalOptions_Paths.SavePath", "/foo/bar", _("Specifies where your saved games are put"));
 
 	_savePathClearButton = addClearButton(tab, "GlobalOptions_Paths.SavePathClearButton", kSavePathClearCmd);
 
@@ -1375,7 +1376,7 @@ void GlobalOptionsDialog::close() {
 void GlobalOptionsDialog::handleCommand(CommandSender *sender, uint32 cmd, uint32 data) {
 	switch (cmd) {
 	case kChooseSaveDirCmd: {
-		BrowserDialog browser(_("Select directory for savegames"), true);
+		BrowserDialog browser(_("Select directory for saved games"), true);
 		if (browser.runModal() > 0) {
 			// User made his choice...
 			Common::FSNode dir(browser.getResult());

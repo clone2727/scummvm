@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -801,7 +801,8 @@ reg_t kArray(EngineState *s, int argc, reg_t *argv) {
 #endif
 			return NULL_REG;
 		}
-		if (s->_segMan->getSegmentObj(argv[1].getSegment())->getType() != SEG_TYPE_ARRAY)
+		SegmentObj *sobj = s->_segMan->getSegmentObj(argv[1].getSegment());
+		if (!sobj || sobj->getType() != SEG_TYPE_ARRAY)
 			error("kArray(Dup): Request to duplicate a segment which isn't an array");
 
 		reg_t arrayHandle;

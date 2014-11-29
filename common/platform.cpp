@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #include "common/platform.h"
@@ -31,7 +32,7 @@ const PlatformDescription g_platforms[] = {
 	{ "amiga", "ami", "amiga", "Amiga", kPlatformAmiga },
 	{ "atari", "atari-st", "st", "Atari ST", kPlatformAtariST },
 	{ "c64", "c64", "c64", "Commodore 64", kPlatformC64 },
-	{ "pc", "dos", "ibm", "DOS", kPlatformPC },
+	{ "pc", "dos", "ibm", "DOS", kPlatformDOS },
 	{ "pc98", "pc98", "pc98", "PC-98", kPlatformPC98 },
 	{ "wii", "wii", "wii", "Nintendo Wii", kPlatformWii },
 	{ "coco3", "coco3", "coco3", "CoCo3", kPlatformCoCo3 },
@@ -50,6 +51,8 @@ const PlatformDescription g_platforms[] = {
 	{ "playstation", "psx", "psx", "Sony PlayStation", kPlatformPSX },
 	{ "cdi", "cdi", "cdi", "Philips CD-i", kPlatformCDi },
 	{ "ios", "ios", "ios", "Apple iOS", kPlatformIOS },
+	{ "os2", "os2", "os2", "OS/2", kPlatformOS2 },
+	{ "beos", "beos", "beos", "BeOS", kPlatformBeOS },
 
 	{ 0, 0, 0, "Default", kPlatformUnknown }
 };

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 #ifndef COMMON_LOCALIZATION_H
@@ -34,7 +35,7 @@ namespace Common {
  *
  * @param id Language id
  * @param keyYes Key code for yes
- * @param keyYes Key code for no
+ * @param keyNo Key code for no
  */
 void getLanguageYesNo(Language id, KeyCode &keyYes, KeyCode &keyNo);
 
@@ -43,7 +44,7 @@ void getLanguageYesNo(Language id, KeyCode &keyYes, KeyCode &keyNo);
  * language of the ScummVM GUI.
  *
  * @param keyYes Key code for yes
- * @param keyYes Key code for no
+ * @param keyNo Key code for no
  */
 void getLanguageYesNo(KeyCode &keyYes, KeyCode &keyNo);
 

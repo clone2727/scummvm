@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -421,14 +421,7 @@ void Script::sfQueueMusic(SCRIPTFUNC_PARAMS) {
 		warning("sfQueueMusic: Wrong song number (%d > %d)", param1, _vm->_music->_songTable.size() - 1);
 	} else {
 		_vm->_music->setVolume(_vm->_musicVolume, 1);
-		event.type = kEvTOneshot;
-		event.code = kMusicEvent;
-		event.param = _vm->_music->_songTable[param1];
-		event.param2 = param2 ? MUSIC_LOOP : MUSIC_NORMAL;
-		event.op = kEventPlay;
-		event.time = _vm->ticksToMSec(1000);
-
-		_vm->_events->queue(event);
+		_vm->_events->queueMusic(_vm->_music->_songTable[param1], param2, _vm->ticksToMSec(1000));
 
 		if (!_vm->_scene->haveChapterPointsChanged()) {
 			_vm->_scene->setCurrentMusicTrack(param1);

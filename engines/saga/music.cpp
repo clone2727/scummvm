@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -147,7 +147,7 @@ Music::Music(SagaEngine *vm, Audio::Mixer *mixer) : _vm(vm), _mixer(mixer) {
 	if (!_musicContext) {
 		if (_vm->getGameId() == GID_ITE) {
 			_musicContext = _vm->_resource->getContext(GAME_RESOURCEFILE);
-		} else {
+		} else if (_vm->getGameId() == GID_IHNM) {
 			// I've listened to music from both the FM and the GM
 			// file, and I've tentatively reached the conclusion
 			// that they are both General MIDI. My guess is that
@@ -173,8 +173,14 @@ Music::Music(SagaEngine *vm, Audio::Mixer *mixer) : _vm(vm), _mixer(mixer) {
 			// Note that the IHNM demo has only got one music file
 			// (music.rsc). It is assumed that it contains FM music
 			_musicContext = _vm->_resource->getContext(GAME_MUSICFILE_FM);
+		} else if (_vm->getGameId() == GID_DINO || _vm->getGameId() == GID_FTA2) {
+			_musicContext = _vm->_resource->getContext(GAME_SOUNDFILE);
 		}
 	}
+
+	_trackNumber = 0;
+	_targetVolume = 0;
+	_currentVolumePercent = 0;
 
 	_digitalMusic = false;
 }
@@ -251,19 +257,18 @@ void Music::play(uint32 resourceId, MusicFlags flags) {
 	_mixer->stopHandle(_musicHandle);
 	_player->stop();
 
-	int realTrackNumber;
+	int realTrackNumber = 0;
 
 	if (_vm->getGameId() == GID_ITE) {
-		if (flags == MUSIC_DEFAULT) {
-			if (resourceId == 13 || resourceId == 19) {
-				flags = MUSIC_NORMAL;
-			} else {
-				flags = MUSIC_LOOP;
-			}
-		}
+		if (flags == MUSIC_NORMAL && (resourceId == 13 || resourceId == 19))
+			flags = MUSIC_LOOP;
 		realTrackNumber = resourceId - 8;
-	} else {
+	} else if (_vm->getGameId() == GID_IHNM) {
 		realTrackNumber = resourceId + 1;
+	} else if (_vm->getGameId() == GID_DINO || _vm->getGameId() == GID_FTA2) {
+		realTrackNumber = resourceId + 1;
+		uint32 musicTrackTag = MKTAG('X','M','I', (byte)(resourceId + 1));
+		resourceId = _musicContext->getEntryNum(musicTrackTag);
 	}
 
 	// Try to open standalone digital track
@@ -355,12 +360,9 @@ void Music::play(uint32 resourceId, MusicFlags flags) {
 		return;
 	}
 
-	if (flags == MUSIC_DEFAULT)
-		flags = MUSIC_NORMAL;
-
 	// Load MIDI/XMI resource data
 	if (_vm->getGameId() == GID_IHNM && _vm->isMacResources()) {
-		// Load the external music file for Mac IHNM		
+		// Load the external music file for Mac IHNM
 		_player->playQuickTime(Common::String::format("Music/Music%02x", resourceId), flags & MUSIC_LOOP);
 	} else {
 		if (_currentMusicBuffer == &_musicBuffer[1]) {

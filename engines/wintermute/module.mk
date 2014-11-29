@@ -1,5 +1,5 @@
 MODULE := engines/wintermute
- 
+
 MODULE_OBJS := \
 	ad/ad_actor.o \
 	ad/ad_entity.o \
@@ -68,6 +68,7 @@ MODULE_OBJS := \
 	base/base_frame.o \
 	base/base_game.o \
 	base/base_game_music.o \
+	base/base_game_settings.o \
 	base/base_keyboard_state.o \
 	base/base_named_object.o \
 	base/base_object.o \
@@ -76,7 +77,6 @@ MODULE_OBJS := \
 	base/base_point.o \
 	base/base_quick_msg.o \
 	base/base_region.o \
-	base/base_save_thumb_helper.o \
 	base/base_scriptable.o \
 	base/base_script_holder.o \
 	base/base_sprite.o \
@@ -86,8 +86,9 @@ MODULE_OBJS := \
 	base/base_transition_manager.o \
 	base/base_viewport.o \
 	base/saveload.o \
+	base/save_thumb_helper.o \
+	base/timer.o \
 	detection.o \
-	graphics/transparent_surface.o \
 	math/math_util.o \
 	math/matrix4.o \
 	math/vector2.o \
@@ -107,19 +108,21 @@ MODULE_OBJS := \
 	utils/path_util.o \
 	utils/string_util.o \
 	utils/utils.o \
+	video/subtitle_card.o \
 	video/video_player.o \
+	video/video_subtitler.o \
 	video/video_theora_player.o \
 	debugger.o \
 	wintermute.o \
 	persistent.o
- 
+
 MODULE_DIRS += \
 	engines/wintermute
- 
+
 # This module can be built as a plugin
 ifeq ($(ENABLE_WINTERMUTE), DYNAMIC_PLUGIN)
 PLUGIN := 1
 endif
- 
-# Include common rules 
+
+# Include common rules
 include $(srcdir)/rules.mk

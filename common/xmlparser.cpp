@@ -69,7 +69,7 @@ bool XMLParser::loadBuffer(const byte *buffer, uint32 size, DisposeAfterUse::Fla
 bool XMLParser::loadStream(SeekableReadStream *stream) {
 	_stream = stream;
 	_fileName = "File Stream";
-	return true;
+	return _stream != nullptr;
 }
 
 void XMLParser::close() {
@@ -298,7 +298,7 @@ bool XMLParser::closeKey() {
 
 bool XMLParser::parse() {
 	if (_stream == 0)
-		return parserError("XML stream not ready for reading.");
+		return false;
 
 	// Make sure we are at the start of the stream.
 	_stream->seek(0, SEEK_SET);

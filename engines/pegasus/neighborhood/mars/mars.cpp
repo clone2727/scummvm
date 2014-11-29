@@ -535,6 +535,10 @@ void Mars::doorOpened() {
 }
 
 void Mars::setUpReactorEnergyDrain() {
+	// If there's no energy monitor, there's nothing to do
+	if (!g_energyMonitor)
+		return;
+
 	switch (GameState.getCurrentRoomAndView()) {
 	case MakeRoomView(kMars51, kEast):
 		if (GameState.isCurrentDoorOpen()) {
@@ -1035,7 +1039,6 @@ void Mars::checkContinuePoint(const RoomID room, const DirectionConstant directi
 	case MakeRoomView(kMars51, kEast):
 	case MakeRoomView(kMars56, kEast):
 	case MakeRoomView(kMars60, kWest):
-	case MakeRoomView(kMarsMaze004, kWest):
 	case MakeRoomView(kMarsMaze009, kWest):
 	case MakeRoomView(kMarsMaze012, kWest):
 	case MakeRoomView(kMarsMaze037, kWest):
@@ -1058,6 +1061,11 @@ void Mars::checkContinuePoint(const RoomID room, const DirectionConstant directi
 	case MakeRoomView(kMarsMaze187, kWest):
 	case MakeRoomView(kMarsMaze199, kWest):
 		makeContinuePoint();
+		break;
+	case MakeRoomView(kMarsMaze004, kWest):
+		// WORKAROUND: See Mars::arriveAt() for more details.
+		if (GameState.isTakenItemID(kCardBomb))
+			makeContinuePoint();
 		break;
 	case MakeRoomView(kMars05, kEast):
 	case MakeRoomView(kMars06, kEast):
@@ -1392,6 +1400,13 @@ void Mars::arriveAt(const RoomID room, const DirectionConstant direction) {
 		break;
 	case MakeRoomView(kMarsRobotShuttle, kEast):
 		setCurrentActivation(kActivationRobotHeadClosed);
+		break;
+	case MakeRoomView(kMarsMaze004, kWest):
+		// WORKAROUND: You're not supposed to continue through the maze without the
+		// bomb or the game will not be completable. We're using the previously unused
+		// bomb death here to prevent progress (you didn't find the bomb, after all).
+		if (!GameState.isTakenItemID(kCardBomb))
+			didntFindBomb();
 		break;
 	case MakeRoomView(kMarsMaze007, kNorth):
 		launchMaze007Robot();
@@ -2000,7 +2015,7 @@ void Mars::dropItemIntoRoom(Item *item, Hotspot *dropSpot) {
 
 void Mars::robotTiredOfWaiting() {
 	if (GameState.getCurrentRoomAndView() == MakeRoomView(kMars48, kEast)) {
-		if (_attackingItem) {
+		if (!_attackingItem) {
 			startExtraSequence(kMars48RobotKillsPlayer, kExtraCompletedFlag, kFilterNoInput);
 			loadLoopSound2("");
 		} else {
@@ -2387,6 +2402,8 @@ void Mars::doCanyonChase() {
 	if (!video->loadFile("Images/Mars/M44ESA.movie"))
 		error("Could not load interface->shuttle transition video");
 
+	video->setVolume(MIN<uint>(_vm->getSoundFXLevel(), 0xFF));
+
 	video->start();
 
 	while (!_vm->shouldQuit() && !video->endOfVideo()) {
@@ -2459,11 +2476,13 @@ void Mars::doCanyonChase() {
 	playSpotSoundSync(kShuttleCockpitIn, kShuttleCockpitOut);
 
 	_centerShuttleMovie.setTime(kShuttleCenterCheckTime);
+	_centerShuttleMovie.redrawMovieWorld();
 	playSpotSoundSync(kShuttleOnboardIn, kShuttleOnboardOut);
 
 	_shuttleEnergyMeter.initShuttleEnergyMeter();
 	_shuttleEnergyMeter.powerUpMeter();
 	while (_shuttleEnergyMeter.isFading()) {
+		InputDevice.pumpEvents();
 		_vm->checkCallBacks();
 		_vm->refreshDisplay();
 		g_system->updateScreen();
@@ -2595,6 +2614,7 @@ void Mars::startUpFromFinishedSpaceChase() {
 			kShuttleJunkTop, false);
 
 	initOneMovie(&_explosions, "Images/Mars/Explosions.movie", kShuttleWeaponFrontOrder, 0, 0, false);
+	_explosions.setVolume(_vm->getSoundFXLevel());
 	_explosionCallBack.initCallBack(&_explosions, kCallBackAtExtremes);
 
 	_energyBeam.initShuttleWeapon();
@@ -2633,6 +2653,7 @@ void Mars::startUpFromFinishedSpaceChase() {
 
 	initOneMovie(&_canyonChaseMovie, "Images/Mars/M98EAS.movie", kShuttleTractorBeamMovieOrder,
 			kShuttleWindowLeft, kShuttleWindowTop, true);
+	_canyonChaseMovie.setVolume(_vm->getSoundFXLevel());
 	_canyonChaseMovie.setTime(_canyonChaseMovie.getDuration());
 	_canyonChaseMovie.redrawMovieWorld();
 }
@@ -2643,7 +2664,7 @@ void Mars::startUpFromSpaceChase() {
 
 	// Open the spot sounds movie again...
 	_spotSounds.initFromQuickTime(getSoundSpotsName());
-	_spotSounds.setVolume(_vm->getSoundFXLevel());;
+	_spotSounds.setVolume(_vm->getSoundFXLevel());
 
 	initOnePicture(&_shuttleInterface1, "Images/Mars/MCmain1.pict", kShuttleBackgroundOrder, kShuttle1Left,
 							kShuttle1Top, true);
@@ -2708,6 +2729,7 @@ void Mars::startUpFromSpaceChase() {
 			kShuttleJunkTop, false);
 
 	initOneMovie(&_explosions, "Images/Mars/Explosions.movie", kShuttleWeaponFrontOrder, 0, 0, false);
+	_explosions.setVolume(_vm->getSoundFXLevel());
 	_explosionCallBack.initCallBack(&_explosions, kCallBackAtExtremes);
 
 	_energyBeam.initShuttleWeapon();
@@ -2771,6 +2793,10 @@ void Mars::startUpFromSpaceChase() {
 void Mars::setSoundFXLevel(const uint16 level) {
 	Neighborhood::setSoundFXLevel(level);
 
+	if (GameState.getCurrentRoomAndView() == MakeRoomView(kMars48, kEast) &&
+			!GameState.getMarsAvoidedReactorRobot())
+		_loop2Fader.setMasterVolume(level);
+
 	if (_canyonChaseMovie.isMovieValid())
 		_canyonChaseMovie.setVolume(level);
 
@@ -2800,6 +2826,7 @@ void Mars::marsTimerExpired(MarsTimerEvent &event) {
 		GameState.setScoringEnteredLaunchTube();
 
 		while (_canyonChaseMovie.isRunning()) {
+			InputDevice.pumpEvents();
 			_vm->checkCallBacks();
 			_vm->refreshDisplay();
 			_vm->_system->delayMillis(10);
@@ -2824,6 +2851,7 @@ void Mars::marsTimerExpired(MarsTimerEvent &event) {
 		initOneMovie(&_junk, "Images/Mars/Junk.movie", kShuttleJunkOrder, kShuttleJunkLeft, kShuttleJunkTop, false);
 
 		initOneMovie(&_explosions, "Images/Mars/Explosions.movie", kShuttleWeaponFrontOrder, 0, 0, false);
+		_explosions.setVolume(_vm->getSoundFXLevel());
 		_explosionCallBack.initCallBack(&_explosions, kCallBackAtExtremes);
 
 		_energyBeam.initShuttleWeapon();
@@ -2933,6 +2961,7 @@ void Mars::marsTimerExpired(MarsTimerEvent &event) {
 		showBigExplosion(r, kShuttleAlienShipOrder);
 
 		while (_explosions.isRunning()) {
+			InputDevice.pumpEvents();
 			_vm->checkCallBacks();
 			_vm->refreshDisplay();
 			g_system->delayMillis(10);
@@ -3126,6 +3155,7 @@ void Mars::spaceChaseClick(const Input &input, const HotSpotID id) {
 				_shuttleEnergyMeter.drainForTractorBeam();
 
 				while (_shuttleEnergyMeter.isFading()) {
+					InputDevice.pumpEvents();
 					_vm->checkCallBacks();
 					_vm->refreshDisplay();
 					_vm->_system->delayMillis(10);
@@ -3155,11 +3185,13 @@ void Mars::spaceChaseClick(const Input &input, const HotSpotID id) {
 					// Shameless reuse of a variable :P
 					initOneMovie(&_canyonChaseMovie, "Images/Mars/M98EAS.movie", kShuttleTractorBeamMovieOrder,
 							kShuttleWindowLeft, kShuttleWindowTop, true);
+					_canyonChaseMovie.setVolume(_vm->getSoundFXLevel());
 					_canyonChaseMovie.redrawMovieWorld();
 					playMovieSegment(&_canyonChaseMovie, 0, _canyonChaseMovie.getDuration());
 
 					// wait here until any junk clears...
 					while (_junk.junkFlying()) {
+						InputDevice.pumpEvents();
 						_vm->checkCallBacks();
 						_vm->refreshDisplay();
 						_vm->_system->delayMillis(10);

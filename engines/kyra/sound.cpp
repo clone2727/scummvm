@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -288,7 +288,7 @@ void KyraEngine_v1::snd_playWanderScoreViaMap(int command, int restart) {
 	//	XXX
 	//}
 
-	if (_flags.platform == Common::kPlatformPC || _flags.platform == Common::kPlatformMacintosh) {
+	if (_flags.platform == Common::kPlatformDOS || _flags.platform == Common::kPlatformMacintosh) {
 		assert(command*2+1 < _trackMapSize);
 		if (_curMusicTheme != _trackMap[command*2]) {
 			if (_trackMap[command*2] != -1 && _trackMap[command*2] != -2)

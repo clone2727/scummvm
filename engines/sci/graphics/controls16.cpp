@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -42,14 +42,11 @@ namespace Sci {
 
 GfxControls16::GfxControls16(SegManager *segMan, GfxPorts *ports, GfxPaint16 *paint16, GfxText16 *text16, GfxScreen *screen)
 	: _segMan(segMan), _ports(ports), _paint16(paint16), _text16(text16), _screen(screen) {
-	init();
+	_texteditBlinkTime = 0;
+	_texteditCursorVisible = false;
 }
 
 GfxControls16::~GfxControls16() {
-}
-
-void GfxControls16::init() {
-	_texteditCursorVisible = false;
 }
 
 const char controlListUpArrow[2]	= { 0x18, 0 };
@@ -283,7 +280,7 @@ int GfxControls16::getPicNotValid() {
 	return _screen->_picNotValid;
 }
 
-void GfxControls16::kernelDrawButton(Common::Rect rect, reg_t obj, const char *text, int16 fontId, int16 style, bool hilite) {
+void GfxControls16::kernelDrawButton(Common::Rect rect, reg_t obj, const char *text, uint16 languageSplitter, int16 fontId, int16 style, bool hilite) {
 	int16 sci0EarlyPen = 0, sci0EarlyBack = 0;
 	if (!hilite) {
 		if (getSciVersion() == SCI_VERSION_0_EARLY) {
@@ -298,7 +295,7 @@ void GfxControls16::kernelDrawButton(Common::Rect rect, reg_t obj, const char *t
 		_paint16->frameRect(rect);
 		rect.grow(-2);
 		_ports->textGreyedOutput(!(style & SCI_CONTROLS_STYLE_ENABLED));
-		_text16->Box(text, false, rect, SCI_TEXT16_ALIGNMENT_CENTER, fontId);
+		_text16->Box(text, languageSplitter, false, rect, SCI_TEXT16_ALIGNMENT_CENTER, fontId);
 		_ports->textGreyedOutput(false);
 		rect.grow(1);
 		if (style & SCI_CONTROLS_STYLE_SELECTED)
@@ -321,12 +318,12 @@ void GfxControls16::kernelDrawButton(Common::Rect rect, reg_t obj, const char *t
 	}
 }
 
-void GfxControls16::kernelDrawText(Common::Rect rect, reg_t obj, const char *text, int16 fontId, TextAlignment alignment, int16 style, bool hilite) {
+void GfxControls16::kernelDrawText(Common::Rect rect, reg_t obj, const char *text, uint16 languageSplitter, int16 fontId, TextAlignment alignment, int16 style, bool hilite) {
 	if (!hilite) {
 		rect.grow(1);
 		_paint16->eraseRect(rect);
 		rect.grow(-1);
-		_text16->Box(text, false, rect, alignment, fontId);
+		_text16->Box(text, languageSplitter, false, rect, alignment, fontId);
 		if (style & SCI_CONTROLS_STYLE_SELECTED) {
 			_paint16->frameRect(rect);
 		}
@@ -338,7 +335,7 @@ void GfxControls16::kernelDrawText(Common::Rect rect, reg_t obj, const char *tex
 	}
 }
 
-void GfxControls16::kernelDrawTextEdit(Common::Rect rect, reg_t obj, const char *text, int16 fontId, int16 mode, int16 style, int16 cursorPos, int16 maxChars, bool hilite) {
+void GfxControls16::kernelDrawTextEdit(Common::Rect rect, reg_t obj, const char *text, uint16 languageSplitter, int16 fontId, int16 mode, int16 style, int16 cursorPos, int16 maxChars, bool hilite) {
 	Common::Rect textRect = rect;
 	uint16 oldFontId = _text16->GetFontId();
 
@@ -346,7 +343,7 @@ void GfxControls16::kernelDrawTextEdit(Common::Rect rect, reg_t obj, const char 
 	_texteditCursorVisible = false;
 	texteditCursorErase();
 	_paint16->eraseRect(rect);
-	_text16->Box(text, false, textRect, SCI_TEXT16_ALIGNMENT_LEFT, fontId);
+	_text16->Box(text, languageSplitter, false, textRect, SCI_TEXT16_ALIGNMENT_LEFT, fontId);
 	_paint16->frameRect(rect);
 	if (style & SCI_CONTROLS_STYLE_SELECTED) {
 		_text16->SetFont(fontId);

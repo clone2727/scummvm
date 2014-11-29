@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -187,9 +187,14 @@ Common::Error SkyEngine::go() {
 		}
 
 		if (!shouldQuit()) {
-			_skyLogic->initScreen0();
+			// restartGame() takes us to the first scene, without showing the
+			// initial animation where Foster is being chased. initScreen0()
+			// shows the first scene together with that animation. We can't
+			// call both, as they both load the same scene.
 			if (introSkipped)
 				_skyControl->restartGame();
+			else
+				_skyLogic->initScreen0();
 		}
 	}
 

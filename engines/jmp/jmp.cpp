@@ -87,7 +87,7 @@ void JMPEngine::playVideo(Video::VideoDecoder *video, uint16 x, uint16 y) {
 					frame = convertedFrame;
 				}
 
-				_system->copyRectToScreen((byte *)frame->pixels, frame->pitch, x, y, frame->w, frame->h);
+				_system->copyRectToScreen((byte *)frame->getPixels(), frame->pitch, x, y, frame->w, frame->h);
 				_system->updateScreen();
 
 				if (convertedFrame) {

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -67,7 +67,7 @@ static const char HELP_STRING[] =
 	"  -h, --help               Display a brief help text and exit\n"
 	"  -z, --list-games         Display list of supported games and exit\n"
 	"  -t, --list-targets       Display list of configured targets and exit\n"
-	"  --list-saves=TARGET      Display a list of savegames for the game (TARGET) specified\n"
+	"  --list-saves=TARGET      Display a list of saved games for the game (TARGET) specified\n"
 #if defined(WIN32) && !defined(_WIN32_WCE) && !defined(__SYMBIAN32__)
 	"  --console                Enable the console window (default:enabled)\n"
 #endif
@@ -106,7 +106,7 @@ static const char HELP_STRING[] =
 	"  --platform=WORD          Specify platform of game (allowed values: 2gs, 3do,\n"
 	"                           acorn, amiga, atari, c64, fmtowns, nes, mac, pc, pc98,\n"
 	"                           pce, segacd, wii, windows)\n"
-	"  --savepath=PATH          Path to where savegames are stored\n"
+	"  --savepath=PATH          Path to where saved games are stored\n"
 	"  --extrapath=PATH         Extra path to additional game data\n"
 	"  --soundfont=FILE         Select the SoundFont for MIDI playback (only\n"
 	"                           supported by some MIDI drivers)\n"
@@ -118,6 +118,13 @@ static const char HELP_STRING[] =
 	"  --aspect-ratio           Enable aspect ratio correction\n"
 	"  --render-mode=MODE       Enable additional render modes (cga, ega, hercGreen,\n"
 	"                           hercAmber, amiga)\n"
+#ifdef ENABLE_EVENTRECORDER
+	"  --record-mode=MODE       Specify record mode for event recorder (record, playback,\n"
+	"                           passthrough [default])\n"
+	"  --record-file-name=FILE  Specify record file name\n"
+	"  --disable-display        Disable any gfx output. Used for headless events\n"
+	"                           playback by Event Recorder\n"
+#endif
 	"\n"
 #if defined(ENABLE_SKY) || defined(ENABLE_QUEEN)
 	"  --alt-intro              Use alternative intro for CD versions of Beneath a\n"
@@ -198,7 +205,7 @@ void registerDefaults() {
 
 	// Game specific
 	ConfMan.registerDefault("path", "");
-	ConfMan.registerDefault("platform", Common::kPlatformPC);
+	ConfMan.registerDefault("platform", Common::kPlatformDOS);
 	ConfMan.registerDefault("language", "en");
 	ConfMan.registerDefault("subtitles", false);
 	ConfMan.registerDefault("boot_param", 0);
@@ -232,10 +239,9 @@ void registerDefaults() {
 	ConfMan.registerDefault("confirm_exit", false);
 	ConfMan.registerDefault("disable_sdl_parachute", false);
 
+	ConfMan.registerDefault("disable_display", false);
 	ConfMan.registerDefault("record_mode", "none");
 	ConfMan.registerDefault("record_file_name", "record.bin");
-	ConfMan.registerDefault("record_temp_file_name", "record.tmp");
-	ConfMan.registerDefault("record_time_file_name", "record.time");
 
 	ConfMan.registerDefault("gui_saveload_chooser", "grid");
 	ConfMan.registerDefault("gui_saveload_last_pos", "0");
@@ -332,6 +338,10 @@ void registerDefaults() {
 		continue; \
 	}
 
+// End an option handler
+#define END_COMMAND \
+	}
+
 
 Common::String parseCommandLine(Common::StringMap &settings, int argc, const char * const *argv) {
 	const char *s, *s2;
@@ -366,32 +376,32 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			bool isLongCmd = (s[0] == '-' && s[1] == '-');
 
 			DO_COMMAND('h', "help")
-			END_OPTION
+			END_COMMAND
 
 			DO_COMMAND('v', "version")
-			END_OPTION
+			END_COMMAND
 
 			DO_COMMAND('t', "list-targets")
-			END_OPTION
+			END_COMMAND
 
 			DO_COMMAND('z', "list-games")
-			END_OPTION
+			END_COMMAND
 
 #ifdef DETECTOR_TESTING_HACK
 			// HACK FIXME TODO: This command is intentionally *not* documented!
 			DO_LONG_COMMAND("test-detector")
-			END_OPTION
+			END_COMMAND
 #endif
 
 #ifdef UPGRADE_ALL_TARGETS_HACK
 			// HACK FIXME TODO: This command is intentionally *not* documented!
 			DO_LONG_COMMAND("upgrade-targets")
-			END_OPTION
+			END_COMMAND
 #endif
 
 			DO_LONG_OPTION("list-saves")
 				// FIXME: Need to document this.
-				// TODO: Make the argument optional. If no argument is given, list all savegames
+				// TODO: Make the argument optional. If no argument is given, list all saved games
 				// for all configured targets.
 				return "list-saves";
 			END_OPTION
@@ -412,13 +422,24 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			END_OPTION
 
 			DO_LONG_COMMAND("list-audio-devices")
-			END_OPTION
+			END_COMMAND
 
 			DO_LONG_OPTION_INT("output-rate")
 			END_OPTION
 
 			DO_OPTION_BOOL('f', "fullscreen")
 			END_OPTION
+
+#ifdef ENABLE_EVENTRECORDER
+			DO_LONG_OPTION_INT("disable-display")
+			END_OPTION
+
+			DO_LONG_OPTION("record-mode")
+			END_OPTION
+
+			DO_LONG_OPTION("record-file-name")
+			END_OPTION
+#endif
 
 			DO_LONG_OPTION("opl-driver")
 			END_OPTION
@@ -508,9 +529,9 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			DO_LONG_OPTION("savepath")
 				Common::FSNode path(option);
 				if (!path.exists()) {
-					usage("Non-existent savegames path '%s'", option);
+					usage("Non-existent saved games path '%s'", option);
 				} else if (!path.isWritable()) {
-					usage("Non-writable savegames path '%s'", option);
+					usage("Non-writable saved games path '%s'", option);
 				}
 			END_OPTION
 
@@ -542,7 +563,7 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			END_OPTION
 
 			DO_LONG_COMMAND("list-themes")
-			END_OPTION
+			END_COMMAND
 
 			DO_LONG_OPTION("target-md5")
 			END_OPTION
@@ -564,18 +585,6 @@ Common::String parseCommandLine(Common::StringMap &settings, int argc, const cha
 			DO_LONG_OPTION_BOOL("alt-intro")
 			END_OPTION
 #endif
-
-			DO_LONG_OPTION("record-mode")
-			END_OPTION
-
-			DO_LONG_OPTION("record-file-name")
-			END_OPTION
-
-			DO_LONG_OPTION("record-temp-file-name")
-			END_OPTION
-
-			DO_LONG_OPTION("record-time-file-name")
-			END_OPTION
 
 #ifdef IPHONE
 			// This is automatically set when launched from the Springboard.
@@ -684,7 +693,7 @@ static Common::Error listSaves(const char *target) {
 		return Common::Error(Common::kEnginePluginNotSupportSaves,
 						Common::String::format("target '%s', gameid '%s", target, gameid.c_str()));
 	} else {
-		// Query the plugin for a list of savegames
+		// Query the plugin for a list of saved games
 		SaveStateList saveList = (*plugin)->listSaves(target);
 
 		if (saveList.size() > 0) {
@@ -818,9 +827,8 @@ void upgradeTargets() {
 
 	printf("Upgrading all your existing targets\n");
 
-	Common::ConfigManager::DomainMap &domains = ConfMan.getGameDomains();
-	Common::ConfigManager::DomainMap::iterator iter = domains.begin();
-	for (iter = domains.begin(); iter != domains.end(); ++iter) {
+	Common::ConfigManager::DomainMap::iterator iter = ConfMan.beginGameDomains();
+	for (; iter != ConfMan.endGameDomains(); ++iter) {
 		Common::ConfigManager::Domain &dom = iter->_value;
 		Common::String name(iter->_key);
 		Common::String gameid(dom.getVal("gameid"));

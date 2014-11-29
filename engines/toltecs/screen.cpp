@@ -8,16 +8,15 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  *
  */
 
@@ -249,10 +248,6 @@ void Screen::addAnimatedSprite(int16 x, int16 y, int16 fragmentId, byte *data, i
 		WRITE_LE_UINT16(spriteItem + 0, loopNum);
 		WRITE_LE_UINT16(spriteItem + 4, frameNum);
 	}
-}
-
-void Screen::clearSprites() {
-
 }
 
 void Screen::blastSprite(int16 x, int16 y, int16 fragmentId, int16 resIndex, uint16 flags) {
@@ -494,6 +489,14 @@ int16 Screen::getTalkTextDuration() {
 	return _talkTextItems[_talkTextItemNum].duration;
 }
 
+void Screen::finishTalkTextItem(int16 slotIndex) {
+	for (int16 i = 0; i <= _talkTextItemNum; i++) {
+		if (_talkTextItems[i].slotIndex == slotIndex) {
+			_talkTextItems[i].duration = 0;
+		}
+	}
+}
+
 void Screen::finishTalkTextItems() {
 	for (int16 i = 0; i <= _talkTextItemNum; i++) {
 		_talkTextItems[i].duration = 0;
@@ -595,7 +598,7 @@ int16 Screen::drawString(int16 x, int16 y, byte color, uint fontResIndex, const 
 	if (ywobble)
 		yadd = *ywobble;
 
- 	while (len--) {
+	while (len--) {
 		byte ch = *text++;
 		if (ch <= 0x20) {
 			x += font.getWidth();
@@ -630,7 +633,7 @@ void Screen::drawChar(const Font &font, byte *dest, int16 x, int16 y, byte ch, b
 			byte flags = charData[0] & 0xF0;
 			charData++;
 			if ((flags & 0x80) == 0) {
- 				if (flags & 0x10) {
+				if (flags & 0x10) {
 					memset(dest, color, count);
 				} else if (outline) {
 					memset(dest, 0, count);
@@ -647,7 +650,7 @@ void Screen::drawSurface(int16 x, int16 y, Graphics::Surface *surface) {
 	int16 skipX = 0;
 	int16 width = surface->w;
 	int16 height = surface->h;
-	byte *surfacePixels = (byte *)surface->getBasePtr(0, 0);
+	byte *surfacePixels = (byte *)surface->getPixels();
 	byte *frontScreen;
 
 	// Not on screen, skip

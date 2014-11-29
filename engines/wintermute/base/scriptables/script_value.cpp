@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -73,7 +73,7 @@ ScValue::ScValue(BaseGame *inGame, bool val) : BaseClass(inGame) {
 
 
 //////////////////////////////////////////////////////////////////////////
-ScValue::ScValue(BaseGame *inGame, int val) : BaseClass(inGame) {
+ScValue::ScValue(BaseGame *inGame, int32 val) : BaseClass(inGame) {
 	_type = VAL_INT;
 	_valInt = val;
 
@@ -789,43 +789,54 @@ void ScValue::setValue(ScValue *val) {
 
 //////////////////////////////////////////////////////////////////////////
 bool ScValue::persist(BasePersistenceManager *persistMgr) {
-	persistMgr->transfer(TMEMBER(_gameRef));
+	persistMgr->transferPtr(TMEMBER_PTR(_gameRef));
 
-	persistMgr->transfer(TMEMBER(_persistent));
-	persistMgr->transfer(TMEMBER(_isConstVar));
-	persistMgr->transfer(TMEMBER_INT(_type));
-	persistMgr->transfer(TMEMBER(_valBool));
-	persistMgr->transfer(TMEMBER(_valFloat));
-	persistMgr->transfer(TMEMBER(_valInt));
-	persistMgr->transfer(TMEMBER(_valNative));
+	persistMgr->transferBool(TMEMBER(_persistent));
+	persistMgr->transferBool(TMEMBER(_isConstVar));
+	persistMgr->transferSint32(TMEMBER_INT(_type));
+	persistMgr->transferBool(TMEMBER(_valBool));
+	persistMgr->transferDouble(TMEMBER(_valFloat));
+	persistMgr->transferSint32(TMEMBER(_valInt));
+	persistMgr->transferPtr(TMEMBER_PTR(_valNative));
 
-	int size;
+	int32 size;
 	const char *str;
 	if (persistMgr->getIsSaving()) {
 		size = _valObject.size();
-		persistMgr->transfer("", &size);
+		persistMgr->transferSint32("", &size);
 		_valIter = _valObject.begin();
 		while (_valIter != _valObject.end()) {
 			str = _valIter->_key.c_str();
-			persistMgr->transfer("", &str);
-			persistMgr->transfer("", &_valIter->_value);
+			persistMgr->transferConstChar("", &str);
+			persistMgr->transferPtr("", &_valIter->_value);
 
 			_valIter++;
 		}
 	} else {
-		ScValue *val;
-		persistMgr->transfer("", &size);
+		ScValue *val = nullptr;
+		persistMgr->transferSint32("", &size);
 		for (int i = 0; i < size; i++) {
-			persistMgr->transfer("", &str);
-			persistMgr->transfer("", &val);
+			persistMgr->transferConstChar("", &str);
+			persistMgr->transferPtr("", &val);
 
 			_valObject[str] = val;
 			delete[] str;
 		}
 	}
 
-	persistMgr->transfer(TMEMBER(_valRef));
-	persistMgr->transfer(TMEMBER(_valString));
+	persistMgr->transferPtr(TMEMBER_PTR(_valRef));
+	persistMgr->transferCharPtr(TMEMBER(_valString));
+
+	if (!persistMgr->getIsSaving() && !persistMgr->checkVersion(1,2,2)) {
+		// Savegames prior to 1.2.2 stored empty strings as NULL.
+		// We disambiguate those by turning NULL strings into empty
+		// strings if _type is VAL_STRING instead of VAL_NULL.
+
+		if (_type == VAL_STRING && !_valString) {
+			_valString = new char[1];
+			_valString[0] = '\0';
+		}
+	}
 
 	/* // TODO: Convert to Debug-statements.
 	FILE* f = fopen("c:\\val.log", "a+");
@@ -951,7 +962,7 @@ int ScValue::compareStrict(ScValue *val1, ScValue *val2) {
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool ScValue::setProperty(const char *propName, int value) {
+bool ScValue::setProperty(const char *propName, int32 value) {
 	ScValue *val = new ScValue(_gameRef,  value);
 	bool ret =  DID_SUCCEED(setProp(propName, val));
 	delete val;
@@ -992,4 +1003,4 @@ bool ScValue::setProperty(const char *propName) {
 	return ret;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

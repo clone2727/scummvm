@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -189,7 +189,7 @@ void Talk::talk(const char *filename, int personInRoom, char *cutawayFilename) {
 			}
 		}
 
-		if (_vm->input()->talkQuit())
+		if (_vm->input()->talkQuit() || _vm->shouldQuit())
 			break;
 
 		retval   = _dialogueTree[level][selectedSentence].dialogueNodeValue1;
@@ -1250,20 +1250,16 @@ int16 Talk::selectSentence() {
 		}
 
 		_vm->input()->clearKeyVerb();
+		_vm->input()->clearMouseButton();
 
 		if (sentenceCount > 0) {
-			int zone = 0;
 			int oldZone = 0;
 
-			while (0 == selectedSentence) {
-
-				if (_vm->input()->talkQuit())
-					break;
-
+			while (0 == selectedSentence && !_vm->input()->talkQuit() && !_vm->shouldQuit()) {
 				_vm->update();
 
 				Common::Point mouse = _vm->input()->getMousePos();
-				zone = _vm->grid()->findZoneForPos(GS_PANEL, mouse.x, mouse.y);
+				int zone = _vm->grid()->findZoneForPos(GS_PANEL, mouse.x, mouse.y);
 
 				int mouseButton = _vm->input()->mouseButton();
 				_vm->input()->clearMouseButton();
@@ -1328,6 +1324,9 @@ int16 Talk::selectSentence() {
 			} // while ()
 		}
 	}
+
+	_vm->input()->clearKeyVerb();
+	_vm->input()->clearMouseButton();
 
 	debug(6, "Selected sentence %i", selectedSentence);
 

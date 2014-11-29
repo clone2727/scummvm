@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -666,7 +666,7 @@ bool ChangeScene(bool bReset) {
 			default:
 				// Trigger pre-load and fade and start countdown
 				CountOut = COUNTOUT_COUNT;
-				FadeOutFast(NULL);
+				FadeOutFast();
 				if (TinselV2)
 					_vm->_pcmMusic->startFadeOut(COUNTOUT_COUNT);
 				break;
@@ -821,7 +821,8 @@ const char *const TinselEngine::_textFiles[][3] = {
 
 
 TinselEngine::TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc) :
-		Engine(syst), _gameDescription(gameDesc), _random("tinsel") {
+		Engine(syst), _gameDescription(gameDesc), _random("tinsel"),
+		_sound(0), _midiMusic(0), _pcmMusic(0), _bmv(0) {
 	_vm = this;
 
 	_config = new Config(this);
@@ -835,14 +836,6 @@ TinselEngine::TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc)
 	// Setup mixer
 	syncSoundSettings();
 
-	// Add DW2 subfolder to search path in case user is running directly from the CDs
-	const Common::FSNode gameDataDir(ConfMan.get("path"));
-	SearchMan.addSubDirectoryMatching(gameDataDir, "dw2");
-
-	// Add subfolders needed for psx versions of Discworld 1
-	if (TinselV1PSX)
-		SearchMan.addDirectory(gameDataDir.getPath(), gameDataDir, 0, 3, true);
-
 	const GameSettings *g;
 
 	const char *gameid = ConfMan.get("gameid").c_str();
@@ -854,13 +847,6 @@ TinselEngine::TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc)
 	if (cd_num >= 0)
 		_system->getAudioCDManager()->openCD(cd_num);
 
-	_midiMusic = new MidiMusicPlayer();
-	_pcmMusic = new PCMMusicPlayer();
-
-	_sound = new SoundManager(this);
-
-	_bmv = new BMVPlayer();
-
 	_mousePos.x = 0;
 	_mousePos.y = 0;
 	_keyHandler = NULL;
@@ -868,9 +854,6 @@ TinselEngine::TinselEngine(OSystem *syst, const TinselGameDescription *gameDesc)
 }
 
 TinselEngine::~TinselEngine() {
-	if (_bmv->MoviePlaying())
-		_bmv->FinishBMV();
-
 	_system->getAudioCDManager()->stop();
 	delete _bmv;
 	delete _sound;
@@ -895,7 +878,23 @@ Common::String TinselEngine::getSavegameFilename(int16 saveNum) const {
 	return Common::String::format("%s.%03d", getTargetName().c_str(), saveNum);
 }
 
+void TinselEngine::initializePath(const Common::FSNode &gamePath) {
+	if (TinselV1PSX) {
+		// Add subfolders needed for psx versions of Discworld 1
+		SearchMan.addDirectory(gamePath.getPath(), gamePath, 0, 3, true);
+	} else {
+		// Add DW2 subfolder to search path in case user is running directly from the CDs
+		SearchMan.addSubDirectoryMatching(gamePath, "dw2");
+		Engine::initializePath(gamePath);
+	}
+}
+
 Common::Error TinselEngine::run() {
+	_midiMusic = new MidiMusicPlayer();
+	_pcmMusic = new PCMMusicPlayer();
+	_sound = new SoundManager(this);
+	_bmv = new BMVPlayer();
+
 	// Initialize backend
 	if (getGameID() == GID_DW2) {
 #ifndef DW2_EXACT_SIZE
@@ -1006,6 +1005,9 @@ Common::Error TinselEngine::run() {
 		else
 			g_system->delayMillis(10);
 	}
+
+	if (_bmv->MoviePlaying())
+		_bmv->FinishBMV();
 
 	// Write configuration
 	_vm->_config->writeToDisk();

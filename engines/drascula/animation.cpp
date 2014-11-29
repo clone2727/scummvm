@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -44,9 +44,6 @@ void DrasculaEngine::updateAnim(int y, int destX, int destY, int width, int heig
 
 void DrasculaEngine::animation_1_1() {
 	debug(4, "animation_1_1()");
-
-	int l, l2, p;
-	//int pixelPos[6];
 
 	while (term_int == 0 && !shouldQuit()) {
 		playMusic(29);
@@ -119,8 +116,8 @@ void DrasculaEngine::animation_1_1() {
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
 
-		for (l2 = 0; l2 < 3; l2++)
-			for (l = 0; l < 7; l++) {
+		for (int l2 = 0; l2 < 3; l2++)
+			for (int l = 0; l < 7; l++) {
 				copyBackground();
 				copyBackground(interf_x[l], interf_y[l], 156, 45, 63, 31, drawSurface2, screenSurface);
 				updateScreen();
@@ -133,9 +130,7 @@ void DrasculaEngine::animation_1_1() {
 			if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 				break;
 
-		l2 = 0; p = 0;
-
-		for (l = 0; l < 180; l++) {
+		for (int l = 0, l2 = 0, p = 0; l < 180; l++) {
 			copyBackground(0, 0, 320 - l, 0, l, 200, drawSurface3, screenSurface);
 			copyBackground(l, 0, 0, 0, 320 - l, 200, bgSurface, screenSurface);
 
@@ -426,7 +421,7 @@ void DrasculaEngine::animation_2_1() {
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
 
-		roomNumber = 16;
+		_roomNumber = 16;
 
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
@@ -506,13 +501,13 @@ void DrasculaEngine::animation_2_1() {
 		trackProtagonist = 3;
 		// The room number was originally changed here to "no_bj.alg",
 		// which doesn't exist. In reality, this was just a hack to
-		// set the room number to a non-existant one, so that BJ does
+		// set the room number to a non-existent one, so that BJ does
 		// not appear again when the room is refreshed after the
 		// animation where Count Drascula abducts her. We set the
 		// room number to -1 for the same purpose
 		// Also check animation_9_6(), where the same hack was used by
 		// the original
-		roomNumber = -1;
+		_roomNumber = -1;
 		if ((term_int == 1) || (getScan() == Common::KEYCODE_ESCAPE) || shouldQuit())
 			break;
 		pause(8);
@@ -703,17 +698,15 @@ void DrasculaEngine::animation_4_2() {
 void DrasculaEngine::animation_14_2() {
 	debug(4, "animation_14_2()");
 
-	int cY = -160;
-	int l = 0;
-
 	loadPic("an14_2.alg", backSurface);
 
+	int l = 0;
 	for (int n = -160; n <= 0; n = n + 5 + l) {
 		copyBackground();
 		updateRefresh_pre();
 		moveCharacters();
 		moveVonBraun();
-		cY = n;
+		int cY = n;
 		copyRect(150, 6, 69, cY, 158, 161, backSurface, screenSurface);
 		updateRefresh();
 		updateScreen();
@@ -734,7 +727,7 @@ void DrasculaEngine::animation_14_2() {
 
 void DrasculaEngine::asco() {
 	loadPic(roomDisk, drawSurface3);
-	loadPic(roomNumber, bgSurface, HALF_PAL);
+	loadPic(_roomNumber, bgSurface, HALF_PAL);
 	black();
 	updateRoom();
 	updateScreen();
@@ -959,8 +952,6 @@ void DrasculaEngine::animation_23_2() {
 void DrasculaEngine::animation_25_2() {
 	debug(4, "animation_25_2()");
 
-	int cY = 0;
-
 	loadPic("an14_2.alg", backSurface);
 	loadPic(18, bgSurface);
 
@@ -975,8 +966,7 @@ void DrasculaEngine::animation_25_2() {
 		moveCharacters();
 		moveVonBraun();
 
-		cY = n;
-
+		int cY = n;
 		copyRect(150, 6, 69, cY, 158, 161, backSurface, screenSurface);
 
 		updateRefresh();
@@ -1594,20 +1584,18 @@ void DrasculaEngine::animation_1_6() {
 void DrasculaEngine::animation_5_6() {
 	debug(4, "animation_5_6()");
 
-	int pY = -125;
-
 	animate("man.bin", 14);
 
 	for (int n = -125; n <= 0; n = n + 2) {
 		copyBackground();
 		updateRefresh_pre();
-		pY = n;
+		int pY = n;
 		copyRect(1, 29, 204, pY, 18, 125, drawSurface3, screenSurface);
 
 		updateRefresh();
-
 		updateScreen();
 		updateEvents();
+
 		pause(2);
 	}
 
@@ -1645,23 +1633,23 @@ void DrasculaEngine::animation_9_6() {
 
 	int v_cd;
 
-	animate("fin.bin", 14);
+	(void)animate("fin.bin", 14);
 	playMusic(13);
 	flags[5] = 1;
-	animate("drf.bin", 16);
+	(void)animate("drf.bin", 16);
 	fadeToBlack(0);
 	clearRoom();
 	curX = -1;
 	objExit = 108;
 	enterRoom(59);
 	// The room number was originally changed here to "nada.alg",
-	// which is a non-existant file. In reality, this was just a
-	// hack to set the room number to a non-existant one, so that
+	// which is a non-existent file. In reality, this was just a
+	// hack to set the room number to a non-existent one, so that
 	// room sprites do not appear again when the room is refreshed.
 	// We set the room number to -1 for the same purpose.
 	// Also check animation_2_1(), where the same hack was used
 	// by the original
-	roomNumber = -2;
+	_roomNumber = -2;
 	loadPic("nota2.alg", bgSurface, HALF_PAL);
 	black();
 	trackProtagonist = 1;
@@ -2176,9 +2164,9 @@ void DrasculaEngine::animation_5_4(){
 void DrasculaEngine::animation_6_4() {
 	debug(4, "animation_6_4()");
 
-	int prevRoom = roomNumber;
+	int prevRoom = _roomNumber;
 
-	roomNumber = 26;
+	_roomNumber = 26;
 	clearRoom();
 	loadPic(26, bgSurface, HALF_PAL);
 	loadPic("aux26.alg", drawSurface3);
@@ -2191,11 +2179,11 @@ void DrasculaEngine::animation_6_4() {
 	updateScreen();
 	pause(40);
 	talk_igor(26, kIgorFront);
-	roomNumber = prevRoom;
+	_roomNumber = prevRoom;
 	clearRoom();
 	loadPic(96, frontSurface);
 	loadPic(roomDisk, drawSurface3);
-	loadPic(roomNumber, bgSurface, HALF_PAL);
+	loadPic(_roomNumber, bgSurface, HALF_PAL);
 	selectVerb(kVerbNone);
 	updateRoom();
 }
@@ -2224,7 +2212,7 @@ void DrasculaEngine::activatePendulum() {
 
 	flags[1] = 2;
 	hare_se_ve = 0;
-	roomNumber = 102;
+	_roomNumber = 102;
 	loadPic(102, bgSurface, HALF_PAL);
 	loadPic("an_p1.alg", drawSurface3);
 	loadPic("an_p2.alg", extraSurface);

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -39,7 +39,7 @@ bool Sprite::contains(const Common::Point &pos) const {
 		return false;
 	if (adjustedPos.y < 0 || adjustedPos.y >= _surface.h)
 		return false;
-	byte *pixels = (byte *)_surface.pixels;
+	const byte *pixels = (const byte *)_surface.getPixels();
 	return (pixels[(_surface.h - adjustedPos.y - 1) * _surface.w + adjustedPos.x] != 0);
 }
 
@@ -541,7 +541,7 @@ void ComposerEngine::redraw() {
 
 	for (uint i = 0; i < _dirtyRects.size(); i++) {
 		const Common::Rect &rect = _dirtyRects[i];
-		byte *pixels = (byte *)_screen.pixels + (rect.top * _screen.pitch) + rect.left;
+		byte *pixels = (byte *)_screen.getBasePtr(rect.left, rect.top);
 		_system->copyRectToScreen(pixels, _screen.pitch, rect.left, rect.top, rect.width(), rect.height());
 	}
 	_system->updateScreen();
@@ -794,7 +794,7 @@ bool ComposerEngine::initSprite(Sprite &sprite) {
 
 	if (width > 0 && height > 0) {
 		sprite._surface.create(width, height, Graphics::PixelFormat::createFormatCLUT8());
-		decompressBitmap(type, stream, (byte *)sprite._surface.pixels, size, width, height);
+		decompressBitmap(type, stream, (byte *)sprite._surface.getPixels(), size, width, height);
 	} else {
 		// there are some sprites (e.g. a -998x-998 one in Gregory's title screen)
 		// which have an invalid size, but the original engine doesn't notice for
@@ -814,13 +814,13 @@ void ComposerEngine::drawSprite(const Sprite &sprite) {
 	int y = sprite._pos.y;
 
 	// incoming data is BMP-style (bottom-up), so flip it
-	byte *pixels = (byte *)_screen.pixels;
+	byte *pixels = (byte *)_screen.getPixels();
 	for (int j = 0; j < sprite._surface.h; j++) {
 		if (j + y < 0)
 			continue;
 		if (j + y >= _screen.h)
 			break;
-		byte *in = (byte *)sprite._surface.pixels + (sprite._surface.h - j - 1) * sprite._surface.w;
+		const byte *in = (const byte *)sprite._surface.getBasePtr(0, sprite._surface.h - j - 1);
 		byte *out = pixels + ((j + y) * _screen.w) + x;
 		for (int i = 0; i < sprite._surface.w; i++)
 			if ((x + i >= 0) && (x + i < _screen.w) && in[i])

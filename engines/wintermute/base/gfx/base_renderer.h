@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -61,6 +61,7 @@ public:
 	 * @return a BaseImage containing the current screen-buffer.
 	 */
 	virtual BaseImage *takeScreenshot() = 0;
+	virtual bool saveScreenShot(const Common::String &filename, int sizeX = 0, int sizeY = 0);
 	virtual bool setViewport(int left, int top, int right, int bottom);
 	virtual bool setViewport(Rect32 *rect);
 	virtual Rect32 getViewPort() = 0;
@@ -71,7 +72,6 @@ public:
 	 * Fade the screen to black
 	 *
 	 * @param alpha amount to fade by (alpha value of black)
-	 * @return
 	 */
 	virtual void fade(uint16 alpha) = 0;
 	/**
@@ -83,7 +83,7 @@ public:
 	 * @param a the alpha component to fade too.
 	 * @param rect the portion of the screen to fade (if nullptr, the entire screen will be faded).
 	 */
-	virtual void fadeToColor(byte r, byte g, byte b, byte a, Common::Rect *rect = nullptr) = 0;
+	virtual void fadeToColor(byte r, byte g, byte b, byte a) = 0;
 
 	virtual bool drawLine(int x1, int y1, int x2, int y2, uint32 color); 	// Unused outside indicator-display
 	virtual bool drawRect(int x1, int y1, int x2, int y2, uint32 color, int width = 1); 	// Unused outside indicator-display
@@ -165,10 +165,11 @@ public:
 	bool pointInViewport(Point32 *P);
 	bool _active;
 	bool _ready;
-	bool _windowed;
-	int _bPP;
-	int _height;
-	int _width;
+
+	bool isReady() const { return _ready; }
+	bool isWindowed() const { return _windowed; }
+	int32 getBPP() const { return _bPP; }
+
 	uint32 _window;
 	uint32 _forceAlphaColor;
 
@@ -185,26 +186,35 @@ public:
 	void setSaveImage(const char *filename, int x, int y);
 
 	bool displayIndicator();
+
+	int32 getWidth() const { return _width; }
+	int32 getHeight() const { return _height; }
 protected:
+	int32 _height;
+	int32 _width;
+
+	bool _windowed;
+	int32 _bPP;
+
 	Common::String _loadImageName;
 	Common::String _saveImageName;
-	int _saveImageX;
-	int _saveImageY;
-	int _loadImageX;
-	int _loadImageY;
+	int32 _saveImageX;
+	int32 _saveImageY;
+	int32 _loadImageX;
+	int32 _loadImageY;
 	BaseSurface *_saveLoadImage;
 	bool _hasDrawnSaveLoadImage;
 
-	int _indicatorWidthDrawn;
+	int32 _indicatorWidthDrawn;
 	uint32 _indicatorColor;
-	int _indicatorX;
-	int _indicatorY;
-	int _indicatorWidth;
-	int _indicatorHeight;
+	int32 _indicatorX;
+	int32 _indicatorY;
+	int32 _indicatorWidth;
+	int32 _indicatorHeight;
 	bool _loadInProgress;
 	bool _indicatorDisplay;
-	int _indicatorProgress;
-protected:
+	int32 _indicatorProgress;
+
 	uint32 _clipperWindow;
 
 	Rect32 _windowRect;
@@ -217,6 +227,6 @@ private:
 
 BaseRenderer *makeOSystemRenderer(BaseGame *inGame); // Implemented in BRenderSDL.cpp
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute
 
 #endif

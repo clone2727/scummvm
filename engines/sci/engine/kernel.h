@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -146,6 +146,8 @@ public:
 	Kernel(ResourceManager *resMan, SegManager *segMan);
 	~Kernel();
 
+	void init();
+
 	uint getSelectorNamesSize() const;
 	const Common::String &getSelectorName(uint selector);
 	int findKernelFuncPos(Common::String kernelFuncName);
@@ -159,6 +161,8 @@ public:
 	 * @return The appropriate selector ID, or -1 on error
 	 */
 	int findSelector(const char *selectorName) const;
+
+	bool selectorNamesAvailable();
 
 	// Script dissection/dumping functions
 	void dissectScript(int scriptNumber, Vocabulary *vocab);
@@ -470,6 +474,9 @@ reg_t kBitmap(EngineState *s, int argc, reg_t *argv);
 reg_t kAddLine(EngineState *s, int argc, reg_t *argv);
 reg_t kUpdateLine(EngineState *s, int argc, reg_t *argv);
 reg_t kDeleteLine(EngineState *s, int argc, reg_t *argv);
+
+// Phantasmagoria Mac Special Kernel Function
+reg_t kDoSoundPhantasmagoriaMac(EngineState *s, int argc, reg_t *argv);
 
 // SCI3 Kernel functions
 reg_t kPlayDuck(EngineState *s, int argc, reg_t *argv);

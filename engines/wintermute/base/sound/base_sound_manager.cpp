@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -30,7 +30,6 @@
 #include "engines/wintermute/base/base_engine.h"
 #include "engines/wintermute/utils/path_util.h"
 #include "engines/wintermute/utils/string_util.h"
-#include "engines/wintermute/base/base_game.h"
 #include "engines/wintermute/base/base_file_manager.h"
 #include "engines/wintermute/base/gfx/base_renderer.h"
 #include "engines/wintermute/base/sound/base_sound_buffer.h"
@@ -88,6 +87,7 @@ bool BaseSoundMgr::initialize() {
 	setMasterVolumePercent(volumeMasterPercent);
 	_soundAvailable = true;
 
+	g_engine->syncSoundSettings();
 	return STATUS_OK;
 }
 
@@ -123,7 +123,7 @@ BaseSoundBuffer *BaseSoundMgr::addSound(const Common::String &filename, Audio::M
 
 	bool res = sound->loadFromFile(useFilename);
 	if (DID_FAIL(res)) {
-		_gameRef->LOG(res, "Error loading sound '%s'", useFilename.c_str());
+		BaseEngine::LOG(res, "Error loading sound '%s'", useFilename.c_str());
 		delete sound;
 		return nullptr;
 	}
@@ -254,9 +254,9 @@ byte BaseSoundMgr::getMasterVolume() {
 bool BaseSoundMgr::pauseAll(bool includingMusic) {
 
 	for (uint32 i = 0; i < _sounds.size(); i++) {
-		if (_sounds[i]->isPlaying() && (_sounds[i]->_type != Audio::Mixer::kMusicSoundType || includingMusic)) {
+		if (_sounds[i]->isPlaying() && (_sounds[i]->getType() != Audio::Mixer::kMusicSoundType || includingMusic)) {
 			_sounds[i]->pause();
-			_sounds[i]->_freezePaused = true;
+			_sounds[i]->setFreezePaused(true);
 		}
 	}
 
@@ -268,9 +268,9 @@ bool BaseSoundMgr::pauseAll(bool includingMusic) {
 bool BaseSoundMgr::resumeAll() {
 
 	for (uint32 i = 0; i < _sounds.size(); i++) {
-		if (_sounds[i]->_freezePaused) {
+		if (_sounds[i]->isFreezePaused()) {
 			_sounds[i]->resume();
-			_sounds[i]->_freezePaused = false;
+			_sounds[i]->setFreezePaused(false);
 		}
 	}
 
@@ -280,7 +280,7 @@ bool BaseSoundMgr::resumeAll() {
 
 //////////////////////////////////////////////////////////////////////////
 float BaseSoundMgr::posToPan(int x, int y) {
-	float relPos = (float)x / ((float)_gameRef->_renderer->_width);
+	float relPos = (float)x / ((float)BaseEngine::getRenderer()->getWidth());
 
 	float minPan = -0.7f;
 	float maxPan = 0.7f;
@@ -288,4 +288,4 @@ float BaseSoundMgr::posToPan(int x, int y) {
 	return minPan + relPos * (maxPan - minPan);
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

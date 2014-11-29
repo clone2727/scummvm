@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -439,8 +439,8 @@ void WalkingState::startWalking(const Common::Point &p1, const Common::Point &p2
 }
 
 void WalkingState::setCallback(const GPL2Program *program, uint16 offset) {
-	_callback = program;
-	_callbackOffset = offset;
+	_callback = _callbackLast = program;
+	_callbackOffset = _callbackOffsetLast = offset;
 }
 
 void WalkingState::callback() {
@@ -452,6 +452,12 @@ void WalkingState::callback() {
 	const GPL2Program &originalCallback = *_callback;
 	_callback = NULL;
 	_vm->_script->runWrapper(originalCallback, _callbackOffset, true, false);
+	_callbackLast = NULL;
+	_callbackOffset = 0;
+}
+
+void WalkingState::callbackLast() {
+	setCallback(_callbackLast, _callbackOffsetLast);
 }
 
 bool WalkingState::continueWalkingOrClearPath() {
@@ -556,9 +562,15 @@ bool WalkingState::alignHeroToEdge(const Common::Point &p1, const Common::Point 
 	}
 	bool reachedEnd;
 	if (movement == kMoveLeft || movement == kMoveRight) {
+		if (p2Diff.x == 0) {
+			error("Wrong value for horizontal movement");
+		}
 		reachedEnd = movement == kMoveLeft ? hero->x <= p2.x : hero->x >= p2.x;
 		hero->y += hero->x * p2Diff.y / p2Diff.x - prevHero.x * p2Diff.y / p2Diff.x;
 	} else {
+		if (p2Diff.y == 0) {
+			error("Wrong value for vertical movement");
+		}
 		reachedEnd = movement == kMoveUp ? hero->y <= p2.y : hero->y >= p2.y;
 		hero->x += hero->y * p2Diff.x / p2Diff.y - prevHero.y * p2Diff.x / p2Diff.y;
 	}

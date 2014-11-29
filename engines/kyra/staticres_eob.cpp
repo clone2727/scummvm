@@ -8,16 +8,15 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  *
  */
 
@@ -465,20 +464,34 @@ void EoBCoreEngine::initStaticResource() {
 	// EOB I doesn't have load and save menus, because there is only one single
 	// save slot. Instead of emulating this we provide a menu similiar to EOB II.
 
-	static const char *const saveLoadStrings[3][4] = {
-		{   "Cancel",   "Empty Slot",   "Save Game",    "Load Game"     },
-		{   "Abbr.",    "Leerer Slot",  "Speichern",    "  Laden"       },
-		{   0,          0,              0,              0               }
+	static const char *const saveLoadStrings[4][4] = {
+		{   "Cancel",   "Empty Slot",		"Save Game",    "Load Game"     },
+		{   "Abbr.",    "Leerer Slot",		"Speichern",    "  Laden"       },
+		{	" < < ",	"Posizione Vuota",	"Salva",		"Carica"	    },
+		{   0,          0,					0,					0			}
 	};
 
-	static const char *const errorSlotEmptyString[3] = {
+	static const char *const errorSlotEmptyString[4] = {
 		"There is no game\rsaved in that slot!",
 		"Hier ist noch kein\rSpiel gespeichert!",
+		"Non c'\x0E alcun gioco\rsalvato in quella\rposizione!",
 		0
 	};
 
-	_saveLoadStrings = saveLoadStrings[(_flags.lang == Common::EN_ANY) ? 0 : ((_flags.lang == Common::DE_DEU) ? 1 : 2)];
-	_errorSlotEmptyString = errorSlotEmptyString[(_flags.lang == Common::EN_ANY) ? 0 : ((_flags.lang == Common::DE_DEU) ? 1 : 2)];
+	if (_flags.lang == Common::EN_ANY) {
+		_saveLoadStrings = saveLoadStrings[0];
+		_errorSlotEmptyString = errorSlotEmptyString[0];
+	} else if (_flags.lang == Common::DE_DEU) {
+		_saveLoadStrings = saveLoadStrings[1];
+		_errorSlotEmptyString = errorSlotEmptyString[1];
+	} else if (_flags.lang == Common::IT_ITA) {
+		_saveLoadStrings = saveLoadStrings[2];
+		_errorSlotEmptyString = errorSlotEmptyString[2];
+	} else {
+		_saveLoadStrings = saveLoadStrings[3];
+		_errorSlotEmptyString = errorSlotEmptyString[3];
+	}
+
 	_menuOkString = "OK";
 }
 
@@ -1207,7 +1220,7 @@ void DarkMoonEngine::initStaticResource() {
 
 	_animIntro = new const DarkMoonAnimCommand*[44];
 	for (int i = 0; i < 44; i++)
-		_animIntro[i] = _staticres->loadEoB2SeqData(kEob2IntroAnimData00 + i, temp);
+		_animIntro[i] = _staticres->loadEoB2SeqData(kEoB2IntroAnimData00 + i, temp);
 
 	_shapesIntro = new const DarkMoonShapeDef*[13];
 	memset(_shapesIntro, 0, sizeof(DarkMoonShapeDef *) * 13);
@@ -1222,7 +1235,7 @@ void DarkMoonEngine::initStaticResource() {
 
 	_animFinale = new const DarkMoonAnimCommand*[21];
 	for (int i = 0; i < 21; i++)
-		_animFinale[i] = _staticres->loadEoB2SeqData(kEob2FinaleAnimData00 + i, temp);
+		_animFinale[i] = _staticres->loadEoB2SeqData(kEoB2FinaleAnimData00 + i, temp);
 
 	_shapesFinale = new const DarkMoonShapeDef*[13];
 	memset(_shapesFinale, 0, sizeof(DarkMoonShapeDef *) * 13);

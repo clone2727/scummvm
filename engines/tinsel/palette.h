@@ -8,7 +8,7 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -107,7 +107,7 @@ void PaletteStats();	// Shows the maximum number of palettes used at once
 
 void psxPaletteMapper(PALQ *originalPal, uint8 *psxClut, byte *mapperTable); // Maps PSX CLUTs to original palette in resource file
 
-void PalettesToVideoDAC();	// Update the video DAC with palettes currently the the DAC queue
+void PalettesToVideoDAC();	// Update the video DAC with palettes currently in the DAC queue
 
 void UpdateDACqueueHandle(
 	int posInDAC,		// position in video DAC
@@ -145,8 +145,6 @@ void SetBgndColor(		// sets current background color
 void FadingPalette(PALQ *pPalQ, bool bFading);
 
 void CreateTranslucentPalette(SCNHANDLE BackPal);
-
-void CreateGhostPalette(SCNHANDLE hPalette);
 
 void NoFadingPalettes();	// All fading processes have just been killed
 

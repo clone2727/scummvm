@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -55,6 +55,11 @@ SciVersion getSciVersion() {
 	return s_sciVersion;
 }
 
+SciVersion getSciVersionForDetection() {
+	assert(!g_sci);
+	return s_sciVersion;
+}
+
 const char *getSciVersionDesc(SciVersion version) {
 	switch (version) {
 	case SCI_VERSION_NONE:
@@ -88,9 +93,6 @@ const char *getSciVersionDesc(SciVersion version) {
 
 //////////////////////////////////////////////////////////////////////
 
-
-#undef SCI_REQUIRE_RESOURCE_FILES
-
 //#define SCI_VERBOSE_RESMAN 1
 
 static const char *const s_errorDescriptions[] = {
@@ -112,11 +114,12 @@ static const char *const s_resourceTypeNames[] = {
 	"audio", "sync", "message", "map", "heap",
 	"audio36", "sync36", "xlate", "robot", "vmd",
 	"chunk", "animation", "etc", "duck", "clut",
-	"tga", "zzz", "macibin", "macibis", "macpict"
+	"tga", "zzz", "macibin", "macibis", "macpict",
+	"rave"
 };
 
 // Resource type suffixes. Note that the
-// suffic of SCI3 scripts has been changed from
+// suffix of SCI3 scripts has been changed from
 // scr to csc
 static const char *const s_resourceTypeSuffixes[] = {
 	"v56", "p56", "scr", "tex", "snd",
@@ -125,7 +128,7 @@ static const char *const s_resourceTypeSuffixes[] = {
 	"msg", "map", "hep",    "",    "",
 	"trn", "rbt", "vmd", "chk",    "",
 	"etc", "duk", "clu", "tga", "zzz",
-	   "",    "",    ""
+	   "",    "",    "", ""
 };
 
 const char *getResourceTypeName(ResourceType restype) {
@@ -141,7 +144,7 @@ static const ResourceType s_resTypeMapSci0[] = {
 	kResourceTypeCursor, kResourceTypePatch, kResourceTypeBitmap, kResourceTypePalette,   // 0x08-0x0B
 	kResourceTypeCdAudio, kResourceTypeAudio, kResourceTypeSync, kResourceTypeMessage,    // 0x0C-0x0F
 	kResourceTypeMap, kResourceTypeHeap, kResourceTypeAudio36, kResourceTypeSync36,       // 0x10-0x13
-	kResourceTypeTranslation                                                              // 0x14
+	kResourceTypeTranslation, kResourceTypeRave                                           // 0x14
 };
 
 // TODO: 12 should be "Wave", but SCI seems to just store it in Audio resources
@@ -158,24 +161,24 @@ static const ResourceType s_resTypeMapSci21[] = {
 ResourceType ResourceManager::convertResType(byte type) {
 	type &= 0x7f;
 
-	if (_mapVersion < kResVersionSci2) {
+	bool forceSci0 = false;
+
+	// LSL6 hires doesn't have the chunk resource type, to match
+	// the resource types of the lowres version, thus we use the
+	// older resource types here.
+	// PQ4 CD and QFG4 CD are SCI2.1, but use the resource types of the
+	// corresponding SCI2 floppy disk versions.
+	if (g_sci && (g_sci->getGameId() == GID_LSL6HIRES ||
+	        g_sci->getGameId() == GID_QFG4 || g_sci->getGameId() == GID_PQ4))
+		forceSci0 = true;
+
+	if (_mapVersion < kResVersionSci2 || forceSci0) {
 		// SCI0 - SCI2
 		if (type < ARRAYSIZE(s_resTypeMapSci0))
 			return s_resTypeMapSci0[type];
 	} else {
-		// SCI2.1+
-		if (type < ARRAYSIZE(s_resTypeMapSci21)) {
-			// LSL6 hires doesn't have the chunk resource type, to match
-			// the resource types of the lowres version, thus we use the
-			// older resource types here.
-			// PQ4 CD and QFG4 CD are SCI2.1, but use the resource types of the
-			// corresponding SCI2 floppy disk versions.
-			if (g_sci && (g_sci->getGameId() == GID_LSL6HIRES ||
-				g_sci->getGameId() == GID_QFG4 || g_sci->getGameId() == GID_PQ4))
-				return s_resTypeMapSci0[type];
-			else
-				return s_resTypeMapSci21[type];
-		}
+		if (type < ARRAYSIZE(s_resTypeMapSci21))
+			return s_resTypeMapSci21[type];
 	}
 
 	return kResourceTypeInvalid;
@@ -207,7 +210,7 @@ void Resource::unalloc() {
 }
 
 void Resource::writeToStream(Common::WriteStream *stream) const {
-	stream->writeByte(getType() | 0x80); // 0x80 is required by old sierra sci, otherwise it wont accept the patch file
+	stream->writeByte(getType() | 0x80); // 0x80 is required by old Sierra SCI, otherwise it wont accept the patch file
 	stream->writeByte(_headerSize);
 	if (_headerSize > 0)
 		stream->write(_header, _headerSize);
@@ -383,42 +386,13 @@ void PatchResourceSource::loadResource(ResourceManager *resMan, Resource *res) {
 
 static Common::Array<uint32> resTypeToMacTags(ResourceType type);
 
-static Common::String intToBase36(uint32 number, int minChar) {
-	// Convert from an integer to a base36 string
-	Common::String string;
-
-	while (minChar--) {
-		int character = number % 36;
-		string = ((character < 10) ? (character + '0') : (character + 'A' - 10)) + string;
-		number /= 36;
-	}
-
-	return string;
-}
-
-static Common::String constructPatchNameBase36(ResourceId resId) {
-	// Convert from a resource ID to a base36 patch name
-	Common::String output;
-
-	output += (resId.getType() == kResourceTypeAudio36) ? '@' : '#'; // Identifier
-	output += intToBase36(resId.getNumber(), 3);                     // Map
-	output += intToBase36(resId.getTuple() >> 24, 2);                // Noun
-	output += intToBase36((resId.getTuple() >> 16) & 0xff, 2);       // Verb
-	output += '.';                                                   // Separator
-	output += intToBase36((resId.getTuple() >> 8) & 0xff, 2);        // Cond
-	output += intToBase36(resId.getTuple() & 0xff, 1);               // Seq
-
-	assert(output.size() == 12); // We should always get 12 characters in the end
-	return output;
-}
-
 void MacResourceForkResourceSource::loadResource(ResourceManager *resMan, Resource *res) {
 	ResourceType type = res->getType();
 	Common::SeekableReadStream *stream = 0;
 
 	if (type == kResourceTypeAudio36 || type == kResourceTypeSync36) {
 		// Handle audio36/sync36, convert back to audio/sync
-		stream = _macResMan->getResource(constructPatchNameBase36(res->_id));
+		stream = _macResMan->getResource(res->_id.toPatchNameBase36());
 	} else {
 		// Plain resource handling
 		Common::Array<uint32> tagArray = resTypeToMacTags(type);
@@ -667,7 +641,7 @@ int ResourceManager::addAppropriateSources() {
 	return 1;
 }
 
-int ResourceManager::addAppropriateSources(const Common::FSList &fslist) {
+int ResourceManager::addAppropriateSourcesForDetection(const Common::FSList &fslist) {
 	ResourceSource *map = 0;
 	Common::Array<ResourceSource *> sci21Maps;
 
@@ -886,7 +860,7 @@ void ResourceManager::freeResourceSources() {
 ResourceManager::ResourceManager() {
 }
 
-void ResourceManager::init(bool initFromFallbackDetector) {
+void ResourceManager::init() {
 	_memoryLocked = 0;
 	_memoryLRU = 0;
 	_LRU.clear();
@@ -918,24 +892,23 @@ void ResourceManager::init(bool initFromFallbackDetector) {
 	debugC(1, kDebugLevelResMan, "resMan: Detected volume version %d: %s", _volVersion, versionDescription(_volVersion));
 
 	if ((_mapVersion == kResVersionUnknown) && (_volVersion == kResVersionUnknown)) {
-		warning("Volume and map version not detected, assuming that this is not a sci game");
+		warning("Volume and map version not detected, assuming that this is not a SCI game");
 		_viewType = kViewUnknown;
 		return;
 	}
 
 	scanNewSources();
 
-	if (!initFromFallbackDetector) {
-		if (!addAudioSources()) {
-			// FIXME: This error message is not always correct.
-			// OTOH, it is nice to be able to detect missing files/sources
-			// So we should definitely fix addAudioSources so this error
-			// only pops up when necessary. Disabling for now.
-			//error("Somehow I can't seem to find the sound files I need (RESOURCE.AUD/RESOURCE.SFX), aborting");
-		}
-		addScriptChunkSources();
-		scanNewSources();
+	if (!addAudioSources()) {
+		// FIXME: This error message is not always correct.
+		// OTOH, it is nice to be able to detect missing files/sources
+		// So we should definitely fix addAudioSources so this error
+		// only pops up when necessary. Disabling for now.
+		//error("Somehow I can't seem to find the sound files I need (RESOURCE.AUD/RESOURCE.SFX), aborting");
 	}
+
+	addScriptChunkSources();
+	scanNewSources();
 
 	detectSciVersion();
 
@@ -969,6 +942,22 @@ void ResourceManager::init(bool initFromFallbackDetector) {
 		}
 #endif
 	}
+}
+
+void ResourceManager::initForDetection() {
+	assert(!g_sci);
+
+	_memoryLocked = 0;
+	_memoryLRU = 0;
+	_LRU.clear();
+	_resMap.clear();
+	_audioMapSCI1 = NULL;
+
+	_mapVersion = detectMapVersion();
+	_volVersion = detectVolVersion();
+
+	scanNewSources();
+	detectSciVersion();
 }
 
 ResourceManager::~ResourceManager() {
@@ -1152,7 +1141,6 @@ ResVersion ResourceManager::detectMapVersion() {
 			}
 			break;
 		} else if (rsrc->getSourceType() == kSourceMacResourceFork) {
-			delete fileStream;
 			return kResVersionSci11Mac;
 		}
 	}
@@ -1674,6 +1662,9 @@ int ResourceManager::readResourceMapSCI1(ResourceSource *map) {
 	do {
 		type = fileStream->readByte() & 0x1F;
 		resMap[type].wOffset = fileStream->readUint16LE();
+		if (fileStream->eos())
+			return SCI_ERROR_RESMAP_NOT_FOUND;
+
 		resMap[prevtype].wSize = (resMap[type].wOffset
 		                          - resMap[prevtype].wOffset) / nEntrySize;
 		prevtype = type;
@@ -2293,15 +2284,6 @@ void ResourceManager::detectSciVersion() {
 			s_sciVersion = SCI_VERSION_1_1;
 			return;
 		}
-		// FIXME: this is really difficult, lsl1 spanish has map/vol sci1late
-		//  and the only current detection difference is movecounttype which
-		//  is increment here, but ignore for all the regular sci1late games
-		//  the problem is, we dont have access to that detection till later
-		//  so maybe (part of?) that detection should get moved in here
-		if (g_sci && (g_sci->getGameId() == GID_LSL1) && (g_sci->getLanguage() == Common::ES_ESP)) {
-			s_sciVersion = SCI_VERSION_1_MIDDLE;
-			return;
-		}
 		s_sciVersion = SCI_VERSION_1_LATE;
 		return;
 	case kResVersionSci11:
@@ -2367,6 +2349,9 @@ bool ResourceManager::detectPaletteMergingSci11() {
 		byte *data = res->data;
 		// Old palette format used in palette resource? -> it's merging
 		if ((data[0] == 0 && data[1] == 1) || (data[0] == 0 && data[1] == 0 && READ_LE_UINT16(data + 29) == 0))
+			return true;
+		// Hardcoded: Laura Bow 2 floppy uses new palette resource, but still palette merging + 16 bit color matching
+		if ((g_sci->getGameId() == GID_LAURABOW2) && (!g_sci->isCD()) && (!g_sci->isDemo()))
 			return true;
 		return false;
 	}

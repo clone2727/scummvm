@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -89,7 +89,7 @@ bool BaseSound::setSoundSimple() {
 		_sound->setLooping(_soundLooping);
 		_sound->setPrivateVolume(_soundPrivateVolume);
 		_sound->setLoopStart(_soundLoopStart);
-		_sound->_freezePaused = _soundFreezePaused;
+		_sound->setFreezePaused(_soundFreezePaused);
 		if (_soundPlaying) {
 			return _sound->resume();
 		} else {
@@ -130,7 +130,7 @@ bool BaseSound::pause(bool freezePaused) {
 	if (_sound) {
 		_soundPaused = true;
 		if (freezePaused) {
-			_sound->_freezePaused = true;
+			_sound->setFreezePaused(true);
 		}
 		return _sound->pause();
 	} else {
@@ -150,13 +150,13 @@ bool BaseSound::resume() {
 bool BaseSound::persist(BasePersistenceManager *persistMgr) {
 	if (persistMgr->getIsSaving() && _sound) {
 		_soundPlaying = _sound->isPlaying();
-		_soundLooping = _sound->_looping;
-		_soundPrivateVolume = _sound->_privateVolume;
+		_soundLooping = _sound->isLooping();
+		_soundPrivateVolume = _sound->getPrivateVolume();
 		if (_soundPlaying) {
 			_soundPosition = _sound->getPosition();
 		}
-		_soundLoopStart = _sound->_loopStart;
-		_soundFreezePaused = _sound->_freezePaused;
+		_soundLoopStart = _sound->getLoopStart();
+		_soundFreezePaused = _sound->isFreezePaused();
 	}
 
 	if (persistMgr->getIsSaving()) {
@@ -164,18 +164,18 @@ bool BaseSound::persist(BasePersistenceManager *persistMgr) {
 		_sFXParam1 = _sFXParam2 = _sFXParam3 = _sFXParam4 = 0;
 	}
 
-	persistMgr->transfer(TMEMBER(_gameRef));
+	persistMgr->transferPtr(TMEMBER_PTR(_gameRef));
 
-	persistMgr->transfer(TMEMBER(_soundFilename));
-	persistMgr->transfer(TMEMBER(_soundLooping));
-	persistMgr->transfer(TMEMBER(_soundPaused));
-	persistMgr->transfer(TMEMBER(_soundFreezePaused));
-	persistMgr->transfer(TMEMBER(_soundPlaying));
-	persistMgr->transfer(TMEMBER(_soundPosition));
-	persistMgr->transfer(TMEMBER(_soundPrivateVolume));
-	persistMgr->transfer(TMEMBER(_soundStreamed));
-	persistMgr->transfer(TMEMBER_INT(_soundType));
-	persistMgr->transfer(TMEMBER(_soundLoopStart));
+	persistMgr->transferString(TMEMBER(_soundFilename));
+	persistMgr->transferBool(TMEMBER(_soundLooping));
+	persistMgr->transferBool(TMEMBER(_soundPaused));
+	persistMgr->transferBool(TMEMBER(_soundFreezePaused));
+	persistMgr->transferBool(TMEMBER(_soundPlaying));
+	persistMgr->transferUint32(TMEMBER(_soundPosition));
+	persistMgr->transferSint32(TMEMBER(_soundPrivateVolume));
+	persistMgr->transferBool(TMEMBER(_soundStreamed));
+	persistMgr->transferSint32(TMEMBER_INT(_soundType));
+	persistMgr->transferUint32(TMEMBER(_soundLoopStart));
 
 	return STATUS_OK;
 }
@@ -232,7 +232,7 @@ bool BaseSound::setPrivateVolume(int volume) {
 	if (!_sound) {
 		return STATUS_FAILED;
 	} else {
-		_sound->_privateVolume = volume;
+		_sound->setPrivateVolume(volume);
 		return STATUS_OK;
 	}
 }
@@ -241,7 +241,7 @@ int BaseSound::getVolumePercent() {
 	if (!_sound) {
 		return 0;
 	} else {
-		return _sound->_privateVolume * 100 / 255;
+		return _sound->getPrivateVolume() * 100 / 255;
 	}
 }
 
@@ -249,7 +249,7 @@ int BaseSound::getVolume() {
 	if (!_sound) {
 		return 0;
 	} else {
-		return _sound->_privateVolume;
+		return _sound->getPrivateVolume();
 	}
 }
 
@@ -289,4 +289,4 @@ bool BaseSound::applyFX(TSFXType type, float param1, float param2, float param3,
 	return STATUS_OK;
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

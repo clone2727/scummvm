@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -2924,7 +2924,7 @@ void AGOSEngine::windowDrawChar(WindowBlock *window, uint x, uint y, byte chr) {
 	Graphics::Surface *screen = _system->lockScreen();
 
 	if (getGameType() == GType_SIMON1 || getGameType() == GType_SIMON2) {
-		dst = (byte *)screen->pixels;
+		dst = (byte *)screen->getPixels();
 		dstPitch = screen->pitch;
 		h = 8;
 		w = 6;
@@ -2961,7 +2961,7 @@ void AGOSEngine::windowDrawChar(WindowBlock *window, uint x, uint y, byte chr) {
 			error("windowDrawChar: Unknown language %d", _language);
 		}
 	} else if (getGameType() == GType_ELVIRA2 || getGameType() == GType_WW) {
-		dst = (byte *)screen->pixels;
+		dst = (byte *)screen->getPixels();
 		dstPitch = screen->pitch;
 		h = 8;
 		w = 6;
@@ -2986,14 +2986,14 @@ void AGOSEngine::windowDrawChar(WindowBlock *window, uint x, uint y, byte chr) {
 			error("windowDrawChar: Unknown language %d", _language);
 		}
 	} else if (getGameType() == GType_ELVIRA1) {
-		dst = (byte *)screen->pixels;
+		dst = (byte *)screen->getPixels();
 		dstPitch = screen->pitch;
 		h = 8;
 		w = 6;
 
 		src = english_elvira1Font + (chr - 32) * 8;
 	} else {
-		dst = (byte *)screen->pixels;
+		dst = (byte *)screen->getPixels();
 		dstPitch = screen->pitch;
 		h = 8;
 		w = 8;

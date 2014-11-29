@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -31,8 +31,7 @@
 
 #include "video/coktel_decoder.h"
 
-#include "video/codecs/codec.h"
-#include "video/codecs/indeo3.h"
+#include "image/codecs/indeo3.h"
 
 #ifdef VIDEO_COKTELDECODER_H
 
@@ -97,12 +96,8 @@ void CoktelDecoder::setSurfaceMemory(void *mem, uint16 width, uint16 height, uin
 	assert(bpp == getPixelFormat().bytesPerPixel);
 
 	// Create a surface over this memory
-	_surface.w      = width;
-	_surface.h      = height;
-	_surface.pitch  = width * bpp;
-	_surface.pixels = mem;
 	// TODO: Check whether it is fine to assume we want the setup PixelFormat.
-	_surface.format = getPixelFormat();
+	_surface.init(width, height, width * bpp, mem, getPixelFormat());
 
 	_ownSurface = false;
 }
@@ -122,7 +117,7 @@ const Graphics::Surface *CoktelDecoder::getSurface() const {
 }
 
 bool CoktelDecoder::hasSurface() {
-	return _surface.pixels != 0;
+	return _surface.getPixels();
 }
 
 void CoktelDecoder::createSurface() {
@@ -143,7 +138,7 @@ void CoktelDecoder::freeSurface() {
 		_surface.w      = 0;
 		_surface.h      = 0;
 		_surface.pitch  = 0;
-		_surface.pixels = 0;
+		_surface.setPixels(0);
 		_surface.format = Graphics::PixelFormat();
 	} else
 		_surface.free();
@@ -473,7 +468,7 @@ void CoktelDecoder::renderBlockWhole(Graphics::Surface &dstSurf, const byte *src
 
 	rect.clip(dstSurf.w, dstSurf.h);
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left * dstSurf.format.bytesPerPixel;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	for (int i = 0; i < rect.height(); i++) {
 		memcpy(dst, src, rect.width() * dstSurf.format.bytesPerPixel);
 
@@ -488,7 +483,7 @@ void CoktelDecoder::renderBlockWhole4X(Graphics::Surface &dstSurf, const byte *s
 
 	rect.clip(dstSurf.w, dstSurf.h);
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	for (int i = 0; i < rect.height(); i++) {
 		      byte *dstRow = dst;
 		const byte *srcRow = src;
@@ -515,7 +510,7 @@ void CoktelDecoder::renderBlockWhole2Y(Graphics::Surface &dstSurf, const byte *s
 
 	int16 height = rect.height();
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	while (height > 1) {
 		memcpy(dst                 , src, rect.width());
 		memcpy(dst + dstSurf.pitch, src, rect.width());
@@ -535,7 +530,7 @@ void CoktelDecoder::renderBlockSparse(Graphics::Surface &dstSurf, const byte *sr
 
 	rect.clip(dstSurf.w, dstSurf.h);
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	for (int i = 0; i < rect.height(); i++) {
 		byte *dstRow = dst;
 		int16 pixWritten = 0;
@@ -572,7 +567,7 @@ void CoktelDecoder::renderBlockSparse2Y(Graphics::Surface &dstSurf, const byte *
 
 	rect.clip(dstSurf.w, dstSurf.h);
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	for (int i = 0; i < rect.height(); i += 2) {
 		byte *dstRow = dst;
 		int16 pixWritten = 0;
@@ -604,7 +599,7 @@ void CoktelDecoder::renderBlockRLE(Graphics::Surface &dstSurf, const byte *src, 
 
 	rect.clip(dstSurf.w, dstSurf.h);
 
-	byte *dst = (byte *)dstSurf.pixels + (rect.top * dstSurf.pitch) + rect.left;
+	byte *dst = (byte *)dstSurf.getBasePtr(rect.left, rect.top);
 	for (int i = 0; i < rect.height(); i++) {
 		byte *dstRow = dst;
 		int16 pixWritten = 0;
@@ -865,7 +860,7 @@ void PreIMDDecoder::renderFrame() {
 	uint16 h = CLIP<int32>(_surface.h - _y, 0, _height);
 
 	const byte *src = _videoBuffer;
-	      byte *dst = (byte *)_surface.pixels + (_y * _surface.pitch) + _x;
+	      byte *dst = (byte *)_surface.getBasePtr(_x, _y);
 
 	uint32 frameDataSize = _videoBufferSize;
 
@@ -1458,7 +1453,7 @@ bool IMDDecoder::renderFrame(Common::Rect &rect) {
 			const int offsetY = (_y + rect.top) * _surface.pitch;
 			const int offset  = offsetX + offsetY;
 
-			if (deLZ77((byte *)_surface.pixels + offset, dataPtr, dataSize,
+			if (deLZ77((byte *)_surface.getPixels() + offset, dataPtr, dataSize,
 			           _surface.w * _surface.h * _surface.format.bytesPerPixel - offset))
 				return true;
 		}
@@ -1696,7 +1691,7 @@ bool VMDDecoder::openExternalCodec() {
 		if (_videoCodec == kVideoCodecIndeo3) {
 			_isPaletted = false;
 
-			_codec = new Indeo3Decoder(_width, _height);
+			_codec = new Image::Indeo3Decoder(_width, _height);
 
 		} else {
 			warning("VMDDecoder::openExternalCodec(): Unknown video codec FourCC \"%s\"",
@@ -1879,11 +1874,8 @@ bool VMDDecoder::assessVideoProperties() {
 			_videoBuffer[i] = new byte[_videoBufferSize];
 			memset(_videoBuffer[i], 0, _videoBufferSize);
 
-			_8bppSurface[i].w      = _width * _bytesPerPixel;
-			_8bppSurface[i].h      = _height;
-			_8bppSurface[i].pitch  = _width * _bytesPerPixel;
-			_8bppSurface[i].pixels = _videoBuffer[i];
-			_8bppSurface[i].format = Graphics::PixelFormat::createFormatCLUT8();
+			_8bppSurface[i].init(_width * _bytesPerPixel, _height, _width * _bytesPerPixel,
+			                     _videoBuffer[i], Graphics::PixelFormat::createFormatCLUT8());
 		}
 	}
 
@@ -2270,14 +2262,14 @@ bool VMDDecoder::renderFrame(Common::Rect &rect) {
 			return false;
 
 		Common::MemoryReadStream frameStream(_videoBuffer[0], _videoBufferLen[0]);
-		const Graphics::Surface *codecSurf = _codec->decodeImage(&frameStream);
+		const Graphics::Surface *codecSurf = _codec->decodeFrame(frameStream);
 		if (!codecSurf)
 			return false;
 
 		rect = Common::Rect(_x, _y, _x + codecSurf->w, _y + codecSurf->h);
 		rect.clip(Common::Rect(_x, _y, _x + _width, _y + _height));
 
-		renderBlockWhole(_surface, (const byte *) codecSurf->pixels, rect);
+		renderBlockWhole(_surface, (const byte *)codecSurf->getPixels(), rect);
 		return true;
 	}
 
@@ -2296,9 +2288,9 @@ bool VMDDecoder::renderFrame(Common::Rect &rect) {
 			// Directly uncompress onto the video surface
 			const int offsetX = rect.left * _surface.format.bytesPerPixel;
 			const int offsetY = (_y + rect.top) * _surface.pitch;
-			const int offset  = offsetX - offsetY;
+			const int offset  = offsetX + offsetY;
 
-			if (deLZ77((byte *)_surface.pixels + offset, dataPtr, dataSize,
+			if (deLZ77((byte *)_surface.getPixels() + offset, dataPtr, dataSize,
 			           _surface.w * _surface.h * _surface.format.bytesPerPixel - offset))
 				return true;
 		}
@@ -2406,10 +2398,11 @@ void VMDDecoder::blit16(const Graphics::Surface &srcSurf, Common::Rect &rect) {
 
 	Graphics::PixelFormat pixelFormat = getPixelFormat();
 
-	const byte *src = (byte *)srcSurf.pixels +
+	// We cannot use getBasePtr here because srcSurf.format.bytesPerPixel is
+	// different from _bytesPerPixel.
+	const byte *src = (const byte *)srcSurf.getPixels() +
 		(srcRect.top * srcSurf.pitch) + srcRect.left * _bytesPerPixel;
-	byte *dst = (byte *)_surface.pixels +
-		((_y + rect.top) * _surface.pitch) + (_x + rect.left) * _surface.format.bytesPerPixel;
+	byte *dst = (byte *)_surface.getBasePtr(_x + rect.left, _y + rect.top);
 
 	for (int i = 0; i < rect.height(); i++) {
 		const byte *srcRow = src;
@@ -2426,8 +2419,10 @@ void VMDDecoder::blit16(const Graphics::Surface &srcSurf, Common::Rect &rect) {
 			if ((r == 0) && (g == 0) && (b == 0))
 				c = 0;
 
-			if (_surface.format.bytesPerPixel == 2)
+			if      (_surface.format.bytesPerPixel == 2)
 				*((uint16 *)dstRow) = (uint16) c;
+			else if (_surface.format.bytesPerPixel == 4)
+				*((uint32 *)dstRow) = (uint32) c;
 		}
 
 		src += srcSurf .pitch;
@@ -2444,10 +2439,11 @@ void VMDDecoder::blit24(const Graphics::Surface &srcSurf, Common::Rect &rect) {
 
 	Graphics::PixelFormat pixelFormat = getPixelFormat();
 
-	const byte *src = (byte *)srcSurf.pixels +
+	// We cannot use getBasePtr here because srcSurf.format.bytesPerPixel is
+	// different from _bytesPerPixel.
+	const byte *src = (const byte *)srcSurf.getPixels() +
 		(srcRect.top * srcSurf.pitch) + srcRect.left * _bytesPerPixel;
-	byte *dst = (byte *)_surface.pixels +
-		((_y + rect.top) * _surface.pitch) + (_x + rect.left) * _surface.format.bytesPerPixel;
+	byte *dst = (byte *)_surface.getBasePtr(_x + rect.left, _y + rect.top);
 
 	for (int i = 0; i < rect.height(); i++) {
 		const byte *srcRow = src;
@@ -2462,8 +2458,10 @@ void VMDDecoder::blit24(const Graphics::Surface &srcSurf, Common::Rect &rect) {
 			if ((r == 0) && (g == 0) && (b == 0))
 				c = 0;
 
-			if (_surface.format.bytesPerPixel == 2)
+			if      (_surface.format.bytesPerPixel == 2)
 				*((uint16 *)dstRow) = (uint16) c;
+			else if (_surface.format.bytesPerPixel == 4)
+				*((uint32 *)dstRow) = (uint32) c;
 		}
 
 		src += srcSurf .pitch;

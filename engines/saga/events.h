@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -172,8 +172,17 @@ class Events {
 		return chain(NULL, event);
 	}
 
+	// Schedules a music event in the event list; returns a pointer to the scheduled
+	// event columns suitable for chaining if desired.
+	EventColumns *queueMusic(long musicId, bool loop = false, long time = 0) {
+		return chainMusic(NULL, musicId, loop, time);
+	}
+
 	// Places a 'event' on the end of an event columns given by 'eventColumns'
 	EventColumns *chain(EventColumns *eventColumns, const Event &event);
+
+	// Places a music 'event' on the end of an event columns given by 'eventColumns'
+	EventColumns *chainMusic(EventColumns *eventColumns, long musicId, bool loop = false, long time = 0);
 
  private:
 	int handleContinuous(Event *event);

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ *
  */
 
 namespace {
@@ -78,7 +79,7 @@ const KYRAGameDescription adGameDescs[] = {
 			0,
 			AD_ENTRY1("DISK1.EXE", "c8641d0414d6c966d0a3dad79db07bf4"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO4(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK)
 		},
@@ -91,7 +92,7 @@ const KYRAGameDescription adGameDescs[] = {
 			0,
 			AD_ENTRY1("DISK1.EXE", "5d5cee4c3d0b68d586788b74243d254a"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO4(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK)
 		},
@@ -105,7 +106,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "3c244298395520bb62b5edfe41688879"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -118,7 +119,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "796e44863dd22fa635b042df1bf16673"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -130,7 +131,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "abf8eb360e79a6c2a837751fbd4d3d24"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -142,7 +143,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "6018e1dfeaca7fe83f8d0b00eb0dd049"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -154,7 +155,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "f0b276781f47c130f423ec9679fe9ed9"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -166,7 +167,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "689b62b7519215c1b2571d466c95624c"),
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -178,7 +179,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "8909b41596913b3f5deaf3c9f1017b01"),
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -190,7 +191,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "747861d2a9c643c59fdab570df5b9093"),
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -202,7 +203,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("GEMCUT.EMC", "ef08c8c237ee1473fd52578303fc36df"),
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -318,7 +319,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("GEMCUT.PAK", "fac399fe62f98671e56a005c5e94e39f"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO4(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -330,7 +331,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("GEMCUT.PAK", "230f54e6afc007ab4117159181a1c722"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO4(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -342,7 +343,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("GEMCUT.PAK", "b037c41768b652a040360ffa3556fd2a"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO4(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -355,7 +356,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("GEMCUT.PAK", "d8327fc4b7a72b23c900fa13aef4093a"),
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO4(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -417,7 +418,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Demo",
 			AD_ENTRY1("DEMO1.WSA", "fb722947d94897512b13b50cc84fd648"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO5(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -430,7 +431,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Demo/CD",
 			AD_ENTRY1("INTRO.VRM", "e3045fb69b8c29db84b8fda3ccbdac54"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO | ADGF_CD,
 			GUIO4(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -443,7 +444,7 @@ const KYRAGameDescription adGameDescs[] = {
 			0,
 			AD_ENTRY1("WESTWOOD.001", "3f52dda68c4f7696c8309038be9f4151"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -456,7 +457,7 @@ const KYRAGameDescription adGameDescs[] = {
 			0,
 			AD_ENTRY1("WESTWOOD.001", "d787b9559afddfe058b84c0b3a787224"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -469,7 +470,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("FATE.PAK", "1ba18be685ad8e5a0ab5d46a0ce4d345"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -482,7 +483,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("FATE.PAK", "262fb69dd8e52e596c7aefc6456f7c1b"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -495,7 +496,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("FATE.PAK", "f7de11506b4c8fdf64bc763206c3e4e7"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -508,7 +509,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("FATE.PAK", "e0a70c31b022cb4bb3061890020fc27c"),
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -521,7 +522,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("CH01-S00.DLG", "54b7a5a94f6e1ec91f0fb1311eec09ab"),
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -534,7 +535,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Extracted",
 			AD_ENTRY1("CH01-S00.DLG", "7c36c0e63ab8c81cbb3ea58681331366"),
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -547,7 +548,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "28cbad1c5bf06b2d3825ae57d760d032"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -559,7 +560,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "28cbad1c5bf06b2d3825ae57d760d032"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -571,7 +572,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "28cbad1c5bf06b2d3825ae57d760d032"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -585,7 +586,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "30487f3b8d7790c7857f4769ff2dd125"),
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -597,7 +598,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "30487f3b8d7790c7857f4769ff2dd125"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -609,7 +610,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "30487f3b8d7790c7857f4769ff2dd125"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -622,7 +623,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "39772ff82e42c4c520050518deb82e64"),
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -635,7 +636,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "39772ff82e42c4c520050518deb82e64"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -648,7 +649,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FATE.PAK", "39772ff82e42c4c520050518deb82e64"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -662,7 +663,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD",
 			AD_ENTRY1("FERRY.CPS", "763e2103858347d4ffffc329910d323f"),
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -675,7 +676,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD/Demo",
 			AD_ENTRY1("THANKS.CPS", "b1a78d990b120bb2234b7094f74e30a5"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD | ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -688,7 +689,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD/Demo",
 			AD_ENTRY1("THANKS.CPS", "b1a78d990b120bb2234b7094f74e30a5"),
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD | ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -701,7 +702,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"CD/Demo",
 			AD_ENTRY1("THANKS.CPS", "b1a78d990b120bb2234b7094f74e30a5"),
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD | ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -714,7 +715,7 @@ const KYRAGameDescription adGameDescs[] = {
 			"Demo",
 			AD_ENTRY1("VOC.PAK", "ecb3561b63749158172bf21528cf5f45"),
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -783,7 +784,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -799,7 +800,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -815,7 +816,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -833,7 +834,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -849,7 +850,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -865,7 +866,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -933,7 +934,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -949,7 +950,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -965,7 +966,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -983,7 +984,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -999,7 +1000,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -1015,7 +1016,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE,
 			GUIO5(GUIO_NOMIDI, GUIO_RENDERVGA, GAMEOPTION_KYRA3_AUDIENCE, GAMEOPTION_KYRA3_SKIP, GAMEOPTION_KYRA3_HELIUM)
 		},
@@ -1034,7 +1035,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1051,7 +1052,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1068,7 +1069,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1085,7 +1086,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1102,7 +1103,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1119,7 +1120,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1137,7 +1138,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1155,7 +1156,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1172,7 +1173,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1190,7 +1191,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1207,7 +1208,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1224,7 +1225,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1241,7 +1242,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1258,7 +1259,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1275,7 +1276,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DROPLANGUAGE | ADGF_CD,
 			GUIO7(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1291,7 +1292,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1307,7 +1308,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1323,7 +1324,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1339,7 +1340,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1356,7 +1357,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1373,7 +1374,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1390,7 +1391,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1407,7 +1408,24 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
+			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
+		},
+		LOL_FLOPPY_FLAGS
+	},
+
+	{ // French floppy version 1.20, bug #3608967 "Lands of Lore - french version 1.20 MD5"
+		{
+			"lol",
+			"Extracted",
+			{
+				{"GENERAL.PAK", 0, "a9e22c450c4f1de6a600261183430394", -1 },
+				{"CHAPTER7.PAK", 0, "fb5294f7445318876741c8db39ba0b1a", -1 },
+				{ 0, 0, 0, 0 }
+			},
+			Common::FR_FRA,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1424,7 +1442,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1442,7 +1460,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::RU_RUS,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO8(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GAMEOPTION_LOL_SCROLLING, GAMEOPTION_LOL_CURSORS)
 		},
@@ -1493,7 +1511,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -1509,7 +1527,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO5(GUIO_MIDIADLIB, GUIO_MIDIMT32, GUIO_MIDIGM, GUIO_MIDIPCSPK, GUIO_RENDERVGA)
 		},
@@ -1527,7 +1545,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_TESTING,
 			GUIO7(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GUIO_RENDEREGA, GUIO_RENDERCGA, GAMEOPTION_EOB_HPGRAPHS)
 		},
@@ -1543,9 +1561,25 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_TESTING,
 			GUIO7(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GUIO_RENDEREGA, GUIO_RENDERCGA, GAMEOPTION_EOB_HPGRAPHS)
+		},
+		EOB_FLAGS
+	},
+
+	{	// Italian fan translation
+		{
+			"eob",
+			0,
+			{
+				{ "EOBDATA3.PAK", 0, "3ed915ab5b94d60dbfe1b55379889c51", -1 },
+				{ 0, 0, 0, 0 }
+			},
+				Common::IT_ITA,
+				Common::kPlatformDOS,
+				ADGF_TESTING,
+				GUIO7(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GUIO_RENDEREGA, GUIO_RENDERCGA, GAMEOPTION_EOB_HPGRAPHS)
 		},
 		EOB_FLAGS
 	},
@@ -1559,7 +1593,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_TESTING,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GUIO_RENDEREGA, GAMEOPTION_EOB_HPGRAPHS)
 		},
@@ -1575,7 +1609,7 @@ const KYRAGameDescription adGameDescs[] = {
 				{ 0, 0, 0, 0 }
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_TESTING,
 			GUIO6(GUIO_NOSPEECH, GUIO_MIDIADLIB, GUIO_MIDIPCSPK, GUIO_RENDERVGA, GUIO_RENDEREGA, GAMEOPTION_EOB_HPGRAPHS)
 		},

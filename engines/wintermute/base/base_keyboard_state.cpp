@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -221,12 +221,12 @@ bool BaseKeyboardState::persist(BasePersistenceManager *persistMgr) {
 	//if (!persistMgr->getIsSaving()) cleanup();
 	BaseScriptable::persist(persistMgr);
 
-	persistMgr->transfer(TMEMBER(_currentAlt));
-	persistMgr->transfer(TMEMBER(_currentCharCode));
-	persistMgr->transfer(TMEMBER(_currentControl));
-	persistMgr->transfer(TMEMBER(_currentKeyData));
-	persistMgr->transfer(TMEMBER(_currentPrintable));
-	persistMgr->transfer(TMEMBER(_currentShift));
+	persistMgr->transferBool(TMEMBER(_currentAlt));
+	persistMgr->transferUint32(TMEMBER(_currentCharCode));
+	persistMgr->transferBool(TMEMBER(_currentControl));
+	persistMgr->transferUint32(TMEMBER(_currentKeyData));
+	persistMgr->transferBool(TMEMBER(_currentPrintable));
+	persistMgr->transferBool(TMEMBER(_currentShift));
 
 	if (!persistMgr->getIsSaving()) {
 		_keyStates = new uint8[323]; // Hardcoded size for the common/keyboard.h enum
@@ -276,32 +276,70 @@ uint32 BaseKeyboardState::keyCodeToVKey(Common::Event *event) {
 }
 
 enum VKeyCodes {
-	kVkSpace = 32,
-	kVkLeft  = 37,
-	kVkUp    = 38,
-	kVkRight = 39,
-	kVkDown  = 40
+	kVkEscape = 27,
+	kVkSpace  = 32,
+	kVkHome   = 36,
+	kVkLeft   = 37,
+	kVkUp     = 38,
+	kVkRight  = 39,
+	kVkDown   = 40,
+
+	kVkF1     = 112,
+	kVkF2     = 113,
+	kVkF3     = 114,
+	kVkF4     = 115,
+	kVkF5     = 116,
+	kVkF6     = 117,
+	kVkF7     = 118,
+	kVkF8     = 119,
+	kVkF9     = 120,
+	kVkF10    = 121,
+	kVkF11    = 122,
+	kVkF12    = 123
 };
 
 //////////////////////////////////////////////////////////////////////////
 Common::KeyCode BaseKeyboardState::vKeyToKeyCode(uint32 vkey) {
 	// todo
 	switch (vkey) {
+	case kVkEscape:
+		return Common::KEYCODE_ESCAPE;
 	case kVkSpace:
 		return Common::KEYCODE_SPACE;
-		break;
+	case kVkHome:
+		return Common::KEYCODE_HOME;
 	case kVkLeft:
 		return Common::KEYCODE_LEFT;
-		break;
 	case kVkRight:
 		return Common::KEYCODE_RIGHT;
-		break;
 	case kVkUp:
 		return Common::KEYCODE_UP;
-		break;
 	case kVkDown:
 		return Common::KEYCODE_DOWN;
-		break;
+	case kVkF1:
+		return Common::KEYCODE_F1;
+	case kVkF2:
+		return Common::KEYCODE_F2;
+	case kVkF3:
+		return Common::KEYCODE_F3;
+	case kVkF4:
+		return Common::KEYCODE_F4;
+	case kVkF5:
+		return Common::KEYCODE_F5;
+	case kVkF6:
+		return Common::KEYCODE_F6;
+	case kVkF7:
+		return Common::KEYCODE_F7;
+	case kVkF8:
+		return Common::KEYCODE_F8;
+	case kVkF9:
+		return Common::KEYCODE_F9;
+	case kVkF10:
+		return Common::KEYCODE_F10;
+	case kVkF11:
+		return Common::KEYCODE_F11;
+	case kVkF12:
+		return Common::KEYCODE_F12;
 	default:
 		warning("Unknown VKEY: %d", vkey);
 		return (Common::KeyCode)vkey;
@@ -310,4 +348,4 @@ Common::KeyCode BaseKeyboardState::vKeyToKeyCode(uint32 vkey) {
 
 }
 
-} // end of namespace Wintermute
+} // End of namespace Wintermute

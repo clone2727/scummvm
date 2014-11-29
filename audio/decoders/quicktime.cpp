@@ -414,8 +414,15 @@ void QuickTimeAudioDecoder::QuickTimeAudioTrack::skipSamples(const Timestamp &le
 }
 
 void QuickTimeAudioDecoder::QuickTimeAudioTrack::findEdit(const Timestamp &position) {
-	for (_curEdit = 0; _curEdit < _parentTrack->editCount - 1 && position > Timestamp(0, _parentTrack->editList[_curEdit].timeOffset, _decoder->_timeScale); _curEdit++)
-		;
+	// Go through the edits look for where we find out we need to be. As long
+	// as the position is >= to the edit's start time, it is considered to be in that
+	// edit. seek() already figured out if we reached the last edit, so we don't need
+	// to handle that case here.
+	for (_curEdit = 0; _curEdit < _parentTrack->editCount - 1; _curEdit++) {
+		Timestamp nextEditTime(0, _parentTrack->editList[_curEdit + 1].timeOffset, _decoder->_timeScale);
+		if (position < nextEditTime)
+			break;
+	}
 
 	enterNewEdit(position);
 }
@@ -585,7 +592,7 @@ bool QuickTimeAudioDecoder::AudioSampleDesc::isAudioCodecSupported() const {
 
 	if (_codecTag == MKTAG('m', 'p', '4', 'a')) {
 		Common::String audioType;
-		switch (_parentTrack->objectTypeMP4) {
+		switch (_objectTypeMP4) {
 		case 0x40: // AAC
 #ifdef USE_FAAD
 			return true;
@@ -643,13 +650,13 @@ void QuickTimeAudioDecoder::AudioSampleDesc::initCodec() {
 	switch (_codecTag) {
 	case MKTAG('Q', 'D', 'M', '2'):
 #ifdef AUDIO_QDM2_H
-		_codec = makeQDM2Decoder(_parentTrack->extraData);
+		_codec = makeQDM2Decoder(_extraData);
 #endif
 		break;
 	case MKTAG('m', 'p', '4', 'a'):
 #ifdef USE_FAAD
-		if (_parentTrack->objectTypeMP4 == 0x40)
-			_codec = makeAACDecoder(_parentTrack->extraData);
+		if (_objectTypeMP4 == 0x40)
+			_codec = makeAACDecoder(_extraData);
 #endif
 		break;
 	default:

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -37,6 +37,8 @@
 #include "sci/engine/state.h"
 #include "sci/engine/kernel.h"
 #include "sci/engine/savegame.h"
+#include "sci/graphics/menu.h"
+#include "sci/sound/audio.h"
 #include "sci/console.h"
 
 namespace Sci {
@@ -494,6 +496,21 @@ reg_t kFileIOWriteString(EngineState *s, int argc, reg_t *argv) {
 	Common::String str = s->_segMan->getString(argv[1]);
 	debugC(kDebugLevelFile, "kFileIO(writeString): %d", handle);
 
+	// Handle sciAudio calls in fanmade games here. sciAudio is an
+	// external .NET library for playing MP3 files in fanmade games.
+	// It runs in the background, and obtains sound commands from the
+	// currently running game via text files (called "conductor files").
+	// We skip creating these files, and instead handle the calls
+	// directly. Since the sciAudio calls are only creating text files,
+	// this is probably the most straightforward place to handle them.
+	if (handle == 0xFFFF && str.hasPrefix("(sciAudio")) {
+		Common::List<ExecStack>::const_iterator iter = s->_executionStack.reverse_begin();
+		iter--;	// sciAudio
+		iter--;	// sciAudio child
+		g_sci->_audio->handleFanmadeSciAudio(iter->sendp, s->_segMan);
+		return NULL_REG;
+	}
+
 #ifdef ENABLE_SCI32
 	if (handle == VIRTUALFILE_HANDLE) {
 		s->_virtualIndexFile->write(str.c_str(), str.size());
@@ -718,7 +735,7 @@ reg_t kSave(EngineState *s, int argc, reg_t *argv) {
 
 reg_t kSaveGame(EngineState *s, int argc, reg_t *argv) {
 	Common::String game_id;
- 	int16 virtualId = argv[1].toSint16();
+	int16 virtualId = argv[1].toSint16();
 	int16 savegameId = -1;
 	Common::String game_description;
 	Common::String version;
@@ -743,11 +760,11 @@ reg_t kSaveGame(EngineState *s, int argc, reg_t *argv) {
 		savegameId = dialog->runModalWithCurrentTarget();
 		game_description = dialog->getResultString();
 		if (game_description.empty()) {
-			// create our own description for the saved game, the user didnt enter it
+			// create our own description for the saved game, the user didn't enter it
 			game_description = dialog->createDefaultSaveDescription(savegameId);
 		}
 		delete dialog;
-		g_sci->_soundCmd->pauseAll(false); // unpause music ( we can't have it paused during save)
+		g_sci->_soundCmd->pauseAll(false); // unpause music (we can't have it paused during save)
 		if (savegameId < 0)
 			return NULL_REG;
 
@@ -770,7 +787,10 @@ reg_t kSaveGame(EngineState *s, int argc, reg_t *argv) {
 				return NULL_REG;
 		} else if (virtualId < SAVEGAMEID_OFFICIALRANGE_START) {
 			// virtualId is low, we assume that scripts expect us to create new slot
-			if (virtualId == s->_lastSaveVirtualId) {
+			if (g_sci->getGameId() == GID_JONES) {
+				// Jones has one save slot only
+				savegameId = 0;
+			} else if (virtualId == s->_lastSaveVirtualId) {
 				// if last virtual id is the same as this one, we assume that caller wants to overwrite last save
 				savegameId = s->_lastSaveNewId;
 			} else {
@@ -846,14 +866,17 @@ reg_t kRestoreGame(EngineState *s, int argc, reg_t *argv) {
 		}
 		// don't adjust ID of the saved game, it's already correct
 	} else {
-		if (argv[2].isNull())
-			error("kRestoreGame: called with parameter 2 being NULL");
-		// Real call from script, we need to adjust ID
-		if ((savegameId < SAVEGAMEID_OFFICIALRANGE_START) || (savegameId > SAVEGAMEID_OFFICIALRANGE_END)) {
-			warning("Savegame ID %d is not allowed", savegameId);
-			return TRUE_REG;
+		if (g_sci->getGameId() == GID_JONES) {
+			// Jones has one save slot only
+			savegameId = 0;
+		} else {
+			// Real call from script, we need to adjust ID
+			if ((savegameId < SAVEGAMEID_OFFICIALRANGE_START) || (savegameId > SAVEGAMEID_OFFICIALRANGE_END)) {
+				warning("Savegame ID %d is not allowed", savegameId);
+				return TRUE_REG;
+			}
+			savegameId -= SAVEGAMEID_OFFICIALRANGE_START;
 		}
-		savegameId -= SAVEGAMEID_OFFICIALRANGE_START;
 	}
 
 	s->r_acc = NULL_REG; // signals success
@@ -871,16 +894,47 @@ reg_t kRestoreGame(EngineState *s, int argc, reg_t *argv) {
 		in = saveFileMan->openForLoading(filename);
 		if (in) {
 			// found a savegame file
-
 			gamestate_restore(s, in);
 			delete in;
 
-			if (g_sci->getGameId() == GID_MOTHERGOOSE256) {
+			switch (g_sci->getGameId()) {
+			case GID_MOTHERGOOSE:
+				// WORKAROUND: Mother Goose SCI0
+				//  Script 200 / rm200::newRoom will set global C5h directly right after creating a child to the
+				//   current number of children plus 1.
+				//  We can't trust that global, that's why we set the actual savedgame id right here directly after
+				//   restoring a saved game.
+				//  If we didn't, the game would always save to a new slot
+				s->variables[VAR_GLOBAL][0xC5].setOffset(SAVEGAMEID_OFFICIALRANGE_START + savegameId);
+				break;
+			case GID_MOTHERGOOSE256:
 				// WORKAROUND: Mother Goose SCI1/SCI1.1 does some weird things for
 				//  saving a previously restored game.
 				// We set the current savedgame-id directly and remove the script
 				//  code concerning this via script patch.
 				s->variables[VAR_GLOBAL][0xB3].setOffset(SAVEGAMEID_OFFICIALRANGE_START + savegameId);
+				break;
+			case GID_JONES:
+				// HACK: The code that enables certain menu items isn't called when a game is restored from the
+				// launcher, or the "Restore game" option in the game's main menu - bugs #6537 and #6723.
+				// These menu entries are disabled when the game is launched, and are enabled when a new game is
+				// started. The code for enabling these entries is is all in script 1, room1::init, but that code
+				// path is never followed in these two cases (restoring game from the menu, or restoring a game
+				// from the ScummVM launcher). Thus, we perform the calls to enable the menus ourselves here.
+				// These two are needed when restoring from the launcher
+				// FIXME: The original interpreter saves and restores the menu state, so these attributes
+				// are automatically reset there. We may want to do the same.
+				g_sci->_gfxMenu->kernelSetAttribute(257 >> 8, 257 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);    // Sierra -> About Jones
+				g_sci->_gfxMenu->kernelSetAttribute(258 >> 8, 258 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);    // Sierra -> Help
+				// The rest are normally enabled from room1::init
+				g_sci->_gfxMenu->kernelSetAttribute(769 >> 8, 769 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);    // Options -> Delete current player
+				g_sci->_gfxMenu->kernelSetAttribute(513 >> 8, 513 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);    // Game -> Save Game
+				g_sci->_gfxMenu->kernelSetAttribute(515 >> 8, 515 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);    // Game -> Restore Game
+				g_sci->_gfxMenu->kernelSetAttribute(1025 >> 8, 1025 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);  // Status -> Statistics
+				g_sci->_gfxMenu->kernelSetAttribute(1026 >> 8, 1026 & 0xFF, SCI_MENU_ATTRIBUTE_ENABLED, TRUE_REG);  // Status -> Goals
+				break;
+			default:
+				break;
 			}
 		} else {
 			s->r_acc = TRUE_REG;
@@ -922,10 +976,16 @@ reg_t kCheckSaveGame(EngineState *s, int argc, reg_t *argv) {
 	if (virtualId == 0)
 		return NULL_REG;
 
-	// Find saved-game
-	if ((virtualId < SAVEGAMEID_OFFICIALRANGE_START) || (virtualId > SAVEGAMEID_OFFICIALRANGE_END))
-		error("kCheckSaveGame: called with invalid savegameId");
-	uint savegameId = virtualId - SAVEGAMEID_OFFICIALRANGE_START;
+	uint savegameId = 0;
+	if (g_sci->getGameId() == GID_JONES) {
+		// Jones has one save slot only
+	} else {
+		// Find saved game
+		if ((virtualId < SAVEGAMEID_OFFICIALRANGE_START) || (virtualId > SAVEGAMEID_OFFICIALRANGE_END))
+			error("kCheckSaveGame: called with invalid savegame ID (%d)", virtualId);
+		savegameId = virtualId - SAVEGAMEID_OFFICIALRANGE_START;
+	}
+
 	int savegameNr = findSavegame(saves, savegameId);
 	if (savegameNr == -1)
 		return NULL_REG;
@@ -964,7 +1024,7 @@ reg_t kGetSaveFiles(EngineState *s, int argc, reg_t *argv) {
 	char *saveNamePtr = saveNames;
 
 	for (uint i = 0; i < totalSaves; i++) {
-		*slot++ = make_reg(0, saves[i].id + SAVEGAMEID_OFFICIALRANGE_START); // Store the virtual savegame ID ffs. see above
+		*slot++ = make_reg(0, saves[i].id + SAVEGAMEID_OFFICIALRANGE_START); // Store the virtual savegame ID (see above)
 		strcpy(saveNamePtr, saves[i].name);
 		saveNamePtr += SCI_MAX_SAVENAME_LENGTH;
 	}

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -43,7 +43,7 @@
 
 #include "common/util.h"
 
-#include "graphics/decoders/iff.h"
+#include "image/iff.h"
 
 namespace Saga {
 
@@ -463,12 +463,12 @@ void Scene::changeScene(int16 sceneNumber, int actorsEntrance, SceneTransitionTy
 				_vm->_interface->setMode(kPanelSceneSubstitute);
 
 				if (file.open(sceneSubstitutes[i].image)) {
-					Graphics::IFFDecoder decoder;
+					Image::IFFDecoder decoder;
 					decoder.loadStream(file);
 					pal = decoder.getPalette();
 					rect.setWidth(decoder.getSurface()->w);
 					rect.setHeight(decoder.getSurface()->h);
-					_vm->_gfx->drawRegion(rect, (const byte *)decoder.getSurface()->pixels);
+					_vm->_gfx->drawRegion(rect, (const byte *)decoder.getSurface()->getPixels());
 					for (int j = 0; j < PAL_ENTRIES; j++) {
 						cPal[j].red = *pal++;
 						cPal[j].green = *pal++;
@@ -789,13 +789,7 @@ void Scene::loadScene(LoadSceneParams &loadSceneParams) {
 
 		if (_vm->getGameId() == GID_ITE) {
 			if (_sceneDescription.musicResourceId >= 0) {
-				event.type = kEvTOneshot;
-				event.code = kMusicEvent;
-				event.param = _sceneDescription.musicResourceId;
-				event.param2 = MUSIC_DEFAULT;
-				event.op = kEventPlay;
-				event.time = 0;
-				_vm->_events->queue(event);
+				_vm->_events->queueMusic(_sceneDescription.musicResourceId);
 			} else {
 				event.type = kEvTOneshot;
 				event.code = kMusicEvent;
@@ -1120,9 +1114,9 @@ void Scene::draw() {
 		_vm->_render->getBackGroundSurface()->getRect(rect);
 		rect.bottom = (_sceneClip.bottom < rect.bottom) ? getHeight() : rect.bottom;
 		if (_vm->_render->isFullRefresh())
-			_vm->_gfx->drawRegion(rect, (const byte *)_vm->_render->getBackGroundSurface()->pixels);
+			_vm->_gfx->drawRegion(rect, (const byte *)_vm->_render->getBackGroundSurface()->getPixels());
 		else
-			_vm->_gfx->drawBgRegion(rect, (const byte *)_vm->_render->getBackGroundSurface()->pixels);
+			_vm->_gfx->drawBgRegion(rect, (const byte *)_vm->_render->getBackGroundSurface()->getPixels());
 	}
 }
 
@@ -1220,7 +1214,7 @@ void Scene::cmdSceneChange(int argc, const char **argv) {
 	scene_num = atoi(argv[1]);
 
 	if ((scene_num < 1) || (uint(scene_num) >= _sceneLUT.size())) {
-		_vm->_console->DebugPrintf("Invalid scene number.\n");
+		_vm->_console->debugPrintf("Invalid scene number.\n");
 		return;
 	}
 

@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -41,7 +41,7 @@ bool Animation::loadAnimation(const Common::String &file) {
 	if (strncmp((char *)fileData, "KevinAguilar", 12))
 		return false;
 
-	strcpy(_name, file.c_str());
+	Common::strlcpy(_name, file.c_str(), 32);
 
 	uint32 headerSize = READ_LE_UINT32(fileData + 16);
 	uint32 uncompressedBytes = READ_LE_UINT32(fileData + 20);
@@ -52,6 +52,7 @@ bool Animation::loadAnimation(const Common::String &file) {
 	_x2 = READ_LE_UINT32(fileData + 40);
 	_y2 = READ_LE_UINT32(fileData + 44);
 	_paletteEntries = READ_LE_UINT32(fileData + 56);
+	// CHECKME: Useless variable _fps
 	_fps = READ_LE_UINT32(fileData + 60);
 	uint32 paletteSize = READ_LE_UINT32(fileData + 64);
 
@@ -78,8 +79,10 @@ bool Animation::loadAnimation(const Common::String &file) {
 		delete[] _frames;
 		_frames = new AnimationFrame[_numFrames];
 		for (int32 e = 0; e < _numFrames; e++) {
-			if (READ_LE_UINT32(data) != 0x12345678)
+			if (READ_LE_UINT32(data) != 0x12345678) {
+				delete[] finalBuffer;
 				return false;
+			}
 
 			int32 oldRef = READ_LE_UINT32(data + 4);
 			uint32 compressedSize = READ_LE_UINT32(data + 8);
@@ -117,6 +120,10 @@ Animation::Animation(ToonEngine *vm) : _vm(vm) {
 	_palette = NULL;
 	_numFrames = 0;
 	_frames = NULL;
+
+	_x1 = _y1 = _x2 = _y2 = 0;
+	_fps = 0;
+	_paletteEntries = 0;
 }
 
 Animation::~Animation() {
@@ -188,7 +195,7 @@ void Animation::drawFrame(Graphics::Surface &surface, int32 frame, int16 xx, int
 
 	int32 destPitch = surface.pitch;
 	uint8 *srcRow = _frames[frame]._data + offsX + (_frames[frame]._x2 - _frames[frame]._x1) * offsY;
-	uint8 *curRow = (uint8 *)surface.pixels + (yy + _frames[frame]._y1 + _y1 + offsY) * destPitch + (xx + _x1 + _frames[frame]._x1 + offsX);
+	uint8 *curRow = (uint8 *)surface.getBasePtr(xx + _x1 + _frames[frame]._x1 + offsX, yy + _frames[frame]._y1 + _y1 + offsY);
 	for (int16 y = 0; y < rectY; y++) {
 		uint8 *cur = curRow;
 		uint8 *c = srcRow + y * (_frames[frame]._x2 - _frames[frame]._x1);
@@ -229,7 +236,7 @@ void Animation::drawFrameWithMaskAndScale(Graphics::Surface &surface, int32 fram
 	int32 destPitch = surface.pitch;
 	int32 destPitchMask = mask->getWidth();
 	uint8 *c = _frames[frame]._data;
-	uint8 *curRow = (uint8 *)surface.pixels;
+	uint8 *curRow = (uint8 *)surface.getPixels();
 	uint8 *curRowMask = mask->getDataPtr();
 
 	bool shadowFlag = false;
@@ -339,7 +346,7 @@ void Animation::drawFontFrame(Graphics::Surface &surface, int32 frame, int16 xx,
 
 	int32 destPitch = surface.pitch;
 	uint8 *c = _frames[frame]._data;
-	uint8 *curRow = (uint8 *)surface.pixels + (yy + _frames[frame]._y1 + _y1) * destPitch + (xx + _x1 + _frames[frame]._x1);
+	uint8 *curRow = (uint8 *)surface.getBasePtr(xx + _x1 + _frames[frame]._x1, yy + _frames[frame]._y1 + _y1);
 	for (int16 y = 0; y < rectY; y++) {
 		unsigned char *cur = curRow;
 		for (int16 x = 0; x < rectX; x++) {
@@ -446,6 +453,7 @@ AnimationInstance::AnimationInstance(ToonEngine *vm, AnimationInstanceType type)
 	_y = 0;
 	_z = 0;
 	_layerZ = 0;
+	_visible = false;
 }
 
 void AnimationInstance::render() {

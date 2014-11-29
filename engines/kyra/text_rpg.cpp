@@ -8,16 +8,15 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
  *
  */
 
@@ -31,7 +30,7 @@
 namespace Kyra {
 
 enum {
-	kEoBTextBufferSize = 2048
+	kEoBTextBufferSize = 2560
 };
 
 TextDisplayer_rpg::TextDisplayer_rpg(KyraRpgEngine *engine, Screen *scr) : _vm(engine), _screen(scr),
@@ -129,7 +128,7 @@ void TextDisplayer_rpg::displayText(char *str, ...) {
 	uint16 charsPerLine = (sd->w << 3) / (_screen->getFontWidth() + _screen->_charWidth);
 
 	while (c) {
-		char a = tolower(_ctrl[1]);
+		char a = tolower((unsigned char)_ctrl[1]);
 
 		if (!_tempString2 && c == '%') {
 			if (a == 'd') {
@@ -217,7 +216,7 @@ void TextDisplayer_rpg::displayText(char *str, ...) {
 			break;
 
 		default:
-			if (_vm->game() == GI_LOL || (unsigned char)c > 30) {
+			if (_vm->game() == GI_EOB1 || _vm->game() == GI_LOL || (unsigned char)c > 30) {
 				_lineWidth += (sjisTextMode ? 4 : (_screen->_currentFont == Screen::FID_SJIS_FNT ? 9 : _screen->getCharWidth((uint8)c)));
 				_currentLine[_numCharsLeft++] = c;
 				_currentLine[_numCharsLeft] = 0;

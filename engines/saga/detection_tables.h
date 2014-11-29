@@ -8,12 +8,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
-
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
@@ -188,7 +188,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -434,7 +434,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -458,7 +458,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -482,7 +482,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -507,7 +507,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_CD,
 			GUIO0()
 		},
@@ -534,7 +534,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -558,7 +558,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -582,7 +582,31 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
+			ADGF_NO_FLAGS,
+			GUIO1(GUIO_NOSPEECH)
+		},
+		GID_ITE,
+		GF_ITE_FLOPPY,
+		ITE_DEFAULT_SCENE,
+		&ITE_Resources,
+		ARRAYSIZE(ITE_GameFonts),
+		ITE_GameFonts,
+		ITEPatch_Files,
+	},
+
+	// Inherit the earth - Chinese Disk version
+	{
+		{
+			"ite",
+			"Floppy",
+			{
+	{"ite.rsc",		GAME_RESOURCEFILE,					"8f4315a9bb10ec839253108a032c8b54", 8901704},
+	{"scripts.rsc",	GAME_SCRIPTFILE,					"516f7330f8410057b834424ea719d1ef", 281071},
+	{ NULL, 0, NULL, 0}
+			},
+			Common::ZH_CNA,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOSPEECH)
 		},
@@ -615,7 +639,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_DEMO,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -647,7 +671,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -677,7 +701,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::DE_DEU,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -705,7 +729,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::ES_ESP,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -734,7 +758,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::FR_FRA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -762,7 +786,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::IT_ITA,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_NO_FLAGS,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -817,7 +841,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
 			GUIO1(GUIO_NOASPECT)
 		},
@@ -847,7 +871,7 @@ static const SAGAGameDescription gameDescriptions[] = {
 	{ NULL, 0, NULL, 0}
 			},
 			Common::EN_ANY,
-			Common::kPlatformPC,
+			Common::kPlatformDOS,
 			ADGF_UNSTABLE,
 			GUIO1(GUIO_NOASPECT)
 		},
