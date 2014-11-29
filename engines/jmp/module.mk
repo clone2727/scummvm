@@ -1,9 +1,6 @@
 MODULE := engines/jmp
 
 MODULE_OBJS = \
-	bit.o \
-	bit_demo.o \
-	bit_trailer.o \
 	detection.o \
 	graphics.o \
 	jman.o \

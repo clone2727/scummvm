@@ -20,7 +20,6 @@
  *
  */
 
-#include "jmp/bit.h"
 #include "jmp/graphics.h"
 
 #include "common/endian.h"
@@ -43,8 +42,7 @@ GraphicsManager::GraphicsManager(JMPEngine* vm) : _vm(vm) {
 	useStandardCursor();
 	CursorMan.showMouse(true);
 		
-	// FIXME: Use the correct font. MS Sans Serif in bit, I believe.
-	// Don't remember what jman uses
+	// FIXME: Use the correct font.
 	_font = FontMan.getFontByUsage(Graphics::FontManager::kBigGUIFont);
 }
 	
@@ -59,12 +57,6 @@ void GraphicsManager::useStandardCursor() {
 }
 
 void GraphicsManager::setCursor(uint16 id) {
-	// HACK: The main cursor of BIT is broken in the exe (???)
-	if (_vm->getGameType() == GType_BIT && id == kBITMainCursor) {
-		useStandardCursor();
-		return;
-	}
-
 	Graphics::WinCursorGroup *cursorGroup = 0;
 
 	for (uint32 i = 0; i < _vm->_exeFiles.size() && !cursorGroup; i++)

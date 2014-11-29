@@ -44,8 +44,7 @@ namespace JMP {
 
 enum JMPGameType {
 	GType_JMAN = 1,
-	GType_BIT = 2,
-	GType_JOURNEY = 3
+	GType_JOURNEY = 2
 };
 
 enum JMPGameFeatures {
