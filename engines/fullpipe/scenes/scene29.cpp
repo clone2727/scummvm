@@ -641,7 +641,7 @@ void sceneHandler29_ballHitCheck() {
 
 				g_vars->scene29_redBalls.field_8 = newball;
 
-				g_vars->scene29_flyingRedBalls.sub05(ball);
+				g_vars->scene29_flyingRedBalls.removeBall(ball);
 
 				sceneHandler29_manHit();
 
@@ -840,7 +840,7 @@ void sceneHandler29_shootersEscape() {
 
 void sceneHandler29_manRideBack() {
 	g_vars->scene29_manX -= 2;
-  
+
 	g_fp->_aniMan->setOXY(g_vars->scene29_manX, g_vars->scene29_manY);
 }
 
@@ -972,7 +972,7 @@ int sceneHandler29(ExCommand *cmd) {
 		break;
 
 	case MSG_SC29_SHOWLASTRED:
-		if (g_vars->scene29_balls.numBalls) {
+		if (g_vars->scene29_redBalls.numBalls) { // original uses scene29_balls which looks like a copy/paste error
 			g_vars->scene29_redBalls.field_8->ani->show1(-1, -1, -1, 0);
 			g_vars->scene29_redBalls.field_8->ani->startAnim(MV_SHR_HITASS, 0, -1);
 		}
