@@ -67,7 +67,6 @@ void SciMusic::init() {
 	// SCI sound init
 	_dwTempo = 0;
 
-	Common::Platform platform = g_sci->getPlatform();
 	uint32 deviceFlags = MDT_PCSPK | MDT_PCJR | MDT_ADLIB | MDT_MIDI;
 
 	// Default to MIDI in SCI2.1+ games, as many don't have AdLib support.
@@ -99,9 +98,17 @@ void SciMusic::init() {
 	switch (_musicType) {
 	case MT_ADLIB:
 		// FIXME: There's no Amiga sound option, so we hook it up to AdLib
-		if (g_sci->getPlatform() == Common::kPlatformAmiga || platform == Common::kPlatformMacintosh)
-			_pMidiDrv = MidiPlayer_AmigaMac_create(_soundVersion);
-		else
+		if (g_sci->getPlatform() == Common::kPlatformMacintosh) {
+			if (getSciVersion() <= SCI_VERSION_0_LATE)
+				_pMidiDrv = MidiPlayer_MacSci0_create(_soundVersion);
+			else
+				_pMidiDrv = MidiPlayer_MacSci1_create(_soundVersion);
+		} else if (g_sci->getPlatform() == Common::kPlatformAmiga) {
+			if (getSciVersion() <= SCI_VERSION_0_LATE)
+				_pMidiDrv = MidiPlayer_AmigaSci0_create(_soundVersion);
+			else
+				_pMidiDrv = MidiPlayer_AmigaSci1_create(_soundVersion);
+		} else
 			_pMidiDrv = MidiPlayer_AdLib_create(_soundVersion);
 		break;
 	case MT_PCJR:
@@ -522,6 +529,7 @@ void SciMusic::soundPlay(MusicEntry *pSnd) {
 				pSnd->pMidiParser->jumpToTick(0);
 			else {
 				// Fast forward to the last position and perform associated events when loading
+				pSnd->pMidiParser->sendInitCommands();
 				pSnd->pMidiParser->jumpToTick(pSnd->ticker, true, true, true);
 			}
 
