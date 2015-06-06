@@ -33,6 +33,7 @@
 #include "common/substream.h"
 #include "common/textconsole.h"
 
+#include "audio/audiostream.h"
 #include "audio/decoders/aiff.h"
 #include "audio/decoders/raw.h"
 
@@ -70,7 +71,7 @@ static const uint32 kVersionAIFC = MKTAG('A', 'I', 'F', 'C');
 // Codecs
 static const uint32 kCodecPCM = MKTAG('N', 'O', 'N', 'E'); // very original
 
-SeekableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream,	DisposeAfterUse::Flag disposeAfterUse) {
+RewindableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream,	DisposeAfterUse::Flag disposeAfterUse) {
 	if (stream->readUint32BE() != MKTAG('F', 'O', 'R', 'M')) {
 		warning("makeAIFFStream: No 'FORM' header");
 
@@ -201,9 +202,7 @@ SeekableAudioStream *makeAIFFStream(Common::SeekableReadStream *stream,	DisposeA
 		return makeRawStream(dataStream, rate, rawFlags); 
 	}
 	case MKTAG('i', 'm', 'a', '4'):
-		// TODO: QT IMA ADPCM is not Seekable
-		// Need to make this function return only an AudioStream and adapt
-		// calling code to use dynamic_cast.
+		// TODO: Use QT IMA ADPCM
 		warning("Unhandled AIFF-C QT IMA ADPCM compression");
 		break;
 	case MKTAG('Q', 'D', 'M', '2'):
