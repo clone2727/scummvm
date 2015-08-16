@@ -1323,8 +1323,6 @@ void ScummEngine_v7::loadLanguageBundle() {
 
 	// if game is manually set to English, don't try to load localized text
 	if ((_language == Common::EN_ANY) || (_language == Common::EN_USA) || (_language == Common::EN_GRB)) {
-		warning("Language file is forced to be ignored");
-
 		_existLanguageFile = false;
 		return;
 	}
