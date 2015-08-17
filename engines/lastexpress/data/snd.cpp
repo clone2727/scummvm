@@ -30,6 +30,7 @@
 #include "audio/decoders/adpcm_intern.h"
 #include "common/debug.h"
 #include "common/memstream.h"
+#include "common/substream.h"
 #include "common/system.h"
 
 namespace LastExpress {
@@ -352,8 +353,8 @@ static const int p2s[17] = { 0, 1, 1, 3, 1, 5, 3, 7, 1, 9, 5, 11, 3, 13, 7, 15, 
 
 class LastExpress_ADPCMStream : public Audio::ADPCMStream {
 public:
-	LastExpress_ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, uint32 blockSize, int32 filterId) :
-			Audio::ADPCMStream(stream, disposeAfterUse, size, 44100, 1, blockSize) {
+	LastExpress_ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 blockSize, int32 filterId) :
+			Audio::ADPCMStream(stream, disposeAfterUse, 44100, 1, blockSize) {
 		_currentFilterId = -1;
 		_nextFilterId = filterId;
 		_stepAdjust1 = 0;
@@ -369,7 +370,7 @@ public:
 
 		assert(numSamples % 2 == 0);
 
-		while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+		while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 			if (_blockPos[0] == _blockAlign) {
 				// read block header
 				_status.ima_ch[0].last = _stream->readSint16LE();
@@ -389,7 +390,7 @@ public:
 				_stepAdjust2 = p2s[_currentFilterId];
 			}
 
-			for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2) {
+			for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _stream->size(); samples += 2) {
 				byte data = _stream->readByte();
 				_blockPos[0]++;
 
@@ -442,8 +443,8 @@ void SimpleSound::loadHeader(Common::SeekableReadStream *in) {
 	_blockSize = _size / _blocks;
 }
 
-Audio::AudioStream *SimpleSound::makeDecoder(Common::SeekableReadStream *in, uint32 size, int32 filterId) const {
-	return new LastExpress_ADPCMStream(in, DisposeAfterUse::YES, size, _blockSize, filterId);
+Audio::AudioStream *SimpleSound::makeDecoder(Common::SeekableReadStream *in, int32 filterId) const {
+	return new LastExpress_ADPCMStream(in, DisposeAfterUse::YES, _blockSize, filterId);
 }
 
 void SimpleSound::play(Audio::AudioStream *as) {
@@ -468,7 +469,8 @@ bool StreamedSound::load(Common::SeekableReadStream *stream, int32 filterId) {
 	loadHeader(stream);
 
 	// Start decoding the input stream
-	_as = makeDecoder(stream, _size, filterId);
+	stream = new Common::SeekableSubReadStream(stream, stream->pos(), stream->pos() + _size, DisposeAfterUse::YES);
+	_as = makeDecoder(stream, filterId);
 
 	// Start playing the decoded audio stream
 	play(_as);
@@ -524,8 +526,7 @@ void AppendableSound::queueBuffer(Common::SeekableReadStream *bufferIn) {
 		error("[AppendableSound::queueBuffer] Audio stream is invalid");
 
 	// Setup the ADPCM decoder
-	uint32 sizeIn = (uint32)bufferIn->size();
-	Audio::AudioStream *adpcm = makeDecoder(bufferIn, sizeIn);
+	Audio::AudioStream *adpcm = makeDecoder(bufferIn);
 	((LastExpress_ADPCMStream *)adpcm)->setFilterId(16);
 
 	// Queue the stream

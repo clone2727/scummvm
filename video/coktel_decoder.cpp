@@ -24,6 +24,7 @@
 #include "common/rect.h"
 #include "common/endian.h"
 #include "common/stream.h"
+#include "common/substream.h"
 #include "common/system.h"
 #include "common/textconsole.h"
 #include "common/types.h"
@@ -2633,7 +2634,7 @@ Audio::AudioStream *VMDDecoder::create16bitDPCM(Common::SeekableReadStream *stre
 class VMD_ADPCMStream : public Audio::DVI_ADPCMStream {
 public:
 	VMD_ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse,
-			int rate, int channels) : Audio::DVI_ADPCMStream(stream, disposeAfterUse, stream->size(), rate, channels, 0) {
+			int rate, int channels) : Audio::DVI_ADPCMStream(new Common::SeekableSubReadStream(stream, 3, stream->size(), disposeAfterUse), DisposeAfterUse::YES, rate, channels, 0) {
 		// FIXME: Using the same predictor/index for two channels probably won't work
 		// properly However, we have no samples of this, so an assert is here for now.
 		// Also, since the DPCM stereo has a second predictor, I'm lead to believe
@@ -2642,7 +2643,6 @@ public:
 		assert(channels == 1);
 		_startPredictorValue = stream->readSint16LE();
 		_startIndexValue = stream->readByte();
-		_startpos = 3;
 		reset();
 	}
 

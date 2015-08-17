@@ -66,7 +66,6 @@ enum ADPCMType {
  *
  * @param stream            the SeekableReadStream from which to read the ADPCM data
  * @param disposeAfterUse   whether to delete the stream after use
- * @param size              how many bytes to read from the stream (0 = all)
  * @param type              the compression type used
  * @param rate              the sampling rate
  * @param channels          the number of channels
@@ -76,7 +75,7 @@ enum ADPCMType {
 RewindableAudioStream *makeADPCMStream(
     Common::SeekableReadStream *stream,
     DisposeAfterUse::Flag disposeAfterUse,
-    uint32 size, ADPCMType type,
+    ADPCMType type,
     int rate,
     int channels,
     uint32 blockAlign = 0);

@@ -316,7 +316,7 @@ bool SndRes::load(ResourceContext *context, uint32 resourceId, SoundBuffer &buff
 		result = true;
 		} break;
 	case kSoundVOX:
-		buffer.stream = Audio::makeADPCMStream(READ_STREAM(soundResourceLength), DisposeAfterUse::YES, soundResourceLength, Audio::kADPCMOki, 22050, 1);
+		buffer.stream = Audio::makeADPCMStream(READ_STREAM(soundResourceLength), DisposeAfterUse::YES, Audio::kADPCMOki, 22050, 1);
 		buffer.streamLength = Audio::Timestamp(0, soundResourceLength * 2, buffer.stream->getRate());
 		result = true;
 		break;

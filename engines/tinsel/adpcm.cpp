@@ -80,13 +80,13 @@ int Tinsel4_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 	assert(numSamples % 2 == 0);
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 		if (_blockPos[0] == _blockAlign) {
 			readBufferTinselHeader();
 			_blockPos[0] = 0;
 		}
 
-		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples += 2, _blockPos[0]++) {
+		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _stream->size(); samples += 2, _blockPos[0]++) {
 			// Read 1 byte = 8 bits = two 4 bit blocks
 			data = _stream->readByte();
 			buffer[samples] = decodeTinsel((data << 8) & 0xF000, eVal);
@@ -103,14 +103,14 @@ int Tinsel6_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 	samples = 0;
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 		if (_blockPos[0] == _blockAlign) {
 			readBufferTinselHeader();
 			_blockPos[0] = 0;
 			_chunkPos = 0;
 		}
 
-		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples++, _chunkPos = (_chunkPos + 1) % 4) {
+		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _stream->size(); samples++, _chunkPos = (_chunkPos + 1) % 4) {
 
 			switch (_chunkPos) {
 			case 0:
@@ -148,13 +148,13 @@ int Tinsel8_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 	samples = 0;
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 		if (_blockPos[0] == _blockAlign) {
 			readBufferTinselHeader();
 			_blockPos[0] = 0;
 		}
 
-		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _endpos; samples++, _blockPos[0]++) {
+		for (; samples < numSamples && _blockPos[0] < _blockAlign && !_stream->eos() && _stream->pos() < _stream->size(); samples++, _blockPos[0]++) {
 			// Read 1 byte = 8 bits = one 8 bit block
 			data = _stream->readByte();
 			buffer[samples] = decodeTinsel(data << 8, eVal);

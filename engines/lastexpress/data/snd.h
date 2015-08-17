@@ -59,7 +59,7 @@ public:
 
 protected:
 	void loadHeader(Common::SeekableReadStream *in);
-	Audio::AudioStream *makeDecoder(Common::SeekableReadStream *in, uint32 size, int32 filterId = -1) const;
+	Audio::AudioStream *makeDecoder(Common::SeekableReadStream *in, int32 filterId = -1) const;
 	void play(Audio::AudioStream *as);
 
 	uint32 _size;   ///< data size

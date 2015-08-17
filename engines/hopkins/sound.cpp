@@ -39,7 +39,7 @@ namespace Hopkins {
 
 class APC_ADPCMStream : public Audio::DVI_ADPCMStream {
 public:
-	APC_ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, int rate, int channels) : DVI_ADPCMStream(stream, disposeAfterUse, stream->size(), rate, channels, 0) {
+	APC_ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, int rate, int channels) : DVI_ADPCMStream(stream, disposeAfterUse, rate, channels, 0) {
 		stream->seek(-12, SEEK_CUR);
 		_status.ima_ch[0].last = _startValue[0] = stream->readUint32LE();
 		_status.ima_ch[1].last = _startValue[1] = stream->readUint32LE();

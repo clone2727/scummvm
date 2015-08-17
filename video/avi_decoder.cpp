@@ -862,11 +862,11 @@ void AVIDecoder::AVIAudioTrack::queueSound(Common::SeekableReadStream *stream) {
 
 			_audStream->queueAudioStream(Audio::makeRawStream(stream, _wvInfo.samplesPerSec, flags, DisposeAfterUse::YES), DisposeAfterUse::YES);
 		} else if (_wvInfo.tag == kWaveFormatMSADPCM) {
-			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, stream->size(), Audio::kADPCMMS, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
+			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, Audio::kADPCMMS, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
 		} else if (_wvInfo.tag == kWaveFormatMSIMAADPCM) {
-			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, stream->size(), Audio::kADPCMMSIma, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
+			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, Audio::kADPCMMSIma, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
 		} else if (_wvInfo.tag == kWaveFormatDK3) {
-			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, stream->size(), Audio::kADPCMDK3, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
+			_audStream->queueAudioStream(Audio::makeADPCMStream(stream, DisposeAfterUse::YES, Audio::kADPCMDK3, _wvInfo.samplesPerSec, _wvInfo.channels, _wvInfo.blockAlign), DisposeAfterUse::YES);
 		}
 	} else {
 		delete stream;

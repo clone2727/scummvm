@@ -334,7 +334,7 @@ bool SoundManager::playSample(int id, int sub, bool bLooped, int x, int y, int p
 #endif
 		break;
 	default:
-		sampleStream = new Tinsel6_ADPCMStream(compressedStream, DisposeAfterUse::YES, sampleLen, 22050, 1, 24);
+		sampleStream = new Tinsel6_ADPCMStream(compressedStream, DisposeAfterUse::YES, 22050, 1, 24);
 		break;
 	}
 

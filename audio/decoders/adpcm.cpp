@@ -40,10 +40,8 @@ namespace Audio {
 // In addition, also MS IMA ADPCM is supported. See
 //   <http://wiki.multimedia.cx/index.php?title=Microsoft_IMA_ADPCM>.
 
-ADPCMStream::ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, int rate, int channels, uint32 blockAlign)
+ADPCMStream::ADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, int rate, int channels, uint32 blockAlign)
 	: _stream(stream, disposeAfterUse),
-		_startpos(stream->pos()),
-		_endpos(_startpos + size),
 		_channels(channels),
 		_blockAlign(blockAlign),
 		_rate(rate) {
@@ -59,7 +57,7 @@ void ADPCMStream::reset() {
 bool ADPCMStream::rewind() {
 	// TODO: Error checking.
 	reset();
-	_stream->seek(_startpos);
+	_stream->seek(0);
 	return true;
 }
 
@@ -157,7 +155,7 @@ int Apple_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 		while ((samples[i] < chanSamples) &&
 		       // Last byte read and a new one needed
-		       !((_stream->eos() || (_stream->pos() >= _endpos)) && (_chunkPos[i] == 0))) {
+		       !((_stream->eos() || (_stream->pos() >= _stream->size())) && (_chunkPos[i] == 0))) {
 
 			if (_blockPos[i] == _blockAlign) {
 				// 2 byte header per block
@@ -196,7 +194,7 @@ int Apple_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 				if (_blockPos[i] == _blockAlign)
 					// We're at the end of the block.
 					// Since the channels are interleaved, skip the next block
-					_stream->skip(MIN<uint32>(_blockAlign, _endpos - _stream->pos()));
+					_stream->skip(MIN<uint32>(_blockAlign, _stream->size() - _stream->pos()));
 
 			_streamPos[i] = _stream->pos();
 		}
@@ -215,7 +213,7 @@ int MSIma_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 	int samples = 0;
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 		if (_blockPos[0] == _blockAlign) {
 			for (int i = 0; i < _channels; i++) {
 				// read block header
@@ -340,7 +338,7 @@ do { \
 		_nibble = _lastByte >> 4; \
 		_topNibble = false; \
 	} else { \
-		if (_stream->pos() >= _endpos) \
+		if (_stream->pos() >= _stream->size()) \
 			break; \
 		if ((_stream->pos() % _blockAlign) == 0) \
 			continue; \
@@ -356,7 +354,7 @@ int DK3_ADPCMStream::readBuffer(int16 *buffer, const int numSamples) {
 
 	assert((numSamples % 4) == 0);
 
-	while (samples < numSamples && !_stream->eos() && _stream->pos() < _endpos) {
+	while (samples < numSamples && !_stream->eos() && _stream->pos() < _stream->size()) {
 		if ((_stream->pos() % _blockAlign) == 0) {
 			_stream->readUint16LE(); // Unknown
 			uint16 rate = _stream->readUint16LE(); // Copy of rate
@@ -433,24 +431,20 @@ int16 Ima_ADPCMStream::decodeIMA(byte code, int channel) {
 	return samp;
 }
 
-RewindableAudioStream *makeADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, ADPCMType type, int rate, int channels, uint32 blockAlign) {
-	// If size is 0, report the entire size of the stream
-	if (!size)
-		size = stream->size();
-
+RewindableAudioStream *makeADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, ADPCMType type, int rate, int channels, uint32 blockAlign) {
 	switch (type) {
 	case kADPCMOki:
-		return new Oki_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new Oki_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	case kADPCMMSIma:
-		return new MSIma_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new MSIma_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	case kADPCMMS:
-		return new MS_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new MS_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	case kADPCMDVI:
-		return new DVI_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new DVI_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	case kADPCMApple:
-		return new Apple_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new Apple_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	case kADPCMDK3:
-		return new DK3_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign);
+		return new DK3_ADPCMStream(stream, disposeAfterUse, rate, channels, blockAlign);
 	default:
 		error("Unsupported ADPCM encoding");
 		break;

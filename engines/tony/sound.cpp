@@ -208,7 +208,7 @@ bool FPSfx::loadVoiceFromVDB(Common::File &vdbFP) {
 	uint32 rate = vdbFP.readUint32LE();
 	_isVoice = true;
 
-	_rewindableStream = Audio::makeADPCMStream(vdbFP.readStream(size), DisposeAfterUse::YES, 0, Audio::kADPCMDVI, rate, 1);
+	_rewindableStream = Audio::makeADPCMStream(vdbFP.readStream(size), DisposeAfterUse::YES, Audio::kADPCMDVI, rate, 1);
 
 	_fileLoaded = true;
 	setVolume(62);
@@ -244,7 +244,7 @@ bool FPSfx::loadFile(const char *fileName, uint32 codec) {
 	Common::SeekableReadStream *buffer = file.readStream(file.size() - file.pos());
 
 	if (codec == FPCODEC_ADPCM) {
-		_rewindableStream = Audio::makeADPCMStream(buffer, DisposeAfterUse::YES, 0, Audio::kADPCMDVI, rate, channels);
+		_rewindableStream = Audio::makeADPCMStream(buffer, DisposeAfterUse::YES, Audio::kADPCMDVI, rate, channels);
 	} else {
 		byte flags = Audio::FLAG_16BITS | Audio::FLAG_LITTLE_ENDIAN;
 
@@ -503,9 +503,9 @@ bool FPStream::loadFile(const Common::String &fileName, uint32 codec, int bufSiz
 #ifdef __amigaos4__
 		// HACK: AmigaOS 4 has weird performance problems with reading in the audio thread,
 		// so we read the whole stream into memory.
-		_rewindableStream = Audio::makeADPCMStream(_file.readStream(_size), DisposeAfterUse::YES, 0, Audio::kADPCMDVI, 44100, 2);
+		_rewindableStream = Audio::makeADPCMStream(_file.readStream(_size), DisposeAfterUse::YES, Audio::kADPCMDVI, 44100, 2);
 #else
-		_rewindableStream = Audio::makeADPCMStream(&_file, DisposeAfterUse::NO, 0, Audio::kADPCMDVI, 44100, 2);
+		_rewindableStream = Audio::makeADPCMStream(&_file, DisposeAfterUse::NO, Audio::kADPCMDVI, 44100, 2);
 #endif
 		break;
 

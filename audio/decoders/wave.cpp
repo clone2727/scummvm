@@ -23,6 +23,7 @@
 #include "common/debug.h"
 #include "common/textconsole.h"
 #include "common/stream.h"
+#include "common/substream.h"
 
 #include "audio/audiostream.h"
 #include "audio/decoders/wave.h"
@@ -170,28 +171,24 @@ RewindableAudioStream *makeWAVStream(Common::SeekableReadStream *stream, Dispose
 		return 0;
 	}
 
-	if (type == 17) // MS IMA ADPCM
-		return makeADPCMStream(stream, disposeAfterUse, size, Audio::kADPCMMSIma, rate, (flags & Audio::FLAG_STEREO) ? 2 : 1, blockAlign);
-	else if (type == 2) // MS ADPCM
-		return makeADPCMStream(stream, disposeAfterUse, size, Audio::kADPCMMS, rate, (flags & Audio::FLAG_STEREO) ? 2 : 1, blockAlign);
-
-	// Raw PCM, make sure the last packet is complete
-	uint sampleSize = (flags & Audio::FLAG_16BITS ? 2 : 1) * (flags & Audio::FLAG_STEREO ? 2 : 1);
-	if (size % sampleSize != 0) {
-		warning("makeWAVStream: Trying to play a WAVE file with an incomplete PCM packet");
-		size &= ~(sampleSize - 1);
+	if (type == 1) {
+		// Raw PCM, make sure the last packet is complete
+		uint sampleSize = (flags & Audio::FLAG_16BITS ? 2 : 1) * (flags & Audio::FLAG_STEREO ? 2 : 1);
+		if (size % sampleSize != 0) {
+			warning("makeWAVStream: Trying to play a WAVE file with an incomplete PCM packet");
+			size &= ~(sampleSize - 1);
+		}
 	}
 
-	// Raw PCM. Just read everything at once.
-	// TODO: More elegant would be to wrap the stream.
-	byte *data = (byte *)malloc(size);
-	assert(data);
-	stream->read(data, size);
+	Common::SeekableReadStream *substream = new Common::SeekableSubReadStream(stream, stream->pos(), stream->pos() + size, disposeAfterUse);
 
-	if (disposeAfterUse == DisposeAfterUse::YES)
-		delete stream;
+	if (type == 17) // MS IMA ADPCM
+		return makeADPCMStream(substream, DisposeAfterUse::YES, Audio::kADPCMMSIma, rate, (flags & Audio::FLAG_STEREO) ? 2 : 1, blockAlign);
+	else if (type == 2) // MS ADPCM
+		return makeADPCMStream(substream, DisposeAfterUse::YES, Audio::kADPCMMS, rate, (flags & Audio::FLAG_STEREO) ? 2 : 1, blockAlign);
 
-	return makeRawStream(data, size, rate, flags);
+	// Raw PCM
+	return makeRawStream(substream, rate, flags);
 }
 
 } // End of namespace Audio
